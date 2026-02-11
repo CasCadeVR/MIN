@@ -89,9 +89,8 @@ namespace MIN.Desktop
             if (participantCreateForm.ShowDialog() == DialogResult.OK)
             {
                 // TODO: connect client to server
-                room.AddParticipant(AppUserProvider.Instance.CurrentUser);
-
                 var chatForm = new ChatForm(roomService, room);
+                room.AddParticipant(AppUserProvider.Instance.CurrentUser);
 
                 chatForm.Show();
 

@@ -69,8 +69,7 @@
             // 
             // sendMessage
             // 
-            sendMessage.AutoSize = true;
-            sendMessage.Dock = DockStyle.Fill;
+            sendMessage.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             sendMessage.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             sendMessage.ForeColor = Color.FromArgb(0, 0, 0);
             sendMessage.Location = new Point(3, 24);
@@ -78,6 +77,7 @@
             sendMessage.Size = new Size(241, 46);
             sendMessage.TabIndex = 2;
             sendMessage.Text = "Сообщение";
+            sendMessage.UseMnemonic = false;
             // 
             // sendRole
             // 

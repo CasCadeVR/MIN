@@ -1,4 +1,5 @@
 using MIN.Desktop.Components;
+using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Infrastructure.Services;
@@ -6,7 +7,6 @@ using MIN.Desktop.Views.Components;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
-using MIN.Services.Services;
 
 namespace MIN.Desktop
 {
@@ -49,11 +49,13 @@ namespace MIN.Desktop
 
         private void OnParticipantJoined(Participant participant)
         {
+            SendParticipantJoinedMessage(participant);
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 
         private void OnParticipantLeft(Participant participant)
         {
+            SendParticipantLeftMessage(participant);
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 
@@ -70,6 +72,30 @@ namespace MIN.Desktop
                 return;
             }
             UpdateChatFlow();
+        }
+
+        private void SendParticipantJoinedMessage(Participant participant)
+        {
+            var roomMessage = new ChatMessage()
+            {
+                AsRoomMessage = true,
+                Content = $"Участник {participant.Name} зашёл в комнату",
+                MessageType = MessageType.Text,
+            };
+
+            Room.AddMessage(roomMessage);
+        }
+
+        private void SendParticipantLeftMessage(Participant participant)
+        {
+            var roomMessage = new ChatMessage()
+            {
+                AsRoomMessage = true,
+                Content = $"Участник {participant.Name} покинул комнату",
+                MessageType = MessageType.Text,
+            };
+
+            Room.AddMessage(roomMessage);
         }
 
         private void UpdateStats()
@@ -105,19 +131,29 @@ namespace MIN.Desktop
             foreach (var message in Room.ChatHistory)
             {
                 var row = new ChatMessageRow();
+                Control rowControl;
 
-                var card = new ChatMessageCard(message) { Parent = row.container };
-
-                if (message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName)
+                if (message.AsRoomMessage)
                 {
-                    card.Anchor = AnchorStyles.Right;
+                    rowControl = new Heading3Label()
+                    {
+                        Text = message.Content,
+                        Height = row.Height,
+                        Anchor = AnchorStyles.None,
+                    };
                 }
                 else
                 {
-                    card.Anchor = AnchorStyles.Left;
+                    rowControl = new ChatMessageCard(message)
+                    {
+                        Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
+                            ? AnchorStyles.Right
+                            : AnchorStyles.Left,
+                    };
                 }
 
-                row.Width = chatFlow.Width - (row.Margin.Left * 2) - chatFlow.Margin.Left;
+                row.Size = new Size(chatFlow.Width - (row.Margin.Left * 2) - chatFlow.Margin.Left, rowControl.Height);
+                row.container.Controls.Add(rowControl);
                 chatFlow.Controls.Add(row);
             }
         }
@@ -132,7 +168,6 @@ namespace MIN.Desktop
             participantsInfo.ForeColor = ColorScheme.TextOnAccent;
             hostName.ForeColor = ColorScheme.TextOnAccent;
             computer.ForeColor = ColorScheme.TextOnAccent;
-
             classroom.ForeColor = ColorScheme.TextOnAccent;
 
             heading3Label1.ForeColor = ColorScheme.TextOnAccent;
@@ -141,7 +176,7 @@ namespace MIN.Desktop
             heading3Label4.ForeColor = ColorScheme.TextOnAccent;
             heading3Label5.ForeColor = ColorScheme.TextOnAccent;
 
-            participantsFlow.BackColor = ColorScheme.PrimaryAccent;
+            participantsFlow.BackColor = ColorScheme.DividerColor;
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;
 
             editButton.Visible = AppUserProvider.Instance.CurrentUser.PCName == Room.HostParticipant.PCName;
@@ -149,10 +184,15 @@ namespace MIN.Desktop
 
         private bool IsMessageValid(ChatMessage message)
         {
-            return !string.IsNullOrEmpty(message.Content);
+            return !string.IsNullOrWhiteSpace(message.Content);
         }
 
         private void sendButton_Click(object sender, EventArgs e)
+        {
+            sendMessage();
+        }
+
+        private void sendMessage()
         {
             var message = new ChatMessage()
             {
@@ -203,6 +243,7 @@ namespace MIN.Desktop
             Room.ParticipantJoined -= OnParticipantJoined;
             Room.ParticipantLeft -= OnParticipantLeft;
             Room.MessageReceived -= OnMessageReceived;
+            Room.RoomInfoChanged += OnRoomInfoChanged;
         }
 
         private async void editButton_Click(object sender, EventArgs e)
@@ -218,6 +259,18 @@ namespace MIN.Desktop
             {
                 Room = await roomService.Update(Room, CancellationToken.None);
                 Room.UpdateStats(Room);
+            }
+        }
+
+        private void messageTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == '\r') // Enter
+            {
+                if ((ModifierKeys & Keys.Shift) == 0)
+                {
+                    sendMessage();
+                    e.Handled = true;
+                }
             }
         }
     }

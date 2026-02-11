@@ -46,7 +46,7 @@ namespace MIN.Desktop.Components
                 .OrderByDescending(x => x.Time)
                 .LastOrDefault();
 
-            lastOnline.Text = lastMessage == null ? "" : lastMessage.Time.ToShortTimeString();
+            lastOnline.Text = lastMessage == null ? "" : $"Последний раз в сети: {lastMessage.Time.ToShortTimeString()}";
         }
     }
 }

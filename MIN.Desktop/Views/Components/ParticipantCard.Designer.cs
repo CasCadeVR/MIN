@@ -68,12 +68,13 @@
             // lastOnline
             // 
             lastOnline.AutoSize = true;
+            tableLayoutPanelLabels.SetColumnSpan(lastOnline, 2);
             lastOnline.Dock = DockStyle.Fill;
             lastOnline.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             lastOnline.ForeColor = Color.FromArgb(0, 0, 0);
             lastOnline.Location = new Point(3, 24);
             lastOnline.Name = "lastOnline";
-            lastOnline.Size = new Size(169, 16);
+            lastOnline.Size = new Size(233, 16);
             lastOnline.TabIndex = 2;
             lastOnline.Text = "Последний раз в сети";
             // 

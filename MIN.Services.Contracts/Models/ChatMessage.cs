@@ -25,7 +25,12 @@ public class ChatMessage
     /// <summary>
     /// Время написания сообщения
     /// </summary>
-    public TimeOnly Time {  get; set; } = TimeOnly.FromDateTime(DateTime.UtcNow.ToLocalTime());
+    public TimeOnly Time { get; set; } = TimeOnly.FromDateTime(DateTime.UtcNow.ToLocalTime());
+
+    /// <summary>
+    /// Сообщение комнаты (сервера)
+    /// </summary>
+    public bool AsRoomMessage { get; set; } = false;
 
     /// <summary>
     /// Тип сообщения (текст, файл)
