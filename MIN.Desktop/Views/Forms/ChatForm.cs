@@ -1,4 +1,3 @@
-using System.Windows.Forms;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
@@ -57,6 +56,7 @@ namespace MIN.Desktop
                 }
 
                 row.Width = chatFlow.Width - (row.Margin.Left * 2) - chatFlow.Margin.Left;
+                chatFlow.HorizontalScroll.Visible = false;
                 chatFlow.Controls.Add(row);
             }
         }
@@ -71,13 +71,12 @@ namespace MIN.Desktop
                 MessageType = MessageType.Text,
             };
 
-            Room.ChatHistory.Add(message);
-
             if (!IsMessageValid(message))
             {
                 return;
             }
 
+            Room.ChatHistory.Add(message);
             messageTextBox.Text = string.Empty;
             UpdateChatFlow();
         }
@@ -88,9 +87,10 @@ namespace MIN.Desktop
             this.Close();
         }
 
-        private void aboutButton_Click(object sender, EventArgs e)
+        private void closeButton_Click(object sender, EventArgs e)
         {
-
+            this.Width -= splitContainerSideBar.Panel2.Width;
+            splitContainerSideBar.Panel2Collapsed = true;
         }
 
         private void chatFlow_Resize(object sender, EventArgs e)
@@ -99,6 +99,12 @@ namespace MIN.Desktop
             {
                 control.Width = chatFlow.Width - (control.Margin.Left * 2) - chatFlow.Margin.Left;
             }
+        }
+
+        private void aboutButton_Click(object sender, EventArgs e)
+        {
+            splitContainerSideBar.Panel2Collapsed = false;
+            this.Width += splitContainerSideBar.Panel2.Width;
         }
     }
 }
