@@ -87,11 +87,11 @@
             // 
             Title.Anchor = AnchorStyles.None;
             Title.AutoSize = true;
-            Title.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            Title.ForeColor = Color.FromArgb(248, 249, 255);
-            Title.Location = new Point(99, 12);
+            Title.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            Title.ForeColor = Color.Black;
+            Title.Location = new Point(104, 12);
             Title.Name = "Title";
-            Title.Size = new Size(217, 30);
+            Title.Size = new Size(208, 30);
             Title.TabIndex = 0;
             Title.Text = "Создание комнаты";
             // 
@@ -144,6 +144,7 @@
             cancelButton.TabIndex = 3;
             cancelButton.Text = "Отмена";
             cancelButton.UseVisualStyleBackColor = false;
+            cancelButton.Click += cancelButton_Click;
             // 
             // tableLayoutPanel1
             // 

@@ -12,8 +12,11 @@ namespace MIN.Desktop
         /// </summary>
         public Room Room { get; set; }
 
+        private bool isNew = false;
+
         public RoomCreateForm(Room? room = null)
         {
+            isNew = room == null;
             Room = room ?? new Room();
 
             InitializeComponent();
@@ -23,6 +26,18 @@ namespace MIN.Desktop
         {
             splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
             splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
+            Title.ForeColor = ColorScheme.TextOnAccent;
+
+            if (!isNew)
+            {
+                cancelButton.FlatAppearance.BorderColor = ColorScheme.ErrorColor;
+                cancelButton.ForeColor = ColorScheme.ErrorColor;
+                cancelButton.Text = "Удалить комнату";
+
+                createButton.Text = "Сохранить";
+                roomName.Text = Room.Name;
+                roomMaximumCount.Value = Room.MaximumParticipants;
+            }
         }
 
         private bool IsRoomValid()
@@ -39,9 +54,9 @@ namespace MIN.Desktop
             if (!IsRoomValid())
             {
                 MessageBox.Show(
-                    "Имя комнаты не может быть пустым", 
-                    "Ошибка валидации", 
-                    MessageBoxButtons.OK, 
+                    "Имя комнаты не может быть пустым",
+                    "Ошибка валидации",
+                    MessageBoxButtons.OK,
                     MessageBoxIcon.Exclamation
                 );
 
@@ -49,7 +64,21 @@ namespace MIN.Desktop
             }
 
             DialogResult = DialogResult.OK;
+        }
 
+        private void cancelButton_Click(object sender, EventArgs e)
+        {
+            if (isNew)
+            {
+                DialogResult = DialogResult.Cancel;
+            } 
+            else
+            {
+                if (MessageBox.Show("Вы точно хотите удалить эту комнату?", "Удаление комнаты", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    DialogResult = DialogResult.Abort;
+                }
+            }
         }
     }
 }

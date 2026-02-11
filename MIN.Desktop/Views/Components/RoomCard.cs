@@ -23,7 +23,37 @@ namespace MIN.Desktop.Components
             InitializeComponent();
             ApplyStylings();
             this.room = room;
-            FillLabels();
+
+            room.ParticipantJoined += OnParticipantJoined;
+            room.ParticipantLeft += OnParticipantLeft;
+            room.RoomInfoChanged += OnRoomInfoChanged;
+
+            UpdateStats();
+        }
+
+        private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(action, entity);
+                return;
+            }
+            UpdateStats();
+        }
+
+        private void OnParticipantJoined(Participant participant)
+        {
+            UpdateStatsAndInvoke(OnParticipantJoined, participant);
+        }
+
+        private void OnParticipantLeft(Participant participant)
+        {
+            UpdateStatsAndInvoke(OnParticipantJoined, participant);
+        }
+
+        private void OnRoomInfoChanged(Room room)
+        {
+            UpdateStatsAndInvoke(OnRoomInfoChanged, room);
         }
 
         private void ApplyStylings()
@@ -31,9 +61,10 @@ namespace MIN.Desktop.Components
             splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
             splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
             tableLayoutPanelLabels.BackColor = ColorScheme.MainPanelBackground;
+            Title.ForeColor = ColorScheme.TextOnAccent;
         }
 
-        private void FillLabels()
+        private void UpdateStats()
         {
             Title.Text = $"Комната {this.room.Name}";
             participantsInfo.Text = $"{this.room.CurrentParticipants.Count}/{this.room.MaximumParticipants}";
@@ -42,9 +73,20 @@ namespace MIN.Desktop.Components
             // TODO: исправить на № компа и кабинет
             computer.Text = this.room.HostParticipant.PCName;
             classroom.Text = this.room.HostParticipant.PCName;
+            setConnectButtonAccordingToRoomCount();
         }
 
-        private void createButton_Click(object sender, EventArgs e)
+        private void setConnectButtonAccordingToRoomCount()
+        {
+            connectButton.Enabled = !room.IsFull;
+            if (room.IsFull)
+            {
+                connectButton.Text = "Заполнено";
+                connectButton.BackColor = Color.Gray;
+            }
+        }
+
+        private void connectButton_Click(object sender, EventArgs e)
         {
             Clicked?.Invoke(room);
         }

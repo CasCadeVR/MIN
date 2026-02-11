@@ -107,7 +107,6 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(tableLayoutPanelLabels);
-            Margin = new Padding(0, 0, 0, 3);
             MaximumSize = new Size(311, 0);
             MinimumSize = new Size(311, 70);
             Name = "ChatMessageCard";

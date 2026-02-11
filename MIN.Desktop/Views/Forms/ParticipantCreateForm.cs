@@ -15,6 +15,7 @@ namespace MIN.Desktop
         {
             splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
             splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
+            Title.ForeColor = ColorScheme.TextOnAccent;
         }
 
         private bool IsParticipantValid()

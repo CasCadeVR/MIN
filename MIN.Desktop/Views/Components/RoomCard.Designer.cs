@@ -31,7 +31,7 @@
             splitContainer = new SplitContainer();
             tableLayoutPanelHeader = new TableLayoutPanel();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
-            createButton = new CommonButton();
+            connectButton = new CommonButton();
             tableLayoutPanelLabels = new TableLayoutPanel();
             participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
             heading3Label3 = new MIN.Desktop.Components.Labels.Heading3Label();
@@ -64,7 +64,7 @@
             // 
             // splitContainer.Panel2
             // 
-            splitContainer.Panel2.Controls.Add(createButton);
+            splitContainer.Panel2.Controls.Add(connectButton);
             splitContainer.Panel2.Controls.Add(tableLayoutPanelLabels);
             splitContainer.Size = new Size(311, 227);
             splitContainer.SplitterDistance = 55;
@@ -88,30 +88,30 @@
             Title.Anchor = AnchorStyles.None;
             Title.AutoSize = true;
             Title.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            Title.ForeColor = Color.White;
+            Title.ForeColor = Color.Black;
             Title.Location = new Point(89, 12);
             Title.Name = "Title";
             Title.Size = new Size(132, 30);
             Title.TabIndex = 0;
             Title.Text = "Комната \"\"";
             // 
-            // createButton
+            // connectButton
             // 
-            createButton.BackColor = Color.FromArgb(192, 192, 255);
-            createButton.Cursor = Cursors.Hand;
-            createButton.Dock = DockStyle.Bottom;
-            createButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
-            createButton.FlatStyle = FlatStyle.Flat;
-            createButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            createButton.ForeColor = Color.FromArgb(248, 249, 255);
-            createButton.Location = new Point(0, 124);
-            createButton.Name = "createButton";
-            createButton.Padding = new Padding(8, 4, 8, 4);
-            createButton.Size = new Size(311, 44);
-            createButton.TabIndex = 2;
-            createButton.Text = "Присоединиться";
-            createButton.UseVisualStyleBackColor = false;
-            createButton.Click += createButton_Click;
+            connectButton.BackColor = Color.FromArgb(192, 192, 255);
+            connectButton.Cursor = Cursors.Hand;
+            connectButton.Dock = DockStyle.Bottom;
+            connectButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            connectButton.FlatStyle = FlatStyle.Flat;
+            connectButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            connectButton.ForeColor = Color.FromArgb(248, 249, 255);
+            connectButton.Location = new Point(0, 124);
+            connectButton.Name = "connectButton";
+            connectButton.Padding = new Padding(8, 4, 8, 4);
+            connectButton.Size = new Size(311, 44);
+            connectButton.TabIndex = 2;
+            connectButton.Text = "Присоединиться";
+            connectButton.UseVisualStyleBackColor = false;
+            connectButton.Click += connectButton_Click;
             // 
             // tableLayoutPanelLabels
             // 
@@ -239,7 +239,6 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(splitContainer);
-            Cursor = Cursors.Arrow;
             Margin = new Padding(0, 0, 0, 5);
             Name = "RoomCard";
             Size = new Size(311, 227);
@@ -260,7 +259,7 @@
         private SplitContainer splitContainer;
         private TableLayoutPanel tableLayoutPanelHeader;
         private Labels.Heading1Label Title;
-        private CommonButton createButton;
+        private CommonButton connectButton;
         private TableLayoutPanel tableLayoutPanelLabels;
         private Labels.Heading3Label ClassTitleInput;
         private Labels.Heading3Label computer;

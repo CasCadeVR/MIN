@@ -47,11 +47,13 @@ namespace MIN.Desktop
             var foundRooms = await roomService.GetAll(CancellationToken.None);
             totalRoomsCount.Text = $"Всего нашлось комнат: {foundRooms.Count()}";
 
+            flowLayoutPanel.Controls.Clear();
+
             foreach (var room in foundRooms)
             {
                 var card = new RoomCard(room);
                 card.Parent = flowLayoutPanel;
-                card.Clicked += (room) => OnRoomConnection(room);
+                card.Clicked += OnRoomConnection;
             }
         }
 
@@ -62,13 +64,37 @@ namespace MIN.Desktop
 
         private bool OnRoomConnection(Room room)
         {
+            if (room == null)
+            {
+                MessageBox.Show("Невозможно подключиться: комнаты больше нет.", "Ошибка",
+                   MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            if (room.IsFull)
+            {
+                MessageBox.Show("Невозможно подключиться: комната заполнена.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            if (room.CurrentParticipants.Any(p => p.PCName == AppUserProvider.Instance.CurrentUser.PCName))
+            {
+                MessageBox.Show("Вы уже подключены к этой комнате.", "Информация",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+
             var participantCreateForm = new ParticipantCreateForm();
             if (participantCreateForm.ShowDialog() == DialogResult.OK)
             {
-                var chatForm = new ChatForm(room);
+                // TODO: connect client to server
+                room.AddParticipant(AppUserProvider.Instance.CurrentUser);
+
+                var chatForm = new ChatForm(roomService, room);
+
                 chatForm.Show();
 
-                // TODO: открыть чат
                 return true;
             }
 

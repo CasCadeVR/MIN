@@ -24,7 +24,6 @@ namespace MIN.Services.Services
 
             existing.Name = room.Name;
             existing.MaximumParticipants = room.MaximumParticipants;
-            existing.CurrentParticipants = room.CurrentParticipants;
             existing.HostParticipant = room.HostParticipant;
 
             return room;

@@ -24,8 +24,7 @@ namespace MIN.Desktop.Components
 
         private void ApplyStylings()
         {
-            tableLayoutPanelLabels.BackColor = ColorScheme.MainPanelBackground;
-            this.Dock = DockStyle.Top;
+            tableLayoutPanelLabels.BackColor = ColorScheme.IncomingMessageBackground;
             this.Width = this.Parent?.Width ?? 400;
         }
 
