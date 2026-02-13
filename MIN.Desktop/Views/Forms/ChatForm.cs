@@ -1,12 +1,14 @@
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
+using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Components;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Services;
 
 namespace MIN.Desktop
 {
@@ -15,6 +17,7 @@ namespace MIN.Desktop
     /// </summary>
     public partial class ChatForm : StyledForm
     {
+        private readonly int startMessageBoxHeight;
         private readonly IRoomService roomService;
 
         /// <summary>
@@ -25,6 +28,7 @@ namespace MIN.Desktop
         public ChatForm(IRoomService roomService, Room? room = null)
         {
             InitializeComponent();
+            startMessageBoxHeight = tableLayoutPanelButtons.Height;
             this.roomService = roomService;
             Room = room ?? new Room();
 
@@ -104,9 +108,16 @@ namespace MIN.Desktop
             participantsInfo.Text = $"{Room.CurrentParticipants.Count}/{Room.MaximumParticipants}";
             hostName.Text = Room.HostParticipant.Name;
 
-            // TODO: исправить на № компа и кабинет
-            computer.Text = Room.HostParticipant.PCName;
-            classroom.Text = Room.HostParticipant.PCName;
+            if (CollegePCNameParser.TryParseComputerName(Room.HostParticipant.PCName, out int roomNumber, out int computerNumber))
+            {
+                computer.Text = roomNumber.ToString();
+                classroom.Text = computerNumber.ToString();
+            }
+            else
+            {
+                computer.Text = DesktopConstants.UndefinedPCName;
+                classroom.Text = DesktopConstants.UndefinedPCName;
+            }
 
             UpdateParticipantFlow();
         }
@@ -180,6 +191,9 @@ namespace MIN.Desktop
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;
 
             editButton.Visible = AppUserProvider.Instance.CurrentUser.PCName == Room.HostParticipant.PCName;
+            tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
+            tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
+            changeMessageBoxSize();
         }
 
         private bool IsMessageValid(ChatMessage message)
@@ -269,9 +283,22 @@ namespace MIN.Desktop
                 if ((ModifierKeys & Keys.Shift) == 0)
                 {
                     sendMessage();
+                    tableLayoutPanelButtons.Height = startMessageBoxHeight;
+                    changeMessageBoxSize();
                     e.Handled = true;
                 }
             }
+        }
+
+        private void changeMessageBoxSize()
+        {
+            tableLayoutPanelButtons.Height = messageTextBox.Height + tableLayoutPanelButtons.Margin.Vertical;
+
+        }
+
+        private void messageTextBox_TextChanged(object sender, EventArgs e)
+        {
+            changeMessageBoxSize();
         }
     }
 }

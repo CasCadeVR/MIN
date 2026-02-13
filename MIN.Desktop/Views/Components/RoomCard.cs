@@ -1,5 +1,7 @@
 ﻿using MIN.Desktop.Contracts;
+using MIN.Desktop.Contracts.Constants;
 using MIN.Services.Contracts.Models;
+using MIN.Services.Services;
 
 namespace MIN.Desktop.Components
 {
@@ -70,9 +72,17 @@ namespace MIN.Desktop.Components
             participantsInfo.Text = $"{this.room.CurrentParticipants.Count}/{this.room.MaximumParticipants}";
             hostName.Text = this.room.HostParticipant.Name;
 
-            // TODO: исправить на № компа и кабинет
-            computer.Text = this.room.HostParticipant.PCName;
-            classroom.Text = this.room.HostParticipant.PCName;
+            if (CollegePCNameParser.TryParseComputerName(this.room.HostParticipant.PCName, out int roomNumber, out int computerNumber))
+            {
+                computer.Text = roomNumber.ToString();
+                classroom.Text = computerNumber.ToString();
+            } 
+            else
+            {
+                computer.Text = DesktopConstants.UndefinedPCName;
+                classroom.Text = DesktopConstants.UndefinedPCName;
+            }
+           
             setConnectButtonAccordingToRoomCount();
         }
 
@@ -82,7 +92,7 @@ namespace MIN.Desktop.Components
             if (room.IsFull)
             {
                 connectButton.Text = "Заполнено";
-                connectButton.BackColor = Color.Gray;
+                connectButton.BackColor = ColorScheme.RoomFilled;
             }
         }
 

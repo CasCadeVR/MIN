@@ -69,4 +69,9 @@ public static class ColorScheme
     /// Цвет ошибки или предупреждения (например, недоставленное сообщение)
     /// </summary>
     public static readonly Color ErrorColor = ColorTranslator.FromHtml("#FF6B6B");
+
+    /// <summary>
+    /// Цвет заполненной комнаты
+    /// </summary>
+    public static readonly Color RoomFilled = Color.Gray;
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MIN.Services.Contracts.Models;
+﻿namespace MIN.Services.Contracts.Models;
 
 /// <summary>
 /// Комната
@@ -53,7 +51,6 @@ public class Room(string name = "Room", int maximumClients = 2)
         {
             throw new InvalidOperationException("Достигнуто максимальное количество участников.");
         }
-
         currentParticipants.Add(participant);
         OnParticipantJoined(participant);
     }
