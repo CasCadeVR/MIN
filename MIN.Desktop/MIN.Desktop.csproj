@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MIN.Services.Connection\MIN.Services.Connection.csproj" />
     <ProjectReference Include="..\MIN.Services\MIN.Services.csproj" />
   </ItemGroup>
 

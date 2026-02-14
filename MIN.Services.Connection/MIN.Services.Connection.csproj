@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MIN.Services.Connection.Contracts\MIN.Services.Connection.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Services\MIN.Services.csproj" />
+  </ItemGroup>
+
+</Project>

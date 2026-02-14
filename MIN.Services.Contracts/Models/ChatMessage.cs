@@ -28,6 +28,11 @@ public class ChatMessage
     public TimeOnly Time { get; set; } = TimeOnly.FromDateTime(DateTime.UtcNow.ToLocalTime());
 
     /// <summary>
+    /// Штамп текущего времени для синхронизации
+    /// </summary>
+    public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
     /// Сообщение комнаты (сервера)
     /// </summary>
     public bool AsRoomMessage { get; set; } = false;

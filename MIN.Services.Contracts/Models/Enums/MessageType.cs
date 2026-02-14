@@ -11,8 +11,18 @@
         Text = 0,
 
         /// <summary>
+        /// Системные сообщения
+        /// </summary>
+        System = 1,
+
+        /// <summary>
         /// Файл
         /// </summary>
-        File = 1,
+        File = 2,
+
+        /// <summary>
+        /// Команды
+        /// </summary>
+        Command = 3,
     }
 }

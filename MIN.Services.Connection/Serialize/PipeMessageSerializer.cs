@@ -1,0 +1,86 @@
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using MIN.Services.Contracts.Models;
+
+namespace MIN.Services.Connection.Serialize
+{
+    /// <summary>
+    /// Сериализатор сообщений
+    /// </summary>
+    public class PipeMessageSerializer
+    {
+        private readonly JsonSerializerOptions jsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        // Формат сообщения: [4 байта: длина][1 байт: тип][N байт: данные]
+        // Типы: 0 = ChatMessage, 1 = RoomInfoMessage
+
+        public async Task<object> ReadMessageAsync(Stream stream, CancellationToken ct = default)
+        {
+            // Читаем длину
+            var lengthBuffer = new byte[4];
+            await stream.ReadExactlyAsync(lengthBuffer, ct);
+            var length = BitConverter.ToInt32(lengthBuffer, 0);
+
+            if (length <= 0 || length > 10 * 1024 * 1024) // Защита от атак (макс 10 МБ)
+                throw new InvalidDataException($"Invalid message size: {length}");
+
+            // Читаем тип сообщения
+            var typeBuffer = new byte[1];
+            await stream.ReadExactlyAsync(typeBuffer, ct);
+            var messageType = (MessageTypeTag)typeBuffer[0];
+
+            // Читаем данные
+            var dataBuffer = new byte[length];
+            await stream.ReadExactlyAsync(dataBuffer, ct);
+
+            return messageType switch
+            {
+                MessageTypeTag.ChatMessage =>
+                    JsonSerializer.Deserialize<ChatMessage>(dataBuffer, jsonOptions)
+                    ?? throw new InvalidDataException("Failed to deserialize ChatMessage"),
+
+                MessageTypeTag.RoomInfo =>
+                    JsonSerializer.Deserialize<RoomInfoMessage>(dataBuffer, jsonOptions)
+                    ?? throw new InvalidDataException("Failed to deserialize RoomInfoMessage"),
+
+                _ => throw new InvalidDataException($"Unknown message type: {messageType}")
+            };
+        }
+
+        public async Task WriteMessageAsync<T>(Stream stream, T message, CancellationToken ct = default) where T : class
+        {
+            var json = JsonSerializer.SerializeToUtf8Bytes(message, jsonOptions);
+            if (json.Length > 10 * 1024 * 1024)
+                throw new ArgumentException("Message too large", nameof(message));
+
+            // Определяем тип для заголовка
+            var typeTag = message switch
+            {
+                ChatMessage => MessageTypeTag.ChatMessage,
+                RoomInfoMessage => MessageTypeTag.RoomInfo,
+                _ => throw new ArgumentException($"Unsupported message type: {typeof(T).Name}")
+            };
+
+            // Записываем длину
+            var lengthBuffer = BitConverter.GetBytes(json.Length);
+            await stream.WriteAsync(lengthBuffer, ct);
+
+            // Записываем тип
+            await stream.WriteAsync(new[] { (byte)typeTag }, ct);
+
+            // Записываем данные
+            await stream.WriteAsync(json, ct);
+            await stream.FlushAsync(ct);
+        }
+
+        private enum MessageTypeTag : byte
+        {
+            ChatMessage = 0,
+            RoomInfo = 1
+        }
+    }
+}

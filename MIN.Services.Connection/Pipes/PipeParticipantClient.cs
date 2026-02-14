@@ -1,0 +1,303 @@
+﻿using System.IO.Pipes;
+using MIN.Services.Connection.Contracts.Interfaces;
+using MIN.Services.Connection.Contracts.Models;
+using MIN.Services.Connection.Serialize;
+using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Services;
+
+namespace MIN.Services.Connection.Pipes
+{
+    /// <inheritdoc cref="IPipeParticipantClient"/>
+    public sealed class PipeParticipantClient : IPipeParticipantClient
+    {
+        private NamedPipeClientStream? pipe;
+        private readonly PipeMessageSerializer serializer = new();
+        private CancellationTokenSource? cts;
+        private Room? currentRoom;
+        private Participant? selfParticipant;
+        private bool isDisposed;
+
+        // События для подписки сервисом-оркестратором
+        public event EventHandler<ChatMessage>? MessageReceived;
+        public event EventHandler<RoomInfoMessage>? RoomInfoReceived;
+        public event EventHandler<Participant>? ParticipantJoined;
+        public event EventHandler<Participant>? ParticipantLeft;
+        public event EventHandler? Disconnected;
+
+        public bool IsConnected => pipe?.IsConnected == true && !isDisposed;
+
+        public Room? Room => currentRoom;
+
+        /// <summary>
+        /// Подключиться к существующей комнате
+        /// </summary>
+        public async Task ConnectAsync(Guid roomId, Participant selfParticipant, CancellationToken cancellationToken = default)
+        {
+            if (IsConnected) await DisconnectAsync();
+
+            if (!PipeNameProvider.IsValidPipeName(roomId.ToString()))
+                throw new ArgumentException("Invalid room ID", nameof(roomId));
+
+            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            this.selfParticipant = selfParticipant;
+
+            var pipeName = PipeNameProvider.GetRoomPipeName(roomId);
+            pipe = new NamedPipeClientStream(
+                ".", // Локальная машина
+                pipeName,
+                PipeDirection.InOut,
+                PipeOptions.Asynchronous | PipeOptions.WriteThrough
+            );
+
+            try
+            {
+                // Пытаемся подключиться с таймаутом 5 секунд
+                await pipe.ConnectAsync(5000, cts.Token);
+
+                // Запускаем фоновое чтение сообщений
+                _ = ReceiveMessagesAsync(cts.Token);
+
+                // Отправляем JOIN-уведомление серверу
+                await SendJoinNotificationAsync(cts.Token);
+
+                // Теперь ждём RoomInfo от сервера (первое сообщение после подключения)
+            }
+            catch (TimeoutException)
+            {
+                await DisconnectAsync();
+                throw new TimeoutException($"Could not connect to room '{roomId}'. Room may not exist or is full.");
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                await DisconnectAsync();
+                throw new InvalidOperationException($"Connection failed: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Фоновое чтение всех входящих сообщений
+        /// </summary>
+        private async Task ReceiveMessagesAsync(CancellationToken ct)
+        {
+            try
+            {
+                while (!ct.IsCancellationRequested && pipe?.IsConnected == true)
+                {
+                    // Определяем тип сообщения по префиксу или структуре
+                    var message = await serializer.ReadMessageAsync(pipe, ct);
+
+                    switch (message)
+                    {
+                        case RoomInfoMessage roomInfo:
+                            await HandleRoomInfoAsync(roomInfo, ct);
+                            break;
+
+                        case ChatMessage chatMsg when chatMsg.MessageType == MessageType.System
+                                && chatMsg.Content.StartsWith("JOIN:"):
+                            HandleParticipantJoined(chatMsg);
+                            break;
+
+                        case ChatMessage chatMsg when chatMsg.MessageType == MessageType.System
+                                && chatMsg.Content.StartsWith("LEAVE:"):
+                            HandleParticipantLeft(chatMsg);
+                            break;
+
+                        case ChatMessage chatMsg:
+                            HandleChatMessage(chatMsg);
+                            break;
+
+                        default:
+                            // Неизвестный тип — игнорируем
+                            break;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Ожидаемое завершение при отключении
+            }
+            catch (IOException) when (!isDisposed)
+            {
+                // Сервер разорвал соединение — инициируем корректное отключение
+                await DisconnectAsync();
+            }
+            catch (Exception ex)
+            {
+                // Логируем ошибку и отключаемся
+                System.Diagnostics.Debug.WriteLine($"PipeClient error: {ex.Message}");
+                await DisconnectAsync();
+            }
+        }
+
+        private async Task HandleRoomInfoAsync(RoomInfoMessage roomInfo, CancellationToken ct)
+        {
+            // Создаём локальную копию комнаты на основе полученных данных
+            currentRoom = new Room(roomInfo.RoomName, roomInfo.MaxParticipants)
+            {
+                Id = roomInfo.RoomId,
+                HostParticipant = new Participant
+                {
+                    Name = roomInfo.HostName,
+                    PCName = roomInfo.HostPCName
+                }
+            };
+
+            // Добавляем текущих участников
+            foreach (var pInfo in roomInfo.CurrentParticipants)
+            {
+                currentRoom.CurrentParticipants.Add(new Participant
+                {
+                    Name = pInfo.Name,
+                    PCName = pInfo.PCName
+                });
+            }
+
+            // Добавляем себя в список участников (локально)
+            if (selfParticipant != null && !currentRoom.CurrentParticipants.Any(p => p.PCName == selfParticipant.PCName))
+            {
+                currentRoom.CurrentParticipants.Add(selfParticipant);
+            }
+
+            RoomInfoReceived?.Invoke(this, roomInfo);
+        }
+
+        private void HandleParticipantJoined(ChatMessage systemMessage)
+        {
+            var participant = ParseParticipantFromSystemMessage(systemMessage);
+            currentRoom?.CurrentParticipants.Add(participant);
+            ParticipantJoined?.Invoke(this, participant);
+        }
+
+        private void HandleParticipantLeft(ChatMessage systemMessage)
+        {
+            var participant = ParseParticipantFromSystemMessage(systemMessage);
+            currentRoom?.CurrentParticipants.RemoveAll(p => p.PCName == participant.PCName);
+            ParticipantLeft?.Invoke(this, participant);
+        }
+
+        private void HandleChatMessage(ChatMessage message)
+        {
+            // Для сообщений от самого себя — обновляем флаг времени на локальное
+            if (message.SenderPCName == selfParticipant?.PCName && message.Time == default)
+            {
+                message.Time = TimeOnly.FromDateTime(DateTime.Now);
+            }
+
+            MessageReceived?.Invoke(this, message);
+        }
+
+        private Participant ParseParticipantFromSystemMessage(ChatMessage systemMessage)
+        {
+            // Формат: "JOIN:ИмяУчастника" или "LEAVE:ИмяУчастника"
+            var parts = systemMessage.Content.Split(':', 2);
+            var name = parts.Length > 1 ? parts[1] : "Unknown";
+
+            return new Participant
+            {
+                Name = name,
+                PCName = systemMessage.SenderPCName
+            };
+        }
+
+        private async Task SendJoinNotificationAsync(CancellationToken ct)
+        {
+            if (selfParticipant == null || pipe == null || !pipe.IsConnected)
+                return;
+
+            var joinMessage = new ChatMessage
+            {
+                SenderName = selfParticipant.Name,
+                SenderPCName = selfParticipant.PCName,
+                Content = $"JOIN:{selfParticipant.Name}",
+                MessageType = MessageType.System,
+                Time = TimeOnly.FromDateTime(DateTime.Now)
+            };
+
+            await serializer.WriteMessageAsync(pipe, joinMessage, ct);
+        }
+
+        private async Task SendLeaveNotificationAsync(CancellationToken ct)
+        {
+            if (selfParticipant == null || pipe == null || !pipe.IsConnected)
+                return;
+
+            var leaveMessage = new ChatMessage
+            {
+                SenderName = selfParticipant.Name,
+                SenderPCName = selfParticipant.PCName,
+                Content = $"LEAVE:{selfParticipant.Name}",
+                MessageType = MessageType.System,
+                Time = TimeOnly.FromDateTime(DateTime.Now)
+            };
+
+            try
+            {
+                await serializer.WriteMessageAsync(pipe, leaveMessage, ct);
+            }
+            catch
+            {
+                // Игнорируем ошибки при отправке LEAVE (сервер мог уже отключиться)
+            }
+        }
+
+        /// <summary>
+        /// Отправить сообщение в комнату
+        /// </summary>
+        public async Task SendMessageAsync(ChatMessage message, CancellationToken cancellationToken = default)
+        {
+            if (!IsConnected || pipe == null || !pipe.IsConnected)
+                throw new InvalidOperationException("Not connected to any room");
+
+            if (selfParticipant == null)
+                throw new InvalidOperationException("Self participant not set");
+
+            // Заполняем метаданные отправителя
+            message.SenderName ??= selfParticipant.Name;
+            message.SenderPCName ??= selfParticipant.PCName;
+            message.Time = TimeOnly.FromDateTime(DateTime.Now); // Локальное время для отображения
+
+            await serializer.WriteMessageAsync(pipe, message, cancellationToken);
+        }
+
+        /// <summary>
+        /// Отключиться от комнаты
+        /// </summary>
+        public async Task DisconnectAsync()
+        {
+            if (isDisposed || pipe == null || !pipe.IsConnected)
+                return;
+
+            isDisposed = true;
+            cts?.Cancel();
+
+            // Отправляем уведомление о выходе (если ещё можем)
+            if (pipe.IsConnected && selfParticipant != null)
+            {
+                try
+                {
+                    await SendLeaveNotificationAsync(CancellationToken.None);
+                }
+                catch { /* Игнорируем ошибки при отправке LEAVE */ }
+            }
+
+            // Очищаем состояние
+            await pipe.DisposeAsync();
+            pipe = null;
+            currentRoom = null;
+            selfParticipant = null;
+
+            Disconnected?.Invoke(this, EventArgs.Empty);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (!isDisposed)
+            {
+                isDisposed = true;
+                await DisconnectAsync();
+                cts?.Dispose();
+            }
+        }
+    }
+}

@@ -18,36 +18,67 @@ namespace MIN.Desktop
     public partial class ChatForm : StyledForm
     {
         private readonly int startMessageBoxHeight;
-        private readonly IRoomService roomService;
+        private readonly IChatRoomService chatRoomService;
+        private readonly CancellationTokenSource formCancellationTokenSource = new();
+        private readonly SynchronizationContext uiContext;
 
         /// <summary>
         /// Текущая комната
         /// </summary>
         public Room Room { get; set; }
 
-        public ChatForm(IRoomService roomService, Room? room = null)
+        public ChatForm(IChatRoomService chatRoomService, Room? room = null)
         {
             InitializeComponent();
+            uiContext = SynchronizationContext.Current
+                ?? throw new InvalidOperationException("Must be created on UI thread");
+
             startMessageBoxHeight = tableLayoutPanelButtons.Height;
-            this.roomService = roomService;
+            this.chatRoomService = chatRoomService;
             Room = room ?? new Room();
 
-            Room.ParticipantJoined += OnParticipantJoined;
-            Room.ParticipantLeft += OnParticipantLeft;
-            Room.MessageReceived += OnMessageReceived;
-            Room.RoomInfoChanged += OnRoomInfoChanged;
-
+            SubscribeToChatEvents();
             UpdateStats();
             UpdateChatFlow();
         }
 
-        private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity)
+        private void SubscribeToChatEvents()
+        {
+            chatRoomService.MessageReceived += (s, e) =>
+                uiContext.Post(_ => OnMessageReceived(e.Message), null);
+
+            chatRoomService.ParticipantJoined += (s, e) =>
+                uiContext.Post(_ => OnParticipantJoined(e.Participant), null);
+
+            chatRoomService.ParticipantLeft += (s, e) =>
+                uiContext.Post(_ => OnParticipantLeft(e.Participant), null);
+
+            chatRoomService.RoomStateChanged += (s, e) =>
+                uiContext.Post(_ => OnRoomInfoChanged(e.Room!, e.State), null);
+
+            chatRoomService.ConnectionLost += (s, e) =>
+                uiContext.Post(_ => OnConnectionLost(e.Reason), null);
+        }
+
+        private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity, RoomState? args = null)
         {
             if (InvokeRequired)
             {
+                if (args != null)
+                {
+                    Invoke(action, entity, args);
+                    return;
+                }
+
                 Invoke(action, entity);
                 return;
             }
+            UpdateStats();
+        }
+
+        private void OnRoomInfoChanged(Room room, RoomState roomState)
+        {
+            Room = room;
             UpdateStats();
         }
 
@@ -62,10 +93,12 @@ namespace MIN.Desktop
             SendParticipantLeftMessage(participant);
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
-
-        private void OnRoomInfoChanged(Room room)
+        
+        private void OnConnectionLost(string reason)
         {
-            UpdateStatsAndInvoke(OnRoomInfoChanged, room);
+            MessageBox.Show(reason, "Подключение разорвано",
+                MessageBoxButtons.OK,
+                icon: MessageBoxIcon.Error);
         }
 
         private void OnMessageReceived(ChatMessage message)
@@ -252,27 +285,24 @@ namespace MIN.Desktop
             chatFlow_Resize(sender, e);
         }
 
-        private void ChatForm_FormClosed(object sender, FormClosedEventArgs e)
+        protected override async void OnFormClosing(FormClosingEventArgs e)
         {
-            Room.ParticipantJoined -= OnParticipantJoined;
-            Room.ParticipantLeft -= OnParticipantLeft;
-            Room.MessageReceived -= OnMessageReceived;
-            Room.RoomInfoChanged += OnRoomInfoChanged;
+            formCancellationTokenSource.Dispose();
+            await chatRoomService.DisconnectAsync();
+            base.OnFormClosing(e);
         }
 
-        private async void editButton_Click(object sender, EventArgs e)
+        private void editButton_Click(object sender, EventArgs e)
         {
             var editForm = new RoomCreateForm(Room);
             var result = editForm.ShowDialog();
             if (result == DialogResult.Abort)
             {
-                await roomService.Delete(Room, CancellationToken.None);
                 Close();
             }
             else if (result == DialogResult.OK)
             {
-                Room = await roomService.Update(Room, CancellationToken.None);
-                Room.UpdateStats(Room);
+                Room.UpdateInfo(Room);
             }
         }
 
