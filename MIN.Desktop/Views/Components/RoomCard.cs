@@ -1,6 +1,9 @@
 ﻿using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
+using MIN.Services.Connection.Pipes;
+using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Services;
 
 namespace MIN.Desktop.Components
@@ -15,23 +18,37 @@ namespace MIN.Desktop.Components
         /// </summary>
         public event Func<Room, bool> Clicked;
 
-        private readonly Room room;
+        private readonly IChatRoomService chatRoomService;
+        private readonly SynchronizationContext uiContext;
+        private Room room;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>
         /// </summary>
-        public RoomCard(Room room)
+        public RoomCard(IChatRoomService chatRoomService, Room room)
         {
             InitializeComponent();
-            ApplyStylings();
+            this.chatRoomService = chatRoomService;
             this.room = room;
+            ApplyStylings();
 
-            room.ParticipantJoined += OnParticipantJoined;
-            room.ParticipantLeft += OnParticipantLeft;
-            room.RoomInfoChanged += OnRoomInfoChanged;
+            SubscribeToChatEvents();
 
             UpdateStats();
         }
+
+        private void SubscribeToChatEvents()
+        {
+            chatRoomService.ParticipantJoined += (s, e) =>
+                uiContext.Post(_ => OnParticipantJoined(e.Participant), null);
+
+            chatRoomService.ParticipantLeft += (s, e) =>
+                uiContext.Post(_ => OnParticipantLeft(e.Participant), null);
+
+            chatRoomService.RoomStateChanged += (s, e) =>
+                uiContext.Post(_ => OnRoomInfoChanged(e.Room!, e.State), null);
+        }
+
 
         private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity)
         {
@@ -53,9 +70,10 @@ namespace MIN.Desktop.Components
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 
-        private void OnRoomInfoChanged(Room room)
+        private void OnRoomInfoChanged(Room room, RoomState roomState)
         {
-            UpdateStatsAndInvoke(OnRoomInfoChanged, room);
+            this.room = room;
+            UpdateStats();
         }
 
         private void ApplyStylings()

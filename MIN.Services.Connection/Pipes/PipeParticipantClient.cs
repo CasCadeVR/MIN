@@ -1,7 +1,6 @@
 ﻿using System.IO.Pipes;
-using MIN.Services.Connection.Contracts.Interfaces;
-using MIN.Services.Connection.Contracts.Models;
-using MIN.Services.Connection.Serialize;
+using MIN.Services.Connection.Contracts.Interfaces.Pipes;
+using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Services;
@@ -11,14 +10,14 @@ namespace MIN.Services.Connection.Pipes
     /// <inheritdoc cref="IPipeParticipantClient"/>
     public sealed class PipeParticipantClient : IPipeParticipantClient
     {
+        private readonly IPipeMessageSerializer serializer;
+
         private NamedPipeClientStream? pipe;
-        private readonly PipeMessageSerializer serializer = new();
-        private CancellationTokenSource? cts;
+        private CancellationTokenSource? cancellationTokenSource;
         private Room? currentRoom;
         private Participant? selfParticipant;
         private bool isDisposed;
 
-        // События для подписки сервисом-оркестратором
         public event EventHandler<ChatMessage>? MessageReceived;
         public event EventHandler<RoomInfoMessage>? RoomInfoReceived;
         public event EventHandler<Participant>? ParticipantJoined;
@@ -28,6 +27,11 @@ namespace MIN.Services.Connection.Pipes
         public bool IsConnected => pipe?.IsConnected == true && !isDisposed;
 
         public Room? Room => currentRoom;
+
+        public PipeParticipantClient(IPipeMessageSerializer serializer)
+        {
+            this.serializer = serializer;
+        }
 
         /// <summary>
         /// Подключиться к существующей комнате
@@ -39,7 +43,7 @@ namespace MIN.Services.Connection.Pipes
             if (!PipeNameProvider.IsValidPipeName(roomId.ToString()))
                 throw new ArgumentException("Invalid room ID", nameof(roomId));
 
-            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             this.selfParticipant = selfParticipant;
 
             var pipeName = PipeNameProvider.GetRoomPipeName(roomId);
@@ -53,13 +57,13 @@ namespace MIN.Services.Connection.Pipes
             try
             {
                 // Пытаемся подключиться с таймаутом 5 секунд
-                await pipe.ConnectAsync(5000, cts.Token);
+                await pipe.ConnectAsync(5000, cancellationTokenSource.Token);
 
                 // Запускаем фоновое чтение сообщений
-                _ = ReceiveMessagesAsync(cts.Token);
+                _ = ReceiveMessagesAsync(cancellationTokenSource.Token);
 
                 // Отправляем JOIN-уведомление серверу
-                await SendJoinNotificationAsync(cts.Token);
+                await SendJoinNotificationAsync(cancellationTokenSource.Token);
 
                 // Теперь ждём RoomInfo от сервера (первое сообщение после подключения)
             }
@@ -269,7 +273,7 @@ namespace MIN.Services.Connection.Pipes
                 return;
 
             isDisposed = true;
-            cts?.Cancel();
+            cancellationTokenSource?.Cancel();
 
             // Отправляем уведомление о выходе (если ещё можем)
             if (pipe.IsConnected && selfParticipant != null)
@@ -296,7 +300,7 @@ namespace MIN.Services.Connection.Pipes
             {
                 isDisposed = true;
                 await DisconnectAsync();
-                cts?.Dispose();
+                cancellationTokenSource?.Dispose();
             }
         }
     }

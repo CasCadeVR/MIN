@@ -246,7 +246,6 @@
         private TableLayoutPanel tableLayoutPanel1;
         private Components.Labels.Heading3Label ClassTitleInput;
         private Components.Labels.Heading1Label Title;
-        private Components.Controls.NumericUpDowns.DefaultNumericUpDown classNumber;
         private Components.CommonButton createButton;
         private Components.Labels.Heading3Label heading3Label1;
         private Components.Controls.NumericUpDowns.DefaultNumericUpDown roomMaximumCount;

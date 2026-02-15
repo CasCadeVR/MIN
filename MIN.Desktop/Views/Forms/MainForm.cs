@@ -4,17 +4,25 @@ using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
+using MIN.Services.Services;
 
 namespace MIN.Desktop
 {
     public partial class MainForm : StyledForm
     {
-        private readonly IRoomService roomService;
+        private readonly IChatRoomService chatRoomService;
+        private ILocalNetworkComputerProvider networkComputerProvider;
+        private readonly SynchronizationContext uiContext;
+        private readonly CancellationTokenSource formCancellationTokenSource = new();
 
-        public MainForm(IRoomService roomService)
+        public MainForm(IChatRoomService chatRoomService)
         {
             InitializeComponent();
-            this.roomService = roomService;
+
+            this.chatRoomService = chatRoomService;
+
+            uiContext = SynchronizationContext.Current
+                ?? throw new InvalidOperationException("Must be created on UI thread");
         }
 
         protected override void ApplyStylings()
@@ -31,27 +39,44 @@ namespace MIN.Desktop
             var roomCreateForm = new RoomCreateForm();
             if (roomCreateForm.ShowDialog() == DialogResult.OK)
             {
-                var room = await roomService.Create(roomCreateForm.Room, CancellationToken.None);
-                // TODO: server creation here
+                var room = roomCreateForm.Room;
 
-                await PerfromSearch(CancellationToken.None);
+                await chatRoomService.CreateRoomAsync(room.Name, room.MaximumParticipants, AppUserProvider.Instance.CurrentUser);
+
+                //await PerfromSearch(CancellationToken.None);
                 if (!OnRoomConnection(room))
                 {
-                    await roomService.Delete(room, CancellationToken.None);
+                    await chatRoomService.DisconnectAsync();
                 }
             }
         }
 
-        private async Task PerfromSearch(CancellationToken cancellationToken)
+        private async Task PerfromSearch()
         {
-            var foundRooms = await roomService.GetAll(CancellationToken.None);
-            totalRoomsCount.Text = $"Всего нашлось комнат: {foundRooms.Count()}";
+            try
+            {
+                networkComputerProvider = new CollegeNetworkComputerProvider(AppUserProvider.Instance.CurrentUser.PCName);
+                var availablePCs = networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString());
+                var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs);
 
+                totalRoomsCount.Text = $"Всего нашлось комнат: {discoveredRooms.Count()}";
+
+                // Обновляем UI списком найденных комнат
+                uiContext.Post(_ => UpdateDiscoveredRoomsList(discoveredRooms), null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Discovery failed: {ex.Message}", "Error");
+            }
+        }
+
+        private void UpdateDiscoveredRoomsList(IEnumerable<Room> rooms)
+        {
             flowLayoutPanel.Controls.Clear();
 
-            foreach (var room in foundRooms)
+            foreach (var room in rooms)
             {
-                var card = new RoomCard(room);
+                var card = new RoomCard(chatRoomService, room);
                 card.Parent = flowLayoutPanel;
                 card.Clicked += OnRoomConnection;
             }
@@ -59,7 +84,7 @@ namespace MIN.Desktop
 
         private async void findRooms_Click(object sender, EventArgs e)
         {
-            await PerfromSearch(CancellationToken.None);
+            await PerfromSearch();
         }
 
         private bool OnRoomConnection(Room room)
@@ -89,7 +114,16 @@ namespace MIN.Desktop
             if (participantCreateForm.ShowDialog() == DialogResult.OK)
             {
                 // TODO: connect client to server
-                var chatForm = new ChatForm(roomService, room);
+                try
+                {
+
+                } 
+                catch(Exception ex)
+                {
+                    MessageBox.Show($"Произошла ошибка: {ex.Message}");
+                }
+
+                var chatForm = new ChatForm(chatRoomService, room);
                 room.AddParticipant(AppUserProvider.Instance.CurrentUser);
 
                 chatForm.Show();

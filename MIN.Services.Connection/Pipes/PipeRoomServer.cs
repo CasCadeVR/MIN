@@ -1,6 +1,6 @@
 ﻿using System.IO.Pipes;
-using MIN.Services.Connection.Contracts.Interfaces;
-using MIN.Services.Connection.Serialize;
+using MIN.Services.Connection.Contracts.Interfaces.Pipes;
+using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Services;
@@ -9,18 +9,24 @@ namespace MIN.Services.Connection.Pipes
 {
     public sealed class PipeRoomServer : IPipeRoomServer
     {
+        private readonly IPipeMessageSerializer serializer;
+        private readonly List<Participant> connectedClients = new();
+
         private NamedPipeServerStream? pipe;
-        private readonly PipeMessageSerializer serializer = new();
-        private CancellationTokenSource? cts;
+        private CancellationTokenSource? cancellationTokenSource;
         private Room? room;
-        private readonly List<string> connectedClients = new();
 
         public event EventHandler<ChatMessage>? MessageReceived;
         public event EventHandler<Participant>? ParticipantJoined;
         public event EventHandler<Participant>? ParticipantLeft;
         public event EventHandler<Participant>? ClientDisconnected;
 
-        public bool IsRunning => pipe?.IsConnected == true && cts?.IsCancellationRequested == false;
+        public PipeRoomServer(IPipeMessageSerializer serializer)
+        {
+            this.serializer = serializer;
+        }
+
+        public bool IsRunning => pipe?.IsConnected == true && cancellationTokenSource?.IsCancellationRequested == false;
 
         public Room? Room => room;
 
@@ -29,7 +35,7 @@ namespace MIN.Services.Connection.Pipes
             if (IsRunning) await StopAsync();
 
             this.room = room;
-            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             var pipeName = PipeNameProvider.GetRoomPipeName(room.Id);
             pipe = new NamedPipeServerStream(
@@ -41,7 +47,7 @@ namespace MIN.Services.Connection.Pipes
             );
 
             // Отправляем информацию о комнате первому подключившемуся клиенту
-            _ = AcceptClientAsync(cts.Token);
+            _ = AcceptClientAsync(cancellationTokenSource.Token);
 
             // Системное сообщение о создании комнаты
             var systemMsg = new ChatMessage
@@ -73,6 +79,7 @@ namespace MIN.Services.Connection.Pipes
                         PipeTransmissionMode.Byte,
                         PipeOptions.Asynchronous | PipeOptions.WriteThrough
                     );
+
                     _ = AcceptClientAsync(ct);
                 }
             }
@@ -112,14 +119,14 @@ namespace MIN.Services.Connection.Pipes
                         case ChatMessage chatMsg when chatMsg.MessageType == MessageType.System
                                  && chatMsg.Content.StartsWith("JOIN:"):
                             var participant = ParseParticipantFromMessage(chatMsg);
-                            connectedClients.Add(participant.PCName);
+                            connectedClients.Add(participant);
                             ParticipantJoined?.Invoke(this, participant);
                             break;
 
                         case ChatMessage chatMsg when chatMsg.MessageType == MessageType.System
                                  && chatMsg.Content.StartsWith("LEAVE:"):
                             var sentParticipant = ParseParticipantFromMessage(chatMsg);
-                            connectedClients.Remove(sentParticipant.PCName);
+                            connectedClients.Remove(sentParticipant);
                             ParticipantLeft?.Invoke(this, sentParticipant);
                             break;
 
@@ -160,7 +167,7 @@ namespace MIN.Services.Connection.Pipes
 
         public async Task StopAsync()
         {
-            cts?.Cancel();
+            cancellationTokenSource?.Cancel();
             if (pipe != null) await pipe.DisposeAsync();
             pipe = null;
             room = null;
@@ -187,5 +194,4 @@ namespace MIN.Services.Connection.Pipes
 
         public async ValueTask DisposeAsync() => await StopAsync();
     }
-
 }

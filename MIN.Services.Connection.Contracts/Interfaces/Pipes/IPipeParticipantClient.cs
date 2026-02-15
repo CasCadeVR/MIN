@@ -1,6 +1,6 @@
 ﻿using MIN.Services.Contracts.Models;
 
-namespace MIN.Services.Connection.Contracts.Interfaces
+namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
 {
     /// <summary>
     /// Представление клиента в виде pipe

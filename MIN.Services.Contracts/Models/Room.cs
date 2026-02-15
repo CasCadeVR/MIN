@@ -64,7 +64,7 @@ public class Room(string name = "Room", int maximumClients = 2)
     /// Убрать участника из комнаты
     /// </summary>
     public bool RemoveParticipant(Participant participant)
-        =>currentParticipants.Remove(participant);
+        => currentParticipants.Remove(participant);
 
     /// <summary>
     /// Добавить сообщение
@@ -80,5 +80,55 @@ public class Room(string name = "Room", int maximumClients = 2)
         Name = room.Name;
         MaximumParticipants = room.MaximumParticipants;
         HostParticipant = room.HostParticipant;
+    }
+
+    /// <summary>
+    /// Создаёт полную копию комнаты для сериализации
+    /// </summary>
+    public Room GetSerializableCopy()
+    {
+        var copy = new Room(Name, MaximumParticipants)
+        {
+            Id = Id,
+            HostParticipant = new Participant
+            {
+                Id = HostParticipant.Id,
+                Name = HostParticipant.Name,
+                PCName = HostParticipant.PCName
+            }
+        };
+
+        var participants = CurrentParticipants;
+
+        // Копируем всех текущих участников
+        foreach (var participant in CurrentParticipants)
+        {
+            copy.AddParticipant(new Participant
+            {
+                Id = participant.Id,
+                Name = participant.Name,
+                PCName = participant.PCName,
+            });
+        }
+
+        var chatHistory = ChatHistory;
+
+        // Копируем все сообщения
+        foreach (var message in chatHistory)
+        {
+            copy.AddMessage(new ChatMessage
+            {
+                Id = message.Id,
+                SenderName = message.SenderName,
+                SenderPCName = message.SenderPCName,
+                Time = message.Time,
+                TimestampUtc = message.TimestampUtc,
+                AsRoomMessage = message.AsRoomMessage,
+                MessageType = message.MessageType,
+                Content = message.Content,
+            });
+        }
+
+        return copy;
     }
 }

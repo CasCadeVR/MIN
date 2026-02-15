@@ -16,6 +16,11 @@ namespace MIN.Services.Contracts.Interfaces
         event EventHandler<ConnectionLostEventArgs>? ConnectionLost;
 
         /// <summary>
+        /// Получить список найденных комнат
+        /// </summary>
+        Task<IEnumerable<Room>> DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000);
+
+        /// <summary>
         /// Создать новую комнату и стать хостом
         /// </summary>
         Task CreateRoomAsync(string roomName, int maxParticipants, Participant host);

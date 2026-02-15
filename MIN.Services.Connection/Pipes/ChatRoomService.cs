@@ -1,5 +1,10 @@
-﻿using System.Diagnostics;
-using MIN.Services.Connection.Contracts.Interfaces;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using MIN.Services.Connection.Contracts.Interfaces.Discovering;
+using MIN.Services.Connection.Contracts.Interfaces.Pipes;
+using MIN.Services.Connection.Contracts.Interfaces.Serialize;
+using MIN.Services.Connection.Contracts.Models.Exceptions;
+using MIN.Services.Connection.Pipes.Discovering;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
@@ -14,12 +19,15 @@ namespace MIN.Services.Connection.Pipes
     {
         private readonly IPipeRoomServer server;
         private readonly IPipeParticipantClient client;
+        private readonly IPipeMessageSerializer serializer;
 
         // Текущее состояние (только одно активное подключение)
         private Room? currentRoom;
         private Participant? selfParticipant;
         private bool isHost;
         private bool isDisposed;
+        private IDiscoveryServer discoveryServer;
+        private IDiscoveryClient discoveryClient;
 
         // События для подписки UI
         public event EventHandler<ParticipantJoinedEventArgs>? ParticipantJoined;
@@ -28,8 +36,11 @@ namespace MIN.Services.Connection.Pipes
         public event EventHandler<RoomStateChangedEventArgs>? RoomStateChanged;
         public event EventHandler<ConnectionLostEventArgs>? ConnectionLost;
 
-        public ChatRoomService(IPipeRoomServer server, IPipeParticipantClient client)
-        {
+        public ChatRoomService(
+            IPipeRoomServer server, 
+            IPipeParticipantClient client,
+            IPipeMessageSerializer serializer
+        ) {
             this.server = server;
             this.client = client;
 
@@ -47,10 +58,36 @@ namespace MIN.Services.Connection.Pipes
             this.server.ClientDisconnected += (s, e) => OnServerClientDisconnected(e);
         }
 
-        /// <summary>
-        /// Создать новую комнату и стать хостом
-        /// </summary>
-        public async Task CreateRoomAsync(string roomName, int maxParticipants, Participant host)
+        public async Task<IEnumerable<Room>> DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000)
+        {
+            if (isHost)
+            {
+                return new List<Room>();
+            }
+
+            var discoveredRooms = new ConcurrentBag<Room>();
+            var tasks = targetPCNames.Select(async pcName =>
+            {
+                if (string.Equals(pcName, selfParticipant?.PCName, StringComparison.OrdinalIgnoreCase))
+                    return; // Пропускаем себя
+
+                try
+                {
+                    discoveryClient = new DiscoveryClient(serializer);
+                    var room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs));
+                    discoveredRooms.Add(room);
+                }
+                catch (RoomDiscoveryException)
+                {
+                    // Тихо игнорируем - ПК либо выключен, либо нет комнаты
+                }
+            });
+
+            await Task.WhenAll(tasks);
+            return discoveredRooms.ToList();
+        }
+
+        async Task IChatRoomService.CreateRoomAsync(string roomName, int maxParticipants, Participant host)
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
@@ -65,13 +102,14 @@ namespace MIN.Services.Connection.Pipes
             currentRoom.AddParticipant(host);
 
             await server.StartAsync(currentRoom);
+
+            discoveryServer = new DiscoveryServer(host.PCName, server.Room, serializer);
+            await discoveryServer.StartAsync();
+
             OnRoomStateChanged(new RoomStateChangedEventArgs(currentRoom, RoomState.Created));
         }
 
-        /// <summary>
-        /// Подключиться к существующей комнате
-        /// </summary>
-        public async Task JoinRoomAsync(Guid roomId, Participant participant)
+        async Task IChatRoomService.JoinRoomAsync(Guid roomId, Participant participant)
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
@@ -86,10 +124,7 @@ namespace MIN.Services.Connection.Pipes
             OnRoomStateChanged(new RoomStateChangedEventArgs(null, RoomState.Joined));
         }
 
-        /// <summary>
-        /// Отправить сообщение в текущую комнату
-        /// </summary>
-        public async Task SendMessageAsync(string content, MessageType type = MessageType.Text)
+        async Task IChatRoomService.SendMessageAsync(string content, MessageType type = MessageType.Text)
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
@@ -103,7 +138,6 @@ namespace MIN.Services.Connection.Pipes
                 SenderPCName = selfParticipant.PCName,
                 Content = content,
                 MessageType = type,
-                Time = TimeOnly.FromDateTime(DateTime.Now), // Локальное время для отображения
                 TimestampUtc = DateTime.UtcNow
             };
 
@@ -120,6 +154,7 @@ namespace MIN.Services.Connection.Pipes
         /// <summary>
         /// Отключиться от комнаты
         /// </summary>
+        /// <returns></returns>
         public async Task DisconnectAsync()
         {
             if (isDisposed)
@@ -128,9 +163,14 @@ namespace MIN.Services.Connection.Pipes
             try
             {
                 if (isHost && server.IsRunning)
+                {
                     await server.StopAsync();
+                    await discoveryServer.StopAsync();
+                }
                 else if (!isHost && client.IsConnected)
+                {
                     await client.DisconnectAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -245,8 +285,6 @@ namespace MIN.Services.Connection.Pipes
             });
         }
 
-        // === Вспомогательные методы для вызова событий ===
-
         protected virtual void OnParticipantJoined(ParticipantJoinedEventArgs e) =>
             ParticipantJoined?.Invoke(this, e);
 
@@ -262,8 +300,6 @@ namespace MIN.Services.Connection.Pipes
         protected virtual void OnConnectionLost(ConnectionLostEventArgs e) =>
             ConnectionLost?.Invoke(this, e);
 
-        // === IDisposable ===
-
         public async ValueTask DisposeAsync()
         {
             if (isDisposed)
@@ -274,6 +310,8 @@ namespace MIN.Services.Connection.Pipes
 
             if (server is IAsyncDisposable sd) await sd.DisposeAsync();
             if (client is IAsyncDisposable cd) await cd.DisposeAsync();
+            if (discoveryClient is IAsyncDisposable dc) await dc.DisposeAsync();
+            if (discoveryServer is IAsyncDisposable ds) await ds.DisposeAsync();
         }
     }
 }

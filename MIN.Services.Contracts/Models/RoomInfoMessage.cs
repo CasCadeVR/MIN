@@ -31,4 +31,9 @@ public class RoomInfoMessage
     /// Текущие участники
     /// </summary>
     public List<Participant> CurrentParticipants { get; set; } = new();
+
+    /// <summary>
+    /// История сообщений
+    /// </summary>
+    public List<ChatMessage> ChatHistory { get; set; } = new();
 }

@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using MIN.Services.Connection.Contracts.Interfaces.Serialize;
+using MIN.Services.Contracts.Constants;
 using MIN.Services.Contracts.Models;
 
 namespace MIN.Services.Connection.Serialize
@@ -7,7 +9,7 @@ namespace MIN.Services.Connection.Serialize
     /// <summary>
     /// Сериализатор сообщений
     /// </summary>
-    public class PipeMessageSerializer
+    public class PipeMessageSerializer : IPipeMessageSerializer
     {
         private readonly JsonSerializerOptions jsonOptions = new()
         {
@@ -18,14 +20,14 @@ namespace MIN.Services.Connection.Serialize
         // Формат сообщения: [4 байта: длина][1 байт: тип][N байт: данные]
         // Типы: 0 = ChatMessage, 1 = RoomInfoMessage
 
-        public async Task<object> ReadMessageAsync(Stream stream, CancellationToken ct = default)
+        async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, CancellationToken ct = default)
         {
             // Читаем длину
             var lengthBuffer = new byte[4];
             await stream.ReadExactlyAsync(lengthBuffer, ct);
             var length = BitConverter.ToInt32(lengthBuffer, 0);
 
-            if (length <= 0 || length > 10 * 1024 * 1024) // Защита от атак (макс 10 МБ)
+            if (length <= 0 || length > ChatMessageConstants.MaximumMessageSize)
                 throw new InvalidDataException($"Invalid message size: {length}");
 
             // Читаем тип сообщения
@@ -51,11 +53,13 @@ namespace MIN.Services.Connection.Serialize
             };
         }
 
-        public async Task WriteMessageAsync<T>(Stream stream, T message, CancellationToken ct = default) where T : class
+        async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, CancellationToken ct = default) where T : class
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, jsonOptions);
-            if (json.Length > 10 * 1024 * 1024)
+            if (json.Length > ChatMessageConstants.MaximumMessageSize)
+            {
                 throw new ArgumentException("Message too large", nameof(message));
+            }
 
             // Определяем тип для заголовка
             var typeTag = message switch

@@ -1,6 +1,6 @@
 ﻿using MIN.Services.Contracts.Models;
 
-namespace MIN.Services.Connection.Contracts.Interfaces
+namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
 {
     /// <summary>
     /// Представление сервера в виде pipe
@@ -15,7 +15,6 @@ namespace MIN.Services.Connection.Contracts.Interfaces
         /// <summary>
         /// Остановить сервер
         /// </summary>
-        /// <returns></returns>
         Task StopAsync();
 
         /// <summary>
