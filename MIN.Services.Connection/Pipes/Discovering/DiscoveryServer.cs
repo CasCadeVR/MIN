@@ -16,7 +16,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
         private readonly IPipeMessageSerializer serializer;
         private NamedPipeServerStream? pipe;
         private CancellationTokenSource? cancellationTokenSource;
-        private bool isRunning => pipe?.IsConnected == true && cancellationTokenSource?.IsCancellationRequested == false;
+        private bool isRunning = false;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="DiscoveryServer"/>
@@ -32,6 +32,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
         {
             if (isRunning) await StopAsync();
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            isRunning = true;
             _ = AcceptDiscoveryRequestsAsync(cancellationTokenSource.Token);
         }
 
@@ -59,7 +60,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                     };
 
                     await serializer.WriteMessageAsync(pipe!, roomInfo, ct);
-                    pipe.Disconnect();
+                    //pipe.Disconnect();
                 }
                 catch (OperationCanceledException)
                 {

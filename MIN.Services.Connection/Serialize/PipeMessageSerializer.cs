@@ -49,6 +49,10 @@ namespace MIN.Services.Connection.Serialize
                     JsonSerializer.Deserialize<RoomInfoMessage>(dataBuffer, jsonOptions)
                     ?? throw new InvalidDataException("Failed to deserialize RoomInfoMessage"),
 
+                MessageTypeTag.DiscoveredRoom =>
+                    JsonSerializer.Deserialize<DiscoveredRoom>(dataBuffer, jsonOptions)
+                    ?? throw new InvalidDataException("Failed to deserialize RoomInfoMessage"),
+
                 _ => throw new InvalidDataException($"Unknown message type: {messageType}")
             };
         }
@@ -66,6 +70,7 @@ namespace MIN.Services.Connection.Serialize
             {
                 ChatMessage => MessageTypeTag.ChatMessage,
                 RoomInfoMessage => MessageTypeTag.RoomInfo,
+                DiscoveredRoom => MessageTypeTag.DiscoveredRoom,
                 _ => throw new ArgumentException($"Unsupported message type: {typeof(T).Name}")
             };
 
@@ -84,7 +89,8 @@ namespace MIN.Services.Connection.Serialize
         private enum MessageTypeTag : byte
         {
             ChatMessage = 0,
-            RoomInfo = 1
+            RoomInfo = 1,
+            DiscoveredRoom = 2,
         }
     }
 }

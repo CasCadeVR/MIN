@@ -1,6 +1,5 @@
 ﻿using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
-using MIN.Services.Connection.Pipes;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;

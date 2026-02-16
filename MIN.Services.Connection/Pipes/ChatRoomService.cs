@@ -43,6 +43,7 @@ namespace MIN.Services.Connection.Pipes
         ) {
             this.server = server;
             this.client = client;
+            this.serializer = serializer;
 
             // Подписка на события КЛИЕНТА
             this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
@@ -69,11 +70,13 @@ namespace MIN.Services.Connection.Pipes
                 try
                 {
                     discoveryClient = new DiscoveryClient(serializer);
-                    var room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs));
+                    Debug.WriteLine($"CHECKING: {pcName}");
+                    var room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs * 10));
                     discoveredRooms.Add(room);
                 }
-                catch (RoomDiscoveryException)
+                catch (RoomDiscoveryException ex)
                 {
+                    Debug.WriteLine($"UNABLE TO CONNECT: {ex.Message}");
                     // Тихо игнорируем - ПК либо выключен, либо нет комнаты
                 }
             });

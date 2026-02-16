@@ -6,7 +6,7 @@
 /// <remarks>
 /// Инициализирует новый экземпляр <see cref="Room"/>
 /// </remarks>
-public class Room(string name = "Room", int maximumClients = 2)
+public class Room(string name = "Room", int maximumParticipants = 2)
 {
     /// <summary>
     /// Идентификатор комнаты
@@ -21,7 +21,7 @@ public class Room(string name = "Room", int maximumClients = 2)
     /// <summary>
     /// Максимальное количество участников
     /// </summary>
-    public int MaximumParticipants { get; set; } = maximumClients;
+    public int MaximumParticipants { get; set; } = maximumParticipants;
 
     /// <summary>
     /// Хост комнаты
