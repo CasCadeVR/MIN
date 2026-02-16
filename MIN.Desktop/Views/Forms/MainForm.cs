@@ -56,7 +56,8 @@ namespace MIN.Desktop
             try
             {
                 networkComputerProvider = new CollegeNetworkComputerProvider(AppUserProvider.Instance.CurrentUser.PCName);
-                var availablePCs = networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString());
+                //var availablePCs = networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString());
+                var availablePCs = new List<string>() { AppUserProvider.Instance.CurrentUser.PCName };
                 var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs);
 
                 totalRoomsCount.Text = $"Всего нашлось комнат: {discoveredRooms.Count()}";

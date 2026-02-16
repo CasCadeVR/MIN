@@ -60,16 +60,11 @@ namespace MIN.Services.Connection.Pipes
 
         public async Task<IEnumerable<Room>> DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000)
         {
-            if (isHost)
-            {
-                return new List<Room>();
-            }
-
             var discoveredRooms = new ConcurrentBag<Room>();
             var tasks = targetPCNames.Select(async pcName =>
             {
-                if (string.Equals(pcName, selfParticipant?.PCName, StringComparison.OrdinalIgnoreCase))
-                    return; // Пропускаем себя
+                //if (string.Equals(pcName, selfParticipant?.PCName, StringComparison.OrdinalIgnoreCase))
+                //    return; // Пропускаем себя
 
                 try
                 {
@@ -97,9 +92,6 @@ namespace MIN.Services.Connection.Pipes
             currentRoom = new Room(roomName, maxParticipants) { HostParticipant = host };
             selfParticipant = host;
             isHost = true;
-
-            // Добавляем себя как участника (хост тоже участник)
-            currentRoom.AddParticipant(host);
 
             await server.StartAsync(currentRoom);
 

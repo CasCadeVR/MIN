@@ -16,7 +16,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
         private readonly IPipeMessageSerializer serializer;
         private NamedPipeServerStream? pipe;
         private CancellationTokenSource? cancellationTokenSource;
-        private bool isRunning;
+        private bool isRunning => pipe?.IsConnected == true && cancellationTokenSource?.IsCancellationRequested == false;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="DiscoveryServer"/>
@@ -30,9 +30,8 @@ namespace MIN.Services.Connection.Pipes.Discovering
 
         async Task IDiscoveryServer.StartAsync(CancellationToken cancellationToken = default)
         {
-            if (isRunning) return;
+            if (isRunning) await StopAsync();
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            isRunning = true;
             _ = AcceptDiscoveryRequestsAsync(cancellationTokenSource.Token);
         }
 
@@ -88,7 +87,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
         /// <inheritdoc cref="IDiscoveryServer.StopAsync"/>
         public async Task StopAsync()
         {
-            isRunning = false;
             cancellationTokenSource?.Cancel();
             if (pipe != null) await pipe.DisposeAsync();
         }
