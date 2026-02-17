@@ -13,7 +13,7 @@ namespace MIN.Desktop
         private readonly IChatRoomService chatRoomService;
         private ILocalNetworkComputerProvider networkComputerProvider;
         private readonly SynchronizationContext uiContext;
-        private readonly CancellationTokenSource formCancellationTokenSource = new();
+        private readonly CancellationTokenSource cancellationTokenSource = new();
 
         public MainForm(IChatRoomService chatRoomService)
         {
@@ -41,10 +41,10 @@ namespace MIN.Desktop
             {
                 var room = roomCreateForm.Room;
 
-                await chatRoomService.CreateRoomAsync(room.Name, room.MaximumParticipants, AppUserProvider.Instance.CurrentUser);
+                var createdRoom = await chatRoomService.CreateRoomAsync(room.Name, room.MaximumParticipants, AppUserProvider.Instance.CurrentUser, cancellationTokenSource.Token);
 
                 //await PerfromSearch(CancellationToken.None);
-                if (!OnRoomConnection(room))
+                if (!await OnRoomConnection(createdRoom))
                 {
                     await chatRoomService.DisconnectAsync();
                 }
@@ -58,7 +58,7 @@ namespace MIN.Desktop
                 networkComputerProvider = new CollegeNetworkComputerProvider(AppUserProvider.Instance.CurrentUser.PCName);
                 //var availablePCs = networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString());
                 var availablePCs = new List<string>() { AppUserProvider.Instance.CurrentUser.PCName };
-                var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs);
+                var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, cancellationToken: cancellationTokenSource.Token);
 
                 totalRoomsCount.Text = $"Всего нашлось комнат: {discoveredRooms.Count()}";
 
@@ -79,7 +79,7 @@ namespace MIN.Desktop
             {
                 var card = new RoomCard(chatRoomService, room);
                 card.Parent = flowLayoutPanel;
-                card.Clicked += OnRoomConnection;
+                card.Clicked += () => OnRoomConnection(room);
             }
         }
 
@@ -88,7 +88,7 @@ namespace MIN.Desktop
             await PerfromSearch();
         }
 
-        private bool OnRoomConnection(Room room)
+        private async Task<bool> OnRoomConnection(Room room)
         {
             if (room == null)
             {
@@ -114,10 +114,9 @@ namespace MIN.Desktop
             var participantCreateForm = new ParticipantCreateForm();
             if (participantCreateForm.ShowDialog() == DialogResult.OK)
             {
-                // TODO: connect client to server
                 try
                 {
-
+                   await chatRoomService.JoinRoomAsync(room.Id, AppUserProvider.Instance.CurrentUser, cancellationTokenSource.Token);
                 } 
                 catch(Exception ex)
                 {
@@ -125,7 +124,6 @@ namespace MIN.Desktop
                 }
 
                 var chatForm = new ChatForm(chatRoomService, room);
-                room.AddParticipant(AppUserProvider.Instance.CurrentUser);
 
                 chatForm.Show();
 

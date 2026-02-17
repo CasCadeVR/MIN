@@ -15,7 +15,7 @@ namespace MIN.Desktop.Components
         /// <summary>
         /// Событие по нажатию
         /// </summary>
-        public event Func<Room, bool> Clicked;
+        public event Func<Task> Clicked;
 
         private readonly IChatRoomService chatRoomService;
         private readonly SynchronizationContext uiContext;
@@ -47,7 +47,6 @@ namespace MIN.Desktop.Components
             chatRoomService.RoomStateChanged += (s, e) =>
                 uiContext.Post(_ => OnRoomInfoChanged(e.Room!, e.State), null);
         }
-
 
         private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity)
         {
@@ -115,7 +114,7 @@ namespace MIN.Desktop.Components
 
         private void connectButton_Click(object sender, EventArgs e)
         {
-            Clicked?.Invoke(room);
+            Clicked?.Invoke();
         }
     }
 }

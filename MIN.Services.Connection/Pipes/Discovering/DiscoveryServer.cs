@@ -14,7 +14,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
         private readonly string pcName;
         private readonly Room room;
         private readonly IPipeMessageSerializer serializer;
-        private NamedPipeServerStream? pipe;
         private CancellationTokenSource? cancellationTokenSource;
         private bool isRunning = false;
 
@@ -89,9 +88,11 @@ namespace MIN.Services.Connection.Pipes.Discovering
         public async Task StopAsync()
         {
             cancellationTokenSource?.Cancel();
-            if (pipe != null) await pipe.DisposeAsync();
         }
 
-        public async ValueTask DisposeAsync() => await StopAsync();
+        public async ValueTask DisposeAsync()
+        {
+            await StopAsync();
+        }
     }
 }

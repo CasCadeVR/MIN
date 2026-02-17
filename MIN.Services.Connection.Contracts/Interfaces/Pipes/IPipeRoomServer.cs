@@ -1,11 +1,12 @@
-﻿using MIN.Services.Contracts.Models;
+﻿using System.IO.Pipes;
+using MIN.Services.Contracts.Models;
 
 namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
 {
     /// <summary>
     /// Представление сервера в виде pipe
     /// </summary>
-    public interface IPipeRoomServer : IAsyncDisposable
+    public interface IPipeRoomServer
     {
         /// <summary>
         /// Запустить сервер
@@ -20,12 +21,12 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         /// <summary>
         /// Отправить сообщения
         /// </summary>
-        Task SendMessageAsync(ChatMessage message, CancellationToken cancellationToken = default);
+        Task SendMessageAsync(NamedPipeServerStream pipe, ChatMessage message, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Отправить серверное сообщение
         /// </summary>
-        Task BroadcastSystemMessageAsync(string content, CancellationToken cancellationToken = default);
+        Task BroadcastSystemMessageAsync(NamedPipeServerStream pipe, string content, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Активен

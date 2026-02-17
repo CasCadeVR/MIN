@@ -16,7 +16,7 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         /// Отключиться от сервера
         /// </summary>
         /// <returns></returns>
-        Task DisconnectAsync();
+        Task DisconnectAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Отправить сообщения

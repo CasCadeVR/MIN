@@ -18,26 +18,26 @@ namespace MIN.Services.Contracts.Interfaces
         /// <summary>
         /// Получить список найденных комнат
         /// </summary>
-        Task<IEnumerable<Room>> DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000);
+        Task<IEnumerable<Room>> DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Создать новую комнату и стать хостом
         /// </summary>
-        Task CreateRoomAsync(string roomName, int maxParticipants, Participant host);
+        Task<Room> CreateRoomAsync(string roomName, int maxParticipants, Participant host, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Подключиться к существующей комнате
         /// </summary>
-        Task JoinRoomAsync(Guid roomId, Participant participant);
+        Task JoinRoomAsync(Guid roomId, Participant participant, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Отправить сообщение в текущую комнату
         /// </summary>
-        Task SendMessageAsync(string content, MessageType type = MessageType.Text);
+        Task SendMessageAsync(string content, MessageType type = MessageType.Text, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Отключиться от комнаты
         /// </summary>
-        Task DisconnectAsync();
+        Task DisconnectAsync(CancellationToken cancellationToken = default);
     }
 }

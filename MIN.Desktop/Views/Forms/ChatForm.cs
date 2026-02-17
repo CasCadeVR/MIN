@@ -229,9 +229,9 @@ namespace MIN.Desktop
             changeMessageBoxSize();
         }
 
-        private bool IsMessageValid(ChatMessage message)
+        private bool IsMessageValid()
         {
-            return !string.IsNullOrWhiteSpace(message.Content);
+            return !string.IsNullOrWhiteSpace(messageTextBox.Text);
         }
 
         private void sendButton_Click(object sender, EventArgs e)
@@ -241,27 +241,17 @@ namespace MIN.Desktop
 
         private void sendMessage()
         {
-            var message = new ChatMessage()
-            {
-                SenderName = AppUserProvider.Instance.CurrentUser.Name,
-                SenderPCName = AppUserProvider.Instance.CurrentUser.PCName,
-                Content = messageTextBox.Text,
-                MessageType = MessageType.Text,
-            };
-
-            if (!IsMessageValid(message))
+            if (!IsMessageValid())
             {
                 return;
             }
 
-            Room.AddMessage(message);
+            chatRoomService.SendMessageAsync(messageTextBox.Text, MessageType.Text);
             messageTextBox.Text = string.Empty;
         }
 
         private void disconnectButton_Click(object sender, EventArgs e)
         {
-            // TODO: disconnect client somehow
-            Room.RemoveParticipant(AppUserProvider.Instance.CurrentUser);
             this.Close();
         }
 

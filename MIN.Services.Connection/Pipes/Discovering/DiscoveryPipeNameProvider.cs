@@ -13,10 +13,13 @@
 
         private static string SanitizePCName(string pcName)
         {
-            return string.Concat(pcName.Where(c =>
-                char.IsLetterOrDigit(c) || c == '_' || c == '.'))
-                .Trim('_')
-                .Substring(0, Math.Min(pcName.Length, 100));
+            var cleaned = string.Concat(pcName.Where(c =>
+                char.IsLetterOrDigit(c) || c == '_' || c == '.'));
+
+            var trimmed = cleaned.Trim('_');
+
+            int length = Math.Min(trimmed.Length, 100);
+            return trimmed.Substring(0, length);
         }
     }
 }

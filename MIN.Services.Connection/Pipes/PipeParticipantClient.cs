@@ -1,4 +1,5 @@
-﻿using System.IO.Pipes;
+﻿using System.Diagnostics;
+using System.IO.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Contracts.Models;
@@ -48,7 +49,7 @@ namespace MIN.Services.Connection.Pipes
 
             var pipeName = PipeNameProvider.GetRoomPipeName(roomId);
             pipe = new NamedPipeClientStream(
-                ".", // Локальная машина
+                selfParticipant.PCName, // Локальная машина
                 pipeName,
                 PipeDirection.InOut,
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough
@@ -56,6 +57,8 @@ namespace MIN.Services.Connection.Pipes
 
             try
             {
+                Debug.WriteLine($"Connecting to pipe as a client: {pipeName}");
+
                 // Пытаемся подключиться с таймаутом 5 секунд
                 await pipe.ConnectAsync(5000, cancellationTokenSource.Token);
 
@@ -86,7 +89,7 @@ namespace MIN.Services.Connection.Pipes
         {
             try
             {
-                while (!ct.IsCancellationRequested && pipe?.IsConnected == true)
+                while (!ct.IsCancellationRequested)
                 {
                     // Определяем тип сообщения по префиксу или структуре
                     var message = await serializer.ReadMessageAsync(pipe, ct);
@@ -117,19 +120,21 @@ namespace MIN.Services.Connection.Pipes
                     }
                 }
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
                 // Ожидаемое завершение при отключении
+                Debug.WriteLine($"OperationCanceledException in PipeClient error: {ex.Message}");
             }
-            catch (IOException) when (!isDisposed)
+            catch (IOException ex) when (!isDisposed)
             {
                 // Сервер разорвал соединение — инициируем корректное отключение
+                Debug.WriteLine($"IOException error in PipeClient: {ex.Message}");
                 await DisconnectAsync();
             }
             catch (Exception ex)
             {
                 // Логируем ошибку и отключаемся
-                System.Diagnostics.Debug.WriteLine($"PipeClient error: {ex.Message}");
+                Debug.WriteLine($"PipeClient error: {ex.Message}");
                 await DisconnectAsync();
             }
         }
@@ -267,7 +272,7 @@ namespace MIN.Services.Connection.Pipes
         /// <summary>
         /// Отключиться от комнаты
         /// </summary>
-        public async Task DisconnectAsync()
+        public async Task DisconnectAsync(CancellationToken cancellationToken = default)
         {
             if (isDisposed || pipe == null || !pipe.IsConnected)
                 return;

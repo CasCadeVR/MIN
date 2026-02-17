@@ -59,7 +59,7 @@ namespace MIN.Services.Connection.Pipes
             this.server.ClientDisconnected += (s, e) => OnServerClientDisconnected(e);
         }
 
-        public async Task<IEnumerable<Room>> DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000)
+        async Task<IEnumerable<Room>> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000, CancellationToken cancellationToken = default)
         {
             var discoveredRooms = new ConcurrentBag<Room>();
             var tasks = targetPCNames.Select(async pcName =>
@@ -71,8 +71,8 @@ namespace MIN.Services.Connection.Pipes
                 {
                     discoveryClient = new DiscoveryClient(serializer);
                     Debug.WriteLine($"CHECKING: {pcName}");
-                    var room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs * 10));
-                    discoveredRooms.Add(room);
+                    var room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs));
+                    discoveredRooms.Add(room!);
                 }
                 catch (RoomDiscoveryException ex)
                 {
@@ -85,7 +85,7 @@ namespace MIN.Services.Connection.Pipes
             return discoveredRooms.ToList();
         }
 
-        async Task IChatRoomService.CreateRoomAsync(string roomName, int maxParticipants, Participant host)
+        async Task<Room> IChatRoomService.CreateRoomAsync(string roomName, int maxParticipants, Participant host, CancellationToken cancellationToken = default)
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
@@ -96,30 +96,32 @@ namespace MIN.Services.Connection.Pipes
             selfParticipant = host;
             isHost = true;
 
-            await server.StartAsync(currentRoom);
+            await server.StartAsync(currentRoom, cancellationToken);
 
             discoveryServer = new DiscoveryServer(host.PCName, server.Room, serializer);
-            await discoveryServer.StartAsync();
+            await discoveryServer.StartAsync(cancellationToken);
 
             OnRoomStateChanged(new RoomStateChangedEventArgs(currentRoom, RoomState.Created));
+
+            return currentRoom;
         }
 
-        async Task IChatRoomService.JoinRoomAsync(Guid roomId, Participant participant)
+        async Task IChatRoomService.JoinRoomAsync(Guid roomId, Participant participant, CancellationToken cancellationToken = default)
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
 
-            await DisconnectAsync();
+            await DisconnectAsync(cancellationToken);
 
             selfParticipant = participant;
             isHost = false;
 
-            await client.ConnectAsync(roomId, participant);
+            await client.ConnectAsync(roomId, participant, cancellationToken);
             // Room будет получена из первого системного сообщения от сервера (RoomInfo)
             OnRoomStateChanged(new RoomStateChangedEventArgs(null, RoomState.Joined));
         }
 
-        async Task IChatRoomService.SendMessageAsync(string content, MessageType type = MessageType.Text)
+        async Task IChatRoomService.SendMessageAsync(string content, MessageType type = MessageType.Text, CancellationToken cancellationToken = default)
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
@@ -136,10 +138,7 @@ namespace MIN.Services.Connection.Pipes
                 TimestampUtc = DateTime.UtcNow
             };
 
-            if (isHost)
-                await server.SendMessageAsync(message);
-            else
-                await client.SendMessageAsync(message);
+            await client.SendMessageAsync(message, cancellationToken);
 
             // Добавляем в локальную историю сразу (оптимистичное обновление)
             currentRoom.AddMessage(message);
@@ -150,7 +149,7 @@ namespace MIN.Services.Connection.Pipes
         /// Отключиться от комнаты
         /// </summary>
         /// <returns></returns>
-        public async Task DisconnectAsync()
+        public async Task DisconnectAsync(CancellationToken cancellationToken = default)
         {
             if (isDisposed)
                 return;
@@ -164,7 +163,7 @@ namespace MIN.Services.Connection.Pipes
                 }
                 else if (!isHost && client.IsConnected)
                 {
-                    await client.DisconnectAsync();
+                    await client.DisconnectAsync(cancellationToken);
                 }
             }
             catch (Exception ex)
