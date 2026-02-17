@@ -136,7 +136,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            Room.AddMessage(message);
+            //Room.AddMessage(message);
             UpdateChatFlow();
         }
 
@@ -206,7 +206,8 @@ namespace MIN.Desktop
                 var row = new ChatMessageRow();
                 Control rowControl;
 
-                if (message.AsRoomMessage)
+                if (message.MessageType == MessageType.System
+                    || message.MessageType == MessageType.Command)
                 {
                     rowControl = new Heading3Label()
                     {
