@@ -41,6 +41,11 @@ namespace MIN.Services.Connection.Pipes.Discovering
                     return null;
                 }
 
+                foreach (var participant in discoveryInfo.CurrentParticipants)
+                {
+                    discoveryInfo.Room.AddParticipant(participant);
+                }
+
                 return discoveryInfo.Room;
             }
             catch (TimeoutException)

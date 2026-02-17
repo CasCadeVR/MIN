@@ -4,13 +4,7 @@ namespace MIN.Services.Services
 {
     public class CollegeNetworkComputerProvider : ILocalNetworkComputerProvider
     {
-        private readonly string hostPCname = string.Empty;
         private readonly int maxComputers = 20;
-
-        public CollegeNetworkComputerProvider(string hostPCname)
-        {
-            this.hostPCname = hostPCname;
-        }
 
         IEnumerable<string> ILocalNetworkComputerProvider.GetLocalNetworkComputerNames(string searchZone)
         {
@@ -20,7 +14,7 @@ namespace MIN.Services.Services
             {
                 var pcName = CollegePCNameParser.CreateComputerName(Convert.ToInt32(searchZone), i);
 
-                if (pcName == null || pcName == hostPCname)
+                if (pcName == null)
                 {
                     continue;
                 }

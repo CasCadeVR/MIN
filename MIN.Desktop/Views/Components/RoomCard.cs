@@ -3,6 +3,7 @@ using MIN.Desktop.Contracts.Constants;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Contracts.Models.Events;
 using MIN.Services.Services;
 
 namespace MIN.Desktop.Components
@@ -33,22 +34,40 @@ namespace MIN.Desktop.Components
                 ?? throw new InvalidOperationException("Must be created on UI thread");
 
             ApplyStylings();
-
             SubscribeToChatEvents();
-
             UpdateStats();
         }
 
         private void SubscribeToChatEvents()
         {
-            chatRoomService.ParticipantJoined += (s, e) =>
-                uiContext.Post(_ => OnParticipantJoined(e.Participant), null);
+            chatRoomService.ParticipantJoined += OnParticipantJoinedEvent;
+            chatRoomService.ParticipantLeft += OnParticipantLeftEvent;
+            chatRoomService.RoomStateChanged += OnRoomInfoChangedEvent;
+        }
 
-            chatRoomService.ParticipantLeft += (s, e) =>
-                uiContext.Post(_ => OnParticipantLeft(e.Participant), null);
+        /// <summary>
+        /// Отключить события
+        /// </summary>
+        public void UnsubscribeFromChatEvents()
+        {
+            chatRoomService.ParticipantJoined -= OnParticipantJoinedEvent;
+            chatRoomService.ParticipantLeft -= OnParticipantLeftEvent;
+            chatRoomService.RoomStateChanged -= OnRoomInfoChangedEvent;
+        }
 
-            chatRoomService.RoomStateChanged += (s, e) =>
-                uiContext.Post(_ => OnRoomInfoChanged(e.Room!, e.State), null);
+        private void OnParticipantJoinedEvent(object? sender, ParticipantJoinedEventArgs e)
+        {
+            uiContext.Post(_ => OnParticipantJoined(e.Participant), null);
+        }
+
+        private void OnParticipantLeftEvent(object? sender, ParticipantLeftEventArgs e)
+        {
+            uiContext.Post(_ => OnParticipantLeft(e.Participant), null);
+        }
+
+        private void OnRoomInfoChangedEvent(object? sender, RoomStateChangedEventArgs e)
+        {
+            uiContext.Post(_ => OnRoomInfoChanged(e.Room!, e.State), null);
         }
 
         private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity)
@@ -63,16 +82,24 @@ namespace MIN.Desktop.Components
 
         private void OnParticipantJoined(Participant participant)
         {
+            this.room.AddParticipant(participant);
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 
         private void OnParticipantLeft(Participant participant)
         {
+            this.room.RemoveParticipant(participant);
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 
         private void OnRoomInfoChanged(Room room, RoomState roomState)
         {
+            if (roomState == RoomState.Disconnected)
+            {
+                this.Dispose();
+                return;
+            }
+
             this.room = room;
             UpdateStats();
         }
@@ -93,8 +120,8 @@ namespace MIN.Desktop.Components
 
             if (CollegePCNameParser.TryParseComputerName(this.room.HostParticipant.PCName, out int roomNumber, out int computerNumber))
             {
-                computer.Text = roomNumber.ToString();
-                classroom.Text = computerNumber.ToString();
+                computer.Text = computerNumber.ToString();
+                classroom.Text = roomNumber.ToString();
             } 
             else
             {

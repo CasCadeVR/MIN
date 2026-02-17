@@ -51,7 +51,7 @@ namespace MIN.Services.Connection.Serialize
 
                 MessageTypeTag.DiscoveredRoom =>
                     JsonSerializer.Deserialize<DiscoveredRoom>(dataBuffer, jsonOptions)
-                    ?? throw new InvalidDataException("Failed to deserialize RoomInfoMessage"),
+                    ?? throw new InvalidDataException("Failed to deserialize DiscoveredRoom"),
 
                 _ => throw new InvalidDataException($"Unknown message type: {messageType}")
             };

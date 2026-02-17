@@ -24,10 +24,11 @@ namespace MIN.Services.Connection.Pipes
         // Текущее состояние (только одно активное подключение)
         private Room? currentRoom;
         private Participant? selfParticipant;
-        private bool isHost;
         private bool isDisposed;
         private IDiscoveryServer discoveryServer;
         private IDiscoveryClient discoveryClient;
+
+        private bool isHost => selfParticipant?.PCName == currentRoom?.HostParticipant.PCName;
 
         // События для подписки UI
         public event EventHandler<ParticipantJoinedEventArgs>? ParticipantJoined;
@@ -46,7 +47,7 @@ namespace MIN.Services.Connection.Pipes
             this.serializer = serializer;
 
             // Подписка на события КЛИЕНТА
-            this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
+            // this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
             this.client.RoomInfoReceived += (s, e) => OnRoomInfoReceived(e);
             this.client.ParticipantJoined += (s, e) => OnTransportParticipantJoined(e);
             this.client.ParticipantLeft += (s, e) => OnTransportParticipantLeft(e);
@@ -94,7 +95,6 @@ namespace MIN.Services.Connection.Pipes
 
             currentRoom = new Room(roomName, maxParticipants) { HostParticipant = host };
             selfParticipant = host;
-            isHost = true;
 
             await server.StartAsync(currentRoom, cancellationToken);
 
@@ -114,7 +114,6 @@ namespace MIN.Services.Connection.Pipes
            // await DisconnectAsync(cancellationToken);
 
             selfParticipant = participant;
-            isHost = false;
 
             await client.ConnectAsync(roomId, participant, cancellationToken);
             // Room будет получена из первого системного сообщения от сервера (RoomInfo)
@@ -173,7 +172,6 @@ namespace MIN.Services.Connection.Pipes
             {
                 currentRoom = null;
                 selfParticipant = null;
-                isHost = false;
 
                 OnRoomStateChanged(new RoomStateChangedEventArgs(null, RoomState.Disconnected));
             }

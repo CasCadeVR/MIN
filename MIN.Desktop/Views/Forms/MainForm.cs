@@ -23,6 +23,7 @@ namespace MIN.Desktop
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
+            networkComputerProvider = new CollegeNetworkComputerProvider();
         }
 
         protected override void ApplyStylings()
@@ -55,7 +56,6 @@ namespace MIN.Desktop
         {
             try
             {
-                networkComputerProvider = new CollegeNetworkComputerProvider(AppUserProvider.Instance.CurrentUser.PCName);
                 //var availablePCs = networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString());
                 var availablePCs = new List<string>() { AppUserProvider.Instance.CurrentUser.PCName };
                 var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, cancellationToken: cancellationTokenSource.Token);
@@ -80,6 +80,7 @@ namespace MIN.Desktop
                 var card = new RoomCard(chatRoomService, room);
                 card.Parent = flowLayoutPanel;
                 card.Clicked += () => OnRoomConnection(room);
+                card.Disposed += (s, e) => card.UnsubscribeFromChatEvents();
             }
         }
 
@@ -124,7 +125,6 @@ namespace MIN.Desktop
                 }
 
                 var chatForm = new ChatForm(chatRoomService, room);
-
                 chatForm.Show();
 
                 return true;

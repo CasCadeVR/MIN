@@ -132,6 +132,7 @@ namespace MIN.Services.Connection.Pipes
                     lock (connectedClients)
                     {
                         connectedClients.Add(participant);
+                        room.AddParticipant(participant);
                     }
 
                     ParticipantJoined?.Invoke(this, participant);

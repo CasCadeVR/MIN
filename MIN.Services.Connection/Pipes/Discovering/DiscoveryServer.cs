@@ -55,6 +55,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                     var roomInfo = new DiscoveredRoom
                     {
                         Room = room.GetSerializableCopy(),
+                        CurrentParticipants = room.CurrentParticipants,
                         DiscoveredAt = DateTime.UtcNow,
                     };
 

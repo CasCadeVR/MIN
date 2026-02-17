@@ -8,6 +8,7 @@ using MIN.Desktop.Views.Components;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Contracts.Models.Events;
 using MIN.Services.Services;
 
 namespace MIN.Desktop
@@ -44,32 +45,51 @@ namespace MIN.Desktop
 
         private void SubscribeToChatEvents()
         {
-            chatRoomService.MessageReceived += (s, e) =>
-                uiContext.Post(_ => OnMessageReceived(e.Message), null);
-
-            chatRoomService.ParticipantJoined += (s, e) =>
-                uiContext.Post(_ => OnParticipantJoined(e.Participant), null);
-
-            chatRoomService.ParticipantLeft += (s, e) =>
-                uiContext.Post(_ => OnParticipantLeft(e.Participant), null);
-
-            chatRoomService.RoomStateChanged += (s, e) =>
-                uiContext.Post(_ => OnRoomInfoChanged(e.Room!, e.State), null);
-
-            chatRoomService.ConnectionLost += (s, e) =>
-                uiContext.Post(_ => OnConnectionLost(e.Reason), null);
+            chatRoomService.MessageReceived += OnMessageRecievedEvent;
+            chatRoomService.ParticipantJoined += OnParticipantJoinedEvent;
+            chatRoomService.ParticipantLeft += OnParticipantLeftEvent;
+            chatRoomService.RoomStateChanged += OnRoomInfoChangedEvent;
+            chatRoomService.ConnectionLost += ConnectionLostEvent;
         }
 
-        private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity, RoomState? args = null)
+        private void UnsubscribeFromChatEvents()
+        {
+            chatRoomService.MessageReceived -= OnMessageRecievedEvent;
+            chatRoomService.ParticipantJoined -= OnParticipantJoinedEvent;
+            chatRoomService.ParticipantLeft -= OnParticipantLeftEvent;
+            chatRoomService.RoomStateChanged -= OnRoomInfoChangedEvent;
+            chatRoomService.ConnectionLost -= ConnectionLostEvent;
+        }
+
+        private void OnMessageRecievedEvent(object? sender, MessageReceivedEventArgs e)
+        {
+            uiContext.Post(_ => OnMessageReceived(e.Message), null);
+        }
+
+        private void OnParticipantJoinedEvent(object? sender, ParticipantJoinedEventArgs e)
+        {
+            uiContext.Post(_ => OnParticipantJoined(e.Participant), null);
+        }
+
+        private void OnParticipantLeftEvent(object? sender, ParticipantLeftEventArgs e)
+        {
+            uiContext.Post(_ => OnParticipantLeft(e.Participant), null);
+        }
+
+        private void OnRoomInfoChangedEvent(object? sender, RoomStateChangedEventArgs e)
+        {
+            uiContext.Post(_ => OnRoomInfoChanged(e.Room!, e.State), null);
+        }
+
+        private void ConnectionLostEvent(object? sender, ConnectionLostEventArgs e)
+        {
+            uiContext.Post(_ => OnConnectionLost(e.Reason), null);
+        }
+
+        private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity)
         {
             if (InvokeRequired)
             {
-                if (args != null)
-                {
-                    Invoke(action, entity, args);
-                    return;
-                }
-
                 Invoke(action, entity);
                 return;
             }
@@ -115,6 +135,8 @@ namespace MIN.Desktop
                 Invoke(OnMessageReceived, message);
                 return;
             }
+
+            Room.AddMessage(message);
             UpdateChatFlow();
         }
 
@@ -150,8 +172,8 @@ namespace MIN.Desktop
 
             if (CollegePCNameParser.TryParseComputerName(Room.HostParticipant.PCName, out int roomNumber, out int computerNumber))
             {
-                computer.Text = roomNumber.ToString();
-                classroom.Text = computerNumber.ToString();
+                computer.Text = computerNumber.ToString();
+                classroom.Text = roomNumber.ToString();
             }
             else
             {
@@ -284,6 +306,7 @@ namespace MIN.Desktop
 
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
+            UnsubscribeFromChatEvents();
             formCancellationTokenSource.Dispose();
             await chatRoomService.DisconnectAsync();
             base.OnFormClosing(e);

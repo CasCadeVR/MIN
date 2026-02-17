@@ -101,7 +101,7 @@ public class Room(string name = "Room", int maximumParticipants = 2)
         var participants = CurrentParticipants;
 
         // Копируем всех текущих участников
-        foreach (var participant in CurrentParticipants)
+        foreach (var participant in participants)
         {
             copy.AddParticipant(new Participant
             {
