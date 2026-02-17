@@ -138,10 +138,6 @@ namespace MIN.Services.Connection.Pipes
             };
 
             await client.SendMessageAsync(message, cancellationToken);
-
-            // Добавляем в локальную историю сразу (оптимистичное обновление)
-            currentRoom.AddMessage(message);
-            OnMessageReceived(new MessageReceivedEventArgs(message));
         }
 
         /// <summary>

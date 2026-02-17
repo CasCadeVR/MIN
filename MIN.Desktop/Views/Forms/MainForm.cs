@@ -54,6 +54,8 @@ namespace MIN.Desktop
 
         private async Task PerfromSearch()
         {
+            uiContext.Post(_ => findRooms.Enabled = false, null);
+
             try
             {
                 //var availablePCs = networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString());
@@ -68,6 +70,10 @@ namespace MIN.Desktop
             catch (Exception ex)
             {
                 MessageBox.Show($"Discovery failed: {ex.Message}", "Error");
+            }
+            finally
+            {
+                uiContext.Post(_ => findRooms.Enabled = true, null);
             }
         }
 

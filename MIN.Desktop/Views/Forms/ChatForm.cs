@@ -136,7 +136,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            //Room.AddMessage(message);
+            Room.AddMessage(message);
             UpdateChatFlow();
         }
 
@@ -146,7 +146,7 @@ namespace MIN.Desktop
             {
                 AsRoomMessage = true,
                 Content = $"Участник {participant.Name} зашёл в комнату",
-                MessageType = MessageType.Text,
+                MessageType = MessageType.System,
             };
 
             Room.AddMessage(roomMessage);
@@ -158,7 +158,7 @@ namespace MIN.Desktop
             {
                 AsRoomMessage = true,
                 Content = $"Участник {participant.Name} покинул комнату",
-                MessageType = MessageType.Text,
+                MessageType = MessageType.System,
             };
 
             Room.AddMessage(roomMessage);
