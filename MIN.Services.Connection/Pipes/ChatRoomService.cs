@@ -111,7 +111,7 @@ namespace MIN.Services.Connection.Pipes
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
 
-            await DisconnectAsync(cancellationToken);
+           // await DisconnectAsync(cancellationToken);
 
             selfParticipant = participant;
             isHost = false;
@@ -148,7 +148,6 @@ namespace MIN.Services.Connection.Pipes
         /// <summary>
         /// Отключиться от комнаты
         /// </summary>
-        /// <returns></returns>
         public async Task DisconnectAsync(CancellationToken cancellationToken = default)
         {
             if (isDisposed)

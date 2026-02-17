@@ -1,4 +1,5 @@
-﻿using System.IO.Pipes;
+﻿using System.Diagnostics;
+using System.IO.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models;
@@ -102,6 +103,7 @@ namespace MIN.Services.Connection.Pipes
                 }
                 catch (OperationCanceledException)
                 {
+                    Debug.WriteLine("Canceling in AcceptClientAsync");
                     break;
                 }
                 catch (IOException ex) when (ex.Message.Contains("pipe is being closed"))

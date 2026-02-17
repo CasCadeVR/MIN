@@ -78,6 +78,12 @@ namespace MIN.Desktop
 
         private void OnRoomInfoChanged(Room room, RoomState roomState)
         {
+            if (roomState == RoomState.Disconnected)
+            {
+                Close();
+                return;
+            }
+
             Room = room;
             UpdateStats();
         }
@@ -99,6 +105,7 @@ namespace MIN.Desktop
             MessageBox.Show(reason, "Подключение разорвано",
                 MessageBoxButtons.OK,
                 icon: MessageBoxIcon.Error);
+            Close();
         }
 
         private void OnMessageReceived(ChatMessage message)

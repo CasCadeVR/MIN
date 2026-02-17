@@ -29,6 +29,9 @@ namespace MIN.Desktop.Components
             InitializeComponent();
             this.chatRoomService = chatRoomService;
             this.room = room;
+            uiContext = SynchronizationContext.Current
+                ?? throw new InvalidOperationException("Must be created on UI thread");
+
             ApplyStylings();
 
             SubscribeToChatEvents();
