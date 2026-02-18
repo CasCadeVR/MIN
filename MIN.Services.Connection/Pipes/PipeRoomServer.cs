@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO.Pipes;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models;
@@ -65,14 +67,27 @@ namespace MIN.Services.Connection.Pipes
             {
                 try
                 {
-                    // Создаем ОДНУ трубу для следующего клиента
-                    var clientPipe = new NamedPipeServerStream(
+                    if (!System.OperatingSystem.IsWindows())
+                    {
+                        throw new PlatformNotSupportedException("Windows only");
+                    }
+
+                    var securityIdentifier = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+
+                    var pipeSecurity = new PipeSecurity();
+                    pipeSecurity.AddAccessRule(
+                        new PipeAccessRule(securityIdentifier,
+                            PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
+                    AccessControlType.Allow));
+
+                    var clientPipe = NamedPipeServerStreamAcl.Create(
                         PipeNameProvider.GetRoomPipeName(room!.Id),
                         PipeDirection.InOut,
                         room.MaximumParticipants,
                         PipeTransmissionMode.Byte,
-                        PipeOptions.Asynchronous | PipeOptions.WriteThrough
-                    );
+                        PipeOptions.Asynchronous | PipeOptions.WriteThrough,
+                        0, 0,
+                        pipeSecurity);
 
                     await clientPipe.WaitForConnectionAsync(ct);
 

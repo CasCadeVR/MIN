@@ -3,6 +3,8 @@ using System.Diagnostics;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
+using System.Security.Principal;
+using System.Security.AccessControl;
 
 namespace MIN.Services.Connection.Pipes.Discovering
 {
@@ -41,13 +43,35 @@ namespace MIN.Services.Connection.Pipes.Discovering
             {
                 try
                 {
-                    using var pipe = new NamedPipeServerStream(
+                    //using var pipe = new NamedPipeServerStream(
+                    //    DiscoveryPipeNameProvider.GetDiscoveryPipeName(pcName),
+                    //    PipeDirection.InOut,
+                    //    1,
+                    //    PipeTransmissionMode.Byte,
+                    //    PipeOptions.Asynchronous | PipeOptions.WriteThrough
+                    //);
+
+                    if (!System.OperatingSystem.IsWindows())
+                    {
+                        throw new PlatformNotSupportedException("Windows only");
+                    }
+
+                    var securityIdentifier = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+
+                    var pipeSecurity = new PipeSecurity();
+                    pipeSecurity.AddAccessRule(
+                        new PipeAccessRule(securityIdentifier,
+                            PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
+                            AccessControlType.Allow));
+
+                    using var pipe = NamedPipeServerStreamAcl.Create(
                         DiscoveryPipeNameProvider.GetDiscoveryPipeName(pcName),
                         PipeDirection.InOut,
                         1,
                         PipeTransmissionMode.Byte,
-                        PipeOptions.Asynchronous | PipeOptions.WriteThrough
-                    );
+                        PipeOptions.Asynchronous | PipeOptions.WriteThrough,
+                        0, 0,
+                        pipeSecurity);
 
                     await pipe!.WaitForConnectionAsync(ct);
 

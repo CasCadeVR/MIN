@@ -106,7 +106,7 @@ namespace MIN.Services.Connection.Pipes
             return currentRoom;
         }
 
-        async Task IChatRoomService.JoinRoomAsync(Guid roomId, Participant participant, CancellationToken cancellationToken = default)
+        async Task IChatRoomService.JoinRoomAsync(Room room, Participant participant, CancellationToken cancellationToken = default)
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
@@ -115,7 +115,7 @@ namespace MIN.Services.Connection.Pipes
 
             selfParticipant = participant;
 
-            await client.ConnectAsync(roomId, participant, cancellationToken);
+            await client.ConnectAsync(room, participant, cancellationToken);
             // Room будет получена из первого системного сообщения от сервера (RoomInfo)
             OnRoomStateChanged(new RoomStateChangedEventArgs(null, RoomState.Joined));
         }

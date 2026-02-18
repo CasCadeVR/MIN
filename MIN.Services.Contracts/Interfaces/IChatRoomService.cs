@@ -28,7 +28,7 @@ namespace MIN.Services.Contracts.Interfaces
         /// <summary>
         /// Подключиться к существующей комнате
         /// </summary>
-        Task JoinRoomAsync(Guid roomId, Participant participant, CancellationToken cancellationToken = default);
+        Task JoinRoomAsync(Room room, Participant participant, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Отправить сообщение в текущую комнату

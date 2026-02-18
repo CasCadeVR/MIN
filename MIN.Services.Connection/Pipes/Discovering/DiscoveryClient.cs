@@ -1,4 +1,5 @@
 ﻿using System.IO.Pipes;
+using System.Security.Principal;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models.Exceptions;
@@ -22,7 +23,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
 
         async Task<Room?> IDiscoveryClient.DiscoverRoomAsync(string targetPCName, TimeSpan timeout)
         {
-            var cts = new CancellationTokenSource(timeout);
+            var cts = new CancellationTokenSource();
             var pipeName = DiscoveryPipeNameProvider.GetDiscoveryPipeName(targetPCName);
 
             using var pipe = new NamedPipeClientStream(

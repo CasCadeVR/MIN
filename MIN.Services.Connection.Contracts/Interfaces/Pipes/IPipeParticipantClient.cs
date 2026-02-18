@@ -10,7 +10,7 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         /// <summary>
         /// Подключиться к серверу
         /// </summary>
-        Task ConnectAsync(Guid roomId, Participant selfParticipant, CancellationToken cancellationToken = default);
+        Task ConnectAsync(Room room, Participant selfParticipant, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Отключиться от сервера

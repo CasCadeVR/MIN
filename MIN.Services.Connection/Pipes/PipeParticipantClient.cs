@@ -37,9 +37,11 @@ namespace MIN.Services.Connection.Pipes
         /// <summary>
         /// Подключиться к существующей комнате
         /// </summary>
-        public async Task ConnectAsync(Guid roomId, Participant selfParticipant, CancellationToken cancellationToken = default)
+        public async Task ConnectAsync(Room room, Participant selfParticipant, CancellationToken cancellationToken = default)
         {
             if (IsConnected) await DisconnectAsync();
+
+            var roomId = room.Id;
 
             if (!PipeNameProvider.IsValidPipeName(roomId.ToString()))
                 throw new ArgumentException("Invalid room ID", nameof(roomId));
@@ -51,7 +53,7 @@ namespace MIN.Services.Connection.Pipes
 
             var pipeName = PipeNameProvider.GetRoomPipeName(roomId);
             pipe = new NamedPipeClientStream(
-                selfParticipant.PCName,
+                room.HostParticipant.PCName,
                 pipeName,
                 PipeDirection.InOut,
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough
