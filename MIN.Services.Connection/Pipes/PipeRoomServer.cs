@@ -45,7 +45,7 @@ namespace MIN.Services.Connection.Pipes
             // Отправляем информацию о комнате первому подключившемуся клиенту
             for (int i = 0; i < room.MaximumParticipants; i++)
             {
-                _ = AcceptClientAsync(CancellationToken.None);
+                _ = AcceptClientAsync(cancellationTokenSource.Token);
             }
 
             // Системное сообщение о создании комнаты

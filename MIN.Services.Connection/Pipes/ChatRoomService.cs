@@ -28,7 +28,7 @@ namespace MIN.Services.Connection.Pipes
         private IDiscoveryServer discoveryServer;
         private IDiscoveryClient discoveryClient;
 
-        private bool isHost => selfParticipant?.PCName == currentRoom?.HostParticipant.PCName;
+        private bool IsHost => selfParticipant?.PCName == currentRoom?.HostParticipant.PCName;
 
         // События для подписки UI
         public event EventHandler<ParticipantJoinedEventArgs>? ParticipantJoined;
@@ -47,7 +47,7 @@ namespace MIN.Services.Connection.Pipes
             this.serializer = serializer;
 
             // Подписка на события КЛИЕНТА
-            // this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
+            this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
             this.client.RoomInfoReceived += (s, e) => OnRoomInfoReceived(e);
             this.client.ParticipantJoined += (s, e) => OnTransportParticipantJoined(e);
             this.client.ParticipantLeft += (s, e) => OnTransportParticipantLeft(e);
@@ -150,12 +150,16 @@ namespace MIN.Services.Connection.Pipes
 
             try
             {
-                if (isHost && server.IsRunning)
+                if (IsHost && server.IsRunning)
                 {
+                    if (client.IsConnected)
+                    {
+                        await client.DisconnectAsync(cancellationToken);
+                    }
                     await server.StopAsync();
                     await discoveryServer.StopAsync();
                 }
-                else if (!isHost && client.IsConnected)
+                else if (!IsHost && client.IsConnected)
                 {
                     await client.DisconnectAsync(cancellationToken);
                 }
@@ -268,7 +272,7 @@ namespace MIN.Services.Connection.Pipes
 
                 // Уведомляем UI о потере соединения
                 ConnectionLost?.Invoke(this, new ConnectionLostEventArgs(
-                    isHost ? "Server stopped" : "Connection to room lost"));
+                    IsHost ? "Server stopped" : "Connection to room lost"));
             });
         }
 

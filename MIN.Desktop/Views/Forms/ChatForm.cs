@@ -1,3 +1,4 @@
+using System.Windows.Forms;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -137,7 +138,7 @@ namespace MIN.Desktop
             }
 
             Room.AddMessage(message);
-            UpdateChatFlow();
+            AddMessageToChatFlow(message);
         }
 
         private void SendParticipantJoinedMessage(Participant participant)
@@ -203,33 +204,39 @@ namespace MIN.Desktop
 
             foreach (var message in Room.ChatHistory)
             {
-                var row = new ChatMessageRow();
-                Control rowControl;
-
-                if (message.MessageType == MessageType.System
-                    || message.MessageType == MessageType.Command)
-                {
-                    rowControl = new Heading3Label()
-                    {
-                        Text = message.Content,
-                        Height = row.Height,
-                        Anchor = AnchorStyles.None,
-                    };
-                }
-                else
-                {
-                    rowControl = new ChatMessageCard(message)
-                    {
-                        Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
-                            ? AnchorStyles.Right
-                            : AnchorStyles.Left,
-                    };
-                }
-
-                row.Size = new Size(chatFlow.Width - (row.Margin.Left * 2) - chatFlow.Margin.Left, rowControl.Height);
-                row.container.Controls.Add(rowControl);
-                chatFlow.Controls.Add(row);
+                AddMessageToChatFlow(message);
             }
+        }
+
+        private void AddMessageToChatFlow(ChatMessage message)
+        {
+            var row = new ChatMessageRow();
+            Control rowControl;
+
+            if (message.MessageType == MessageType.System
+                || message.MessageType == MessageType.Command)
+            {
+                rowControl = new Heading3Label()
+                {
+                    Text = message.Content,
+                    Height = row.Height,
+                    Anchor = AnchorStyles.None,
+                };
+            }
+            else
+            {
+                rowControl = new ChatMessageCard(message)
+                {
+                    Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
+                        ? AnchorStyles.Right
+                        : AnchorStyles.Left,
+                };
+            }
+
+            row.Size = new Size(chatFlow.Width - (row.Margin.Left * 2) - chatFlow.Margin.Left, rowControl.Height);
+            row.container.Controls.Add(rowControl);
+            chatFlow.Controls.Add(row);
+            chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
         }
 
         protected override void ApplyStylings()

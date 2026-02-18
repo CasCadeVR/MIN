@@ -44,12 +44,14 @@ namespace MIN.Services.Connection.Pipes
             if (!PipeNameProvider.IsValidPipeName(roomId.ToString()))
                 throw new ArgumentException("Invalid room ID", nameof(roomId));
 
+            isDisposed = false;
+
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             this.selfParticipant = selfParticipant;
 
             var pipeName = PipeNameProvider.GetRoomPipeName(roomId);
             pipe = new NamedPipeClientStream(
-                selfParticipant.PCName, // Локальная машина
+                selfParticipant.PCName,
                 pipeName,
                 PipeDirection.InOut,
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough
