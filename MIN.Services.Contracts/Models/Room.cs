@@ -45,7 +45,7 @@ public class Room(string name = "Room", int maximumParticipants = 2)
     /// <summary>
     /// Заполнена ли комната
     /// </summary>
-    public bool IsFull => CurrentParticipants.Count >= MaximumParticipants;
+    public bool IsFull => CurrentParticipants.Count > MaximumParticipants;
 
     /// <summary>
     /// Добавить участника в комнату

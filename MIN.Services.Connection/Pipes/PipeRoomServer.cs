@@ -144,10 +144,11 @@ namespace MIN.Services.Connection.Pipes
                     var participant = ParseParticipantFromMessage(chatMsg);
                     connection.Participant = participant;
 
+                    room?.AddParticipant(participant);
+
                     lock (connectedClients)
                     {
                         connectedClients.Add(participant);
-                        room.AddParticipant(participant);
                     }
 
                     ParticipantJoined?.Invoke(this, participant);
@@ -169,6 +170,7 @@ namespace MIN.Services.Connection.Pipes
                 // Клиент отключился
                 if (connection.Participant != null)
                 {
+                    room?.RemoveParticipant(connection.Participant);
                     ParticipantLeft?.Invoke(this, connection.Participant);
                     lock (connectedClients)
                     {
@@ -203,7 +205,7 @@ namespace MIN.Services.Connection.Pipes
             {
                 foreach (var connection in activeConnections)
                 {
-                    if (connection != sender && connection.Pipe.IsConnected)
+                    if (connection.Pipe.IsConnected)
                     {
                         tasks.Add(serializer.WriteMessageAsync(connection.Pipe, message, ct));
                     }

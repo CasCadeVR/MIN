@@ -47,10 +47,7 @@ namespace MIN.Services.Connection.Pipes
             this.serializer = serializer;
 
             // Подписка на события КЛИЕНТА
-            this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
             this.client.RoomInfoReceived += (s, e) => OnRoomInfoReceived(e);
-            this.client.ParticipantJoined += (s, e) => OnTransportParticipantJoined(e);
-            this.client.ParticipantLeft += (s, e) => OnTransportParticipantLeft(e);
             this.client.Disconnected += (s, e) => OnTransportDisconnected();
 
             // Подписка на события СЕРВЕРА (когда мы хост)
@@ -109,21 +106,24 @@ namespace MIN.Services.Connection.Pipes
         async Task IChatRoomService.JoinRoomAsync(Room room, Participant participant, CancellationToken cancellationToken = default)
         {
             if (isDisposed)
+            {
                 throw new ObjectDisposedException(nameof(ChatRoomService));
+            }
 
-           // await DisconnectAsync(cancellationToken);
+            //await DisconnectAsync(cancellationToken);
 
             selfParticipant = participant;
 
             await client.ConnectAsync(room, participant, cancellationToken);
-            // Room будет получена из первого системного сообщения от сервера (RoomInfo)
-            OnRoomStateChanged(new RoomStateChangedEventArgs(null, RoomState.Joined));
+            OnRoomStateChanged(new RoomStateChangedEventArgs(room, RoomState.Joined));
         }
 
-        async Task IChatRoomService.SendMessageAsync(string content, MessageType type = MessageType.Text, CancellationToken cancellationToken = default)
+        async Task IChatRoomService.SendMessageAsync(string content, MessageType type, CancellationToken cancellationToken = default)
         {
             if (isDisposed)
+            {
                 throw new ObjectDisposedException(nameof(ChatRoomService));
+            }
 
             if (currentRoom == null || selfParticipant == null)
                 throw new InvalidOperationException("Not connected to any room");

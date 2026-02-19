@@ -27,9 +27,9 @@ namespace MIN.Desktop
         /// <summary>
         /// Текущая комната
         /// </summary>
-        public Room Room { get; set; }
+        private Room room { get; set; }
 
-        public ChatForm(IChatRoomService chatRoomService, Room? room = null)
+        public ChatForm(IChatRoomService chatRoomService, Room room)
         {
             InitializeComponent();
             uiContext = SynchronizationContext.Current
@@ -37,7 +37,7 @@ namespace MIN.Desktop
 
             startMessageBoxHeight = tableLayoutPanelButtons.Height;
             this.chatRoomService = chatRoomService;
-            Room = room ?? new Room();
+            this.room = room;
 
             SubscribeToChatEvents();
             UpdateStats();
@@ -49,7 +49,7 @@ namespace MIN.Desktop
             chatRoomService.MessageReceived += OnMessageRecievedEvent;
             chatRoomService.ParticipantJoined += OnParticipantJoinedEvent;
             chatRoomService.ParticipantLeft += OnParticipantLeftEvent;
-            chatRoomService.RoomStateChanged += OnRoomInfoChangedEvent;
+            chatRoomService.RoomStateChanged += OnRoomStateChangedEvent;
             chatRoomService.ConnectionLost += ConnectionLostEvent;
         }
 
@@ -58,7 +58,7 @@ namespace MIN.Desktop
             chatRoomService.MessageReceived -= OnMessageRecievedEvent;
             chatRoomService.ParticipantJoined -= OnParticipantJoinedEvent;
             chatRoomService.ParticipantLeft -= OnParticipantLeftEvent;
-            chatRoomService.RoomStateChanged -= OnRoomInfoChangedEvent;
+            chatRoomService.RoomStateChanged -= OnRoomStateChangedEvent;
             chatRoomService.ConnectionLost -= ConnectionLostEvent;
         }
 
@@ -77,9 +77,9 @@ namespace MIN.Desktop
             uiContext.Post(_ => OnParticipantLeft(e.Participant), null);
         }
 
-        private void OnRoomInfoChangedEvent(object? sender, RoomStateChangedEventArgs e)
+        private void OnRoomStateChangedEvent(object? sender, RoomStateChangedEventArgs e)
         {
-            uiContext.Post(_ => OnRoomInfoChanged(e.Room!, e.State), null);
+            uiContext.Post(_ => OnRoomStateChanged(e.Room!, e.State), null);
         }
 
         private void ConnectionLostEvent(object? sender, ConnectionLostEventArgs e)
@@ -97,7 +97,7 @@ namespace MIN.Desktop
             UpdateStats();
         }
 
-        private void OnRoomInfoChanged(Room room, RoomState roomState)
+        private void OnRoomStateChanged(Room room, RoomState roomState)
         {
             if (roomState == RoomState.Disconnected)
             {
@@ -105,7 +105,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            Room = room;
+            this.room = room;
             UpdateStats();
         }
 
@@ -137,7 +137,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            Room.AddMessage(message);
+            room.AddMessage(message);
             AddMessageToChatFlow(message);
         }
 
@@ -150,7 +150,7 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
-            Room.AddMessage(roomMessage);
+            room.AddMessage(roomMessage);
             AddMessageToChatFlow(roomMessage);
         }
 
@@ -163,17 +163,17 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
-            Room.AddMessage(roomMessage);
+            room.AddMessage(roomMessage);
             AddMessageToChatFlow(roomMessage);
         }
 
         private void UpdateStats()
         {
-            Title.Text = $"Комната {Room.Name}";
-            participantsInfo.Text = $"{Room.CurrentParticipants.Count}/{Room.MaximumParticipants}";
-            hostName.Text = Room.HostParticipant.Name;
+            Title.Text = $"Комната {room.Name}";
+            participantsInfo.Text = $"{room.CurrentParticipants.Count}/{room.MaximumParticipants}";
+            hostName.Text = room.HostParticipant.Name;
 
-            if (CollegePCNameParser.TryParseComputerName(Room.HostParticipant.PCName, out int roomNumber, out int computerNumber))
+            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.PCName, out int roomNumber, out int computerNumber))
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
@@ -191,9 +191,9 @@ namespace MIN.Desktop
         {
             participantsFlow.Controls.Clear();
 
-            foreach (var participant in Room.CurrentParticipants)
+            foreach (var participant in room.CurrentParticipants)
             {
-                var card = new ParticipantCard(participant, Room);
+                var card = new ParticipantCard(participant, room);
                 card.MinimumSize = new Size(Width - splitContainerSideBar.SplitterDistance - (card.Margin.Left * 6), card.Height);
                 card.Size = card.MinimumSize;
                 participantsFlow.Controls.Add(card);
@@ -204,7 +204,7 @@ namespace MIN.Desktop
         {
             chatFlow.Controls.Clear();
 
-            foreach (var message in Room.ChatHistory)
+            foreach (var message in room.ChatHistory)
             {
                 AddMessageToChatFlow(message);
             }
@@ -262,7 +262,7 @@ namespace MIN.Desktop
             participantsFlow.BackColor = ColorScheme.DividerColor;
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;
 
-            editButton.Visible = AppUserProvider.Instance.CurrentUser.PCName == Room.HostParticipant.PCName;
+            editButton.Visible = AppUserProvider.Instance.CurrentUser.PCName == room.HostParticipant.PCName;
             tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
             tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
             changeMessageBoxSize();
@@ -324,7 +324,7 @@ namespace MIN.Desktop
 
         private void editButton_Click(object sender, EventArgs e)
         {
-            var editForm = new RoomCreateForm(Room);
+            var editForm = new RoomCreateForm(room);
             var result = editForm.ShowDialog();
             if (result == DialogResult.Abort)
             {
@@ -332,7 +332,7 @@ namespace MIN.Desktop
             }
             else if (result == DialogResult.OK)
             {
-                Room.UpdateInfo(Room);
+                room.UpdateInfo(room);
             }
         }
 

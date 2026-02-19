@@ -191,7 +191,6 @@ namespace MIN.Services.Connection.Pipes
 
         private void HandleChatMessage(ChatMessage message)
         {
-            // Для сообщений от самого себя — обновляем флаг времени на локальное
             if (message.SenderPCName == selfParticipant?.PCName && message.Time == default)
             {
                 message.Time = TimeOnly.FromDateTime(DateTime.Now);
@@ -202,7 +201,6 @@ namespace MIN.Services.Connection.Pipes
 
         private Participant ParseParticipantFromSystemMessage(ChatMessage systemMessage)
         {
-            // Формат: "JOIN:ИмяУчастника" или "LEAVE:ИмяУчастника"
             var parts = systemMessage.Content.Split(':', 2);
             var name = parts.Length > 1 ? parts[1] : "Unknown";
 
@@ -213,10 +211,12 @@ namespace MIN.Services.Connection.Pipes
             };
         }
 
-        private async Task SendJoinNotificationAsync(CancellationToken ct)
+        private async Task SendJoinNotificationAsync(CancellationToken cancellationToken)
         {
             if (selfParticipant == null || pipe == null || !pipe.IsConnected)
+            {
                 return;
+            }
 
             var joinMessage = new ChatMessage
             {
@@ -227,10 +227,17 @@ namespace MIN.Services.Connection.Pipes
                 Time = TimeOnly.FromDateTime(DateTime.Now)
             };
 
-            await serializer.WriteMessageAsync(pipe, joinMessage, ct);
+            try
+            {
+                await serializer.WriteMessageAsync(pipe, joinMessage, cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine($"Error in sending Join Message: {ex.Message}");
+            }
         }
 
-        private async Task SendLeaveNotificationAsync(CancellationToken ct)
+        private async Task SendLeaveNotificationAsync(CancellationToken cancellationToken)
         {
             if (selfParticipant == null || pipe == null || !pipe.IsConnected)
                 return;
@@ -246,7 +253,7 @@ namespace MIN.Services.Connection.Pipes
 
             try
             {
-                await serializer.WriteMessageAsync(pipe, leaveMessage, ct);
+                await serializer.WriteMessageAsync(pipe, leaveMessage, cancellationToken);
             }
             catch
             {
