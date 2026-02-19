@@ -37,7 +37,7 @@ namespace MIN.Services.Connection.Pipes
         /// <summary>
         /// Подключиться к существующей комнате
         /// </summary>
-        public async Task ConnectAsync(Room room, Participant selfParticipant, CancellationToken cancellationToken = default)
+        public async Task ConnectAsync(Room room, Participant selfParticipant, int timeoutMs = 1000, CancellationToken cancellationToken = default)
         {
             if (IsConnected) await DisconnectAsync();
 
@@ -61,47 +61,41 @@ namespace MIN.Services.Connection.Pipes
 
             try
             {
-                Debug.WriteLine($"Connecting to pipe as a client: {pipeName}");
+                Debug.WriteLine($"Connecting to room: {roomId}");
+                await pipe.ConnectAsync(timeoutMs, cancellationTokenSource.Token);
 
-                // Пытаемся подключиться с таймаутом 5 секунд
-                await pipe.ConnectAsync(5000, cancellationTokenSource.Token);
+                // Client connected at this postion
 
-                // Запускаем фоновое чтение сообщений
                 _ = ReceiveMessagesAsync(cancellationTokenSource.Token);
-
-                // Отправляем JOIN-уведомление серверу
                 await SendJoinNotificationAsync(cancellationTokenSource.Token);
-
-                // Теперь ждём RoomInfo от сервера (первое сообщение после подключения)
             }
             catch (TimeoutException)
             {
-                await DisconnectAsync();
+                await DisconnectAsync(cancellationTokenSource.Token);
                 throw new TimeoutException($"Could not connect to room '{roomId}'. Room may not exist or is full.");
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                await DisconnectAsync();
-                throw new InvalidOperationException($"Connection failed: {ex.Message}", ex);
+                await DisconnectAsync(cancellationTokenSource.Token);
+                throw new InvalidOperationException($"Connection failed: {ex.Message}");
             }
         }
 
         /// <summary>
         /// Фоновое чтение всех входящих сообщений
         /// </summary>
-        private async Task ReceiveMessagesAsync(CancellationToken ct)
+        private async Task ReceiveMessagesAsync(CancellationToken cancellationToken)
         {
             try
             {
-                while (!ct.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    // Определяем тип сообщения по префиксу или структуре
-                    var message = await serializer.ReadMessageAsync(pipe, ct);
+                    var message = await serializer.ReadMessageAsync(pipe!, cancellationToken);
 
                     switch (message)
                     {
                         case RoomInfoMessage roomInfo:
-                            await HandleRoomInfoAsync(roomInfo, ct);
+                            await HandleRoomInfoAsync(roomInfo, cancellationToken);
                             break;
 
                         case ChatMessage chatMsg when chatMsg.MessageType == MessageType.System
@@ -126,50 +120,36 @@ namespace MIN.Services.Connection.Pipes
             }
             catch (OperationCanceledException ex)
             {
-                // Ожидаемое завершение при отключении
-                Debug.WriteLine($"OperationCanceledException in PipeClient error: {ex.Message}");
+                Debug.WriteLine("Stopped recieving messages");
             }
             catch (IOException ex) when (!isDisposed)
             {
-                // Сервер разорвал соединение — инициируем корректное отключение
-                Debug.WriteLine($"IOException error in PipeClient: {ex.Message}");
-                await DisconnectAsync();
+                Debug.WriteLine($"Disconnected from server: {ex.Message}");
+                await DisconnectAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                // Логируем ошибку и отключаемся
                 Debug.WriteLine($"PipeClient error: {ex.Message}");
-                await DisconnectAsync();
+                await DisconnectAsync(cancellationToken);
             }
         }
 
         private async Task HandleRoomInfoAsync(RoomInfoMessage roomInfo, CancellationToken ct)
         {
-            // Создаём локальную копию комнаты на основе полученных данных
             currentRoom = new Room(roomInfo.RoomName, roomInfo.MaxParticipants)
             {
                 Id = roomInfo.RoomId,
                 HostParticipant = new Participant
                 {
+                    Id = roomInfo.HostId,
                     Name = roomInfo.HostName,
                     PCName = roomInfo.HostPCName
                 }
             };
 
-            // Добавляем текущих участников
-            foreach (var pInfo in roomInfo.CurrentParticipants)
+            foreach (var participant in roomInfo.CurrentParticipants)
             {
-                currentRoom.AddParticipant(new Participant
-                {
-                    Name = pInfo.Name,
-                    PCName = pInfo.PCName
-                });
-            }
-
-            // Добавляем себя в список участников (локально)
-            if (selfParticipant != null && !currentRoom.CurrentParticipants.Any(p => p.PCName == selfParticipant.PCName))
-            {
-                currentRoom.AddParticipant(selfParticipant);
+                currentRoom.AddParticipant(participant);
             }
 
             RoomInfoReceived?.Invoke(this, roomInfo);

@@ -1,4 +1,5 @@
 ﻿using System.IO.Pipes;
+using MIN.Services.Connection.Contracts.Models;
 using MIN.Services.Contracts.Models;
 
 namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
@@ -21,12 +22,12 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         /// <summary>
         /// Отправить сообщения
         /// </summary>
-        Task SendMessageAsync(NamedPipeServerStream pipe, ChatMessage message, CancellationToken cancellationToken = default);
+        Task SendMessageAsync(ClientConnection sender, ChatMessage message, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Отправить серверное сообщение
         /// </summary>
-        Task BroadcastSystemMessageAsync(NamedPipeServerStream pipe, string content, CancellationToken cancellationToken = default);
+        Task BroadcastMessageAsync(ClientConnection sender, ChatMessage message, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Активен
@@ -37,10 +38,5 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         /// Привязанная к серверу комната
         /// </summary>
         Room Room { get; }
-
-        event EventHandler<ChatMessage> MessageReceived;
-        event EventHandler<Participant> ParticipantJoined;
-        event EventHandler<Participant> ParticipantLeft;
-        event EventHandler<Participant> ClientDisconnected;
     }
 }

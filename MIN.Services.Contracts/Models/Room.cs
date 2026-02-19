@@ -123,7 +123,6 @@ public class Room(string name = "Room", int maximumParticipants = 2)
                 SenderPCName = message.SenderPCName,
                 Time = message.Time,
                 TimestampUtc = message.TimestampUtc,
-                AsRoomMessage = message.AsRoomMessage,
                 MessageType = message.MessageType,
                 Content = message.Content,
             });

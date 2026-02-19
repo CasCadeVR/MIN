@@ -33,11 +33,6 @@ public class ChatMessage
     public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Сообщение комнаты (сервера)
-    /// </summary>
-    public bool AsRoomMessage { get; set; } = false;
-
-    /// <summary>
     /// Тип сообщения (текст, файл)
     /// </summary>
     public MessageType MessageType { get; set; }

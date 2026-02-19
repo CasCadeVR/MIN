@@ -1,4 +1,3 @@
-using System.Windows.Forms;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -145,7 +144,6 @@ namespace MIN.Desktop
         {
             var roomMessage = new ChatMessage()
             {
-                AsRoomMessage = true,
                 Content = $"Участник {participant.Name} зашёл в комнату",
                 MessageType = MessageType.System,
             };
@@ -158,7 +156,6 @@ namespace MIN.Desktop
         {
             var roomMessage = new ChatMessage()
             {
-                AsRoomMessage = true,
                 Content = $"Участник {participant.Name} покинул комнату",
                 MessageType = MessageType.System,
             };
@@ -213,10 +210,9 @@ namespace MIN.Desktop
         private void AddMessageToChatFlow(ChatMessage message)
         {
             var row = new ChatMessageRow();
-            Control rowControl;
+            Control rowControl = new Label();
 
-            if (message.MessageType == MessageType.System
-                || message.MessageType == MessageType.Command)
+            if (message.MessageType == MessageType.System)
             {
                 rowControl = new Heading3Label()
                 {
@@ -225,7 +221,7 @@ namespace MIN.Desktop
                     Anchor = AnchorStyles.None,
                 };
             }
-            else
+            else if (message.MessageType == MessageType.Text)
             {
                 rowControl = new ChatMessageCard(message)
                 {

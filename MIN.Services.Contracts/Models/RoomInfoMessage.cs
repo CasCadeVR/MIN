@@ -18,6 +18,11 @@ public class RoomInfoMessage
     public int MaxParticipants { get; set; }
 
     /// <summary>
+    /// Идентификатор хоста
+    /// </summary>
+    public Guid HostId { get; set; }
+
+    /// <summary>
     /// Имя хоста
     /// </summary>
     public string HostName { get; set; } = string.Empty;

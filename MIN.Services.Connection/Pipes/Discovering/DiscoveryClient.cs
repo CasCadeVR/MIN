@@ -1,5 +1,4 @@
 ﻿using System.IO.Pipes;
-using System.Security.Principal;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models.Exceptions;

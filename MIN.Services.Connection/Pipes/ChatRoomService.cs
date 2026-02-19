@@ -46,15 +46,11 @@ namespace MIN.Services.Connection.Pipes
             this.client = client;
             this.serializer = serializer;
 
-            // Подписка на события КЛИЕНТА
+            this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
             this.client.RoomInfoReceived += (s, e) => OnRoomInfoReceived(e);
+            this.client.ParticipantJoined += (s, e) => OnTransportParticipantJoined(e);
+            this.client.ParticipantLeft += (s, e) => OnTransportParticipantLeft(e);
             this.client.Disconnected += (s, e) => OnTransportDisconnected();
-
-            // Подписка на события СЕРВЕРА (когда мы хост)
-            this.server.MessageReceived += (s, e) => OnTransportMessageReceived(e);
-            this.server.ParticipantJoined += (s, e) => OnTransportParticipantJoined(e);
-            this.server.ParticipantLeft += (s, e) => OnTransportParticipantLeft(e);
-            this.server.ClientDisconnected += (s, e) => OnServerClientDisconnected(e);
         }
 
         async Task<IEnumerable<Room>> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000, CancellationToken cancellationToken = default)
@@ -62,20 +58,16 @@ namespace MIN.Services.Connection.Pipes
             var discoveredRooms = new ConcurrentBag<Room>();
             var tasks = targetPCNames.Select(async pcName =>
             {
-                //if (string.Equals(pcName, selfParticipant?.PCName, StringComparison.OrdinalIgnoreCase))
-                //    return; // Пропускаем себя
-
                 try
                 {
                     discoveryClient = new DiscoveryClient(serializer);
-                    Debug.WriteLine($"CHECKING: {pcName}");
+                    Debug.WriteLine($"Checking computer with name: {pcName}");
                     var room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs));
                     discoveredRooms.Add(room!);
                 }
                 catch (RoomDiscoveryException ex)
                 {
-                    Debug.WriteLine($"UNABLE TO CONNECT: {ex.Message}");
-                    // Тихо игнорируем - ПК либо выключен, либо нет комнаты
+                    Debug.WriteLine($"Unable to discover room in {pcName}: {ex.Message}");
                 }
             });
 
@@ -88,7 +80,7 @@ namespace MIN.Services.Connection.Pipes
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
 
-            await DisconnectAsync();
+            await DisconnectAsync(cancellationToken);
 
             currentRoom = new Room(roomName, maxParticipants) { HostParticipant = host };
             selfParticipant = host;
@@ -103,7 +95,7 @@ namespace MIN.Services.Connection.Pipes
             return currentRoom;
         }
 
-        async Task IChatRoomService.JoinRoomAsync(Room room, Participant participant, CancellationToken cancellationToken = default)
+        async Task IChatRoomService.JoinRoomAsync(Room room, Participant participant, int timeoutMs = 1000, CancellationToken cancellationToken = default)
         {
             if (isDisposed)
             {
@@ -114,7 +106,7 @@ namespace MIN.Services.Connection.Pipes
 
             selfParticipant = participant;
 
-            await client.ConnectAsync(room, participant, cancellationToken);
+            await client.ConnectAsync(room, participant, timeoutMs, cancellationToken);
             OnRoomStateChanged(new RoomStateChangedEventArgs(room, RoomState.Joined));
         }
 
@@ -177,8 +169,6 @@ namespace MIN.Services.Connection.Pipes
             }
         }
 
-        // === Обработчики событий от транспорта ===
-
         /// <summary>
         /// Получена информация о комнате от сервера (при подключении клиента)
         /// </summary>
@@ -188,22 +178,15 @@ namespace MIN.Services.Connection.Pipes
             {
                 Id = roomInfo.RoomId,
                 HostParticipant = new Participant() {
+                    Id = roomInfo.HostId,
                     Name = roomInfo.HostName,
                     PCName = roomInfo.HostPCName,
                 }
             };
 
-            // Копируем текущих участников
             foreach (var participant in roomInfo.CurrentParticipants)
             {
                 currentRoom.CurrentParticipants.Add(participant);
-            }
-
-            // Добавляем себя в список участников (локально)
-            if (selfParticipant != null &&
-                !currentRoom.CurrentParticipants.Any(p => p.PCName == selfParticipant.PCName))
-            {
-                currentRoom.CurrentParticipants.Add(selfParticipant);
             }
 
             OnRoomStateChanged(new RoomStateChangedEventArgs(currentRoom, RoomState.Joined));
@@ -242,27 +225,10 @@ namespace MIN.Services.Connection.Pipes
         }
 
         /// <summary>
-        /// Клиент отключился от сервера (событие на стороне хоста)
-        /// </summary>
-        private void OnServerClientDisconnected(Participant participant)
-        {
-            // Удаляем участника из локального списка
-            currentRoom?.RemoveParticipant(participant);
-            ParticipantLeft?.Invoke(this, new ParticipantLeftEventArgs(participant));
-
-            // Если это был последний участник кроме хоста — комната пуста
-            if (currentRoom != null && currentRoom.CurrentParticipants.Count == 1)
-            {
-                Debug.WriteLine("Room is now empty (only host remains)");
-            }
-        }
-
-        /// <summary>
         /// Потеряно соединение с сервером (клиентская сторона)
         /// </summary>
         private void OnTransportDisconnected()
         {
-            // Автоматически инициируем отключение для очистки состояния
             _ = DisconnectAsync().ContinueWith(t =>
             {
                 if (t.IsFaulted)
@@ -270,7 +236,6 @@ namespace MIN.Services.Connection.Pipes
                     Debug.WriteLine($"Error during disconnect after transport loss: {t.Exception?.Message}");
                 }
 
-                // Уведомляем UI о потере соединения
                 ConnectionLost?.Invoke(this, new ConnectionLostEventArgs(
                     IsHost ? "Server stopped" : "Connection to room lost"));
             });

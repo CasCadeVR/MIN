@@ -124,7 +124,7 @@ namespace MIN.Desktop
             {
                 try
                 {
-                   await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, cancellationTokenSource.Token);
+                   await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, 1000, cancellationTokenSource.Token);
                 } 
                 catch(Exception ex)
                 {

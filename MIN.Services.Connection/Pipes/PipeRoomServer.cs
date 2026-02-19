@@ -2,6 +2,7 @@
 using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Threading;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models;
@@ -19,11 +20,6 @@ namespace MIN.Services.Connection.Pipes
 
         private CancellationTokenSource? cancellationTokenSource;
         private Room? room;
-
-        public event EventHandler<ChatMessage>? MessageReceived;
-        public event EventHandler<Participant>? ParticipantJoined;
-        public event EventHandler<Participant>? ParticipantLeft;
-        public event EventHandler<Participant>? ClientDisconnected;
 
         public PipeRoomServer(IPipeMessageSerializer serializer)
         {
@@ -53,7 +49,6 @@ namespace MIN.Services.Connection.Pipes
             // Системное сообщение о создании комнаты
             var systemMsg = new ChatMessage
             {
-                AsRoomMessage = true,
                 Content = $"Room '{room.Name}' created by {room.HostParticipant.Name}",
                 MessageType = MessageType.System,
                 Time = TimeOnly.FromDateTime(DateTime.Now)
@@ -132,46 +127,58 @@ namespace MIN.Services.Connection.Pipes
         {
             try
             {
-                // Отправляем RoomInfo
                 await SendRoomInfoAsync(connection.Pipe, ct);
 
-                // Читаем JOIN сообщение
-                var joinMessage = await serializer.ReadMessageAsync(connection.Pipe, ct);
-                if (joinMessage is ChatMessage chatMsg &&
-                    chatMsg.MessageType == MessageType.System &&
-                    chatMsg.Content.StartsWith("JOIN:"))
-                {
-                    var participant = ParseParticipantFromMessage(chatMsg);
-                    connection.Participant = participant;
-
-                    room?.AddParticipant(participant);
-
-                    lock (connectedClients)
-                    {
-                        connectedClients.Add(participant);
-                    }
-
-                    ParticipantJoined?.Invoke(this, participant);
-                }
-
-                // Теперь читаем обычные сообщения
                 while (!ct.IsCancellationRequested && connection.Pipe.IsConnected)
                 {
                     var message = await serializer.ReadMessageAsync(connection.Pipe, ct);
-                    if (message is ChatMessage chatMessage)
+
+                    switch (message)
                     {
-                        // Рассылаем ВСЕМ клиентам, кроме отправителя
-                        await BroadcastMessageAsync(connection, chatMessage, ct);
+                        case ChatMessage chatMessage when chatMessage.MessageType == MessageType.System
+                                && chatMessage.Content.StartsWith("JOIN:"):
+                            var joiningParticipant = ParseParticipantFromMessage(chatMessage);
+                            connection.Participant = joiningParticipant;
+
+                            room?.AddParticipant(joiningParticipant);
+
+                            lock (connectedClients)
+                            {
+                                connectedClients.Add(joiningParticipant);
+                            }
+
+                            await BroadcastMessageAsync(connection, chatMessage, ct);
+                            break;
+
+                        case ChatMessage chatMessage when chatMessage.MessageType == MessageType.System
+                                && chatMessage.Content.StartsWith("LEAVE:"):
+                            var leavingParticipant = ParseParticipantFromMessage(chatMessage);
+                            room?.RemoveParticipant(leavingParticipant);
+
+                            lock (connectedClients)
+                            {
+                                connectedClients.Remove(leavingParticipant);
+                            }
+
+                            await BroadcastMessageAsync(connection, chatMessage, ct);
+                            break;
+
+                        case ChatMessage chatMessage:
+                            await BroadcastMessageAsync(connection, chatMessage, ct);
+                            break;
+
+                        default:
+                            // Неизвестный тип — игнорируем
+                            break;
                     }
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                // Клиент отключился
+                // Client disconnected
                 if (connection.Participant != null)
                 {
                     room?.RemoveParticipant(connection.Participant);
-                    ParticipantLeft?.Invoke(this, connection.Participant);
                     lock (connectedClients)
                     {
                         connectedClients.Remove(connection.Participant);
@@ -197,7 +204,7 @@ namespace MIN.Services.Connection.Pipes
             await serializer.WriteMessageAsync(pipe, roomInfo, ct);
         }
 
-        private async Task BroadcastMessageAsync(ClientConnection sender, ChatMessage message, CancellationToken ct)
+        public async Task BroadcastMessageAsync(ClientConnection sender, ChatMessage message, CancellationToken ct)
         {
             var tasks = new List<Task>();
 
@@ -216,9 +223,6 @@ namespace MIN.Services.Connection.Pipes
             {
                 await Task.WhenAll(tasks);
             }
-
-            // Также уведомляем локальных подписчиков
-            MessageReceived?.Invoke(this, message);
         }
 
         private Participant ParseParticipantFromMessage(ChatMessage message)
@@ -250,22 +254,10 @@ namespace MIN.Services.Connection.Pipes
             connectedClients.Clear();
         }
 
-        public async Task SendMessageAsync(NamedPipeServerStream pipe, ChatMessage message, CancellationToken cancellationToken = default)
+        public async Task SendMessageAsync(ClientConnection connection, ChatMessage message, CancellationToken cancellationToken = default)
         {
             if (!IsRunning) throw new InvalidOperationException("Server not running");
-            await serializer.WriteMessageAsync(pipe!, message, cancellationToken);
-        }
-
-        public async Task BroadcastSystemMessageAsync(NamedPipeServerStream pipe, string content, CancellationToken cancellationToken = default)
-        {
-            var systemMsg = new ChatMessage
-            {
-                AsRoomMessage = true,
-                Content = content,
-                MessageType = MessageType.System,
-                Time = TimeOnly.FromDateTime(DateTime.Now)
-            };
-            await SendMessageAsync(pipe, systemMsg, cancellationToken);
+            await serializer.WriteMessageAsync(connection.Pipe, message, cancellationToken);
         }
 
         public async ValueTask DisposeAsync() => await StopAsync();
