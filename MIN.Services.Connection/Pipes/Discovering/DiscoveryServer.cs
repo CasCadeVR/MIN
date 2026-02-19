@@ -43,20 +43,12 @@ namespace MIN.Services.Connection.Pipes.Discovering
             {
                 try
                 {
-                    //using var pipe = new NamedPipeServerStream(
-                    //    DiscoveryPipeNameProvider.GetDiscoveryPipeName(pcName),
-                    //    PipeDirection.InOut,
-                    //    1,
-                    //    PipeTransmissionMode.Byte,
-                    //    PipeOptions.Asynchronous | PipeOptions.WriteThrough
-                    //);
-
-                    if (!System.OperatingSystem.IsWindows())
+                    if (!OperatingSystem.IsWindows())
                     {
                         throw new PlatformNotSupportedException("Windows only");
                     }
 
-                    var securityIdentifier = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+                    var securityIdentifier = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
 
                     var pipeSecurity = new PipeSecurity();
                     pipeSecurity.AddAccessRule(

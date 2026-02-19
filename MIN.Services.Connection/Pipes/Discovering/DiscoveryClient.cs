@@ -23,7 +23,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
 
         async Task<Room?> IDiscoveryClient.DiscoverRoomAsync(string targetPCName, TimeSpan timeout)
         {
-            var cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource(timeout);
             var pipeName = DiscoveryPipeNameProvider.GetDiscoveryPipeName(targetPCName);
 
             using var pipe = new NamedPipeClientStream(

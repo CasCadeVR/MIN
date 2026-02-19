@@ -60,7 +60,7 @@ namespace MIN.Desktop
             {
                 //var availablePCs = networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString());
                 //var availablePCs = new List<string>() { AppUserProvider.Instance.CurrentUser.PCName };
-                var availablePCs = new List<string>() { "C31203", "C31204" };
+                var availablePCs = new List<string>() { "DESKTOP-JQKBNSC", "CASCADELAPTOP" };
                 var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, cancellationToken: cancellationTokenSource.Token);
 
                 totalRoomsCount.Text = $"Всего нашлось комнат: {discoveredRooms.Count()}";

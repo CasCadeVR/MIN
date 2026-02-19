@@ -67,12 +67,12 @@ namespace MIN.Services.Connection.Pipes
             {
                 try
                 {
-                    if (!System.OperatingSystem.IsWindows())
+                    if (!OperatingSystem.IsWindows())
                     {
                         throw new PlatformNotSupportedException("Windows only");
                     }
 
-                    var securityIdentifier = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+                    var securityIdentifier = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
 
                     var pipeSecurity = new PipeSecurity();
                     pipeSecurity.AddAccessRule(

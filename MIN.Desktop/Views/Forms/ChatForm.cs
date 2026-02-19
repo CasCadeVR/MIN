@@ -151,6 +151,7 @@ namespace MIN.Desktop
             };
 
             Room.AddMessage(roomMessage);
+            AddMessageToChatFlow(roomMessage);
         }
 
         private void SendParticipantLeftMessage(Participant participant)
@@ -163,6 +164,7 @@ namespace MIN.Desktop
             };
 
             Room.AddMessage(roomMessage);
+            AddMessageToChatFlow(roomMessage);
         }
 
         private void UpdateStats()

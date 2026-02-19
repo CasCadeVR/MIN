@@ -159,7 +159,7 @@ namespace MIN.Services.Connection.Pipes
             // Добавляем текущих участников
             foreach (var pInfo in roomInfo.CurrentParticipants)
             {
-                currentRoom.CurrentParticipants.Add(new Participant
+                currentRoom.AddParticipant(new Participant
                 {
                     Name = pInfo.Name,
                     PCName = pInfo.PCName
@@ -169,7 +169,7 @@ namespace MIN.Services.Connection.Pipes
             // Добавляем себя в список участников (локально)
             if (selfParticipant != null && !currentRoom.CurrentParticipants.Any(p => p.PCName == selfParticipant.PCName))
             {
-                currentRoom.CurrentParticipants.Add(selfParticipant);
+                currentRoom.AddParticipant(selfParticipant);
             }
 
             RoomInfoReceived?.Invoke(this, roomInfo);
@@ -178,14 +178,14 @@ namespace MIN.Services.Connection.Pipes
         private void HandleParticipantJoined(ChatMessage systemMessage)
         {
             var participant = ParseParticipantFromSystemMessage(systemMessage);
-            currentRoom?.CurrentParticipants.Add(participant);
+            currentRoom?.AddParticipant(participant);
             ParticipantJoined?.Invoke(this, participant);
         }
 
         private void HandleParticipantLeft(ChatMessage systemMessage)
         {
             var participant = ParseParticipantFromSystemMessage(systemMessage);
-            currentRoom?.CurrentParticipants.RemoveAll(p => p.PCName == participant.PCName);
+            currentRoom?.RemoveParticipant(participant);
             ParticipantLeft?.Invoke(this, participant);
         }
 
