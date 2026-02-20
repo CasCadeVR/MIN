@@ -197,12 +197,7 @@ namespace MIN.Services.Connection.Pipes
         /// </summary>
         private void OnTransportMessageReceived(ChatMessage message)
         {
-            if (message.MessageType != MessageType.System &&
-                message.MessageType != MessageType.Command)
-            {
-                currentRoom?.AddMessage(message);
-            }
-
+            currentRoom?.AddMessage(message);
             MessageReceived?.Invoke(this, new MessageReceivedEventArgs(message));
         }
 
@@ -220,7 +215,10 @@ namespace MIN.Services.Connection.Pipes
         /// </summary>
         private void OnTransportParticipantLeft(Participant participant)
         {
-            currentRoom?.RemoveParticipant(participant);
+            if (currentRoom?.RemoveParticipantById(participant.Id) == false)
+            {
+                throw new ArgumentNullException($"Не нашёлся участник с id {participant.Id}");
+            }
             ParticipantLeft?.Invoke(this, new ParticipantLeftEventArgs(participant));
         }
 

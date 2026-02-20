@@ -88,7 +88,7 @@ namespace MIN.Desktop.Components
 
         private void OnParticipantLeft(Participant participant)
         {
-            this.room.RemoveParticipant(participant);
+            this.room.RemoveParticipantById(participant.Id);
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 

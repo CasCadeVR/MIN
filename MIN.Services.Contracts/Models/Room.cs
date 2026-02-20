@@ -63,8 +63,11 @@ public class Room(string name = "Room", int maximumParticipants = 2)
     /// <summary>
     /// Убрать участника из комнаты
     /// </summary>
-    public bool RemoveParticipant(Participant participant)
-        => currentParticipants.Remove(participant);
+    public bool RemoveParticipantById(Guid id)
+    {
+        var foundParticipant = currentParticipants.Where(x => x.Id == id).FirstOrDefault();
+        return currentParticipants.Remove(foundParticipant!);
+    }
 
     /// <summary>
     /// Добавить сообщение

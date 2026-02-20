@@ -2,7 +2,6 @@
 using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using System.Threading;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models;
@@ -153,7 +152,11 @@ namespace MIN.Services.Connection.Pipes
                         case ChatMessage chatMessage when chatMessage.MessageType == MessageType.System
                                 && chatMessage.Content.StartsWith("LEAVE:"):
                             var leavingParticipant = ParseParticipantFromMessage(chatMessage);
-                            room?.RemoveParticipant(leavingParticipant);
+
+                            if (room?.RemoveParticipantById(leavingParticipant.Id) == false)
+                            {
+                                throw new ArgumentNullException($"Не нашёлся участник с id {leavingParticipant.Id}");
+                            }
 
                             lock (connectedClients)
                             {
@@ -178,7 +181,7 @@ namespace MIN.Services.Connection.Pipes
                 // Client disconnected
                 if (connection.Participant != null)
                 {
-                    room?.RemoveParticipant(connection.Participant);
+                    room?.RemoveParticipantById(connection.Participant.Id);
                     lock (connectedClients)
                     {
                         connectedClients.Remove(connection.Participant);
@@ -227,10 +230,14 @@ namespace MIN.Services.Connection.Pipes
 
         private Participant ParseParticipantFromMessage(ChatMessage message)
         {
-            var parts = message.Content.Split(':', 2);
+            var parts = message.Content.Split(':', 3);
+            var name = parts.Length > 1 ? parts[1] : "Unknown";
+            var id = parts.Length > 2 ? Guid.Parse(parts[2]) : Guid.NewGuid();
+
             return new Participant
             {
-                Name = parts.Length > 1 ? parts[1] : "Unknown",
+                Id = id,
+                Name = name,
                 PCName = message.SenderPCName
             };
         }

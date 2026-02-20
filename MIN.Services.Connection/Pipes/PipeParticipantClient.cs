@@ -165,7 +165,10 @@ namespace MIN.Services.Connection.Pipes
         private void HandleParticipantLeft(ChatMessage systemMessage)
         {
             var participant = ParseParticipantFromSystemMessage(systemMessage);
-            currentRoom?.RemoveParticipant(participant);
+            if (currentRoom?.RemoveParticipantById(participant.Id) == false)
+            {
+                throw new ArgumentNullException($"Не нашёлся участник с id {participant.Id}");
+            }
             ParticipantLeft?.Invoke(this, participant);
         }
 
@@ -181,11 +184,13 @@ namespace MIN.Services.Connection.Pipes
 
         private Participant ParseParticipantFromSystemMessage(ChatMessage systemMessage)
         {
-            var parts = systemMessage.Content.Split(':', 2);
+            var parts = systemMessage.Content.Split(':', 3);
             var name = parts.Length > 1 ? parts[1] : "Unknown";
+            var id = parts.Length > 2 ? Guid.Parse(parts[2]) : Guid.NewGuid();
 
             return new Participant
             {
+                Id = id,
                 Name = name,
                 PCName = systemMessage.SenderPCName
             };
@@ -202,7 +207,7 @@ namespace MIN.Services.Connection.Pipes
             {
                 SenderName = selfParticipant.Name,
                 SenderPCName = selfParticipant.PCName,
-                Content = $"JOIN:{selfParticipant.Name}",
+                Content = $"JOIN:{selfParticipant.Name}:{selfParticipant.Id}",
                 MessageType = MessageType.System,
                 Time = TimeOnly.FromDateTime(DateTime.Now)
             };
@@ -226,7 +231,7 @@ namespace MIN.Services.Connection.Pipes
             {
                 SenderName = selfParticipant.Name,
                 SenderPCName = selfParticipant.PCName,
-                Content = $"LEAVE:{selfParticipant.Name}",
+                Content = $"LEAVE:{selfParticipant.Name}:{selfParticipant.Id}",
                 MessageType = MessageType.System,
                 Time = TimeOnly.FromDateTime(DateTime.Now)
             };
