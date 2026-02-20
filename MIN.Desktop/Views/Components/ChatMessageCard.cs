@@ -11,14 +11,16 @@ namespace MIN.Desktop.Components
     {
         private const int MaxLines = 100;            // ограничение, чтобы не было "монстров"
         private readonly ChatMessage chatMessage;
+        private readonly bool hostMessage;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>
         /// </summary>
-        public ChatMessageCard(ChatMessage chatMessage)
+        public ChatMessageCard(ChatMessage chatMessage, bool hostMessage)
         {
             InitializeComponent();
             this.chatMessage = chatMessage;
+            this.hostMessage = hostMessage;
             ApplyStylings();
             FillLabels();
         }
@@ -58,7 +60,7 @@ namespace MIN.Desktop.Components
         private void FillLabels()
         {
             senderName.Text = chatMessage.SenderName;
-            sendRole.Text = chatMessage.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName ? "Хост" : string.Empty;
+            sendRole.Text = hostMessage ? "Хост" : string.Empty;
             sendTime.Text = chatMessage.Time.ToShortTimeString();
             sendMessage.Text = chatMessage.Content;
         }

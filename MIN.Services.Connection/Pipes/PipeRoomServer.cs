@@ -2,6 +2,7 @@
 using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Threading;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models;
@@ -39,13 +40,11 @@ namespace MIN.Services.Connection.Pipes
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             IsRunning = true;
 
-            // Отправляем информацию о комнате первому подключившемуся клиенту
             for (int i = 0; i < room.MaximumParticipants; i++)
             {
                 _ = AcceptClientAsync(cancellationTokenSource.Token);
             }
 
-            // Системное сообщение о создании комнаты
             var systemMsg = new ChatMessage
             {
                 Content = $"Room '{room.Name}' created by {room.HostParticipant.Name}",
@@ -55,9 +54,9 @@ namespace MIN.Services.Connection.Pipes
             room.AddMessage(systemMsg);
         }
 
-        private async Task AcceptClientAsync(CancellationToken ct)
+        private async Task AcceptClientAsync(CancellationToken cancellationToken)
         {
-            while (!ct.IsCancellationRequested && IsRunning)
+            while (!cancellationToken.IsCancellationRequested && IsRunning)
             {
                 try
                 {
@@ -74,7 +73,7 @@ namespace MIN.Services.Connection.Pipes
                             PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
                     AccessControlType.Allow));
 
-                    var clientPipe = NamedPipeServerStreamAcl.Create(
+                    var clientPipeSlot = NamedPipeServerStreamAcl.Create(
                         PipeNameProvider.GetRoomPipeName(room!.Id),
                         PipeDirection.InOut,
                         room.MaximumParticipants,
@@ -83,32 +82,28 @@ namespace MIN.Services.Connection.Pipes
                         0, 0,
                         pipeSecurity);
 
-                    await clientPipe.WaitForConnectionAsync(ct);
+                    await clientPipeSlot.WaitForConnectionAsync(cancellationToken);
 
                     // Создаем подключение и сохраняем его
-                    var connection = new ClientConnection(clientPipe);
+                    var connection = new ClientConnection(clientPipeSlot);
                     lock (activeConnections)
                     {
                         activeConnections.Add(connection);
                     }
 
                     // Запускаем обработку в фоне
-                    connection.ProcessingTask = HandleClientConnectionAsync(connection, ct)
+                    connection.ProcessingTask = HandleClientConnectionAsync(connection, cancellationToken)
                         .ContinueWith(t =>
                         {
-                            // При завершении удаляем подключение
                             lock (activeConnections)
                             {
                                 activeConnections.Remove(connection);
                             }
                             connection.DisposeAsync().AsTask().Wait();
+                            CreateNewConnectionSlot(cancellationToken);
                         });
 
-                    // Создаем новую "запасную" трубу ТОЛЬКО если есть место
-                    if (activeConnections.Count < room.MaximumParticipants)
-                    {
-                        _ = AcceptClientAsync(ct); // Рекурсивный вызов для следующего слота
-                    }
+                    CreateNewConnectionSlot(cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -119,6 +114,19 @@ namespace MIN.Services.Connection.Pipes
                 {
                     continue;
                 }
+            }
+        }
+
+        private void CreateNewConnectionSlot(CancellationToken cancellationToken)
+        {
+            if (!IsRunning)
+            {
+                return;
+            }
+
+            if (activeConnections.Count < room!.MaximumParticipants)
+            {
+                _ = AcceptClientAsync(cancellationToken);
             }
         }
 
@@ -192,7 +200,6 @@ namespace MIN.Services.Connection.Pipes
 
         private async Task SendRoomInfoAsync(NamedPipeServerStream pipe, CancellationToken ct)
         {
-            // Отправляем RoomInfo как системное сообщение
             var roomInfo = new RoomInfoMessage
             {
                 RoomId = room!.Id,

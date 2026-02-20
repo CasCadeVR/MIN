@@ -76,7 +76,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
                     };
 
                     await serializer.WriteMessageAsync(pipe!, roomInfo, ct);
-                    //pipe.Disconnect();
                 }
                 catch (OperationCanceledException)
                 {

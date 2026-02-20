@@ -223,7 +223,7 @@ namespace MIN.Desktop
             }
             else if (message.MessageType == MessageType.Text)
             {
-                rowControl = new ChatMessageCard(message)
+                rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName)
                 {
                     Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
                         ? AnchorStyles.Right
