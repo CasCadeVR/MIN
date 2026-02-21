@@ -72,12 +72,12 @@ namespace MIN.Services.Connection.Pipes
             catch (TimeoutException)
             {
                 await DisconnectAsync(cancellationTokenSource.Token);
-                throw new TimeoutException($"Could not connect to room '{roomId}'. Room may not exist or is full.");
+                throw new TimeoutException($"Не получилось подсоединиться к комнате '{room.Name}'. Походу либо заполнена, либо она исчезла.");
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 await DisconnectAsync(cancellationTokenSource.Token);
-                throw new InvalidOperationException($"Connection failed: {ex.Message}");
+                throw new InvalidOperationException($"Соединение не удалось: {ex.Message}");
             }
         }
 
@@ -252,10 +252,10 @@ namespace MIN.Services.Connection.Pipes
         public async Task SendMessageAsync(ChatMessage message, CancellationToken cancellationToken = default)
         {
             if (!IsConnected || pipe == null || !pipe.IsConnected)
-                throw new InvalidOperationException("Not connected to any room");
+                throw new InvalidOperationException("Не подключен не к одной комнате");
 
             if (selfParticipant == null)
-                throw new InvalidOperationException("Self participant not set");
+                throw new InvalidOperationException("Участник не задан");
 
             // Заполняем метаданные отправителя
             message.SenderName ??= selfParticipant.Name;

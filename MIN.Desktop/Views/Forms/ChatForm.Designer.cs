@@ -46,14 +46,14 @@
             heading3Label4 = new MIN.Desktop.Components.Labels.Heading3Label();
             classroom = new MIN.Desktop.Components.Labels.Heading3Label();
             closeButton = new MIN.Desktop.Components.InvertedButton();
-            heading3Label5 = new MIN.Desktop.Components.Labels.Heading3Label();
-            heading3Label2 = new MIN.Desktop.Components.Labels.Heading3Label();
-            heading3Label3 = new MIN.Desktop.Components.Labels.Heading3Label();
             hostName = new MIN.Desktop.Components.Labels.Heading3Label();
             participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
             computer = new MIN.Desktop.Components.Labels.Heading3Label();
-            heading3Label1 = new MIN.Desktop.Components.Labels.Heading3Label();
             editButton = new MIN.Desktop.Components.CommonButton();
+            captionLabel1 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            captionLabel2 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            captionLabel3 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            captionLabel4 = new MIN.Desktop.Components.Labels.CaptionLabel();
             ((System.ComponentModel.ISupportInitialize)splitContainerSideBar).BeginInit();
             splitContainerSideBar.Panel1.SuspendLayout();
             splitContainerSideBar.Panel2.SuspendLayout();
@@ -86,7 +86,7 @@
             splitContainerSideBar.Panel2.Controls.Add(participantsFlow);
             splitContainerSideBar.Panel2.Controls.Add(tableLayoutPanelStats);
             splitContainerSideBar.Size = new Size(555, 610);
-            splitContainerSideBar.SplitterDistance = 404;
+            splitContainerSideBar.SplitterDistance = 407;
             splitContainerSideBar.SplitterWidth = 1;
             splitContainerSideBar.TabIndex = 0;
             // 
@@ -107,7 +107,7 @@
             // 
             splitContainer.Panel2.Controls.Add(tableLayoutPanel2);
             splitContainer.Panel2.Controls.Add(tableLayoutPanel1);
-            splitContainer.Size = new Size(404, 610);
+            splitContainer.Size = new Size(407, 610);
             splitContainer.SplitterDistance = 55;
             splitContainer.TabIndex = 1;
             // 
@@ -121,7 +121,7 @@
             tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
             tableLayoutPanelHeader.RowCount = 1;
             tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelHeader.Size = new Size(404, 55);
+            tableLayoutPanelHeader.Size = new Size(407, 55);
             tableLayoutPanelHeader.TabIndex = 0;
             // 
             // Title
@@ -130,7 +130,7 @@
             Title.AutoSize = true;
             Title.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             Title.ForeColor = Color.FromArgb(248, 249, 255);
-            Title.Location = new Point(136, 12);
+            Title.Location = new Point(137, 12);
             Title.Name = "Title";
             Title.Size = new Size(132, 30);
             Title.TabIndex = 0;
@@ -148,7 +148,7 @@
             tableLayoutPanel2.RowCount = 2;
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
-            tableLayoutPanel2.Size = new Size(404, 503);
+            tableLayoutPanel2.Size = new Size(407, 503);
             tableLayoutPanel2.TabIndex = 4;
             // 
             // chatFlow
@@ -158,7 +158,7 @@
             chatFlow.FlowDirection = FlowDirection.BottomUp;
             chatFlow.Location = new Point(3, 3);
             chatFlow.Name = "chatFlow";
-            chatFlow.Size = new Size(398, 449);
+            chatFlow.Size = new Size(401, 449);
             chatFlow.TabIndex = 3;
             chatFlow.WrapContents = false;
             chatFlow.Resize += chatFlow_Resize;
@@ -178,7 +178,7 @@
             tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
             tableLayoutPanelButtons.RowCount = 1;
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelButtons.Size = new Size(404, 48);
+            tableLayoutPanelButtons.Size = new Size(407, 48);
             tableLayoutPanelButtons.TabIndex = 2;
             // 
             // fileButton
@@ -205,7 +205,7 @@
             sendButton.FlatStyle = FlatStyle.Flat;
             sendButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendButton.ForeColor = Color.FromArgb(248, 249, 255);
-            sendButton.Location = new Point(359, 3);
+            sendButton.Location = new Point(362, 3);
             sendButton.Name = "sendButton";
             sendButton.Padding = new Padding(8, 4, 8, 4);
             sendButton.Size = new Size(42, 42);
@@ -227,7 +227,7 @@
             messageTextBox.Name = "messageTextBox";
             messageTextBox.PlaceholderText = "Message";
             messageTextBox.ScrollBars = ScrollBars.Vertical;
-            messageTextBox.Size = new Size(222, 42);
+            messageTextBox.Size = new Size(225, 42);
             messageTextBox.TabIndex = 4;
             messageTextBox.TextChanged += messageTextBox_TextChanged;
             messageTextBox.KeyPress += messageTextBox_KeyPress;
@@ -245,7 +245,7 @@
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanel1.Size = new Size(404, 48);
+            tableLayoutPanel1.Size = new Size(407, 48);
             tableLayoutPanel1.TabIndex = 1;
             // 
             // disconnectButton
@@ -275,7 +275,7 @@
             aboutButton.FlatStyle = FlatStyle.Flat;
             aboutButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             aboutButton.ForeColor = Color.FromArgb(248, 249, 255);
-            aboutButton.Location = new Point(285, 3);
+            aboutButton.Location = new Point(288, 3);
             aboutButton.Name = "aboutButton";
             aboutButton.Padding = new Padding(8, 4, 8, 4);
             aboutButton.Size = new Size(116, 42);
@@ -291,7 +291,7 @@
             participantsFlow.FlowDirection = FlowDirection.TopDown;
             participantsFlow.Location = new Point(0, 276);
             participantsFlow.Name = "participantsFlow";
-            participantsFlow.Size = new Size(150, 334);
+            participantsFlow.Size = new Size(147, 334);
             participantsFlow.TabIndex = 5;
             participantsFlow.WrapContents = false;
             // 
@@ -300,17 +300,17 @@
             tableLayoutPanelStats.ColumnCount = 2;
             tableLayoutPanelStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelStats.Controls.Add(captionLabel4, 0, 4);
+            tableLayoutPanelStats.Controls.Add(captionLabel3, 0, 3);
+            tableLayoutPanelStats.Controls.Add(captionLabel2, 0, 2);
             tableLayoutPanelStats.Controls.Add(heading3Label4, 0, 5);
             tableLayoutPanelStats.Controls.Add(classroom, 1, 2);
             tableLayoutPanelStats.Controls.Add(closeButton, 0, 0);
-            tableLayoutPanelStats.Controls.Add(heading3Label5, 0, 1);
-            tableLayoutPanelStats.Controls.Add(heading3Label2, 0, 3);
-            tableLayoutPanelStats.Controls.Add(heading3Label3, 0, 4);
             tableLayoutPanelStats.Controls.Add(hostName, 1, 1);
             tableLayoutPanelStats.Controls.Add(participantsInfo, 1, 4);
             tableLayoutPanelStats.Controls.Add(computer, 1, 3);
-            tableLayoutPanelStats.Controls.Add(heading3Label1, 0, 2);
             tableLayoutPanelStats.Controls.Add(editButton, 1, 0);
+            tableLayoutPanelStats.Controls.Add(captionLabel1, 0, 1);
             tableLayoutPanelStats.Dock = DockStyle.Top;
             tableLayoutPanelStats.Location = new Point(0, 0);
             tableLayoutPanelStats.Margin = new Padding(0);
@@ -322,7 +322,7 @@
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
-            tableLayoutPanelStats.Size = new Size(150, 276);
+            tableLayoutPanelStats.Size = new Size(147, 276);
             tableLayoutPanelStats.TabIndex = 4;
             // 
             // heading3Label4
@@ -332,7 +332,7 @@
             tableLayoutPanelStats.SetColumnSpan(heading3Label4, 2);
             heading3Label4.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             heading3Label4.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label4.Location = new Point(36, 259);
+            heading3Label4.Location = new Point(34, 259);
             heading3Label4.Name = "heading3Label4";
             heading3Label4.Size = new Size(78, 17);
             heading3Label4.TabIndex = 16;
@@ -344,7 +344,7 @@
             classroom.AutoSize = true;
             classroom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             classroom.ForeColor = Color.FromArgb(0, 0, 0);
-            classroom.Location = new Point(78, 95);
+            classroom.Location = new Point(76, 95);
             classroom.Name = "classroom";
             classroom.Size = new Size(66, 34);
             classroom.TabIndex = 12;
@@ -363,47 +363,11 @@
             closeButton.Location = new Point(3, 3);
             closeButton.Name = "closeButton";
             closeButton.Padding = new Padding(8, 4, 8, 4);
-            closeButton.Size = new Size(69, 39);
+            closeButton.Size = new Size(67, 39);
             closeButton.TabIndex = 3;
-            closeButton.Text = "Закрыть";
+            closeButton.Text = "X";
             closeButton.UseVisualStyleBackColor = false;
             closeButton.Click += closeButton_Click;
-            // 
-            // heading3Label5
-            // 
-            heading3Label5.Anchor = AnchorStyles.Right;
-            heading3Label5.AutoSize = true;
-            heading3Label5.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            heading3Label5.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label5.Location = new Point(3, 45);
-            heading3Label5.Name = "heading3Label5";
-            heading3Label5.Size = new Size(69, 45);
-            heading3Label5.TabIndex = 8;
-            heading3Label5.Text = "Создатель комнаты: ";
-            // 
-            // heading3Label2
-            // 
-            heading3Label2.Anchor = AnchorStyles.Right;
-            heading3Label2.AutoSize = true;
-            heading3Label2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            heading3Label2.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label2.Location = new Point(6, 135);
-            heading3Label2.Name = "heading3Label2";
-            heading3Label2.Size = new Size(66, 45);
-            heading3Label2.TabIndex = 11;
-            heading3Label2.Text = "№ Компьютера: ";
-            // 
-            // heading3Label3
-            // 
-            heading3Label3.Anchor = AnchorStyles.Right;
-            heading3Label3.AutoSize = true;
-            heading3Label3.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            heading3Label3.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label3.Location = new Point(4, 185);
-            heading3Label3.Name = "heading3Label3";
-            heading3Label3.Size = new Size(68, 34);
-            heading3Label3.TabIndex = 14;
-            heading3Label3.Text = "Подключено: ";
             // 
             // hostName
             // 
@@ -411,7 +375,7 @@
             hostName.AutoSize = true;
             hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             hostName.ForeColor = Color.FromArgb(0, 0, 0);
-            hostName.Location = new Point(78, 50);
+            hostName.Location = new Point(76, 50);
             hostName.Name = "hostName";
             hostName.Size = new Size(66, 34);
             hostName.TabIndex = 9;
@@ -423,7 +387,7 @@
             participantsInfo.AutoSize = true;
             participantsInfo.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(78, 185);
+            participantsInfo.Location = new Point(76, 185);
             participantsInfo.Name = "participantsInfo";
             participantsInfo.Size = new Size(66, 34);
             participantsInfo.TabIndex = 15;
@@ -435,23 +399,11 @@
             computer.AutoSize = true;
             computer.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             computer.ForeColor = Color.FromArgb(0, 0, 0);
-            computer.Location = new Point(78, 140);
+            computer.Location = new Point(76, 140);
             computer.Name = "computer";
             computer.Size = new Size(66, 34);
             computer.TabIndex = 13;
             computer.Text = "Загрузка...";
-            // 
-            // heading3Label1
-            // 
-            heading3Label1.Anchor = AnchorStyles.Right;
-            heading3Label1.AutoSize = true;
-            heading3Label1.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            heading3Label1.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label1.Location = new Point(4, 104);
-            heading3Label1.Name = "heading3Label1";
-            heading3Label1.Size = new Size(68, 17);
-            heading3Label1.TabIndex = 10;
-            heading3Label1.Text = "Кабинет: ";
             // 
             // editButton
             // 
@@ -461,14 +413,62 @@
             editButton.FlatStyle = FlatStyle.Flat;
             editButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             editButton.ForeColor = Color.FromArgb(248, 249, 255);
-            editButton.Location = new Point(78, 3);
+            editButton.Location = new Point(76, 3);
             editButton.Name = "editButton";
             editButton.Padding = new Padding(8, 4, 8, 4);
-            editButton.Size = new Size(69, 39);
+            editButton.Size = new Size(68, 39);
             editButton.TabIndex = 17;
-            editButton.Text = "Изменить";
+            editButton.Text = ". . .";
             editButton.UseVisualStyleBackColor = false;
             editButton.Click += editButton_Click;
+            // 
+            // captionLabel1
+            // 
+            captionLabel1.Anchor = AnchorStyles.Right;
+            captionLabel1.AutoSize = true;
+            captionLabel1.Font = new Font("Segoe UI", 8.25F);
+            captionLabel1.ForeColor = Color.Black;
+            captionLabel1.Location = new Point(3, 61);
+            captionLabel1.Name = "captionLabel1";
+            captionLabel1.Size = new Size(67, 13);
+            captionLabel1.TabIndex = 18;
+            captionLabel1.Text = "Создатель: ";
+            // 
+            // captionLabel2
+            // 
+            captionLabel2.Anchor = AnchorStyles.Right;
+            captionLabel2.AutoSize = true;
+            captionLabel2.Font = new Font("Segoe UI", 8.25F);
+            captionLabel2.ForeColor = Color.Black;
+            captionLabel2.Location = new Point(13, 106);
+            captionLabel2.Name = "captionLabel2";
+            captionLabel2.Size = new Size(57, 13);
+            captionLabel2.TabIndex = 19;
+            captionLabel2.Text = "Кабинет: ";
+            // 
+            // captionLabel3
+            // 
+            captionLabel3.Anchor = AnchorStyles.Right;
+            captionLabel3.AutoSize = true;
+            captionLabel3.Font = new Font("Segoe UI", 8.25F);
+            captionLabel3.ForeColor = Color.Black;
+            captionLabel3.Location = new Point(8, 151);
+            captionLabel3.Name = "captionLabel3";
+            captionLabel3.Size = new Size(62, 13);
+            captionLabel3.TabIndex = 20;
+            captionLabel3.Text = "№ Компа: ";
+            // 
+            // captionLabel4
+            // 
+            captionLabel4.Anchor = AnchorStyles.Right;
+            captionLabel4.AutoSize = true;
+            captionLabel4.Font = new Font("Segoe UI", 8.25F);
+            captionLabel4.ForeColor = Color.Black;
+            captionLabel4.Location = new Point(8, 189);
+            captionLabel4.Name = "captionLabel4";
+            captionLabel4.Size = new Size(62, 26);
+            captionLabel4.TabIndex = 21;
+            captionLabel4.Text = "Подключено: ";
             // 
             // ChatForm
             // 
@@ -516,15 +516,15 @@
         private Components.Labels.Heading3Label heading3Label4;
         private Components.Labels.Heading3Label classroom;
         private Components.InvertedButton closeButton;
-        private Components.Labels.Heading3Label heading3Label5;
-        private Components.Labels.Heading3Label heading3Label2;
-        private Components.Labels.Heading3Label heading3Label3;
         private Components.Labels.Heading3Label hostName;
         private Components.Labels.Heading3Label participantsInfo;
         private Components.Labels.Heading3Label computer;
-        private Components.Labels.Heading3Label heading3Label1;
         private Components.CommonButton editButton;
         private Components.Controls.TextBoxes.MessageTextBox messageTextBox;
         private TableLayoutPanel tableLayoutPanel2;
+        private Components.Labels.CaptionLabel captionLabel3;
+        private Components.Labels.CaptionLabel captionLabel2;
+        private Components.Labels.CaptionLabel captionLabel1;
+        private Components.Labels.CaptionLabel captionLabel4;
     }
 }

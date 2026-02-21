@@ -34,13 +34,13 @@
             connectButton = new CommonButton();
             tableLayoutPanelLabels = new TableLayoutPanel();
             participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
-            heading3Label3 = new MIN.Desktop.Components.Labels.Heading3Label();
             computer = new MIN.Desktop.Components.Labels.Heading3Label();
             classroom = new MIN.Desktop.Components.Labels.Heading3Label();
-            heading3Label1 = new MIN.Desktop.Components.Labels.Heading3Label();
             hostName = new MIN.Desktop.Components.Labels.Heading3Label();
-            ClassTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
-            heading3Label2 = new MIN.Desktop.Components.Labels.Heading3Label();
+            computerNumberLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            currentlyConnectedLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            roomNumberLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            creatorLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -118,14 +118,14 @@
             tableLayoutPanelLabels.ColumnCount = 2;
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelLabels.Controls.Add(creatorLabel, 0, 0);
+            tableLayoutPanelLabels.Controls.Add(roomNumberLabel, 0, 1);
+            tableLayoutPanelLabels.Controls.Add(currentlyConnectedLabel, 0, 3);
             tableLayoutPanelLabels.Controls.Add(participantsInfo, 1, 3);
-            tableLayoutPanelLabels.Controls.Add(heading3Label3, 0, 3);
             tableLayoutPanelLabels.Controls.Add(computer, 1, 2);
             tableLayoutPanelLabels.Controls.Add(classroom, 1, 1);
-            tableLayoutPanelLabels.Controls.Add(heading3Label1, 0, 1);
             tableLayoutPanelLabels.Controls.Add(hostName, 1, 0);
-            tableLayoutPanelLabels.Controls.Add(ClassTitleInput, 0, 0);
-            tableLayoutPanelLabels.Controls.Add(heading3Label2, 0, 2);
+            tableLayoutPanelLabels.Controls.Add(computerNumberLabel, 0, 2);
             tableLayoutPanelLabels.Dock = DockStyle.Top;
             tableLayoutPanelLabels.Location = new Point(0, 0);
             tableLayoutPanelLabels.Margin = new Padding(0);
@@ -149,18 +149,6 @@
             participantsInfo.Size = new Size(74, 17);
             participantsInfo.TabIndex = 7;
             participantsInfo.Text = "Загрузка...";
-            // 
-            // heading3Label3
-            // 
-            heading3Label3.Anchor = AnchorStyles.Right;
-            heading3Label3.AutoSize = true;
-            heading3Label3.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            heading3Label3.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label3.Location = new Point(25, 97);
-            heading3Label3.Name = "heading3Label3";
-            heading3Label3.Size = new Size(99, 17);
-            heading3Label3.TabIndex = 6;
-            heading3Label3.Text = "Подключено: ";
             // 
             // computer
             // 
@@ -186,18 +174,6 @@
             classroom.TabIndex = 4;
             classroom.Text = "Загрузка...";
             // 
-            // heading3Label1
-            // 
-            heading3Label1.Anchor = AnchorStyles.Right;
-            heading3Label1.AutoSize = true;
-            heading3Label1.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            heading3Label1.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label1.Location = new Point(56, 36);
-            heading3Label1.Name = "heading3Label1";
-            heading3Label1.Size = new Size(68, 17);
-            heading3Label1.TabIndex = 2;
-            heading3Label1.Text = "Кабинет: ";
-            // 
             // hostName
             // 
             hostName.Anchor = AnchorStyles.Left;
@@ -210,29 +186,53 @@
             hostName.TabIndex = 1;
             hostName.Text = "Загрузка...";
             // 
-            // ClassTitleInput
+            // computerNumberLabel
             // 
-            ClassTitleInput.Anchor = AnchorStyles.Right;
-            ClassTitleInput.AutoSize = true;
-            ClassTitleInput.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            ClassTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
-            ClassTitleInput.Location = new Point(43, 6);
-            ClassTitleInput.Name = "ClassTitleInput";
-            ClassTitleInput.Size = new Size(81, 17);
-            ClassTitleInput.TabIndex = 0;
-            ClassTitleInput.Text = "Создатель: ";
+            computerNumberLabel.Anchor = AnchorStyles.Right;
+            computerNumberLabel.AutoSize = true;
+            computerNumberLabel.Font = new Font("Segoe UI", 8.25F);
+            computerNumberLabel.ForeColor = Color.Black;
+            computerNumberLabel.Location = new Point(65, 68);
+            computerNumberLabel.Name = "computerNumberLabel";
+            computerNumberLabel.Size = new Size(59, 13);
+            computerNumberLabel.TabIndex = 8;
+            computerNumberLabel.Text = "№ Компа:";
             // 
-            // heading3Label2
+            // currentlyConnectedLabel
             // 
-            heading3Label2.Anchor = AnchorStyles.Right;
-            heading3Label2.AutoSize = true;
-            heading3Label2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            heading3Label2.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label2.Location = new Point(8, 66);
-            heading3Label2.Name = "heading3Label2";
-            heading3Label2.Size = new Size(116, 17);
-            heading3Label2.TabIndex = 3;
-            heading3Label2.Text = "№ Компьютера: ";
+            currentlyConnectedLabel.Anchor = AnchorStyles.Right;
+            currentlyConnectedLabel.AutoSize = true;
+            currentlyConnectedLabel.Font = new Font("Segoe UI", 8.25F);
+            currentlyConnectedLabel.ForeColor = Color.Black;
+            currentlyConnectedLabel.Location = new Point(45, 99);
+            currentlyConnectedLabel.Name = "currentlyConnectedLabel";
+            currentlyConnectedLabel.Size = new Size(79, 13);
+            currentlyConnectedLabel.TabIndex = 9;
+            currentlyConnectedLabel.Text = "Подключено:";
+            // 
+            // roomNumberLabel
+            // 
+            roomNumberLabel.Anchor = AnchorStyles.Right;
+            roomNumberLabel.AutoSize = true;
+            roomNumberLabel.Font = new Font("Segoe UI", 8.25F);
+            roomNumberLabel.ForeColor = Color.Black;
+            roomNumberLabel.Location = new Point(70, 38);
+            roomNumberLabel.Name = "roomNumberLabel";
+            roomNumberLabel.Size = new Size(54, 13);
+            roomNumberLabel.TabIndex = 10;
+            roomNumberLabel.Text = "Кабинет:";
+            // 
+            // creatorLabel
+            // 
+            creatorLabel.Anchor = AnchorStyles.Right;
+            creatorLabel.AutoSize = true;
+            creatorLabel.Font = new Font("Segoe UI", 8.25F);
+            creatorLabel.ForeColor = Color.Black;
+            creatorLabel.Location = new Point(60, 8);
+            creatorLabel.Name = "creatorLabel";
+            creatorLabel.Size = new Size(64, 13);
+            creatorLabel.TabIndex = 11;
+            creatorLabel.Text = "Создатель:";
             // 
             // RoomCard
             // 
@@ -261,13 +261,13 @@
         private Labels.Heading1Label Title;
         private CommonButton connectButton;
         private TableLayoutPanel tableLayoutPanelLabels;
-        private Labels.Heading3Label ClassTitleInput;
         private Labels.Heading3Label computer;
         private Labels.Heading3Label classroom;
-        private Labels.Heading3Label heading3Label1;
         private Labels.Heading3Label hostName;
-        private Labels.Heading3Label heading3Label2;
         private Labels.Heading3Label participantsInfo;
-        private Labels.Heading3Label heading3Label3;
+        private Labels.CaptionLabel creatorLabel;
+        private Labels.CaptionLabel roomNumberLabel;
+        private Labels.CaptionLabel currentlyConnectedLabel;
+        private Labels.CaptionLabel computerNumberLabel;
     }
 }

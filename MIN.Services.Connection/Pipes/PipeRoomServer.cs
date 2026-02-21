@@ -61,7 +61,7 @@ namespace MIN.Services.Connection.Pipes
                 {
                     if (!OperatingSystem.IsWindows())
                     {
-                        throw new PlatformNotSupportedException("Windows only");
+                        throw new PlatformNotSupportedException("К сожалению, пока только на Windows");
                     }
 
                     var securityIdentifier = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
@@ -269,7 +269,7 @@ namespace MIN.Services.Connection.Pipes
 
         public async Task SendMessageAsync(ClientConnection connection, ChatMessage message, CancellationToken cancellationToken = default)
         {
-            if (!IsRunning) throw new InvalidOperationException("Server not running");
+            if (!IsRunning) throw new InvalidOperationException("Сервер не работает");
             await serializer.WriteMessageAsync(connection.Pipe, message, cancellationToken);
         }
 

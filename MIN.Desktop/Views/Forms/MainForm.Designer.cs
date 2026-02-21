@@ -32,7 +32,7 @@
             tableLayoutPanelHeader = new TableLayoutPanel();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             splitContainerClass = new SplitContainer();
-            tableLayoutPanel2 = new TableLayoutPanel();
+            tableLayoutPanelMainButtons = new TableLayoutPanel();
             findRooms = new MIN.Desktop.Components.CommonButton();
             createRoom = new MIN.Desktop.Components.CommonButton();
             tableLayoutPanel1 = new TableLayoutPanel();
@@ -51,7 +51,7 @@
             splitContainerClass.Panel1.SuspendLayout();
             splitContainerClass.Panel2.SuspendLayout();
             splitContainerClass.SuspendLayout();
-            tableLayoutPanel2.SuspendLayout();
+            tableLayoutPanelMainButtons.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)classNumber).BeginInit();
             statusStrip.SuspendLayout();
@@ -113,7 +113,7 @@
             // 
             // splitContainerClass.Panel1
             // 
-            splitContainerClass.Panel1.Controls.Add(tableLayoutPanel2);
+            splitContainerClass.Panel1.Controls.Add(tableLayoutPanelMainButtons);
             splitContainerClass.Panel1.Controls.Add(tableLayoutPanel1);
             // 
             // splitContainerClass.Panel2
@@ -123,21 +123,21 @@
             splitContainerClass.Size = new Size(800, 391);
             splitContainerClass.TabIndex = 0;
             // 
-            // tableLayoutPanel2
+            // tableLayoutPanelMainButtons
             // 
-            tableLayoutPanel2.ColumnCount = 2;
-            tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tableLayoutPanel2.Controls.Add(findRooms, 0, 0);
-            tableLayoutPanel2.Controls.Add(createRoom, 1, 0);
-            tableLayoutPanel2.Dock = DockStyle.Right;
-            tableLayoutPanel2.Location = new Point(402, 0);
-            tableLayoutPanel2.Margin = new Padding(0);
-            tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 1;
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel2.Size = new Size(398, 50);
-            tableLayoutPanel2.TabIndex = 2;
+            tableLayoutPanelMainButtons.ColumnCount = 2;
+            tableLayoutPanelMainButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelMainButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelMainButtons.Controls.Add(findRooms, 0, 0);
+            tableLayoutPanelMainButtons.Controls.Add(createRoom, 1, 0);
+            tableLayoutPanelMainButtons.Dock = DockStyle.Right;
+            tableLayoutPanelMainButtons.Location = new Point(402, 0);
+            tableLayoutPanelMainButtons.Margin = new Padding(0);
+            tableLayoutPanelMainButtons.Name = "tableLayoutPanelMainButtons";
+            tableLayoutPanelMainButtons.RowCount = 1;
+            tableLayoutPanelMainButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
+            tableLayoutPanelMainButtons.Size = new Size(398, 50);
+            tableLayoutPanelMainButtons.TabIndex = 2;
             // 
             // findRooms
             // 
@@ -187,7 +187,7 @@
             tableLayoutPanel1.Margin = new Padding(0);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
             tableLayoutPanel1.Size = new Size(402, 50);
             tableLayoutPanel1.TabIndex = 1;
             // 
@@ -281,7 +281,7 @@
             splitContainerClass.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerClass).EndInit();
             splitContainerClass.ResumeLayout(false);
-            tableLayoutPanel2.ResumeLayout(false);
+            tableLayoutPanelMainButtons.ResumeLayout(false);
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)classNumber).EndInit();
@@ -302,7 +302,7 @@
         private Components.Controls.NumericUpDowns.DefaultNumericUpDown classNumber;
         private StatusStrip statusStrip;
         private ToolStripStatusLabel totalRoomsCount;
-        private TableLayoutPanel tableLayoutPanel2;
+        private TableLayoutPanel tableLayoutPanelMainButtons;
         private Components.CommonButton findRooms;
         private Components.CommonButton createRoom;
         private Components.CommonButton settingsButton;

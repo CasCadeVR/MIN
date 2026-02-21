@@ -250,11 +250,11 @@ namespace MIN.Desktop
             computer.ForeColor = ColorScheme.TextOnAccent;
             classroom.ForeColor = ColorScheme.TextOnAccent;
 
-            heading3Label1.ForeColor = ColorScheme.TextOnAccent;
-            heading3Label2.ForeColor = ColorScheme.TextOnAccent;
-            heading3Label3.ForeColor = ColorScheme.TextOnAccent;
+            captionLabel1.ForeColor = ColorScheme.TextOnAccent;
+            captionLabel2.ForeColor = ColorScheme.TextOnAccent;
+            captionLabel3.ForeColor = ColorScheme.TextOnAccent;
+            captionLabel4.ForeColor = ColorScheme.TextOnAccent;
             heading3Label4.ForeColor = ColorScheme.TextOnAccent;
-            heading3Label5.ForeColor = ColorScheme.TextOnAccent;
 
             participantsFlow.BackColor = ColorScheme.DividerColor;
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;

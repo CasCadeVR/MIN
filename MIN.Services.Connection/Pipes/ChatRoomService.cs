@@ -235,7 +235,7 @@ namespace MIN.Services.Connection.Pipes
                 }
 
                 ConnectionLost?.Invoke(this, new ConnectionLostEventArgs(
-                    IsHost ? "Server stopped" : "Connection to room lost"));
+                    IsHost ? "Сервер был остановлен хостом" : "Соединение к комнате потеряно"));
             });
         }
 
