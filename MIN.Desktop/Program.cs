@@ -7,6 +7,7 @@ using MIN.Services.Connection.Pipes;
 using MIN.Services.Connection.Pipes.Discovering;
 using MIN.Services.Connection.Serialize;
 using MIN.Services.Contracts.Interfaces;
+using MIN.Services.Services;
 
 namespace MIN.Desktop
 {
@@ -32,6 +33,7 @@ namespace MIN.Desktop
         {
             services.AddSingleton<IPipeMessageSerializer, PipeMessageSerializer>();
             services.AddSingleton<ISettingsProvider, SettingsProvider>();
+            services.AddSingleton<ILoggerProvider, LoggerProvider>();
 
             // ChatRoomService Ч синглтон на уровне приложени€ (один активный чат)
             services.AddSingleton<IChatRoomService, ChatRoomService>();
