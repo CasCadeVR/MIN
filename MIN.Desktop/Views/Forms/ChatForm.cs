@@ -166,6 +166,7 @@ namespace MIN.Desktop
 
         private void UpdateStats()
         {
+            Text = $"MIN - Комната {room.Name}";
             Title.Text = $"Комната {room.Name}";
             participantsInfo.Text = $"{room.CurrentParticipants.Count}/{room.MaximumParticipants}";
             hostName.Text = room.HostParticipant.Name;

@@ -66,7 +66,7 @@
             // 
             splitContainer.Panel2.Controls.Add(connectButton);
             splitContainer.Panel2.Controls.Add(tableLayoutPanelLabels);
-            splitContainer.Size = new Size(311, 227);
+            splitContainer.Size = new Size(255, 227);
             splitContainer.SplitterDistance = 55;
             splitContainer.TabIndex = 1;
             // 
@@ -80,7 +80,7 @@
             tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
             tableLayoutPanelHeader.RowCount = 1;
             tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelHeader.Size = new Size(311, 55);
+            tableLayoutPanelHeader.Size = new Size(255, 55);
             tableLayoutPanelHeader.TabIndex = 0;
             // 
             // Title
@@ -89,7 +89,7 @@
             Title.AutoSize = true;
             Title.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             Title.ForeColor = Color.Black;
-            Title.Location = new Point(89, 12);
+            Title.Location = new Point(61, 12);
             Title.Name = "Title";
             Title.Size = new Size(132, 30);
             Title.TabIndex = 0;
@@ -107,7 +107,7 @@
             connectButton.Location = new Point(0, 124);
             connectButton.Name = "connectButton";
             connectButton.Padding = new Padding(8, 4, 8, 4);
-            connectButton.Size = new Size(311, 44);
+            connectButton.Size = new Size(255, 44);
             connectButton.TabIndex = 2;
             connectButton.Text = "Присоединиться";
             connectButton.UseVisualStyleBackColor = false;
@@ -135,7 +135,7 @@
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 25.0006275F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 25.0006237F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 24.9981289F));
-            tableLayoutPanelLabels.Size = new Size(311, 121);
+            tableLayoutPanelLabels.Size = new Size(255, 121);
             tableLayoutPanelLabels.TabIndex = 1;
             // 
             // participantsInfo
@@ -144,7 +144,7 @@
             participantsInfo.AutoSize = true;
             participantsInfo.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(158, 97);
+            participantsInfo.Location = new Point(130, 97);
             participantsInfo.Name = "participantsInfo";
             participantsInfo.Size = new Size(74, 17);
             participantsInfo.TabIndex = 7;
@@ -156,7 +156,7 @@
             heading3Label3.AutoSize = true;
             heading3Label3.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             heading3Label3.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label3.Location = new Point(53, 97);
+            heading3Label3.Location = new Point(25, 97);
             heading3Label3.Name = "heading3Label3";
             heading3Label3.Size = new Size(99, 17);
             heading3Label3.TabIndex = 6;
@@ -168,7 +168,7 @@
             computer.AutoSize = true;
             computer.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             computer.ForeColor = Color.FromArgb(0, 0, 0);
-            computer.Location = new Point(158, 66);
+            computer.Location = new Point(130, 66);
             computer.Name = "computer";
             computer.Size = new Size(74, 17);
             computer.TabIndex = 5;
@@ -180,7 +180,7 @@
             classroom.AutoSize = true;
             classroom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             classroom.ForeColor = Color.FromArgb(0, 0, 0);
-            classroom.Location = new Point(158, 36);
+            classroom.Location = new Point(130, 36);
             classroom.Name = "classroom";
             classroom.Size = new Size(74, 17);
             classroom.TabIndex = 4;
@@ -192,7 +192,7 @@
             heading3Label1.AutoSize = true;
             heading3Label1.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             heading3Label1.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label1.Location = new Point(84, 36);
+            heading3Label1.Location = new Point(56, 36);
             heading3Label1.Name = "heading3Label1";
             heading3Label1.Size = new Size(68, 17);
             heading3Label1.TabIndex = 2;
@@ -204,7 +204,7 @@
             hostName.AutoSize = true;
             hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             hostName.ForeColor = Color.FromArgb(0, 0, 0);
-            hostName.Location = new Point(158, 6);
+            hostName.Location = new Point(130, 6);
             hostName.Name = "hostName";
             hostName.Size = new Size(74, 17);
             hostName.TabIndex = 1;
@@ -216,11 +216,11 @@
             ClassTitleInput.AutoSize = true;
             ClassTitleInput.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             ClassTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
-            ClassTitleInput.Location = new Point(10, 6);
+            ClassTitleInput.Location = new Point(43, 6);
             ClassTitleInput.Name = "ClassTitleInput";
-            ClassTitleInput.Size = new Size(142, 17);
+            ClassTitleInput.Size = new Size(81, 17);
             ClassTitleInput.TabIndex = 0;
-            ClassTitleInput.Text = "Создатель комнаты: ";
+            ClassTitleInput.Text = "Создатель: ";
             // 
             // heading3Label2
             // 
@@ -228,7 +228,7 @@
             heading3Label2.AutoSize = true;
             heading3Label2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             heading3Label2.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label2.Location = new Point(36, 66);
+            heading3Label2.Location = new Point(8, 66);
             heading3Label2.Name = "heading3Label2";
             heading3Label2.Size = new Size(116, 17);
             heading3Label2.TabIndex = 3;
@@ -239,9 +239,9 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(splitContainer);
-            Margin = new Padding(0, 0, 0, 5);
+            Margin = new Padding(5);
             Name = "RoomCard";
-            Size = new Size(311, 227);
+            Size = new Size(255, 227);
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();

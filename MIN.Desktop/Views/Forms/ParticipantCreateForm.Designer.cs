@@ -31,19 +31,19 @@
             splitContainer = new SplitContainer();
             tableLayoutPanelHeader = new TableLayoutPanel();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
+            tableLayoutPanelButtons = new TableLayoutPanel();
             connectButton = new MIN.Desktop.Components.CommonButton();
+            cancelButton = new MIN.Desktop.Components.InvertedButton();
             tableLayoutPanel1 = new TableLayoutPanel();
             ClassTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
             participantName = new MIN.Desktop.Components.Controls.TextBoxes.DefaultTextBox();
-            tableLayoutPanelButtons = new TableLayoutPanel();
-            cancelButton = new MIN.Desktop.Components.InvertedButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
             splitContainer.SuspendLayout();
             tableLayoutPanelHeader.SuspendLayout();
-            tableLayoutPanel1.SuspendLayout();
             tableLayoutPanelButtons.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
             // 
             // splitContainer
@@ -92,6 +92,21 @@
             Title.TabIndex = 0;
             Title.Text = "Подключение";
             // 
+            // tableLayoutPanelButtons
+            // 
+            tableLayoutPanelButtons.ColumnCount = 2;
+            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelButtons.Controls.Add(connectButton, 0, 0);
+            tableLayoutPanelButtons.Controls.Add(cancelButton, 1, 0);
+            tableLayoutPanelButtons.Dock = DockStyle.Bottom;
+            tableLayoutPanelButtons.Location = new Point(0, 45);
+            tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
+            tableLayoutPanelButtons.RowCount = 1;
+            tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelButtons.Size = new Size(416, 50);
+            tableLayoutPanelButtons.TabIndex = 2;
+            // 
             // connectButton
             // 
             connectButton.BackColor = Color.FromArgb(192, 192, 255);
@@ -107,6 +122,24 @@
             connectButton.Text = "Подключиться";
             connectButton.UseVisualStyleBackColor = false;
             connectButton.Click += createButton_Click;
+            // 
+            // cancelButton
+            // 
+            cancelButton.Anchor = AnchorStyles.Left;
+            cancelButton.BackColor = Color.FromArgb(248, 249, 255);
+            cancelButton.DialogResult = DialogResult.Cancel;
+            cancelButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
+            cancelButton.FlatAppearance.BorderSize = 2;
+            cancelButton.FlatStyle = FlatStyle.Flat;
+            cancelButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            cancelButton.ForeColor = Color.FromArgb(167, 157, 255);
+            cancelButton.Location = new Point(211, 3);
+            cancelButton.Name = "cancelButton";
+            cancelButton.Padding = new Padding(8, 4, 8, 4);
+            cancelButton.Size = new Size(202, 44);
+            cancelButton.TabIndex = 3;
+            cancelButton.Text = "Отмена";
+            cancelButton.UseVisualStyleBackColor = false;
             // 
             // tableLayoutPanel1
             // 
@@ -149,39 +182,6 @@
             participantName.Size = new Size(202, 26);
             participantName.TabIndex = 1;
             // 
-            // tableLayoutPanelButtons
-            // 
-            tableLayoutPanelButtons.ColumnCount = 2;
-            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanelButtons.Controls.Add(connectButton, 0, 0);
-            tableLayoutPanelButtons.Controls.Add(cancelButton, 1, 0);
-            tableLayoutPanelButtons.Dock = DockStyle.Bottom;
-            tableLayoutPanelButtons.Location = new Point(0, 45);
-            tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
-            tableLayoutPanelButtons.RowCount = 1;
-            tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelButtons.Size = new Size(416, 50);
-            tableLayoutPanelButtons.TabIndex = 2;
-            // 
-            // cancelButton
-            // 
-            cancelButton.Anchor = AnchorStyles.Left;
-            cancelButton.BackColor = Color.FromArgb(248, 249, 255);
-            cancelButton.DialogResult = DialogResult.Cancel;
-            cancelButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
-            cancelButton.FlatAppearance.BorderSize = 2;
-            cancelButton.FlatStyle = FlatStyle.Flat;
-            cancelButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
-            cancelButton.ForeColor = Color.FromArgb(167, 157, 255);
-            cancelButton.Location = new Point(211, 3);
-            cancelButton.Name = "cancelButton";
-            cancelButton.Padding = new Padding(8, 4, 8, 4);
-            cancelButton.Size = new Size(202, 44);
-            cancelButton.TabIndex = 3;
-            cancelButton.Text = "Отмена";
-            cancelButton.UseVisualStyleBackColor = false;
-            // 
             // ParticipantCreateForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -190,16 +190,16 @@
             Controls.Add(splitContainer);
             MinimumSize = new Size(432, 193);
             Name = "ParticipantCreateForm";
-            Text = "MIN";
+            Text = "MIN - Подключение к комнате";
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();
             splitContainer.ResumeLayout(false);
             tableLayoutPanelHeader.ResumeLayout(false);
             tableLayoutPanelHeader.PerformLayout();
+            tableLayoutPanelButtons.ResumeLayout(false);
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
-            tableLayoutPanelButtons.ResumeLayout(false);
             ResumeLayout(false);
         }
 

@@ -4,6 +4,7 @@ using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Services;
 
 namespace MIN.Desktop
@@ -11,15 +12,19 @@ namespace MIN.Desktop
     public partial class MainForm : StyledForm
     {
         private readonly IChatRoomService chatRoomService;
-        private ILocalNetworkComputerProvider networkComputerProvider;
+        private readonly ISettingsProvider settingsProvider;
+        private readonly ILocalNetworkComputerProvider networkComputerProvider;
         private readonly SynchronizationContext uiContext;
         private readonly CancellationTokenSource cancellationTokenSource = new();
 
-        public MainForm(IChatRoomService chatRoomService)
+        private Settings settings => settingsProvider.GetSettings();
+
+        public MainForm(IChatRoomService chatRoomService, ISettingsProvider settingsProvider)
         {
             InitializeComponent();
 
             this.chatRoomService = chatRoomService;
+            this.settingsProvider = settingsProvider;
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -58,10 +63,11 @@ namespace MIN.Desktop
 
             try
             {
-                //var availablePCs = networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString());
-                //var availablePCs = new List<string>() { AppUserProvider.Instance.CurrentUser.PCName };
-                var availablePCs = new List<string>() { "DESKTOP-JQKBNSC", "CASCADELAPTOP" };
-                var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, timeoutMs: 3000, cancellationToken: cancellationTokenSource.Token);
+                var availablePCs = settings.SearchMethod == SearchMethod.ClassRoom
+                    ? networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString())
+                    : settings.PreferredPCNames;
+
+                var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, settings.DiscoveryTimeout, cancellationToken: cancellationTokenSource.Token);
 
                 totalRoomsCount.Text = $"Всего нашлось комнат: {discoveredRooms.Count()}";
 
@@ -87,7 +93,11 @@ namespace MIN.Desktop
                 var card = new RoomCard(chatRoomService, room);
                 card.Parent = flowLayoutPanel;
                 card.Clicked += () => OnRoomConnection(room);
-                card.Disposed += (s, e) => card.UnsubscribeFromChatEvents();
+                card.Disposed += (s, e) =>
+                {
+                    card.UnsubscribeFromChatEvents();
+                    totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
+                };
             }
         }
 
@@ -124,9 +134,9 @@ namespace MIN.Desktop
             {
                 try
                 {
-                   await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, 1000, cancellationTokenSource.Token);
-                } 
-                catch(Exception ex)
+                    await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, settings.DiscoveryTimeout, cancellationTokenSource.Token);
+                }
+                catch (Exception ex)
                 {
                     MessageBox.Show($"Произошла ошибка: {ex.Message}");
                 }
@@ -142,11 +152,26 @@ namespace MIN.Desktop
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            AppUserProvider.Instance.InitializeUser(new Participant()
+            var selfParticipant = new Participant()
             {
                 Name = "Хост",
                 PCName = Environment.MachineName,
-            });
+            };
+
+            AppUserProvider.Instance.InitializeUser(selfParticipant);
+            if (CollegePCNameParser.TryParseComputerName(selfParticipant.PCName, out var roomNumber, out var _))
+            {
+                classNumber.Value = roomNumber;
+            }
+        }
+
+        private void settingsButton_Click(object sender, EventArgs e)
+        {
+            var settingsForm = new SettingsForm(settingsProvider.GetSettings());
+            if (settingsForm.ShowDialog() == DialogResult.OK)
+            {
+                settingsProvider.SaveSettings(settingsForm.Settings);
+            }
         }
     }
 }

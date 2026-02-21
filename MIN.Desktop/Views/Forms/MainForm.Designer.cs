@@ -38,6 +38,7 @@
             tableLayoutPanel1 = new TableLayoutPanel();
             ClassroomTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
             classNumber = new MIN.Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown();
+            settingsButton = new MIN.Desktop.Components.CommonButton();
             statusStrip = new StatusStrip();
             totalRoomsCount = new ToolStripStatusLabel();
             flowLayoutPanel = new FlowLayoutPanel();
@@ -174,18 +175,19 @@
             // 
             // tableLayoutPanel1
             // 
-            tableLayoutPanel1.ColumnCount = 2;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanel1.ColumnCount = 3;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50F));
             tableLayoutPanel1.Controls.Add(ClassroomTitleInput, 0, 0);
             tableLayoutPanel1.Controls.Add(classNumber, 1, 0);
+            tableLayoutPanel1.Controls.Add(settingsButton, 2, 0);
             tableLayoutPanel1.Dock = DockStyle.Left;
             tableLayoutPanel1.Location = new Point(0, 0);
             tableLayoutPanel1.Margin = new Padding(0);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel1.Size = new Size(402, 50);
             tableLayoutPanel1.TabIndex = 1;
             // 
@@ -195,9 +197,9 @@
             ClassroomTitleInput.AutoSize = true;
             ClassroomTitleInput.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             ClassroomTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
-            ClassroomTitleInput.Location = new Point(4, 14);
+            ClassroomTitleInput.Location = new Point(56, 4);
             ClassroomTitleInput.Name = "ClassroomTitleInput";
-            ClassroomTitleInput.Size = new Size(194, 21);
+            ClassroomTitleInput.Size = new Size(117, 42);
             ClassroomTitleInput.TabIndex = 0;
             ClassroomTitleInput.Text = "Введи номер кабинета: ";
             // 
@@ -208,13 +210,31 @@
             classNumber.BorderStyle = BorderStyle.None;
             classNumber.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             classNumber.ForeColor = Color.Purple;
-            classNumber.Location = new Point(204, 10);
+            classNumber.Location = new Point(179, 10);
             classNumber.Maximum = new decimal(new int[] { 440, 0, 0, 0 });
             classNumber.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
             classNumber.Name = "classNumber";
             classNumber.Size = new Size(53, 29);
             classNumber.TabIndex = 1;
             classNumber.Value = new decimal(new int[] { 100, 0, 0, 0 });
+            // 
+            // settingsButton
+            // 
+            settingsButton.BackColor = Color.FromArgb(167, 157, 255);
+            settingsButton.BackgroundImage = Properties.Resources.settings;
+            settingsButton.BackgroundImageLayout = ImageLayout.Stretch;
+            settingsButton.Dock = DockStyle.Fill;
+            settingsButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            settingsButton.FlatStyle = FlatStyle.Flat;
+            settingsButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            settingsButton.ForeColor = Color.FromArgb(248, 249, 255);
+            settingsButton.Location = new Point(355, 3);
+            settingsButton.Name = "settingsButton";
+            settingsButton.Padding = new Padding(8, 4, 8, 4);
+            settingsButton.Size = new Size(44, 44);
+            settingsButton.TabIndex = 2;
+            settingsButton.UseVisualStyleBackColor = false;
+            settingsButton.Click += settingsButton_Click;
             // 
             // statusStrip
             // 
@@ -285,5 +305,6 @@
         private TableLayoutPanel tableLayoutPanel2;
         private Components.CommonButton findRooms;
         private Components.CommonButton createRoom;
+        private Components.CommonButton settingsButton;
     }
 }

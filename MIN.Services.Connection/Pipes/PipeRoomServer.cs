@@ -2,7 +2,6 @@
 using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using System.Threading;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models;
@@ -47,7 +46,7 @@ namespace MIN.Services.Connection.Pipes
 
             var systemMsg = new ChatMessage
             {
-                Content = $"Room '{room.Name}' created by {room.HostParticipant.Name}",
+                Content = $"Комната '{room.Name}' Была создана {room.HostParticipant.Name} в {TimeOnly.FromDateTime(DateTime.Now).ToShortTimeString()}",
                 MessageType = MessageType.System,
                 Time = TimeOnly.FromDateTime(DateTime.Now)
             };

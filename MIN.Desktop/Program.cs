@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
@@ -30,6 +31,7 @@ namespace MIN.Desktop
         private static void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IPipeMessageSerializer, PipeMessageSerializer>();
+            services.AddSingleton<ISettingsProvider, SettingsProvider>();
 
             // ChatRoomService Ч синглтон на уровне приложени€ (один активный чат)
             services.AddSingleton<IChatRoomService, ChatRoomService>();

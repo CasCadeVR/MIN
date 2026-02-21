@@ -18,13 +18,12 @@ namespace MIN.Services.Connection.Serialize
         };
 
         // Формат сообщения: [4 байта: длина][1 байт: тип][N байт: данные]
-        // Типы: 0 = ChatMessage, 1 = RoomInfoMessage
 
-        async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, CancellationToken ct = default)
+        async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, CancellationToken cancellationToken = default)
         {
             // Читаем длину
             var lengthBuffer = new byte[4];
-            await stream.ReadExactlyAsync(lengthBuffer, ct);
+            await stream.ReadExactlyAsync(lengthBuffer, cancellationToken);
             var length = BitConverter.ToInt32(lengthBuffer, 0);
 
             if (length <= 0 || length > ChatMessageConstants.MaximumMessageSize)
@@ -32,12 +31,12 @@ namespace MIN.Services.Connection.Serialize
 
             // Читаем тип сообщения
             var typeBuffer = new byte[1];
-            await stream.ReadExactlyAsync(typeBuffer, ct);
+            await stream.ReadExactlyAsync(typeBuffer, cancellationToken);
             var messageType = (MessageTypeTag)typeBuffer[0];
 
             // Читаем данные
             var dataBuffer = new byte[length];
-            await stream.ReadExactlyAsync(dataBuffer, ct);
+            await stream.ReadExactlyAsync(dataBuffer, cancellationToken);
 
             return messageType switch
             {
@@ -57,7 +56,8 @@ namespace MIN.Services.Connection.Serialize
             };
         }
 
-        async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, CancellationToken ct = default) where T : class
+        async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, CancellationToken cancellationToken = default)
+            where T : class
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, jsonOptions);
             if (json.Length > ChatMessageConstants.MaximumMessageSize)
@@ -76,14 +76,14 @@ namespace MIN.Services.Connection.Serialize
 
             // Записываем длину
             var lengthBuffer = BitConverter.GetBytes(json.Length);
-            await stream.WriteAsync(lengthBuffer, ct);
+            await stream.WriteAsync(lengthBuffer, cancellationToken);
 
             // Записываем тип
-            await stream.WriteAsync(new[] { (byte)typeTag }, ct);
+            await stream.WriteAsync(new[] { (byte)typeTag }, cancellationToken);
 
             // Записываем данные
-            await stream.WriteAsync(json, ct);
-            await stream.FlushAsync(ct);
+            await stream.WriteAsync(json, cancellationToken);
+            await stream.FlushAsync(cancellationToken);
         }
 
         private enum MessageTypeTag : byte

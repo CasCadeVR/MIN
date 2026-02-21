@@ -1,0 +1,135 @@
+using MIN.Desktop.Contracts;
+using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Contracts.Models;
+
+namespace MIN.Desktop
+{
+    /// <summary>
+    /// Форма настроек
+    /// </summary>
+    public partial class SettingsForm : StyledForm
+    {
+        /// <summary>
+        /// Текущие настройки
+        /// </summary>
+        public Settings Settings { get; set; }
+
+        public SettingsForm(Settings settings)
+        {
+            Settings = settings;
+            InitializeComponent();
+            FillControls();
+            enableOutOfRadioButtons();
+        }
+
+        private void FillControls()
+        {
+            roomSearchTime.Value = Settings.DiscoveryTimeout;
+            preferredSearch.Checked = Settings.SearchMethod == SearchMethod.Preferred;
+            classRoomSearch.Checked = Settings.SearchMethod == SearchMethod.ClassRoom;
+            SetPCNames(Settings.PreferredPCNames.ToList());
+        }
+
+        private void SetPCNames(List<string> pcNames)
+        {
+            bool allowAdd = preferredPcNameList.AllowUserToAddRows;
+            preferredPcNameList.AllowUserToAddRows = false;
+            preferredPcNameList.Rows.Clear();
+
+            if (pcNames != null)
+            {
+                foreach (string pcName in pcNames)
+                {
+                    string cleanName = pcName?.Trim();
+                    if (!string.IsNullOrEmpty(cleanName))
+                    {
+                        preferredPcNameList.Rows.Add(cleanName);
+                    }
+                }
+            }
+
+            preferredPcNameList.AllowUserToAddRows = allowAdd;
+        }
+
+        protected override void ApplyStylings()
+        {
+            splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
+            splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
+            Title.ForeColor = ColorScheme.TextOnAccent;
+        }
+
+        private void saveButton_Click(object sender, EventArgs e)
+        {
+            Settings.DiscoveryTimeout = Convert.ToInt32(roomSearchTime.Value);
+            Settings.SearchMethod = preferredSearch.Checked ? SearchMethod.Preferred : SearchMethod.ClassRoom;
+            Settings.PreferredPCNames = GetPCNames();
+            
+            DialogResult = DialogResult.OK;
+        }
+
+        private List<string> GetPCNames()
+        {
+            var pcNames = new List<string>();
+
+            foreach (DataGridViewRow row in preferredPcNameList.Rows)
+            {
+                if (row.IsNewRow)
+                    continue;
+
+                var cellValue = row.Cells[0].Value;
+
+                if (cellValue != null)
+                {
+                    string pcName = cellValue.ToString().Trim();
+                    if (!string.IsNullOrEmpty(pcName))
+                    {
+                        pcNames.Add(pcName);
+                    }
+                }
+            }
+
+            return pcNames;
+        }
+
+        private void enableOutOfRadioButtons()
+        {
+            classRoomDescription.Enabled = classRoomSearch.Checked;
+            pcNameDescription.Enabled = preferredSearch.Checked;
+            preferredPcNameDescription.Enabled = preferredSearch.Checked;
+            preferredPcNameList.Enabled = preferredSearch.Checked;
+        }
+
+        private void preferredSearch_CheckedChanged(object sender, EventArgs e)
+        {
+            enableOutOfRadioButtons();
+        }
+
+        private void classRoomSearch_CheckedChanged(object sender, EventArgs e)
+        {
+            enableOutOfRadioButtons();
+        }
+
+        private void preferredPcNameList_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            if (e.ColumnIndex == 0)
+            {
+                string newValue = e.FormattedValue?.ToString()?.Trim();
+                if (string.IsNullOrEmpty(newValue)) return;
+
+                foreach (DataGridViewRow row in preferredPcNameList.Rows)
+                {
+                    if (row.IsNewRow || row.Index == e.RowIndex) continue;
+
+                    string existing = row.Cells[0].Value?.ToString()?.Trim();
+                    if (string.Equals(existing, newValue, StringComparison.OrdinalIgnoreCase))
+                    {
+                        MessageBox.Show("Такое имя компьютера уже существует.");
+                        e.Cancel = true;
+                        return;
+                    }
+                }
+            }
+        }
+    }
+}
