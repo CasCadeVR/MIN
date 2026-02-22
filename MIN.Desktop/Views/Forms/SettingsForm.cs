@@ -2,6 +2,7 @@ using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Interfaces;
 
 namespace MIN.Desktop
 {
@@ -10,14 +11,17 @@ namespace MIN.Desktop
     /// </summary>
     public partial class SettingsForm : StyledForm
     {
+        private readonly ILoggerProvider loggerProvider;
+
         /// <summary>
         /// Текущие настройки
         /// </summary>
         public Settings Settings { get; set; }
 
-        public SettingsForm(Settings settings)
+        public SettingsForm(Settings settings, ILoggerProvider loggerProvider)
         {
             Settings = settings;
+            this.loggerProvider = loggerProvider;
             InitializeComponent();
             FillControls();
             enableOutOfRadioButtons();
@@ -64,7 +68,7 @@ namespace MIN.Desktop
             Settings.DiscoveryTimeout = Convert.ToInt32(roomSearchTime.Value);
             Settings.SearchMethod = preferredSearch.Checked ? SearchMethod.Preferred : SearchMethod.ClassRoom;
             Settings.PreferredPCNames = GetPCNames();
-            
+
             DialogResult = DialogResult.OK;
         }
 
@@ -130,6 +134,11 @@ namespace MIN.Desktop
                     }
                 }
             }
+        }
+
+        private void logButton_Click(object sender, EventArgs e)
+        {
+            new LogForm(loggerProvider).Show();
         }
     }
 }

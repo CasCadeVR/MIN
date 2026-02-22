@@ -13,18 +13,20 @@ namespace MIN.Desktop
     {
         private readonly IChatRoomService chatRoomService;
         private readonly ISettingsProvider settingsProvider;
+        private readonly ILoggerProvider loggerProvider;
         private readonly ILocalNetworkComputerProvider networkComputerProvider;
         private readonly SynchronizationContext uiContext;
         private readonly CancellationTokenSource cancellationTokenSource = new();
 
         private Settings settings => settingsProvider.GetSettings();
 
-        public MainForm(IChatRoomService chatRoomService, ISettingsProvider settingsProvider)
+        public MainForm(IChatRoomService chatRoomService, ISettingsProvider settingsProvider, ILoggerProvider loggerProvider)
         {
             InitializeComponent();
 
             this.chatRoomService = chatRoomService;
             this.settingsProvider = settingsProvider;
+            this.loggerProvider = loggerProvider;
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -167,7 +169,7 @@ namespace MIN.Desktop
 
         private void settingsButton_Click(object sender, EventArgs e)
         {
-            var settingsForm = new SettingsForm(settingsProvider.GetSettings());
+            var settingsForm = new SettingsForm(settingsProvider.GetSettings(), loggerProvider);
             if (settingsForm.ShowDialog() == DialogResult.OK)
             {
                 settingsProvider.SaveSettings(settingsForm.Settings);

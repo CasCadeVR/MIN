@@ -1,10 +1,12 @@
 ﻿using System.IO.Pipes;
-using System.Diagnostics;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using System.Security.Principal;
 using System.Security.AccessControl;
+using MIN.Services.Contracts.Interfaces;
+using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Extensions;
 
 namespace MIN.Services.Connection.Pipes.Discovering
 {
@@ -13,20 +15,23 @@ namespace MIN.Services.Connection.Pipes.Discovering
     /// </summary>
     public class DiscoveryServer : IDiscoveryServer, IAsyncDisposable
     {
+        private readonly IPipeMessageSerializer serializer;
+        private readonly ILoggerProvider logger;
         private readonly string pcName;
         private readonly Room room;
-        private readonly IPipeMessageSerializer serializer;
+
         private CancellationTokenSource? cancellationTokenSource;
         private bool isRunning = false;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="DiscoveryServer"/>
         /// </summary>
-        public DiscoveryServer(string pcName, Room room, IPipeMessageSerializer serializer)
+        public DiscoveryServer(string pcName, Room room, IPipeMessageSerializer serializer, ILoggerProvider logger)
         {
             this.pcName = pcName;
             this.room = room;
             this.serializer = serializer;
+            this.logger = logger;
         }
 
         async Task IDiscoveryServer.StartAsync(CancellationToken cancellationToken = default)
@@ -67,7 +72,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
 
                     await pipe!.WaitForConnectionAsync(ct);
 
-                    // Отправляем информацию о комнате
                     var roomInfo = new DiscoveredRoom
                     {
                         Room = room.GetSerializableCopy(),
@@ -79,7 +83,8 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 }
                 catch (OperationCanceledException)
                 {
-                    break; // Ожидаемое завершение
+                    logger.Log("Сервер обнаружения был остановлен", LogLevel.Information);
+                    break;
                 }
                 catch (IOException ex) when (ex.Message.Contains("pipe is being closed"))
                 {
@@ -88,8 +93,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 }
                 catch (Exception ex)
                 {
-                    // Логируем неожиданные ошибки, но продолжаем работу
-                    Debug.WriteLine($"Discovery error: {ex.Message}");
+                    logger.Log($"Сервер обнаружения поймал ошибку: {ex.Message}", LogLevel.Error);
                     continue;
                 }
             }
@@ -103,7 +107,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
         /// <inheritdoc cref="IDiscoveryServer.StopAsync"/>
         public async Task StopAsync()
         {
-            cancellationTokenSource?.Cancel();
+            await cancellationTokenSource!.CancelAsync();
         }
 
         public async ValueTask DisposeAsync()

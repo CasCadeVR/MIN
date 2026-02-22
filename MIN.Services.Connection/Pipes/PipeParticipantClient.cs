@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
-using System.IO.Pipes;
+﻿using System.IO.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
+using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Services;
@@ -12,6 +12,7 @@ namespace MIN.Services.Connection.Pipes
     public sealed class PipeParticipantClient : IPipeParticipantClient
     {
         private readonly IPipeMessageSerializer serializer;
+        private readonly ILoggerProvider logger;
 
         private NamedPipeClientStream? pipe;
         private CancellationTokenSource? cancellationTokenSource;
@@ -29,9 +30,10 @@ namespace MIN.Services.Connection.Pipes
 
         public Room? Room => currentRoom;
 
-        public PipeParticipantClient(IPipeMessageSerializer serializer)
+        public PipeParticipantClient(IPipeMessageSerializer serializer, ILoggerProvider logger)
         {
             this.serializer = serializer;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -61,7 +63,7 @@ namespace MIN.Services.Connection.Pipes
 
             try
             {
-                Debug.WriteLine($"Connecting to room: {roomId}");
+                logger.Log($"Подключаюсь к комнате {room.Name} c id {roomId}");
                 await pipe.ConnectAsync(timeoutMs, cancellationTokenSource.Token);
 
                 // Client connected at this postion
@@ -72,11 +74,13 @@ namespace MIN.Services.Connection.Pipes
             catch (TimeoutException)
             {
                 await DisconnectAsync(cancellationTokenSource.Token);
+                logger.Log($"Не получилось подсоединиться к комнате '{room.Name}'. Походу либо заполнена, либо она исчезла.", LogLevel.Error);
                 throw new TimeoutException($"Не получилось подсоединиться к комнате '{room.Name}'. Походу либо заполнена, либо она исчезла.");
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 await DisconnectAsync(cancellationTokenSource.Token);
+                logger.Log($"Не получилось подсоединиться к комнате '{room.Name}'. Походу либо заполнена, либо она исчезла.", LogLevel.Warning);
                 throw new InvalidOperationException($"Соединение не удалось: {ex.Message}");
             }
         }
@@ -120,16 +124,16 @@ namespace MIN.Services.Connection.Pipes
             }
             catch (OperationCanceledException ex)
             {
-                Debug.WriteLine("Stopped recieving messages");
+                logger.Log("Я прекратил получать сообщения от сервера");
             }
             catch (IOException ex) when (!isDisposed)
             {
-                Debug.WriteLine($"Disconnected from server: {ex.Message}");
+                logger.Log($"Я отключился от сервера: {ex.Message}");
                 await DisconnectAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"PipeClient error: {ex.Message}");
+                logger.Log($"Ошибка у клиента: {ex.Message}", LogLevel.Error);
                 await DisconnectAsync(cancellationToken);
             }
         }
@@ -218,7 +222,7 @@ namespace MIN.Services.Connection.Pipes
             }
             catch(Exception ex)
             {
-                Debug.WriteLine($"Error in sending Join Message: {ex.Message}");
+                logger.Log($"Ошибка у клиента в отправке JOIN сообщения: {ex.Message}", LogLevel.Error);
             }
         }
 
@@ -252,10 +256,14 @@ namespace MIN.Services.Connection.Pipes
         public async Task SendMessageAsync(ChatMessage message, CancellationToken cancellationToken = default)
         {
             if (!IsConnected || pipe == null || !pipe.IsConnected)
+            {
                 throw new InvalidOperationException("Не подключен не к одной комнате");
+            }
 
             if (selfParticipant == null)
+            {
                 throw new InvalidOperationException("Участник не задан");
+            }
 
             // Заполняем метаданные отправителя
             message.SenderName ??= selfParticipant.Name;

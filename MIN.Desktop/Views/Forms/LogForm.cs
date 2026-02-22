@@ -1,15 +1,30 @@
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Desktop.Infrastructure.Services;
+using MIN.Services.Contracts.Interfaces;
 
 namespace MIN.Desktop
 {
     public partial class LogForm : StyledForm
     {
-        public LogForm()
+        private readonly ILoggerProvider loggerProvider;
+
+        public LogForm(ILoggerProvider loggerProvider)
         {
             InitializeComponent();
+            this.loggerProvider = loggerProvider;
+            loggerProvider.OnLogRecieved += OnLogRecieved;
         }
+
+        private void OnLogRecieved(object? sender, string e)
+        {
+            AddLogMessage(e);
+        }
+
+        private void AddLogMessage(string message)
+        {
+            logListBox.Items.Add(message);
+        }
+
 
         protected override void ApplyStylings()
         {
@@ -18,28 +33,21 @@ namespace MIN.Desktop
             Title.ForeColor = ColorScheme.TextOnAccent;
         }
 
-        private bool IsParticipantValid()
+        private void LogForm_Load(object sender, EventArgs e)
         {
-            return !(string.IsNullOrEmpty(AppUserProvider.Instance.CurrentUser.Name));
+            logListBox.Items.Clear();
+
+            var history = loggerProvider.GetLogHistory();
+
+            foreach (var message in history)
+            {
+                AddLogMessage(message);
+            }
         }
 
-        private void createButton_Click(object sender, EventArgs e)
+        private void LogForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            AppUserProvider.Instance.CurrentUser.Name = participantName.Text;
-
-            if (!IsParticipantValid())
-            {
-                MessageBox.Show(
-                    "Имя участника не может быть пустым",
-                    "Ошибка валидации",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation
-                );
-
-                return;
-            }
-
-            DialogResult = DialogResult.OK;
+            loggerProvider.OnLogRecieved -= OnLogRecieved;
         }
     }
 }

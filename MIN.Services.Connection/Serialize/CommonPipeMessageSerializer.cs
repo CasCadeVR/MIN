@@ -1,24 +1,24 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
+using MIN.Services.Connection.Contracts.Models.Enums;
 using MIN.Services.Contracts.Constants;
 using MIN.Services.Contracts.Models;
 
 namespace MIN.Services.Connection.Serialize
 {
     /// <summary>
-    /// Сериализатор сообщений
+    /// Обычный сериализатор сообщений
     /// </summary>
-    public class PipeMessageSerializer : IPipeMessageSerializer
+    public class CommonPipeMessageSerializer : IPipeMessageSerializer
     {
-        private readonly JsonSerializerOptions jsonOptions = new()
+        public readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         // Формат сообщения: [4 байта: длина][1 байт: тип][N байт: данные]
-
         async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, CancellationToken cancellationToken = default)
         {
             // Читаем длину
@@ -41,15 +41,15 @@ namespace MIN.Services.Connection.Serialize
             return messageType switch
             {
                 MessageTypeTag.ChatMessage =>
-                    JsonSerializer.Deserialize<ChatMessage>(dataBuffer, jsonOptions)
+                    JsonSerializer.Deserialize<ChatMessage>(dataBuffer, JsonOptions)
                     ?? throw new InvalidDataException("Failed to deserialize ChatMessage"),
 
                 MessageTypeTag.RoomInfo =>
-                    JsonSerializer.Deserialize<RoomInfoMessage>(dataBuffer, jsonOptions)
+                    JsonSerializer.Deserialize<RoomInfoMessage>(dataBuffer, JsonOptions)
                     ?? throw new InvalidDataException("Failed to deserialize RoomInfoMessage"),
 
                 MessageTypeTag.DiscoveredRoom =>
-                    JsonSerializer.Deserialize<DiscoveredRoom>(dataBuffer, jsonOptions)
+                    JsonSerializer.Deserialize<DiscoveredRoom>(dataBuffer, JsonOptions)
                     ?? throw new InvalidDataException("Failed to deserialize DiscoveredRoom"),
 
                 _ => throw new InvalidDataException($"Unknown message type: {messageType}")
@@ -59,7 +59,7 @@ namespace MIN.Services.Connection.Serialize
         async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, CancellationToken cancellationToken = default)
             where T : class
         {
-            var json = JsonSerializer.SerializeToUtf8Bytes(message, jsonOptions);
+            var json = JsonSerializer.SerializeToUtf8Bytes(message, JsonOptions);
             if (json.Length > ChatMessageConstants.MaximumMessageSize)
             {
                 throw new ArgumentException("Message too large", nameof(message));
@@ -84,13 +84,6 @@ namespace MIN.Services.Connection.Serialize
             // Записываем данные
             await stream.WriteAsync(json, cancellationToken);
             await stream.FlushAsync(cancellationToken);
-        }
-
-        private enum MessageTypeTag : byte
-        {
-            ChatMessage = 0,
-            RoomInfo = 1,
-            DiscoveredRoom = 2,
         }
     }
 }

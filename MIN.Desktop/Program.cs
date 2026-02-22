@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using MIN.Desktop.Infrastructure.Services;
+using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
+using MIN.Services.Connection.Cryptographing;
 using MIN.Services.Connection.Pipes;
 using MIN.Services.Connection.Pipes.Discovering;
 using MIN.Services.Connection.Serialize;
@@ -25,13 +27,15 @@ namespace MIN.Desktop
             ConfigureServices(services);
 
             var serviceProvider = services.BuildServiceProvider();
-            var mainForm = serviceProvider.GetRequiredService<MainForm>();
-            Application.Run(mainForm);
+            Application.Run(serviceProvider.GetRequiredService<MainForm>());
         }
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IPipeMessageSerializer, PipeMessageSerializer>();
+            services.AddSingleton<IKeyProvider, KeyProvider>();
+            services.AddSingleton<ICryptoProvider, CryptoProvider>();
+
+            services.AddSingleton<IPipeMessageSerializer, CommonPipeMessageSerializer>(); // TODO: потом надо на шифрование поменять
             services.AddSingleton<ISettingsProvider, SettingsProvider>();
             services.AddSingleton<ILoggerProvider, LoggerProvider>();
 

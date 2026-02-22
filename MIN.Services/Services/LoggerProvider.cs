@@ -9,7 +9,7 @@ namespace MIN.Services.Services
     /// </summary>
     public class LoggerProvider : ILoggerProvider
     {
-        private List<string> messages = new List<string>();
+        private List<string> messages = [];
 
         ///<inheritdoc cref="ILoggerProvider.OnLogRecieved"/>
         public event EventHandler<string>? OnLogRecieved;
@@ -22,8 +22,9 @@ namespace MIN.Services.Services
             formatted.Append(Enum.GetName(level));
             formatted.Append(" - ");
             formatted.Append(message);
-            messages.Add(message);
-            OnLogRecieved?.Invoke(this, message);
+            var result = formatted.ToString();
+            messages.Add(result);
+            OnLogRecieved?.Invoke(this, result);
         }
 
         IEnumerable<string> ILoggerProvider.GetLogHistory()

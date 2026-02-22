@@ -236,6 +236,9 @@ namespace MIN.Desktop
             row.container.Controls.Add(rowControl);
             chatFlow.Controls.Add(row);
             chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
+            chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
+            chatFlow.VerticalScroll.Visible = false;
+            chatFlow.HorizontalScroll.Visible = false;
         }
 
         protected override void ApplyStylings()

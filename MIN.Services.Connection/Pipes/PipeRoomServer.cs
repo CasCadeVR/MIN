@@ -5,8 +5,10 @@ using System.Security.Principal;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models;
+using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Extensions;
 using MIN.Services.Services;
 
 namespace MIN.Services.Connection.Pipes
@@ -14,15 +16,17 @@ namespace MIN.Services.Connection.Pipes
     public sealed class PipeRoomServer : IPipeRoomServer, IAsyncDisposable
     {
         private readonly IPipeMessageSerializer serializer;
+        private readonly ILoggerProvider logger;
         private readonly List<Participant> connectedClients = new();
         private readonly List<ClientConnection> activeConnections = new();
 
         private CancellationTokenSource? cancellationTokenSource;
         private Room? room;
 
-        public PipeRoomServer(IPipeMessageSerializer serializer)
+        public PipeRoomServer(IPipeMessageSerializer serializer, ILoggerProvider logger)
         {
             this.serializer = serializer;
+            this.logger = logger;
         }
 
         bool IPipeRoomServer.IsRunning => IsRunning;
@@ -43,6 +47,8 @@ namespace MIN.Services.Connection.Pipes
             {
                 _ = AcceptClientAsync(cancellationTokenSource.Token);
             }
+
+            logger.Log($"Комната '{room.Name}' Была создана {room.HostParticipant.Name} в {TimeOnly.FromDateTime(DateTime.Now).ToShortTimeString()}");
 
             var systemMsg = new ChatMessage
             {
@@ -106,7 +112,7 @@ namespace MIN.Services.Connection.Pipes
                 }
                 catch (OperationCanceledException)
                 {
-                    Debug.WriteLine("Canceling in AcceptClientAsync");
+                    logger.Log($"Приём участников в комнате был оборван");
                     break;
                 }
                 catch (IOException ex) when (ex.Message.Contains("pipe is being closed"))
@@ -188,6 +194,7 @@ namespace MIN.Services.Connection.Pipes
                 // Client disconnected
                 if (connection.Participant != null)
                 {
+                    logger.Log($"Участник {connection.Participant.Name} отключился от комнаты {room?.Name}");
                     room?.RemoveParticipantById(connection.Participant.Id);
                     lock (connectedClients)
                     {
@@ -206,8 +213,8 @@ namespace MIN.Services.Connection.Pipes
                 MaxParticipants = room.MaximumParticipants,
                 HostName = room.HostParticipant.Name,
                 HostPCName = room.HostParticipant.PCName,
-                CurrentParticipants = room.CurrentParticipants.Select(p =>
-                    new Participant { Name = p.Name, PCName = p.PCName }).ToList()
+                CurrentParticipants = room.CurrentParticipants.Select(p => p.GetSerializableCopy()).ToList(),
+                ChatHistory = room.ChatHistory.Select(m => m.GetSerializableCopy()).ToList(),
             };
 
             await serializer.WriteMessageAsync(pipe, roomInfo, ct);

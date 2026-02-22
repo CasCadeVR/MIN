@@ -20,6 +20,7 @@ namespace MIN.Services.Connection.Pipes
         private readonly IPipeRoomServer server;
         private readonly IPipeParticipantClient client;
         private readonly IPipeMessageSerializer serializer;
+        private readonly ILoggerProvider logger;
 
         // Текущее состояние (только одно активное подключение)
         private Room? currentRoom;
@@ -40,11 +41,13 @@ namespace MIN.Services.Connection.Pipes
         public ChatRoomService(
             IPipeRoomServer server, 
             IPipeParticipantClient client,
-            IPipeMessageSerializer serializer
+            IPipeMessageSerializer serializer,
+            ILoggerProvider logger
         ) {
             this.server = server;
             this.client = client;
             this.serializer = serializer;
+            this.logger = logger;
 
             this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
             this.client.RoomInfoReceived += (s, e) => OnRoomInfoReceived(e);
@@ -60,14 +63,14 @@ namespace MIN.Services.Connection.Pipes
             {
                 try
                 {
-                    discoveryClient = new DiscoveryClient(serializer);
-                    Debug.WriteLine($"Checking computer with name: {pcName}");
+                    discoveryClient = new DiscoveryClient(serializer, logger);
+                    logger.Log($"Пытаюсь достучаться до компьютера: {pcName}...", LogLevel.Information);
                     var room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs));
                     discoveredRooms.Add(room!);
                 }
                 catch (RoomDiscoveryException ex)
                 {
-                    Debug.WriteLine($"Unable to discover room in {pcName}: {ex.Message}");
+                    logger.Log($"Не удалось достучаться до компьютера: {pcName}: {ex.Message}", LogLevel.Information);
                 }
             });
 
@@ -87,7 +90,7 @@ namespace MIN.Services.Connection.Pipes
 
             await server.StartAsync(currentRoom, cancellationToken);
 
-            discoveryServer = new DiscoveryServer(host.PCName, server.Room, serializer);
+            discoveryServer = new DiscoveryServer(host.PCName, server.Room, serializer, logger);
             await discoveryServer.StartAsync(cancellationToken);
 
             OnRoomStateChanged(new RoomStateChangedEventArgs(currentRoom, RoomState.Created));
