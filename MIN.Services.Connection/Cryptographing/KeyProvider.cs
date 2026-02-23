@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Contracts.Models.Cryptographing;
+using MIN.Services.Contracts.Interfaces;
 
 namespace MIN.Services.Connection.Cryptographing
 {
@@ -14,21 +15,23 @@ namespace MIN.Services.Connection.Cryptographing
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = true,  // ✅ Прощает регистр, если что-то пойдёт не так
+            PropertyNameCaseInsensitive = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
+        private readonly ILoggerProvider logger;
         private readonly string keysPath;
         private readonly string partnersPath;
         private KeyPair? cachedKeys;
         private readonly SemaphoreSlim _lock = new(1, 1);
         private bool disposed;
 
-        public KeyProvider()
+        public KeyProvider(ILoggerProvider logger)
         {
             // Храним ключи в %AppData%\MIN-Messenger\
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var dir = Path.Combine(appData, "MIN-Messenger");
             Directory.CreateDirectory(dir);
+            this.logger = logger;
 
             keysPath = Path.Combine(dir, "keys.json");
             partnersPath = Path.Combine(dir, "partners.json");
@@ -89,6 +92,9 @@ namespace MIN.Services.Connection.Cryptographing
 
         public async Task<byte[]> ComputeSharedSecretAsync(string partnerEcdhPublicKeyPem)
         {
+            logger.Log($"🔐 My ECDH public (first 32 chars): {await GetEcdhPrivateKeyAsync()}");
+            logger.Log($"🔐 Partner ECDH public (first 32 chars): {partnerEcdhPublicKeyPem.Substring(0, 32)}...");
+
             using var myEcdh = await GetEcdhPrivateKeyAsync();
 
             using var partnerEcdh = ECDiffieHellman.Create();
@@ -101,6 +107,8 @@ namespace MIN.Services.Connection.Cryptographing
                 null, // salt для HKDF внутри (не нужен)
                 null  // другие параметры
             );
+
+            logger.Log($"🔐 Computed shared secret (first 16 bytes): {Convert.ToHexString(sharedSecret.AsSpan(0, 16))}");
 
             // Деривируем финальный AES-ключ через HKDF с нашей солью
             var salt = await GetSaltAsync();
@@ -228,7 +236,6 @@ namespace MIN.Services.Connection.Cryptographing
         {
             if (string.IsNullOrWhiteSpace(pem)) return pem;
 
-            // Удаляем лишние пробелы, приводим переносы к \n
             return pem
                 .Replace("\r\n", "\n")
                 .Replace("\r", "\n")

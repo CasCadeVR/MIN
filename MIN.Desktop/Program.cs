@@ -32,14 +32,13 @@ namespace MIN.Desktop
 
         private static void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<ILoggerProvider, LoggerProvider>();
+
             services.AddSingleton<IKeyProvider, KeyProvider>();
             services.AddSingleton<ICryptoProvider, CryptoProvider>();
 
             services.AddSingleton<IPipeMessageSerializer, CryptoPipeMessageSerializer>();
             services.AddSingleton<ISettingsProvider, SettingsProvider>();
-            services.AddSingleton<ILoggerProvider, LoggerProvider>();
-
-            // ChatRoomService Ч синглтон на уровне приложени€ (один активный чат)
             services.AddSingleton<IChatRoomService, ChatRoomService>();
 
             services.AddTransient<IPipeRoomServer, PipeRoomServer>();
