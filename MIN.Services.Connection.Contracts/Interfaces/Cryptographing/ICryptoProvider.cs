@@ -6,13 +6,18 @@
     public interface ICryptoProvider
     {
         /// <summary>
+        /// Имя комнаты для которой ведётся шифровка
+        /// </summary>
+        string RoomName { get; set; }
+
+        /// <summary>
         /// Закодировать сообщение
         /// </summary>
-        Task<byte[]> EncryptMessageAsync(byte[] data);
+        byte[] EncryptMessage(byte[] data);
 
         /// <summary>
         /// Раскодировать сообщение
         /// </summary>
-        Task<byte[]> DecryptMessageAsync(byte[] encryptedData);
+        byte[] DecryptMessage(byte[] encryptedData);
     }
 }

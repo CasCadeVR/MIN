@@ -61,6 +61,8 @@ namespace MIN.Services.Connection.Pipes
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough
             );
 
+            serializer.RoomName = room.Name;
+
             try
             {
                 logger.Log($"Подключаюсь к комнате {room.Name} c id {roomId}");

@@ -6,6 +6,11 @@
     public interface IPipeMessageSerializer
     {
         /// <summary>
+        /// Имя комнаты, для которой ведётся передача сообщений
+        /// </summary>
+        string RoomName { get; set; }
+
+        /// <summary>
         /// Читает сообщение из pipe
         /// Формат сообщения: [4 байта: длина][1 байт: тип][N байт: данные]
         /// </summary>

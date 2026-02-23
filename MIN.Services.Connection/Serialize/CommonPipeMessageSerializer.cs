@@ -12,6 +12,9 @@ namespace MIN.Services.Connection.Serialize
     /// </summary>
     public class CommonPipeMessageSerializer : IPipeMessageSerializer
     {
+        /// <inheritdoc cref="IPipeMessageSerializer.RoomName"/>
+        public string RoomName { get; set; } = string.Empty;
+
         public readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

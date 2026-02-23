@@ -35,7 +35,7 @@ namespace MIN.Desktop
             services.AddSingleton<IKeyProvider, KeyProvider>();
             services.AddSingleton<ICryptoProvider, CryptoProvider>();
 
-            services.AddSingleton<IPipeMessageSerializer, CommonPipeMessageSerializer>(); // TODO: потом надо на шифрование поменять
+            services.AddSingleton<IPipeMessageSerializer, CryptoPipeMessageSerializer>();
             services.AddSingleton<ISettingsProvider, SettingsProvider>();
             services.AddSingleton<ILoggerProvider, LoggerProvider>();
 
