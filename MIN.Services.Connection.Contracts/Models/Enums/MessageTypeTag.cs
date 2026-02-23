@@ -5,8 +5,9 @@
     /// </summary>
     public enum MessageTypeTag : byte
     {
-        ChatMessage = 0,
-        RoomInfo = 1,
-        DiscoveredRoom = 2,
+        HandshakeMessage = 0,
+        DiscoveredRoom = 1,
+        RoomInfo = 2,
+        ChatMessage = 3,
     }
 }

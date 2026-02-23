@@ -18,7 +18,7 @@ namespace MIN.Services.Contracts.Interfaces
         /// <summary>
         /// Получить список найденных комнат
         /// </summary>
-        Task<IEnumerable<Room>> DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000, CancellationToken cancellationToken = default);
+        Task<IEnumerable<DiscoveredRoom>> DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Создать новую комнату и стать хостом

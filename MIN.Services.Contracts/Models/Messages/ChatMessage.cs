@@ -1,6 +1,6 @@
 ﻿using MIN.Services.Contracts.Models.Enums;
 
-namespace MIN.Services.Contracts.Models;
+namespace MIN.Services.Contracts.Models.Messages;
 
 /// <summary>
 /// Сообщения в чате

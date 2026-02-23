@@ -1,4 +1,6 @@
-﻿namespace MIN.Services.Connection.Contracts.Interfaces.Cryptographing
+﻿using MIN.Services.Contracts.Models.Messages;
+
+namespace MIN.Services.Connection.Contracts.Interfaces.Cryptographing
 {
     /// <summary>
     /// Помощник в шифровании
@@ -6,18 +8,28 @@
     public interface ICryptoProvider
     {
         /// <summary>
-        /// Имя комнаты для которой ведётся шифровка
+        /// Проверить, инициализирована ли сессия с собеседником
         /// </summary>
-        string RoomName { get; set; }
+        bool IsSessionInitialized(Guid partnerId);
+
+        /// <summary>
+        /// Вызывается при первом контакте с собеседником
+        /// </summary>
+        Task InitializeSessionAsync(Guid partnerId, HandshakeMessage handshake);
+
+        /// <summary>
+        /// Создать сообщения рукопожатия
+        /// </summary>
+        Task<HandshakeMessage> CreateHandshakeAsync(Guid id);
 
         /// <summary>
         /// Закодировать сообщение
         /// </summary>
-        byte[] EncryptMessage(byte[] data);
+        byte[] EncryptMessage(byte[] data, Guid partnerId);
 
         /// <summary>
         /// Раскодировать сообщение
         /// </summary>
-        byte[] DecryptMessage(byte[] encryptedData);
+        byte[] DecryptMessage(byte[] encryptedData, Guid partnerId);
     }
 }

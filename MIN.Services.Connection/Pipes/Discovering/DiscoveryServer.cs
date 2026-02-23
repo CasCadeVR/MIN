@@ -6,7 +6,6 @@ using System.Security.Principal;
 using System.Security.AccessControl;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models.Enums;
-using MIN.Services.Extensions;
 
 namespace MIN.Services.Connection.Pipes.Discovering
 {
@@ -17,7 +16,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
     {
         private readonly IPipeMessageSerializer serializer;
         private readonly ILoggerProvider logger;
-        private readonly string pcName;
+        private readonly Participant hostParticipant;
         private readonly Room room;
 
         private CancellationTokenSource? cancellationTokenSource;
@@ -26,9 +25,9 @@ namespace MIN.Services.Connection.Pipes.Discovering
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="DiscoveryServer"/>
         /// </summary>
-        public DiscoveryServer(string pcName, Room room, IPipeMessageSerializer serializer, ILoggerProvider logger)
+        public DiscoveryServer(Participant hostParticipant, Room room, IPipeMessageSerializer serializer, ILoggerProvider logger)
         {
-            this.pcName = pcName;
+            this.hostParticipant = hostParticipant;
             this.room = room;
             this.serializer = serializer;
             this.logger = logger;
@@ -62,7 +61,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                             AccessControlType.Allow));
 
                     using var pipe = NamedPipeServerStreamAcl.Create(
-                        DiscoveryPipeNameProvider.GetDiscoveryPipeName(pcName),
+                        DiscoveryPipeNameProvider.GetDiscoveryPipeName(hostParticipant.PCName),
                         PipeDirection.InOut,
                         1,
                         PipeTransmissionMode.Byte,
@@ -74,12 +73,16 @@ namespace MIN.Services.Connection.Pipes.Discovering
 
                     var roomInfo = new DiscoveredRoom
                     {
-                        Room = room.GetSerializableCopy(),
-                        CurrentParticipants = room.CurrentParticipants,
-                        DiscoveredAt = DateTime.UtcNow,
+                        RoomId = room.Id,
+                        RoomName = room.Name,
+                        HostId = room.HostParticipant.Id,
+                        HostName = room.HostParticipant.Name,
+                        HostPCName = room.HostParticipant.PCName,
+                        MaximumParticipants = room.MaximumParticipants,
+                        CurrentParticipants = room.CurrentParticipants.Count,
                     };
 
-                    await serializer.WriteMessageAsync(pipe!, roomInfo, ct);
+                    await serializer.WriteMessageAsync(pipe!, roomInfo, hostParticipant.Id, ct);
                 }
                 catch (OperationCanceledException)
                 {

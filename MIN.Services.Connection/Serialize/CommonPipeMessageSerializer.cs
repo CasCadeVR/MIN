@@ -4,6 +4,7 @@ using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models.Enums;
 using MIN.Services.Contracts.Constants;
 using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Services.Connection.Serialize
 {
@@ -22,7 +23,7 @@ namespace MIN.Services.Connection.Serialize
         };
 
         // Формат сообщения: [4 байта: длина][1 байт: тип][N байт: данные]
-        async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, CancellationToken cancellationToken = default)
+        async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, Guid senderId, CancellationToken cancellationToken = default)
         {
             // Читаем длину
             var lengthBuffer = new byte[4];
@@ -59,7 +60,7 @@ namespace MIN.Services.Connection.Serialize
             };
         }
 
-        async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, CancellationToken cancellationToken = default)
+        async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, Guid recipientId, CancellationToken cancellationToken = default)
             where T : class
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, JsonOptions);

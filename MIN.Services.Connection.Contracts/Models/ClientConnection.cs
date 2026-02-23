@@ -16,7 +16,7 @@ namespace MIN.Services.Connection.Contracts.Models
         /// <summary>
         /// Участник
         /// </summary>
-        public Participant Participant { get; set; } = null!;
+        public Participant Participant { get; set; } = new Participant();
 
         /// <summary>
         /// Фоновая обработка операция для клиента

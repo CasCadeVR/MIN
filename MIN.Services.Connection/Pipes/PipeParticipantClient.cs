@@ -1,9 +1,11 @@
 ﻿using System.IO.Pipes;
+using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Contracts.Models.Messages;
 using MIN.Services.Services;
 
 namespace MIN.Services.Connection.Pipes
@@ -12,6 +14,7 @@ namespace MIN.Services.Connection.Pipes
     public sealed class PipeParticipantClient : IPipeParticipantClient
     {
         private readonly IPipeMessageSerializer serializer;
+        private readonly ICryptoProvider cryptoProvider;
         private readonly ILoggerProvider logger;
 
         private NamedPipeClientStream? pipe;
@@ -19,6 +22,7 @@ namespace MIN.Services.Connection.Pipes
         private Room? currentRoom;
         private Participant? selfParticipant;
         private bool isDisposed;
+        private Guid roomHostParticipantId;
 
         public event EventHandler<ChatMessage>? MessageReceived;
         public event EventHandler<RoomInfoMessage>? RoomInfoReceived;
@@ -30,10 +34,12 @@ namespace MIN.Services.Connection.Pipes
 
         public Room? Room => currentRoom;
 
-        public PipeParticipantClient(IPipeMessageSerializer serializer, ILoggerProvider logger)
+        public PipeParticipantClient(IPipeMessageSerializer serializer, ICryptoProvider cryptoProvider, ILoggerProvider logger)
         {
             this.serializer = serializer;
+            this.cryptoProvider = cryptoProvider;
             this.logger = logger;
+            roomHostParticipantId = Guid.Empty;
         }
 
         /// <summary>
@@ -42,6 +48,8 @@ namespace MIN.Services.Connection.Pipes
         public async Task ConnectAsync(Room room, Participant selfParticipant, int timeoutMs = 1000, CancellationToken cancellationToken = default)
         {
             if (IsConnected) await DisconnectAsync();
+
+            roomHostParticipantId = room.HostParticipant.Id;
 
             var roomId = room.Id;
 
@@ -61,15 +69,12 @@ namespace MIN.Services.Connection.Pipes
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough
             );
 
-            serializer.RoomName = room.Name;
-
             try
             {
                 logger.Log($"Подключаюсь к комнате {room.Name} c id {roomId}");
                 await pipe.ConnectAsync(timeoutMs, cancellationTokenSource.Token);
 
-                // Client connected at this postion
-
+                await SendHandshakeMessageAsync(cancellationTokenSource.Token);
                 _ = ReceiveMessagesAsync(cancellationTokenSource.Token);
                 await SendJoinNotificationAsync(cancellationTokenSource.Token);
             }
@@ -96,11 +101,18 @@ namespace MIN.Services.Connection.Pipes
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var message = await serializer.ReadMessageAsync(pipe!, cancellationToken);
+                    var message = await serializer.ReadMessageAsync(pipe!, selfParticipant!.Id, cancellationToken);
 
                     switch (message)
                     {
+                        case HandshakeMessage serverHandshake:
+                            logger.Log($"Получен Handshake от сервера: {serverHandshake.UserId}");
+                            await cryptoProvider.InitializeSessionAsync(serverHandshake.UserId, serverHandshake);
+                            logger.Log($"Сессия с сервером {serverHandshake.UserId} инициализирована");
+                            break;
+
                         case RoomInfoMessage roomInfo:
+                            logger.Log($"Получена RoomInfo: {roomInfo.RoomName}");
                             await HandleRoomInfoAsync(roomInfo, cancellationToken);
                             break;
 
@@ -202,6 +214,25 @@ namespace MIN.Services.Connection.Pipes
             };
         }
 
+        private async Task SendHandshakeMessageAsync(CancellationToken cancellationToken)
+        {
+            if (selfParticipant == null || pipe == null || !pipe.IsConnected)
+            {
+                return;
+            }
+
+            var handShakeMessage = await cryptoProvider.CreateHandshakeAsync(selfParticipant.Id);
+
+            try
+            {
+                await serializer.WriteMessageAsync(pipe, handShakeMessage, roomHostParticipantId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Log($"Ошибка у клиента в отправке Handshake сообщения: {ex.Message}", LogLevel.Error);
+            }
+        }
+
         private async Task SendJoinNotificationAsync(CancellationToken cancellationToken)
         {
             if (selfParticipant == null || pipe == null || !pipe.IsConnected)
@@ -220,7 +251,7 @@ namespace MIN.Services.Connection.Pipes
 
             try
             {
-                await serializer.WriteMessageAsync(pipe, joinMessage, cancellationToken);
+                await serializer.WriteMessageAsync(pipe, joinMessage, roomHostParticipantId, cancellationToken);
             }
             catch(Exception ex)
             {
@@ -244,7 +275,7 @@ namespace MIN.Services.Connection.Pipes
 
             try
             {
-                await serializer.WriteMessageAsync(pipe, leaveMessage, cancellationToken);
+                await serializer.WriteMessageAsync(pipe, leaveMessage, roomHostParticipantId, cancellationToken);
             }
             catch
             {
@@ -272,7 +303,7 @@ namespace MIN.Services.Connection.Pipes
             message.SenderPCName ??= selfParticipant.PCName;
             message.Time = TimeOnly.FromDateTime(DateTime.Now); // Локальное время для отображения
 
-            await serializer.WriteMessageAsync(pipe, message, cancellationToken);
+            await serializer.WriteMessageAsync(pipe, message, roomHostParticipantId, cancellationToken);
         }
 
         /// <summary>

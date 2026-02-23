@@ -1,6 +1,6 @@
 ﻿using MIN.Desktop.Contracts;
 using MIN.Desktop.Infrastructure.Services;
-using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Desktop.Components
 {

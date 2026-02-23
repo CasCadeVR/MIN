@@ -1,13 +1,14 @@
-﻿using System.Diagnostics;
-using System.IO.Pipes;
+﻿using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Contracts.Models.Messages;
 using MIN.Services.Extensions;
 using MIN.Services.Services;
 
@@ -16,6 +17,7 @@ namespace MIN.Services.Connection.Pipes
     public sealed class PipeRoomServer : IPipeRoomServer, IAsyncDisposable
     {
         private readonly IPipeMessageSerializer serializer;
+        private readonly ICryptoProvider cryptoProvider;
         private readonly ILoggerProvider logger;
         private readonly List<Participant> connectedClients = new();
         private readonly List<ClientConnection> activeConnections = new();
@@ -23,9 +25,10 @@ namespace MIN.Services.Connection.Pipes
         private CancellationTokenSource? cancellationTokenSource;
         private Room? room;
 
-        public PipeRoomServer(IPipeMessageSerializer serializer, ILoggerProvider logger)
+        public PipeRoomServer(IPipeMessageSerializer serializer, ICryptoProvider cryptoProvider, ILoggerProvider logger)
         {
             this.serializer = serializer;
+            this.cryptoProvider = cryptoProvider;
             this.logger = logger;
         }
 
@@ -91,6 +94,7 @@ namespace MIN.Services.Connection.Pipes
 
                     // Создаем подключение и сохраняем его
                     var connection = new ClientConnection(clientPipeSlot);
+                    
                     lock (activeConnections)
                     {
                         activeConnections.Add(connection);
@@ -139,11 +143,30 @@ namespace MIN.Services.Connection.Pipes
         {
             try
             {
-                await SendRoomInfoAsync(connection.Pipe, ct);
+                var firstMessage = await serializer.ReadMessageAsync(connection.Pipe, connection.Participant?.Id ?? Guid.Empty, ct);
+
+                if (firstMessage is HandshakeMessage clientHandshake)
+                {
+                    // Инициализируем сессию для этого клиента
+                    await cryptoProvider.InitializeSessionAsync(clientHandshake.UserId, clientHandshake);
+                    connection.Participant!.Id = clientHandshake.UserId; // Сохраняем ID для будущего использования
+
+                    // Отправляем свой Handshake в ответ
+                    var serverHandshake = await cryptoProvider.CreateHandshakeAsync(clientHandshake.UserId);
+                    logger.Log($"Отправлен Handshake клиенту {clientHandshake.UserId}");
+                    await serializer.WriteMessageAsync(connection.Pipe, serverHandshake, clientHandshake.UserId, ct);
+                    logger.Log($"Отправляю RoomInfo...");
+                    await SendRoomInfoAsync(connection.Pipe, ct);
+                }
+                else
+                {
+                    logger.Log($"Клиент не отправил Handshake первым. Отключаем.", LogLevel.Error);
+                    return;
+                }
 
                 while (!ct.IsCancellationRequested && connection.Pipe.IsConnected)
                 {
-                    var message = await serializer.ReadMessageAsync(connection.Pipe, ct);
+                    var message = await serializer.ReadMessageAsync(connection.Pipe, connection.Participant.Id, ct);
 
                     switch (message)
                     {
@@ -217,7 +240,7 @@ namespace MIN.Services.Connection.Pipes
                 ChatHistory = room.ChatHistory.Select(m => m.GetSerializableCopy()).ToList(),
             };
 
-            await serializer.WriteMessageAsync(pipe, roomInfo, ct);
+            await serializer.WriteMessageAsync(pipe, roomInfo, room.HostParticipant.Id, ct);
         }
 
         public async Task BroadcastMessageAsync(ClientConnection sender, ChatMessage message, CancellationToken ct)
@@ -230,7 +253,7 @@ namespace MIN.Services.Connection.Pipes
                 {
                     if (connection.Pipe.IsConnected)
                     {
-                        tasks.Add(serializer.WriteMessageAsync(connection.Pipe, message, ct));
+                        tasks.Add(serializer.WriteMessageAsync(connection.Pipe, message, room!.HostParticipant.Id, ct));
                     }
                 }
             }
@@ -277,7 +300,7 @@ namespace MIN.Services.Connection.Pipes
         public async Task SendMessageAsync(ClientConnection connection, ChatMessage message, CancellationToken cancellationToken = default)
         {
             if (!IsRunning) throw new InvalidOperationException("Сервер не работает");
-            await serializer.WriteMessageAsync(connection.Pipe, message, cancellationToken);
+            await serializer.WriteMessageAsync(connection.Pipe, message, room!.HostParticipant.Id, cancellationToken);
         }
 
         public async ValueTask DisposeAsync() => await StopAsync();

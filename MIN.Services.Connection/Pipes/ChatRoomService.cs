@@ -9,6 +9,7 @@ using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Contracts.Models.Events;
+using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Services.Connection.Pipes
 {
@@ -56,9 +57,9 @@ namespace MIN.Services.Connection.Pipes
             this.client.Disconnected += (s, e) => OnTransportDisconnected();
         }
 
-        async Task<IEnumerable<Room>> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000, CancellationToken cancellationToken = default)
+        async Task<IEnumerable<DiscoveredRoom>> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000, CancellationToken cancellationToken = default)
         {
-            var discoveredRooms = new ConcurrentBag<Room>();
+            var discoveredRooms = new ConcurrentBag<DiscoveredRoom>();
             var tasks = targetPCNames.Select(async pcName =>
             {
                 try
@@ -90,7 +91,7 @@ namespace MIN.Services.Connection.Pipes
 
             await server.StartAsync(currentRoom, cancellationToken);
 
-            discoveryServer = new DiscoveryServer(host.PCName, server.Room, serializer, logger);
+            discoveryServer = new DiscoveryServer(host, server.Room, serializer, logger);
             await discoveryServer.StartAsync(cancellationToken);
 
             OnRoomStateChanged(new RoomStateChangedEventArgs(currentRoom, RoomState.Created));

@@ -86,15 +86,26 @@ namespace MIN.Desktop
             }
         }
 
-        private void UpdateDiscoveredRoomsList(IEnumerable<Room> rooms)
+        private void UpdateDiscoveredRoomsList(IEnumerable<DiscoveredRoom> rooms)
         {
             flowLayoutPanel.Controls.Clear();
 
             foreach (var room in rooms)
             {
+                var parsed = new Room(room.RoomName, room.MaximumParticipants)
+                {
+                    Id = room.RoomId,
+                    HostParticipant = new Participant()
+                    {
+                        Id = room.HostId,
+                        Name = room.HostName,
+                        PCName = room.HostPCName,
+                    }
+                };
+
                 var card = new RoomCard(chatRoomService, room);
                 card.Parent = flowLayoutPanel;
-                card.Clicked += () => OnRoomConnection(room);
+                card.Clicked += () => OnRoomConnection(parsed);
                 card.Disposed += (s, e) =>
                 {
                     card.UnsubscribeFromChatEvents();

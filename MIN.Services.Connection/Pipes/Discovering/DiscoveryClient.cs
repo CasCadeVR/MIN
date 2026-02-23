@@ -22,7 +22,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
             this.logger = logger;
         }
 
-        async Task<Room?> IDiscoveryClient.DiscoverRoomAsync(string targetPCName, TimeSpan timeout)
+        async Task<DiscoveredRoom?> IDiscoveryClient.DiscoverRoomAsync(string targetPCName, TimeSpan timeout)
         {
             var cts = new CancellationTokenSource(timeout);
             var pipeName = DiscoveryPipeNameProvider.GetDiscoveryPipeName(targetPCName);
@@ -40,17 +40,12 @@ namespace MIN.Services.Connection.Pipes.Discovering
 
                 logger.Log($"Опа, нашёл у {targetPCName} комнатку");
 
-                if (await serializer.ReadMessageAsync(pipe, cts.Token) is not DiscoveredRoom discoveryInfo)
+                if (await serializer.ReadMessageAsync(pipe, Guid.Empty, cts.Token) is not DiscoveredRoom discoveryInfo)
                 {
                     return null;
                 }
 
-                foreach (var participant in discoveryInfo.CurrentParticipants)
-                {
-                    discoveryInfo.Room.AddParticipant(participant);
-                }
-
-                return discoveryInfo.Room;
+                return discoveryInfo;
             }
             catch (TimeoutException)
             {

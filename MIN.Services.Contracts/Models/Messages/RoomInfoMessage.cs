@@ -1,4 +1,4 @@
-﻿namespace MIN.Services.Contracts.Models;
+﻿namespace MIN.Services.Contracts.Models.Messages;
 
 public class RoomInfoMessage
 {

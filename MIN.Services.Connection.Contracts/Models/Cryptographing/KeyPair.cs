@@ -6,19 +6,24 @@
     public class KeyPair
     {
         /// <summary>
-        /// Асимметричные ключи (RSA)
+        /// Публичный ключ для шифрования (ECDH)
         /// </summary>
-        public string PublicKeyPem { get; set; } = string.Empty;
+        public string EcdhPublicKeyPem { get; set; } = string.Empty;
 
         /// <summary>
-        /// Приватный ключ хранится ЗАШИФРОВАННЫМ (DPAPI)
+        /// Зашифрованный приватный ключ для шифрования (ECDH)
         /// </summary>
-        public string EncryptedPrivateKeyPem { get; set; } = string.Empty;
+        public string EncryptedEcdhPrivateKeyPem { get; set; } = string.Empty;
 
         /// <summary>
-        /// Симметричный ключ для AES
+        /// Публичный ключ для подписи (RSA)
         /// </summary>
-        public string EncryptedAesKey { get; set; } = string.Empty;
+        public string RsaPublicKeyPem { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Зашифрованный приватный ключ для подписи (RSA)
+        /// </summary>
+        public string EncryptedRsaPrivateKeyPem { get; set; } = string.Empty;
 
         /// <summary>
         /// Соль для HKDF (не секрет, но уникальная)

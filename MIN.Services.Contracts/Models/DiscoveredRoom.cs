@@ -6,17 +6,37 @@
 public class DiscoveredRoom
 {
     /// <summary>
-    /// Комната
+    /// Идентификатор комнаты
     /// </summary>
-    public Room Room { get; set; } = null!;
+    public Guid RoomId { get; set; }
 
     /// <summary>
-    /// Текущие участники
+    /// Название комнаты
     /// </summary>
-    public List<Participant> CurrentParticipants { get; set; } = new();
+    public string RoomName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Когда была найдена
+    /// Максимальное количество участников
     /// </summary>
-    public DateTime DiscoveredAt { get; set; }
+    public int MaximumParticipants { get; set; }
+
+    /// <summary>
+    /// Идентификатор хоста
+    /// </summary>
+    public Guid HostId { get; set; }
+
+    /// <summary>
+    /// Имя хоста
+    /// </summary>
+    public string HostName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Имя компьютера хоста
+    /// </summary>
+    public string HostPCName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Текущее количество участников
+    /// </summary>
+    public int CurrentParticipants { get; set; }
 }

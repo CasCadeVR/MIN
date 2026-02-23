@@ -20,12 +20,12 @@ namespace MIN.Desktop.Components
 
         private readonly IChatRoomService chatRoomService;
         private readonly SynchronizationContext uiContext;
-        private Room room;
+        private DiscoveredRoom room;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>
         /// </summary>
-        public RoomCard(IChatRoomService chatRoomService, Room room)
+        public RoomCard(IChatRoomService chatRoomService, DiscoveredRoom room)
         {
             InitializeComponent();
             this.chatRoomService = chatRoomService;
@@ -82,13 +82,13 @@ namespace MIN.Desktop.Components
 
         private void OnParticipantJoined(Participant participant)
         {
-            this.room.AddParticipant(participant);
+            this.room.CurrentParticipants++;
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 
         private void OnParticipantLeft(Participant participant)
         {
-            this.room.RemoveParticipantById(participant.Id);
+            this.room.CurrentParticipants--;
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 
@@ -100,7 +100,11 @@ namespace MIN.Desktop.Components
                 return;
             }
 
-            this.room = room;
+            this.room.RoomName = room.Name;
+            this.room.HostName = room.HostParticipant.Name;
+            this.room.HostPCName = room.HostParticipant.PCName;
+            this.room.CurrentParticipants = room.CurrentParticipants.Count;
+            this.room.MaximumParticipants = room.MaximumParticipants;
             UpdateStats();
         }
 
@@ -114,11 +118,11 @@ namespace MIN.Desktop.Components
 
         private void UpdateStats()
         {
-            Title.Text = $"Комната {this.room.Name}";
-            participantsInfo.Text = $"{this.room.CurrentParticipants.Count}/{this.room.MaximumParticipants}";
-            hostName.Text = this.room.HostParticipant.Name;
+            Title.Text = $"Комната {this.room.RoomName}";
+            participantsInfo.Text = $"{this.room.CurrentParticipants}/{this.room.MaximumParticipants}";
+            hostName.Text = this.room.HostName;
 
-            if (CollegePCNameParser.TryParseComputerName(this.room.HostParticipant.PCName, out int roomNumber, out int computerNumber))
+            if (CollegePCNameParser.TryParseComputerName(this.room.HostPCName, out int roomNumber, out int computerNumber))
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
@@ -134,8 +138,10 @@ namespace MIN.Desktop.Components
 
         private void setConnectButtonAccordingToRoomCount()
         {
-            connectButton.Enabled = !room.IsFull;
-            if (room.IsFull)
+            var isFull = room.CurrentParticipants >= room.MaximumParticipants;
+
+            connectButton.Enabled = !isFull;
+            if (isFull)
             {
                 connectButton.Text = "Заполнено";
                 connectButton.BackColor = ColorScheme.RoomFilled;
