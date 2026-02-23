@@ -69,7 +69,7 @@ namespace MIN.Services.Connection.Cryptographing
             var decryptedPem = Unprotect(keys.EncryptedEcdhPrivateKeyPem);
 
             var ecdh = ECDiffieHellman.Create();
-            ecdh.ImportFromPem(decryptedPem);
+            ecdh.ImportFromPem(NormalizePem(decryptedPem));
             return ecdh;
         }
 
@@ -83,7 +83,7 @@ namespace MIN.Services.Connection.Cryptographing
             var decryptedPem = Unprotect(keys.EncryptedRsaPrivateKeyPem);
 
             var rsa = RSA.Create();
-            rsa.ImportFromPem(decryptedPem);
+            rsa.ImportFromPem(NormalizePem(decryptedPem));
             return rsa;
         }
 
@@ -141,9 +141,9 @@ namespace MIN.Services.Connection.Cryptographing
 
             return new KeyPair
             {
-                EcdhPublicKeyPem = ecdh.ExportSubjectPublicKeyInfoPem(),
+                EcdhPublicKeyPem = NormalizePem(ecdh.ExportSubjectPublicKeyInfoPem()),
                 EncryptedEcdhPrivateKeyPem = Protect(ecdh.ExportPkcs8PrivateKeyPem()),
-                RsaPublicKeyPem = rsa.ExportSubjectPublicKeyInfoPem(),
+                RsaPublicKeyPem = NormalizePem(rsa.ExportSubjectPublicKeyInfoPem()),
                 EncryptedRsaPrivateKeyPem = Protect(rsa.ExportPkcs8PrivateKeyPem()),
 
                 SaltHex = Convert.ToHexString(salt),
@@ -222,6 +222,17 @@ namespace MIN.Services.Connection.Cryptographing
 
             _lock.Dispose();
             disposed = true;
+        }
+
+        private static string NormalizePem(string pem)
+        {
+            if (string.IsNullOrWhiteSpace(pem)) return pem;
+
+            // Удаляем лишние пробелы, приводим переносы к \n
+            return pem
+                .Replace("\r\n", "\n")
+                .Replace("\r", "\n")
+                .Trim();
         }
     }
 }

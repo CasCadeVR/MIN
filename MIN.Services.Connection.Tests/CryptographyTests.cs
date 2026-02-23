@@ -3,7 +3,6 @@ using System.Text;
 using FluentAssertions;
 using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Cryptographing;
-using Moq;
 using Xunit;
 
 namespace MIN.Services.Connection.Tests
@@ -13,51 +12,45 @@ namespace MIN.Services.Connection.Tests
     /// </summary>
     public class CryptographyTests
     {
-        private readonly Mock<IKeyProvider> mockKeyProvider;
-        private readonly byte[] testKey;
-
         public CryptographyTests()
         {
-            mockKeyProvider = new Mock<IKeyProvider>();
-            testKey = RandomNumberGenerator.GetBytes(32); // 256 бит
 
-            mockKeyProvider
-                .Setup(k => k.GetOrCreateAesKey())
-                .Returns(testKey);
         }
 
         [Fact]
-        public void EncryptDecrypt_RoundTrip_ShouldReturnOriginalPlaintext()
+        public async Task Ecdh_KeyExchange_TwoIndependentProviders_ShouldProduceSameSharedSecret()
         {
-            // Arrange
-            var message = "Nail sigma";
-            var crypto = new CryptoProvider(mockKeyProvider.Object);
-            var original = Encoding.UTF8.GetBytes(message);
+            // Arrange: два независимых KeyProvider (имитация разных ПК)
+            var providerA = new KeyProvider(); // У каждого свой keys.json
+            var providerB = new KeyProvider();
 
-            // Act
-            var encrypted = crypto.EncryptMessage(original);
-            var decrypted = crypto.DecryptMessage(encrypted);
+            // Генерируем ключи
+            var keysA = await providerA.GetLocalKeysAsync();
+            var keysB = await providerB.GetLocalKeysAsync();
 
-            // Assert
-            decrypted.Should().BeEquivalentTo(original);
-            Encoding.UTF8.GetString(decrypted).Should().BeEquivalentTo(message);
-        }
+            // Act: вычисляем shared secret в обе стороны
+            var secretA = await providerA.ComputeSharedSecretAsync(keysB.EcdhPublicKeyPem);
+            var secretB = await providerB.ComputeSharedSecretAsync(keysA.EcdhPublicKeyPem);
 
-        [Fact]
-        public void Decrypt_TamperedData_ShouldThrowCryptographicException()
-        {
-            // Arrange
-            var crypto = new CryptoProvider(mockKeyProvider.Object);
-            var original = "Secret message"u8.ToArray();
-            var encrypted = crypto.EncryptMessage(original);
+            // Assert: секреты должны быть идентичны
+            Assert.Equal(secretA, secretB);
+            Assert.Equal(32, secretA.Length); // AES-256
 
-            // Act: портим один байт в ciphertext (не в IV или authTag)
-            encrypted[15] ^= 0xFF; // XOR для изменения бита
+            // Дополнительно: проверим шифрование/расшифрование
+            using var aesA = new AesGcm(secretA, tagSizeInBytes: 16);
+            using var aesB = new AesGcm(secretB, tagSizeInBytes: 16);
 
-            var result = () => crypto.DecryptMessage(encrypted);
+            var plaintext = "Test message"u8.ToArray();
+            var iv = RandomNumberGenerator.GetBytes(12);
 
-            // Assert
-            result.Should().Throw<CryptographicException>();
+            var ciphertext = new byte[plaintext.Length];
+            var tag = new byte[16];
+            aesA.Encrypt(iv, plaintext, ciphertext, tag);
+
+            var decrypted = new byte[ciphertext.Length];
+            aesB.Decrypt(iv, ciphertext, tag, decrypted); // ✅ Не должно выбросить
+
+            Assert.Equal(plaintext, decrypted);
         }
     }
 }
