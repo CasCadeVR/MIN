@@ -70,7 +70,7 @@ namespace MIN.Services.Connection.Serialize
             var json = JsonSerializer.SerializeToUtf8Bytes(message, JsonOptions);
             if (json.Length > ChatMessageConstants.MaximumMessageSize)
             {
-                throw new ArgumentException("Message too large", nameof(message));
+                throw new ArgumentException("Слишком большое сообщение", nameof(message));
             }
 
             // Определяем тип для заголовка
@@ -80,7 +80,7 @@ namespace MIN.Services.Connection.Serialize
                 RoomInfoMessage => MessageTypeTag.RoomInfo,
                 DiscoveredRoom => MessageTypeTag.DiscoveredRoom,
                 HandshakeMessage => MessageTypeTag.HandshakeMessage,
-                _ => throw new ArgumentException($"Unsupported message type: {typeof(T).Name}")
+                _ => throw new ArgumentException($"Неподдерживаемый тип сообщения: {typeof(T).Name}")
             };
 
             // Записываем длину

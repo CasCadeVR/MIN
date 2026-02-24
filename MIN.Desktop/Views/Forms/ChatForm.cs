@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -5,6 +6,7 @@ using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Components;
+using MIN.Services.Contracts.Constants;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
@@ -272,19 +274,26 @@ namespace MIN.Desktop
             return !string.IsNullOrWhiteSpace(messageTextBox.Text);
         }
 
-        private void sendButton_Click(object sender, EventArgs e)
+        private async void sendButton_Click(object sender, EventArgs e)
         {
-            sendMessage();
+            await sendMessage();
         }
 
-        private void sendMessage()
+        private async Task sendMessage()
         {
             if (!IsMessageValid())
             {
                 return;
             }
 
-            chatRoomService.SendMessageAsync(messageTextBox.Text, MessageType.Text);
+            try
+            {
+                await chatRoomService.SendMessageAsync(messageTextBox.Text, MessageType.Text);
+            }
+            catch (Exception ex) when (ex is ArgumentException)
+            {
+                MessageBox.Show($"Что то ты слишком много кинул, скинь чуток, максимум пока только {ChatMessageConstants.MaximumMessageSize} кб");
+            }
             messageTextBox.Text = string.Empty;
         }
 
@@ -335,13 +344,13 @@ namespace MIN.Desktop
             }
         }
 
-        private void messageTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        private async void messageTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == '\r') // Enter
             {
                 if ((ModifierKeys & Keys.Shift) == 0)
                 {
-                    sendMessage();
+                    await sendMessage();
                     changeMessageBoxSize();
                     e.Handled = true;
                 }

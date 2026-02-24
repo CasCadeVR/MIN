@@ -303,7 +303,7 @@ namespace MIN.Services.Connection.Pipes
             message.SenderPCName ??= selfParticipant.PCName;
             message.Time = TimeOnly.FromDateTime(DateTime.Now); // Локальное время для отображения
 
-            await serializer.WriteMessageAsync(pipe, message, roomHostParticipantId, cancellationToken);
+             await serializer.WriteMessageAsync(pipe, message, roomHostParticipantId, cancellationToken);
         }
 
         /// <summary>
