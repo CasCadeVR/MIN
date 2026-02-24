@@ -49,7 +49,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(container);
-            MinimumSize = new Size(311, 40);
+            MinimumSize = new Size(0, 40);
             Name = "ChatMessageRow";
             Size = new Size(622, 70);
             ResumeLayout(false);

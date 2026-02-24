@@ -37,7 +37,7 @@ namespace MIN.Desktop
             services.AddSingleton<IKeyProvider, KeyProvider>();
             services.AddSingleton<ICryptoProvider, CryptoProvider>();
 
-            services.AddSingleton<IPipeMessageSerializer, CryptoPipeMessageSerializer>();
+            services.AddSingleton<IPipeMessageSerializer, CommonPipeMessageSerializer>();
             services.AddSingleton<ISettingsProvider, SettingsProvider>();
             services.AddSingleton<IChatRoomService, ChatRoomService>();
 

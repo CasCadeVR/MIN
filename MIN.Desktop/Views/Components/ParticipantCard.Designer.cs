@@ -70,7 +70,7 @@
             lastOnline.AutoSize = true;
             tableLayoutPanelLabels.SetColumnSpan(lastOnline, 2);
             lastOnline.Dock = DockStyle.Fill;
-            lastOnline.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            lastOnline.Font = new Font("Segoe UI", 6.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             lastOnline.ForeColor = Color.FromArgb(0, 0, 0);
             lastOnline.Location = new Point(3, 24);
             lastOnline.Name = "lastOnline";

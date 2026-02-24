@@ -1,8 +1,7 @@
 ﻿using System.Security.Cryptography;
-using System.Text;
-using FluentAssertions;
 using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Cryptographing;
+using MIN.Services.Services;
 using Xunit;
 
 namespace MIN.Services.Connection.Tests
@@ -18,13 +17,12 @@ namespace MIN.Services.Connection.Tests
         }
 
         [Fact]
-        public async Task Ecdh_KeyExchange_TwoIndependentProviders_ShouldProduceSameSharedSecret()
+        public async Task Ecdh_WithDerBase64_TwoProviders_ShouldMatch()
         {
-            // Arrange: два независимых KeyProvider (имитация разных ПК)
-            var providerA = new KeyProvider(); // У каждого свой keys.json
-            var providerB = new KeyProvider();
+            // Arrange: два независимых провайдера (имитация разных ПК)
+            var providerA = new KeyProvider(new LoggerProvider());
+            var providerB = new KeyProvider(new LoggerProvider());
 
-            // Генерируем ключи
             var keysA = await providerA.GetLocalKeysAsync();
             var keysB = await providerB.GetLocalKeysAsync();
 
@@ -32,19 +30,19 @@ namespace MIN.Services.Connection.Tests
             var secretA = await providerA.ComputeSharedSecretAsync(keysB.EcdhPublicKeyPem);
             var secretB = await providerB.ComputeSharedSecretAsync(keysA.EcdhPublicKeyPem);
 
-            // Assert: секреты должны быть идентичны
-            Assert.Equal(secretA, secretB);
-            Assert.Equal(32, secretA.Length); // AES-256
+            // Assert
+            Assert.Equal(secretA, secretB); // ✅ Должно пройти!
+            Assert.Equal(32, secretA.Length);
 
-            // Дополнительно: проверим шифрование/расшифрование
+            // Дополнительно: проверка шифрования
             using var aesA = new AesGcm(secretA, tagSizeInBytes: 16);
             using var aesB = new AesGcm(secretB, tagSizeInBytes: 16);
 
-            var plaintext = "Test message"u8.ToArray();
+            var plaintext = "Test"u8.ToArray();
             var iv = RandomNumberGenerator.GetBytes(12);
-
             var ciphertext = new byte[plaintext.Length];
             var tag = new byte[16];
+
             aesA.Encrypt(iv, plaintext, ciphertext, tag);
 
             var decrypted = new byte[ciphertext.Length];

@@ -19,7 +19,6 @@ namespace MIN.Desktop
     /// </summary>
     public partial class ChatForm : StyledForm
     {
-        private readonly int startMessageBoxHeight;
         private readonly IChatRoomService chatRoomService;
         private readonly CancellationTokenSource formCancellationTokenSource = new();
         private readonly SynchronizationContext uiContext;
@@ -35,7 +34,6 @@ namespace MIN.Desktop
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
 
-            startMessageBoxHeight = tableLayoutPanelButtons.Height;
             this.chatRoomService = chatRoomService;
             this.room = room;
 
@@ -344,7 +342,6 @@ namespace MIN.Desktop
                 if ((ModifierKeys & Keys.Shift) == 0)
                 {
                     sendMessage();
-                    tableLayoutPanelButtons.Height = startMessageBoxHeight;
                     changeMessageBoxSize();
                     e.Handled = true;
                 }
@@ -353,8 +350,7 @@ namespace MIN.Desktop
 
         private void changeMessageBoxSize()
         {
-            tableLayoutPanelButtons.Height = messageTextBox.Height + tableLayoutPanelButtons.Margin.Vertical;
-
+            tableLayoutPanelButtons.Height = messageTextBox.UpdateHeight() + tableLayoutPanelButtons.Margin.Vertical;
         }
 
         private void messageTextBox_TextChanged(object sender, EventArgs e)

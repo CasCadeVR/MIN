@@ -9,7 +9,6 @@ namespace MIN.Desktop.Components
     /// </summary>
     public partial class ChatMessageCard : UserControl
     {
-        private const int MaxLines = 100;            // ограничение, чтобы не было "монстров"
         private readonly ChatMessage chatMessage;
         private readonly bool hostMessage;
 
@@ -21,40 +20,31 @@ namespace MIN.Desktop.Components
             InitializeComponent();
             this.chatMessage = chatMessage;
             this.hostMessage = hostMessage;
-            ApplyStylings();
             FillLabels();
+            ApplyStylings();
         }
 
         private void ApplyStylings()
         {
-            int lineCount = CalculateLineCount(chatMessage.Content);
-            int contentHeight = lineCount * sendMessage.Height;
-            int totalHeight = sendMessage.Height + contentHeight + sendMessage.Height + sendMessage.Padding.Top;
+            Height = senderName.Height
+                + sendMessage.PreferredSize.Height
+                + sendTime.Height
+                + sendMessage.Padding.Vertical;
 
-            Height = totalHeight;
+            Width = Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
+                + Math.Max(sendMessage.PreferredSize.Width, senderName.PreferredSize.Width)
+                + sendMessage.Padding.Horizontal
+                + sendMessage.Margin.Horizontal;
 
-            tableLayoutPanelLabels.BackColor =
-                chatMessage.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
-                    ? ColorScheme.OutgoingMessageBackground
-                    : ColorScheme.IncomingMessageBackground;
+            var color = chatMessage.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
+             ? ColorScheme.OutgoingMessageBackground
+             : ColorScheme.IncomingMessageBackground;
 
-            this.Width = this.Parent?.Width ?? 400;
-        }
-
-        private int CalculateLineCount(string text)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-                return 1;
-
-            using var graphics = CreateGraphics();
-            var font = sendMessage.Font;
-
-            var rect = new RectangleF(0, 0, Width, 1000);
-            var flags = TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl;
-            var size = TextRenderer.MeasureText(graphics, text, font, new Size(Width, int.MaxValue), flags);
-
-            int lines = Math.Max(1, (int)Math.Ceiling((double)size.Height / sendMessage.Height));
-            return Math.Min(lines, MaxLines);
+            senderName.BackColor = color;
+            sendRole.BackColor = color;
+            sendMessage.BackColor = color;
+            sendTime.BackColor = color;
+            tableLayoutPanelLabels.BackColor = color;
         }
 
         private void FillLabels()

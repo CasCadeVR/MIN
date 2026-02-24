@@ -48,6 +48,10 @@ namespace MIN.Services.Connection.Serialize
                     JsonSerializer.Deserialize<ChatMessage>(dataBuffer, JsonOptions)
                     ?? throw new InvalidDataException("Failed to deserialize ChatMessage"),
 
+                MessageTypeTag.HandshakeMessage =>
+                    JsonSerializer.Deserialize<HandshakeMessage>(dataBuffer, JsonOptions)
+                    ?? throw new InvalidDataException("Failed to deserialize HandshakeMessage"),
+
                 MessageTypeTag.RoomInfo =>
                     JsonSerializer.Deserialize<RoomInfoMessage>(dataBuffer, JsonOptions)
                     ?? throw new InvalidDataException("Failed to deserialize RoomInfoMessage"),
@@ -75,6 +79,7 @@ namespace MIN.Services.Connection.Serialize
                 ChatMessage => MessageTypeTag.ChatMessage,
                 RoomInfoMessage => MessageTypeTag.RoomInfo,
                 DiscoveredRoom => MessageTypeTag.DiscoveredRoom,
+                HandshakeMessage => MessageTypeTag.HandshakeMessage,
                 _ => throw new ArgumentException($"Unsupported message type: {typeof(T).Name}")
             };
 
