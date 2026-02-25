@@ -176,23 +176,9 @@ namespace MIN.Services.Connection.Pipes
         /// <summary>
         /// Получена информация о комнате от сервера (при подключении клиента)
         /// </summary>
-        private void OnRoomInfoReceived(RoomInfoMessage roomInfo)
+        private void OnRoomInfoReceived(Room room)
         {
-            currentRoom = new Room(roomInfo.RoomName, roomInfo.MaxParticipants)
-            {
-                Id = roomInfo.RoomId,
-                HostParticipant = new Participant() {
-                    Id = roomInfo.HostId,
-                    Name = roomInfo.HostName,
-                    PCName = roomInfo.HostPCName,
-                }
-            };
-
-            foreach (var participant in roomInfo.CurrentParticipants)
-            {
-                currentRoom.CurrentParticipants.Add(participant);
-            }
-
+            currentRoom = room;
             OnRoomStateChanged(new RoomStateChangedEventArgs(currentRoom, RoomState.Joined));
         }
 

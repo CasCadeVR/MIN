@@ -191,6 +191,7 @@
             MinimumSize = new Size(432, 193);
             Name = "ParticipantCreateForm";
             Text = "MIN - Подключение к комнате";
+            Load += ParticipantCreateForm_Load;
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();
@@ -210,7 +211,6 @@
         private TableLayoutPanel tableLayoutPanel1;
         private Components.Labels.Heading3Label ClassTitleInput;
         private Components.Labels.Heading1Label Title;
-        private Components.Controls.NumericUpDowns.DefaultNumericUpDown classNumber;
         private Components.CommonButton connectButton;
         private Components.Controls.TextBoxes.DefaultTextBox participantName;
         private TableLayoutPanel tableLayoutPanelButtons;

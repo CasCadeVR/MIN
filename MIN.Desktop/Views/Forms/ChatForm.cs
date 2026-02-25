@@ -325,6 +325,7 @@ namespace MIN.Desktop
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
             UnsubscribeFromChatEvents();
+            await formCancellationTokenSource.CancelAsync();
             formCancellationTokenSource.Dispose();
             await chatRoomService.DisconnectAsync();
             base.OnFormClosing(e);

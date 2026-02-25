@@ -25,7 +25,7 @@ namespace MIN.Services.Connection.Pipes
         private Guid roomHostParticipantId;
 
         public event EventHandler<ChatMessage>? MessageReceived;
-        public event EventHandler<RoomInfoMessage>? RoomInfoReceived;
+        public event EventHandler<Room>? RoomInfoReceived;
         public event EventHandler<Participant>? ParticipantJoined;
         public event EventHandler<Participant>? ParticipantLeft;
         public event EventHandler? Disconnected;
@@ -113,7 +113,7 @@ namespace MIN.Services.Connection.Pipes
 
                         case RoomInfoMessage roomInfo:
                             logger.Log($"Получена RoomInfo: {roomInfo.RoomName}");
-                            await HandleRoomInfoAsync(roomInfo, cancellationToken);
+                            HandleRoomInfoAsync(roomInfo, cancellationToken);
                             break;
 
                         case ChatMessage chatMsg when chatMsg.MessageType == MessageType.System
@@ -152,7 +152,7 @@ namespace MIN.Services.Connection.Pipes
             }
         }
 
-        private async Task HandleRoomInfoAsync(RoomInfoMessage roomInfo, CancellationToken ct)
+        private void HandleRoomInfoAsync(RoomInfoMessage roomInfo, CancellationToken ct)
         {
             currentRoom = new Room(roomInfo.RoomName, roomInfo.MaxParticipants)
             {
@@ -170,7 +170,12 @@ namespace MIN.Services.Connection.Pipes
                 currentRoom.AddParticipant(participant);
             }
 
-            RoomInfoReceived?.Invoke(this, roomInfo);
+            foreach (var message in roomInfo.ChatHistory)
+            {
+                currentRoom.AddMessage(message);
+            }
+
+            RoomInfoReceived?.Invoke(this, currentRoom);
         }
 
         private void HandleParticipantJoined(ChatMessage systemMessage)

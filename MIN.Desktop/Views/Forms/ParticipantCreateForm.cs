@@ -30,9 +30,9 @@ namespace MIN.Desktop
             if (!IsParticipantValid())
             {
                 MessageBox.Show(
-                    "Имя участника не может быть пустым", 
-                    "Ошибка валидации", 
-                    MessageBoxButtons.OK, 
+                    "Имя участника не может быть пустым",
+                    "Ошибка валидации",
+                    MessageBoxButtons.OK,
                     MessageBoxIcon.Exclamation
                 );
 
@@ -40,6 +40,11 @@ namespace MIN.Desktop
             }
 
             DialogResult = DialogResult.OK;
+        }
+
+        private void ParticipantCreateForm_Load(object sender, EventArgs e)
+        {
+            participantName.Focus();
         }
     }
 }

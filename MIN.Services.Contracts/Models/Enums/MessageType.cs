@@ -18,11 +18,6 @@
         /// <summary>
         /// Файл
         /// </summary>
-        File = 2,
-
-        /// <summary>
-        /// Команды
-        /// </summary>
-        Command = 3,
+        File = 2
     }
 }

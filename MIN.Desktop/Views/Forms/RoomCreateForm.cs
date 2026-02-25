@@ -71,7 +71,7 @@ namespace MIN.Desktop
             if (isNew)
             {
                 DialogResult = DialogResult.Cancel;
-            } 
+            }
             else
             {
                 if (MessageBox.Show("Вы точно хотите удалить эту комнату?", "Удаление комнаты", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
@@ -79,6 +79,11 @@ namespace MIN.Desktop
                     DialogResult = DialogResult.Abort;
                 }
             }
+        }
+
+        private void RoomCreateForm_Load(object sender, EventArgs e)
+        {
+            roomName.Focus();
         }
     }
 }

@@ -9,9 +9,6 @@ namespace MIN.Desktop.Components.Controls.RadioButtons
             ApplyBaseStyles();
         }
 
-        protected virtual void ApplyBaseStyles()
-        {
-            BackColor = ColorScheme.InputFieldBackground;
-        }
+        protected override void ApplyBaseStyles() => BackColor = ColorScheme.InputFieldBackground;
     }
 }

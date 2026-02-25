@@ -119,7 +119,6 @@
         }
 
         #endregion
-        private Components.Controls.NumericUpDowns.DefaultNumericUpDown classNumber;
         private SplitContainer splitContainer;
         private TableLayoutPanel tableLayoutPanelHeader;
         private Components.Labels.Heading1Label Title;

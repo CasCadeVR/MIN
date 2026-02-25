@@ -153,8 +153,10 @@ namespace MIN.Services.Connection.Pipes
 
                     // Отправляем свой Handshake в ответ
                     var serverHandshake = await cryptoProvider.CreateHandshakeAsync(clientHandshake.UserId);
+
                     logger.Log($"Отправлен Handshake клиенту {clientHandshake.UserId}");
                     await serializer.WriteMessageAsync(connection.Pipe, serverHandshake, clientHandshake.UserId, ct);
+
                     logger.Log($"Отправляю RoomInfo...");
                     await SendRoomInfoAsync(connection.Pipe, ct);
                 }

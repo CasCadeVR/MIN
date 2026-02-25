@@ -226,6 +226,7 @@
             MinimumSize = new Size(432, 241);
             Name = "RoomCreateForm";
             Text = "MIN - Создание комнаты";
+            Load += RoomCreateForm_Load;
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();

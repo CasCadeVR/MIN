@@ -3,10 +3,20 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<SelfContained>true</SelfContained>
+	<PublishSingleFile>true</PublishSingleFile>
+	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>logo.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="logo.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
@@ -18,15 +28,6 @@
     <ProjectReference Include="..\MIN.Services\MIN.Services.csproj" />
   </ItemGroup>
 	
-  <!--<PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>  Specify a target runtime 
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-  </PropertyGroup>-->
-
   <ItemGroup>
     <Compile Update="Components\Controls\Buttons\InvertedButton.cs">
       <SubType>Component</SubType>

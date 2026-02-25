@@ -36,7 +36,7 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
 
         event EventHandler<ChatMessage>? MessageReceived;
 
-        event EventHandler<RoomInfoMessage>? RoomInfoReceived;
+        event EventHandler<Room>? RoomInfoReceived;
 
         event EventHandler<Participant>? ParticipantJoined;
 
