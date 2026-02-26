@@ -1,4 +1,5 @@
 ﻿using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Properties;
 
 namespace MIN.Desktop.Contracts.Views.Forms
 {
@@ -7,6 +8,7 @@ namespace MIN.Desktop.Contracts.Views.Forms
         public StyledForm()
         {
             InitializeComponent();
+            this.Icon = Resources.logo;
         }
 
         protected override void OnLoad(EventArgs e)

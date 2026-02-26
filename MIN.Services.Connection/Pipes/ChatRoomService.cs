@@ -10,6 +10,7 @@ using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Contracts.Models.Events;
 using MIN.Services.Contracts.Models.Messages;
+using MIN.Services.Extensions;
 
 namespace MIN.Services.Connection.Pipes
 {
@@ -178,7 +179,7 @@ namespace MIN.Services.Connection.Pipes
         /// </summary>
         private void OnRoomInfoReceived(Room room)
         {
-            currentRoom = room;
+            currentRoom = room.GetSerializableCopy();
             OnRoomStateChanged(new RoomStateChangedEventArgs(currentRoom, RoomState.Joined));
         }
 
