@@ -101,7 +101,7 @@ namespace MIN.Services.Connection.Pipes
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var message = await serializer.ReadMessageAsync(pipe!, selfParticipant!.Id, cancellationToken);
+                    var message = await serializer.ReadMessageAsync(pipe!, roomHostParticipantId, cancellationToken);
 
                     switch (message)
                     {

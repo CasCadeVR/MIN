@@ -82,7 +82,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                         CurrentParticipants = room.CurrentParticipants.Count,
                     };
 
-                    await serializer.WriteMessageAsync(pipe!, roomInfo, hostParticipant.Id, ct);
+                    await serializer.WriteMessageAsync(pipe!, roomInfo, Guid.Empty, ct);
                 }
                 catch (OperationCanceledException)
                 {

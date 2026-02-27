@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Components.Controls.TextBoxes
+﻿using System.Runtime.InteropServices;
+
+namespace MIN.Desktop.Components.Controls.TextBoxes
 {
     /// <summary>
     /// Текстовое поле для ввода сообщений с автоматическим изменением высоты (до 10 строк)

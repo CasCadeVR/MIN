@@ -18,7 +18,7 @@ namespace MIN.Desktop
     internal static class Program
     {
         /// <summary>
-        ///  The main entry point for the application.
+        /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static void Main()
@@ -44,7 +44,7 @@ namespace MIN.Desktop
             services.AddSingleton<IUpdateService, GitHubUpdateService>();
             services.AddSingleton<INotificationService, NotificationService>();
 
-            services.AddSingleton<IPipeMessageSerializer, CommonPipeMessageSerializer>();
+            services.AddSingleton<IPipeMessageSerializer, CryptoPipeMessageSerializer>();
             services.AddSingleton<ISettingsProvider, SettingsProvider>();
             services.AddSingleton<IChatRoomService, ChatRoomService>();
 

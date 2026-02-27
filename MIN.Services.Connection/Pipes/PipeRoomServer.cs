@@ -173,7 +173,6 @@ namespace MIN.Services.Connection.Pipes
                 while (!cancellationToken.IsCancellationRequested && connection.Pipe.IsConnected)
                 {
                     var message = await serializer.ReadMessageAsync(connection.Pipe, connection.Participant.Id, cancellationToken);
-
                     
                     switch (message)
                     {
@@ -229,7 +228,7 @@ namespace MIN.Services.Connection.Pipes
                 ChatHistory = room.ChatHistory.Select(m => m.GetSerializableCopy()).ToList(),
             };
 
-            await serializer.WriteMessageAsync(connection.Pipe, roomInfo, room.HostParticipant.Id, cancellationToken);
+            await serializer.WriteMessageAsync(connection.Pipe, roomInfo, connection.Participant.Id, cancellationToken);
         }
 
         public async Task BroadcastMessageAsync(ClientConnection sender, ChatMessage message, CancellationToken ct)
@@ -242,7 +241,7 @@ namespace MIN.Services.Connection.Pipes
                 {
                     if (connection.Pipe.IsConnected)
                     {
-                        tasks.Add(serializer.WriteMessageAsync(connection.Pipe, message, room!.HostParticipant.Id, ct));
+                        tasks.Add(serializer.WriteMessageAsync(connection.Pipe, message, connection.Participant.Id, ct));
                     }
                 }
             }
@@ -270,7 +269,7 @@ namespace MIN.Services.Connection.Pipes
         public async Task SendMessageAsync(ClientConnection connection, ChatMessage message, CancellationToken cancellationToken = default)
         {
             if (!IsRunning) throw new InvalidOperationException("Сервер не работает");
-            await serializer.WriteMessageAsync(connection.Pipe, message, room!.HostParticipant.Id, cancellationToken);
+            await serializer.WriteMessageAsync(connection.Pipe, message, connection.Participant.Id, cancellationToken);
         }
 
         public async Task StopAsync()
