@@ -33,7 +33,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
             this.logger = logger;
         }
 
-        async Task IDiscoveryServer.StartAsync(CancellationToken cancellationToken = default)
+        async Task IDiscoveryServer.StartAsync(CancellationToken cancellationToken)
         {
             if (isRunning) await StopAsync();
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

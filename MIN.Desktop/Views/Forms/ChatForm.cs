@@ -26,24 +26,20 @@ namespace MIN.Desktop
         private readonly CancellationTokenSource formCancellationTokenSource = new();
         private readonly SynchronizationContext uiContext;
 
-        /// <summary>
-        /// Текущая комната
-        /// </summary>
-        private Room room { get; set; }
+        private Room room = null!;
 
-        public ChatForm(IChatRoomService chatRoomService, INotificationService notificationService, Room room)
+        public ChatForm(IChatRoomService chatRoomService, INotificationService notificationService)
         {
             InitializeComponent();
+            SendLoadingMessage();
+
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
 
             this.chatRoomService = chatRoomService;
             this.notificationService = notificationService;
-            this.room = room;
 
             SubscribeToChatEvents();
-            UpdateStats();
-            UpdateChatFlow();
         }
 
         private void SubscribeToChatEvents()
@@ -96,6 +92,7 @@ namespace MIN.Desktop
                 Invoke(action, entity);
                 return;
             }
+
             UpdateStats();
         }
 
@@ -171,6 +168,17 @@ namespace MIN.Desktop
             AddMessageToChatFlow(roomMessage);
         }
 
+        private void SendLoadingMessage()
+        {
+            var roomMessage = new ChatMessage()
+            {
+                Content = "Загрузка...",
+                MessageType = MessageType.System,
+            };
+
+            AddMessageToChatFlow(roomMessage);
+        }
+
         private void UpdateStats()
         {
             Text = $"MIN - Комната {room.Name}";
@@ -189,6 +197,7 @@ namespace MIN.Desktop
                 classroom.Text = DesktopConstants.UndefinedPCName;
             }
 
+            UpdateChatFlow();
             UpdateParticipantFlow();
         }
 

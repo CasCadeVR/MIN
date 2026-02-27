@@ -28,8 +28,8 @@ namespace MIN.Services.Connection.Pipes
         private Room? currentRoom;
         private Participant? selfParticipant;
         private bool isDisposed;
-        private IDiscoveryServer discoveryServer;
-        private IDiscoveryClient discoveryClient;
+        private IDiscoveryServer discoveryServer = null!;
+        private IDiscoveryClient discoveryClient = null!;
 
         private bool IsHost => selfParticipant?.PCName == currentRoom?.HostParticipant.PCName;
 
@@ -58,7 +58,7 @@ namespace MIN.Services.Connection.Pipes
             this.client.Disconnected += (s, e) => OnTransportDisconnected();
         }
 
-        async Task<IEnumerable<DiscoveredRoom>> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs = 1000, CancellationToken cancellationToken = default)
+        async Task<IEnumerable<DiscoveredRoom>> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
         {
             var discoveredRooms = new ConcurrentBag<DiscoveredRoom>();
             var tasks = targetPCNames.Select(async pcName =>
@@ -80,7 +80,7 @@ namespace MIN.Services.Connection.Pipes
             return discoveredRooms.ToList();
         }
 
-        async Task<Room> IChatRoomService.CreateRoomAsync(string roomName, int maxParticipants, Participant host, CancellationToken cancellationToken = default)
+        async Task<Room> IChatRoomService.CreateRoomAsync(string roomName, int maxParticipants, Participant host, CancellationToken cancellationToken)
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(ChatRoomService));
@@ -94,28 +94,22 @@ namespace MIN.Services.Connection.Pipes
 
             discoveryServer = new DiscoveryServer(host, server.Room, serializer, logger);
             await discoveryServer.StartAsync(cancellationToken);
-
-            OnRoomStateChanged(new RoomStateChangedEventArgs(currentRoom, RoomState.Created));
-
             return currentRoom;
         }
 
-        async Task IChatRoomService.JoinRoomAsync(Room room, Participant participant, int timeoutMs = 1000, CancellationToken cancellationToken = default)
+        async Task IChatRoomService.JoinRoomAsync(Room room, Participant participant, int timeoutMs, CancellationToken cancellationToken)
         {
             if (isDisposed)
             {
                 throw new ObjectDisposedException(nameof(ChatRoomService));
             }
 
-            //await DisconnectAsync(cancellationToken);
-
             selfParticipant = participant;
 
-            await client.ConnectAsync(room, participant, timeoutMs, cancellationToken);
-            //OnRoomStateChanged(new RoomStateChangedEventArgs(room, RoomState.Joined));
+            await client.ConnectAsync(room, selfParticipant, timeoutMs, cancellationToken);
         }
 
-        async Task IChatRoomService.SendMessageAsync(string content, MessageType type, CancellationToken cancellationToken = default)
+        async Task IChatRoomService.SendMessageAsync(string content, MessageType type, CancellationToken cancellationToken)
         {
             if (isDisposed)
             {
@@ -127,11 +121,8 @@ namespace MIN.Services.Connection.Pipes
 
             var message = new ChatMessage
             {
-                SenderName = selfParticipant.Name,
-                SenderPCName = selfParticipant.PCName,
                 Content = content,
                 MessageType = type,
-                TimestampUtc = DateTime.UtcNow
             };
 
             await client.SendMessageAsync(message, cancellationToken);
@@ -222,7 +213,7 @@ namespace MIN.Services.Connection.Pipes
             {
                 if (t.IsFaulted)
                 {
-                    Debug.WriteLine($"Error during disconnect after transport loss: {t.Exception?.Message}");
+                    logger.Log($"Произошла ошибка во время потери соединения: {t.Exception?.Message}", LogLevel.Error);
                 }
 
                 ConnectionLost?.Invoke(this, new ConnectionLostEventArgs(

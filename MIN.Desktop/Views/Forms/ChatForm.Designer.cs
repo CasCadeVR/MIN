@@ -75,6 +75,7 @@
             splitContainerSideBar.FixedPanel = FixedPanel.Panel2;
             splitContainerSideBar.IsSplitterFixed = true;
             splitContainerSideBar.Location = new Point(0, 0);
+            splitContainerSideBar.Margin = new Padding(3, 4, 3, 4);
             splitContainerSideBar.Name = "splitContainerSideBar";
             // 
             // splitContainerSideBar.Panel1
@@ -85,8 +86,8 @@
             // 
             splitContainerSideBar.Panel2.Controls.Add(participantsFlow);
             splitContainerSideBar.Panel2.Controls.Add(tableLayoutPanelStats);
-            splitContainerSideBar.Size = new Size(504, 614);
-            splitContainerSideBar.SplitterDistance = 377;
+            splitContainerSideBar.Size = new Size(576, 819);
+            splitContainerSideBar.SplitterDistance = 437;
             splitContainerSideBar.SplitterWidth = 1;
             splitContainerSideBar.TabIndex = 0;
             // 
@@ -96,6 +97,7 @@
             splitContainer.FixedPanel = FixedPanel.Panel1;
             splitContainer.IsSplitterFixed = true;
             splitContainer.Location = new Point(0, 0);
+            splitContainer.Margin = new Padding(3, 4, 3, 4);
             splitContainer.Name = "splitContainer";
             splitContainer.Orientation = Orientation.Horizontal;
             // 
@@ -107,8 +109,9 @@
             // 
             splitContainer.Panel2.Controls.Add(tableLayoutPanel2);
             splitContainer.Panel2.Controls.Add(tableLayoutPanel1);
-            splitContainer.Size = new Size(377, 614);
-            splitContainer.SplitterDistance = 55;
+            splitContainer.Size = new Size(437, 819);
+            splitContainer.SplitterDistance = 73;
+            splitContainer.SplitterWidth = 5;
             splitContainer.TabIndex = 1;
             // 
             // tableLayoutPanelHeader
@@ -118,10 +121,11 @@
             tableLayoutPanelHeader.Controls.Add(Title, 0, 0);
             tableLayoutPanelHeader.Dock = DockStyle.Fill;
             tableLayoutPanelHeader.Location = new Point(0, 0);
+            tableLayoutPanelHeader.Margin = new Padding(3, 4, 3, 4);
             tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
             tableLayoutPanelHeader.RowCount = 1;
             tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelHeader.Size = new Size(377, 55);
+            tableLayoutPanelHeader.Size = new Size(437, 73);
             tableLayoutPanelHeader.TabIndex = 0;
             // 
             // Title
@@ -130,9 +134,9 @@
             Title.AutoSize = true;
             Title.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             Title.ForeColor = Color.FromArgb(248, 249, 255);
-            Title.Location = new Point(122, 12);
+            Title.Location = new Point(136, 18);
             Title.Name = "Title";
-            Title.Size = new Size(132, 30);
+            Title.Size = new Size(165, 37);
             Title.TabIndex = 0;
             Title.Text = "Комната \"\"";
             // 
@@ -143,12 +147,13 @@
             tableLayoutPanel2.Controls.Add(chatFlow, 0, 0);
             tableLayoutPanel2.Controls.Add(tableLayoutPanelButtons, 0, 1);
             tableLayoutPanel2.Dock = DockStyle.Fill;
-            tableLayoutPanel2.Location = new Point(0, 48);
+            tableLayoutPanel2.Location = new Point(0, 64);
+            tableLayoutPanel2.Margin = new Padding(3, 4, 3, 4);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 2;
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
-            tableLayoutPanel2.Size = new Size(377, 507);
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
+            tableLayoutPanel2.Size = new Size(437, 677);
             tableLayoutPanel2.TabIndex = 4;
             // 
             // chatFlow
@@ -156,9 +161,10 @@
             chatFlow.AutoScroll = true;
             chatFlow.Dock = DockStyle.Fill;
             chatFlow.FlowDirection = FlowDirection.BottomUp;
-            chatFlow.Location = new Point(3, 3);
+            chatFlow.Location = new Point(3, 4);
+            chatFlow.Margin = new Padding(3, 4, 3, 4);
             chatFlow.Name = "chatFlow";
-            chatFlow.Size = new Size(371, 453);
+            chatFlow.Size = new Size(431, 605);
             chatFlow.TabIndex = 3;
             chatFlow.WrapContents = false;
             chatFlow.Resize += chatFlow_Resize;
@@ -166,19 +172,19 @@
             // tableLayoutPanelButtons
             // 
             tableLayoutPanelButtons.ColumnCount = 3;
-            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 55F));
             tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 55F));
             tableLayoutPanelButtons.Controls.Add(fileButton, 0, 0);
             tableLayoutPanelButtons.Controls.Add(sendButton, 2, 0);
             tableLayoutPanelButtons.Controls.Add(messageTextBox, 1, 0);
             tableLayoutPanelButtons.Dock = DockStyle.Bottom;
-            tableLayoutPanelButtons.Location = new Point(0, 459);
+            tableLayoutPanelButtons.Location = new Point(0, 613);
             tableLayoutPanelButtons.Margin = new Padding(0);
             tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
             tableLayoutPanelButtons.RowCount = 1;
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelButtons.Size = new Size(377, 48);
+            tableLayoutPanelButtons.Size = new Size(437, 64);
             tableLayoutPanelButtons.TabIndex = 2;
             // 
             // fileButton
@@ -186,16 +192,16 @@
             fileButton.BackColor = Color.FromArgb(192, 192, 255);
             fileButton.BackgroundImage = Properties.Resources.paperclip;
             fileButton.BackgroundImageLayout = ImageLayout.Zoom;
-            fileButton.Dock = DockStyle.Left;
+            fileButton.Dock = DockStyle.Top;
             fileButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             fileButton.FlatStyle = FlatStyle.Flat;
             fileButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             fileButton.ForeColor = Color.FromArgb(248, 249, 255);
-            fileButton.Location = new Point(3, 3);
-            fileButton.Margin = new Padding(3, 3, 3, 6);
+            fileButton.Location = new Point(3, 4);
+            fileButton.Margin = new Padding(3, 4, 3, 8);
             fileButton.Name = "fileButton";
-            fileButton.Padding = new Padding(8, 4, 8, 4);
-            fileButton.Size = new Size(42, 39);
+            fileButton.Padding = new Padding(9, 5, 9, 5);
+            fileButton.Size = new Size(49, 52);
             fileButton.TabIndex = 3;
             fileButton.UseVisualStyleBackColor = false;
             // 
@@ -204,16 +210,16 @@
             sendButton.BackColor = Color.FromArgb(192, 192, 255);
             sendButton.BackgroundImage = Properties.Resources.send;
             sendButton.BackgroundImageLayout = ImageLayout.Zoom;
-            sendButton.Dock = DockStyle.Right;
+            sendButton.Dock = DockStyle.Top;
             sendButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             sendButton.FlatStyle = FlatStyle.Flat;
             sendButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendButton.ForeColor = Color.FromArgb(248, 249, 255);
-            sendButton.Location = new Point(332, 3);
-            sendButton.Margin = new Padding(3, 3, 3, 6);
+            sendButton.Location = new Point(385, 4);
+            sendButton.Margin = new Padding(3, 4, 3, 8);
             sendButton.Name = "sendButton";
-            sendButton.Padding = new Padding(8, 4, 8, 4);
-            sendButton.Size = new Size(42, 39);
+            sendButton.Padding = new Padding(9, 5, 9, 5);
+            sendButton.Size = new Size(49, 52);
             sendButton.TabIndex = 2;
             sendButton.UseVisualStyleBackColor = false;
             sendButton.Click += sendButton_Click;
@@ -226,13 +232,14 @@
             messageTextBox.Dock = DockStyle.Fill;
             messageTextBox.Font = new Font("Segoe UI", 9.75F);
             messageTextBox.ForeColor = Color.FromArgb(122, 119, 143);
-            messageTextBox.Location = new Point(51, 3);
-            messageTextBox.Margin = new Padding(3, 3, 3, 6);
+            messageTextBox.Location = new Point(58, 4);
+            messageTextBox.Margin = new Padding(3, 4, 3, 8);
             messageTextBox.MaxLength = 65526;
             messageTextBox.Multiline = true;
             messageTextBox.Name = "messageTextBox";
-            messageTextBox.PlaceholderText = "Message";
-            messageTextBox.Size = new Size(275, 39);
+            messageTextBox.PlaceholderText = "Сообщение";
+            messageTextBox.ScrollBars = ScrollBars.Vertical;
+            messageTextBox.Size = new Size(321, 52);
             messageTextBox.TabIndex = 4;
             messageTextBox.TextChanged += messageTextBox_TextChanged;
             messageTextBox.KeyPress += messageTextBox_KeyPress;
@@ -250,7 +257,7 @@
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanel1.Size = new Size(377, 48);
+            tableLayoutPanel1.Size = new Size(437, 64);
             tableLayoutPanel1.TabIndex = 1;
             // 
             // disconnectButton
@@ -263,10 +270,11 @@
             disconnectButton.FlatStyle = FlatStyle.Flat;
             disconnectButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             disconnectButton.ForeColor = Color.FromArgb(167, 157, 255);
-            disconnectButton.Location = new Point(3, 3);
+            disconnectButton.Location = new Point(3, 4);
+            disconnectButton.Margin = new Padding(3, 4, 3, 4);
             disconnectButton.Name = "disconnectButton";
-            disconnectButton.Padding = new Padding(8, 4, 8, 4);
-            disconnectButton.Size = new Size(131, 42);
+            disconnectButton.Padding = new Padding(9, 5, 9, 5);
+            disconnectButton.Size = new Size(150, 56);
             disconnectButton.TabIndex = 3;
             disconnectButton.Text = "Отключиться";
             disconnectButton.UseVisualStyleBackColor = false;
@@ -280,10 +288,11 @@
             aboutButton.FlatStyle = FlatStyle.Flat;
             aboutButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             aboutButton.ForeColor = Color.FromArgb(248, 249, 255);
-            aboutButton.Location = new Point(258, 3);
+            aboutButton.Location = new Point(301, 4);
+            aboutButton.Margin = new Padding(3, 4, 3, 4);
             aboutButton.Name = "aboutButton";
-            aboutButton.Padding = new Padding(8, 4, 8, 4);
-            aboutButton.Size = new Size(116, 42);
+            aboutButton.Padding = new Padding(9, 5, 9, 5);
+            aboutButton.Size = new Size(133, 56);
             aboutButton.TabIndex = 4;
             aboutButton.Text = "О комнате";
             aboutButton.UseVisualStyleBackColor = false;
@@ -294,9 +303,10 @@
             participantsFlow.AutoScroll = true;
             participantsFlow.Dock = DockStyle.Fill;
             participantsFlow.FlowDirection = FlowDirection.TopDown;
-            participantsFlow.Location = new Point(0, 276);
+            participantsFlow.Location = new Point(0, 368);
+            participantsFlow.Margin = new Padding(3, 4, 3, 4);
             participantsFlow.Name = "participantsFlow";
-            participantsFlow.Size = new Size(126, 338);
+            participantsFlow.Size = new Size(138, 451);
             participantsFlow.TabIndex = 5;
             participantsFlow.WrapContents = false;
             // 
@@ -327,7 +337,7 @@
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
-            tableLayoutPanelStats.Size = new Size(126, 276);
+            tableLayoutPanelStats.Size = new Size(138, 368);
             tableLayoutPanelStats.TabIndex = 4;
             // 
             // captionLabel4
@@ -336,9 +346,9 @@
             captionLabel4.AutoSize = true;
             captionLabel4.Font = new Font("Segoe UI", 8.25F);
             captionLabel4.ForeColor = Color.Black;
-            captionLabel4.Location = new Point(4, 189);
+            captionLabel4.Location = new Point(6, 255);
             captionLabel4.Name = "captionLabel4";
-            captionLabel4.Size = new Size(56, 26);
+            captionLabel4.Size = new Size(60, 38);
             captionLabel4.TabIndex = 21;
             captionLabel4.Text = "Подключено: ";
             // 
@@ -348,9 +358,9 @@
             captionLabel3.AutoSize = true;
             captionLabel3.Font = new Font("Segoe UI", 8.25F);
             captionLabel3.ForeColor = Color.Black;
-            captionLabel3.Location = new Point(13, 144);
+            captionLabel3.Location = new Point(9, 194);
             captionLabel3.Name = "captionLabel3";
-            captionLabel3.Size = new Size(47, 26);
+            captionLabel3.Size = new Size(57, 38);
             captionLabel3.TabIndex = 20;
             captionLabel3.Text = "№ Компа: ";
             // 
@@ -360,9 +370,9 @@
             captionLabel2.AutoSize = true;
             captionLabel2.Font = new Font("Segoe UI", 8.25F);
             captionLabel2.ForeColor = Color.Black;
-            captionLabel2.Location = new Point(3, 106);
+            captionLabel2.Location = new Point(5, 133);
             captionLabel2.Name = "captionLabel2";
-            captionLabel2.Size = new Size(57, 13);
+            captionLabel2.Size = new Size(61, 38);
             captionLabel2.TabIndex = 19;
             captionLabel2.Text = "Кабинет: ";
             // 
@@ -373,9 +383,9 @@
             tableLayoutPanelStats.SetColumnSpan(heading3Label4, 2);
             heading3Label4.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             heading3Label4.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label4.Location = new Point(24, 259);
+            heading3Label4.Location = new Point(18, 345);
             heading3Label4.Name = "heading3Label4";
-            heading3Label4.Size = new Size(78, 17);
+            heading3Label4.Size = new Size(102, 23);
             heading3Label4.TabIndex = 16;
             heading3Label4.Text = "Участники:";
             // 
@@ -385,9 +395,9 @@
             classroom.AutoSize = true;
             classroom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             classroom.ForeColor = Color.FromArgb(0, 0, 0);
-            classroom.Location = new Point(66, 95);
+            classroom.Location = new Point(72, 129);
             classroom.Name = "classroom";
-            classroom.Size = new Size(55, 34);
+            classroom.Size = new Size(56, 46);
             classroom.TabIndex = 12;
             classroom.Text = "Загрузка...";
             // 
@@ -401,10 +411,11 @@
             closeButton.FlatStyle = FlatStyle.Flat;
             closeButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             closeButton.ForeColor = Color.FromArgb(167, 157, 255);
-            closeButton.Location = new Point(3, 3);
+            closeButton.Location = new Point(3, 4);
+            closeButton.Margin = new Padding(3, 4, 3, 4);
             closeButton.Name = "closeButton";
-            closeButton.Padding = new Padding(8, 4, 8, 4);
-            closeButton.Size = new Size(57, 39);
+            closeButton.Padding = new Padding(9, 5, 9, 5);
+            closeButton.Size = new Size(63, 53);
             closeButton.TabIndex = 3;
             closeButton.Text = "X";
             closeButton.UseVisualStyleBackColor = false;
@@ -416,9 +427,9 @@
             hostName.AutoSize = true;
             hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             hostName.ForeColor = Color.FromArgb(0, 0, 0);
-            hostName.Location = new Point(66, 50);
+            hostName.Location = new Point(72, 68);
             hostName.Name = "hostName";
-            hostName.Size = new Size(55, 34);
+            hostName.Size = new Size(56, 46);
             hostName.TabIndex = 9;
             hostName.Text = "Загрузка...";
             // 
@@ -428,9 +439,9 @@
             participantsInfo.AutoSize = true;
             participantsInfo.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(66, 185);
+            participantsInfo.Location = new Point(72, 251);
             participantsInfo.Name = "participantsInfo";
-            participantsInfo.Size = new Size(55, 34);
+            participantsInfo.Size = new Size(56, 46);
             participantsInfo.TabIndex = 15;
             participantsInfo.Text = "Загрузка...";
             // 
@@ -440,9 +451,9 @@
             computer.AutoSize = true;
             computer.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             computer.ForeColor = Color.FromArgb(0, 0, 0);
-            computer.Location = new Point(66, 140);
+            computer.Location = new Point(72, 190);
             computer.Name = "computer";
-            computer.Size = new Size(55, 34);
+            computer.Size = new Size(56, 46);
             computer.TabIndex = 13;
             computer.Text = "Загрузка...";
             // 
@@ -454,10 +465,11 @@
             editButton.FlatStyle = FlatStyle.Flat;
             editButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             editButton.ForeColor = Color.FromArgb(248, 249, 255);
-            editButton.Location = new Point(66, 3);
+            editButton.Location = new Point(72, 4);
+            editButton.Margin = new Padding(3, 4, 3, 4);
             editButton.Name = "editButton";
-            editButton.Padding = new Padding(8, 4, 8, 4);
-            editButton.Size = new Size(57, 39);
+            editButton.Padding = new Padding(9, 5, 9, 5);
+            editButton.Size = new Size(63, 53);
             editButton.TabIndex = 17;
             editButton.Text = ". . .";
             editButton.UseVisualStyleBackColor = false;
@@ -469,19 +481,20 @@
             captionLabel1.AutoSize = true;
             captionLabel1.Font = new Font("Segoe UI", 8.25F);
             captionLabel1.ForeColor = Color.Black;
-            captionLabel1.Location = new Point(5, 54);
+            captionLabel1.Location = new Point(6, 72);
             captionLabel1.Name = "captionLabel1";
-            captionLabel1.Size = new Size(55, 26);
+            captionLabel1.Size = new Size(60, 38);
             captionLabel1.TabIndex = 18;
             captionLabel1.Text = "Создатель: ";
             // 
             // ChatForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(504, 614);
+            ClientSize = new Size(576, 819);
             Controls.Add(splitContainerSideBar);
-            MinimumSize = new Size(250, 300);
+            Margin = new Padding(3, 5, 3, 5);
+            MinimumSize = new Size(283, 384);
             Name = "ChatForm";
             Text = "MIN";
             splitContainerSideBar.Panel1.ResumeLayout(false);

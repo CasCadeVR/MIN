@@ -36,15 +36,15 @@ namespace MIN.Desktop.Components
                 + sendMessage.Padding.Horizontal
                 + sendMessage.Margin.Horizontal;
 
-            var color = chatMessage.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
+            var senderColor = chatMessage.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
              ? ColorScheme.OutgoingMessageBackground
              : ColorScheme.IncomingMessageBackground;
 
-            senderName.BackColor = color;
-            sendRole.BackColor = color;
-            sendMessage.BackColor = color;
-            sendTime.BackColor = color;
-            tableLayoutPanelLabels.BackColor = color;
+            senderName.BackColor = senderColor;
+            sendRole.BackColor = senderColor;
+            sendMessage.BackColor = senderColor;
+            sendTime.BackColor = senderColor;
+            tableLayoutPanelLabels.BackColor = senderColor;
         }
 
         private void FillLabels()

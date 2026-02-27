@@ -151,7 +151,7 @@ namespace MIN.Desktop
             {
                 try
                 {
-                    var chatForm = new ChatForm(chatRoomService, notificationService, room);
+                    var chatForm = new ChatForm(chatRoomService, notificationService);
                     await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, settings.DiscoveryTimeout, cancellationTokenSource.Token);
                     chatForm.Show();
 
@@ -172,11 +172,11 @@ namespace MIN.Desktop
         {
             var selfParticipant = new Participant()
             {
-                Name = "Хост",
+                Name = Environment.MachineName,
                 PCName = Environment.MachineName,
             };
-
             AppUserProvider.Instance.InitializeUser(selfParticipant);
+
             if (CollegePCNameParser.TryParseComputerName(selfParticipant.PCName, out var roomNumber, out var _))
             {
                 classNumber.Value = roomNumber;

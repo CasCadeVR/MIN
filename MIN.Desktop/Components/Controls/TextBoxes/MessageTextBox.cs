@@ -5,9 +5,10 @@
     /// </summary>
     public class MessageTextBox : DefaultTextBox
     {
-        private const int MaxHeightpx = 180;
+        private const int MaxRowsHeight = 10;
         private const int MinHeightpx = 36;
         private const int PaddingVertical = 10; // внутренние отступы
+        private int MaxHeightpx => Convert.ToInt32(Font.Height) * MaxRowsHeight;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="MessageTextBox"/>
@@ -37,7 +38,7 @@
         }
 
         /// <summary>
-        /// Обновить высоту на основе содержимого и доступной ширины.
+        /// Обновить высоту на основе содержимого и доступной ширины
         /// </summary>
         public int UpdateHeight()
         {

@@ -136,7 +136,7 @@ namespace MIN.Services.Connection.Pipes
                     }
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 logger.Log("Я прекратил получать сообщения от сервера");
             }
@@ -278,14 +278,7 @@ namespace MIN.Services.Connection.Pipes
                 Time = TimeOnly.FromDateTime(DateTime.Now)
             };
 
-            try
-            {
-                await serializer.WriteMessageAsync(pipe, leaveMessage, roomHostParticipantId, cancellationToken);
-            }
-            catch
-            {
-                // Игнорируем ошибки при отправке LEAVE (сервер мог уже отключиться)
-            }
+            await serializer.WriteMessageAsync(pipe, leaveMessage, roomHostParticipantId, cancellationToken);
         }
 
         /// <summary>
@@ -303,10 +296,10 @@ namespace MIN.Services.Connection.Pipes
                 throw new InvalidOperationException("Участник не задан");
             }
 
-            // Заполняем метаданные отправителя
-            message.SenderName ??= selfParticipant.Name;
-            message.SenderPCName ??= selfParticipant.PCName;
-            message.Time = TimeOnly.FromDateTime(DateTime.Now); // Локальное время для отображения
+            message.SenderName = selfParticipant.Name;
+            message.SenderPCName = selfParticipant.PCName;
+            message.Time = TimeOnly.FromDateTime(DateTime.Now);
+            message.TimestampUtc = DateTime.UtcNow;
 
              await serializer.WriteMessageAsync(pipe, message, roomHostParticipantId, cancellationToken);
         }
@@ -322,7 +315,6 @@ namespace MIN.Services.Connection.Pipes
             isDisposed = true;
             cancellationTokenSource?.Cancel();
 
-            // Отправляем уведомление о выходе (если ещё можем)
             if (pipe.IsConnected && selfParticipant != null)
             {
                 try
@@ -332,7 +324,6 @@ namespace MIN.Services.Connection.Pipes
                 catch { /* Игнорируем ошибки при отправке LEAVE */ }
             }
 
-            // Очищаем состояние
             await pipe.DisposeAsync();
             pipe = null;
             currentRoom = null;
@@ -345,9 +336,9 @@ namespace MIN.Services.Connection.Pipes
         {
             if (!isDisposed)
             {
-                isDisposed = true;
                 await DisconnectAsync();
                 cancellationTokenSource?.Dispose();
+                isDisposed = true;
             }
         }
     }
