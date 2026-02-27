@@ -151,15 +151,16 @@ namespace MIN.Desktop
             {
                 try
                 {
+                    var chatForm = new ChatForm(chatRoomService, notificationService, room);
                     await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, settings.DiscoveryTimeout, cancellationTokenSource.Token);
+                    chatForm.Show();
+
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Произошла ошибка: {ex.Message}");
                 }
 
-                var chatForm = new ChatForm(chatRoomService, notificationService, room);
-                chatForm.Show();
 
                 return true;
             }

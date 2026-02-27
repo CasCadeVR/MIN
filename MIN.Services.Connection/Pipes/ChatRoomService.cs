@@ -112,7 +112,7 @@ namespace MIN.Services.Connection.Pipes
             selfParticipant = participant;
 
             await client.ConnectAsync(room, participant, timeoutMs, cancellationToken);
-            OnRoomStateChanged(new RoomStateChangedEventArgs(room, RoomState.Joined));
+            //OnRoomStateChanged(new RoomStateChangedEventArgs(room, RoomState.Joined));
         }
 
         async Task IChatRoomService.SendMessageAsync(string content, MessageType type, CancellationToken cancellationToken = default)

@@ -38,6 +38,7 @@ namespace MIN.Desktop
                 ?? throw new InvalidOperationException("Must be created on UI thread");
 
             this.chatRoomService = chatRoomService;
+            this.notificationService = notificationService;
             this.room = room;
 
             SubscribeToChatEvents();
@@ -141,7 +142,7 @@ namespace MIN.Desktop
             room.AddMessage(message);
             if (!(this.WindowState == FormWindowState.Normal && this.Focused))
             {
-                notificationService.Notify(message);
+                //notificationService.Notify(message);
             }
             AddMessageToChatFlow(message);
         }

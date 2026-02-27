@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
@@ -41,6 +42,7 @@ namespace MIN.Desktop
             services.AddSingleton<IKeyProvider, KeyProvider>();
             services.AddSingleton<ICryptoProvider, CryptoProvider>();
             services.AddSingleton<IUpdateService, GitHubUpdateService>();
+            services.AddSingleton<INotificationService, NotificationService>();
 
             services.AddSingleton<IPipeMessageSerializer, CommonPipeMessageSerializer>();
             services.AddSingleton<ISettingsProvider, SettingsProvider>();
