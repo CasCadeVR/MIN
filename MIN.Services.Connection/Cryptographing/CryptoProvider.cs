@@ -1,12 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
+using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Services.Connection.Cryptographing
 {
     /// <inheritdoc cref="ICryptoProvider"/>
-    public class CryptoProvider(IKeyProvider keyProvider) : ICryptoProvider, IDisposable
+    public class CryptoProvider(ILoggerProvider logger, IKeyProvider keyProvider) : ICryptoProvider, IDisposable
     {
         private readonly ConcurrentDictionary<Guid, byte[]> sharedSecrets = new();
         private bool disposed;
@@ -16,11 +17,11 @@ namespace MIN.Services.Connection.Cryptographing
 
         async Task ICryptoProvider.InitializeSessionAsync(Guid partnerId, HandshakeMessage handshake)
         {
-            var sharedSecret = await keyProvider.ComputeSharedSecretAsync(handshake.EcdhPublicKeyPem);
+            var sharedSecret = await keyProvider.ComputeSharedSecretAsync(handshake.EcdhPublicKeyDerBase64);
             sharedSecrets[partnerId] = sharedSecret;
 
             // Сохраняем публичный ключ партнёра для будущих проверок (TOFU)
-            await keyProvider.SavePartnerPublicKeyAsync(partnerId, handshake.EcdhPublicKeyPem);
+            await keyProvider.SavePartnerPublicKeyAsync(partnerId, handshake.EcdhPublicKeyDerBase64);
         }
 
         private byte[] GetSessionKey(Guid partnerId)
@@ -37,7 +38,7 @@ namespace MIN.Services.Connection.Cryptographing
             return new HandshakeMessage
             {
                 UserId = id,
-                EcdhPublicKeyPem = keys.EcdhPublicKeyPem,
+                EcdhPublicKeyDerBase64 = keys.EcdhPublicKeyDerBase64,
                 RsaPublicKeyPem = keys.RsaPublicKeyPem,
                 Timestamp = DateTimeOffset.UtcNow
             };
@@ -57,6 +58,7 @@ namespace MIN.Services.Connection.Cryptographing
             ms.Write(iv, 0, 12);
             ms.Write(ciphertext, 0, ciphertext.Length);
             ms.Write(authTag, 0, 16);
+
             return ms.ToArray();
         }
 

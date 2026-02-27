@@ -120,7 +120,7 @@ namespace MIN.Services.Connection.Pipes
                     }
                     else
                     {
-                        logger.Log($"⚠Ожидали RoomInfo, получили: {responseMessage?.GetType().Name}", LogLevel.Warning);
+                        logger.Log($"Ожидали RoomInfo, получили: {responseMessage?.GetType().Name}", LogLevel.Warning);
                     }
                 }
                 else

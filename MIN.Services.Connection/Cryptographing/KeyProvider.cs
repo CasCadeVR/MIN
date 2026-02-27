@@ -28,7 +28,7 @@ namespace MIN.Services.Connection.Cryptographing
         public KeyProvider(ILoggerProvider logger)
         {
             // Храним ключи в %AppData%\MIN-Messenger\
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var dir = Path.Combine(appData, "MIN-Messenger");
             Directory.CreateDirectory(dir);
             this.logger = logger;
@@ -90,27 +90,23 @@ namespace MIN.Services.Connection.Cryptographing
             return rsa;
         }
 
-        public async Task<byte[]> ComputeSharedSecretAsync(string partnerEcdhPublicKeyPem)
+        public async Task<byte[]> ComputeSharedSecretAsync(string partnerEcdhPublicKeyDerBase64)
         {
-            logger.Log($"🔐 My ECDH public (first 32 chars): {await GetEcdhPrivateKeyAsync()}");
-            logger.Log($"🔐 Partner ECDH public (first 32 chars): {partnerEcdhPublicKeyPem.Substring(0, 32)}...");
+            logger.Log($"🔐 My ECDH public (first 32 chars): {cachedKeys!.EcdhPublicKeyPem}");
+            logger.Log($"🔐 Partner ECDH public (first 32 chars): {partnerEcdhPublicKeyDerBase64}...");
+            var partnerPublicKeyBytes = Convert.FromBase64String(partnerEcdhPublicKeyDerBase64);
 
             using var myEcdh = await GetEcdhPrivateKeyAsync();
-
             using var partnerEcdh = ECDiffieHellman.Create();
-            partnerEcdh.ImportFromPem(partnerEcdhPublicKeyPem);
+            partnerEcdh.ImportSubjectPublicKeyInfo(partnerPublicKeyBytes, out _);
 
-            // Вычисляем общий секрет через ECDH
             var sharedSecret = myEcdh.DeriveKeyFromHash(
                 partnerEcdh.PublicKey,
                 HashAlgorithmName.SHA256,
-                null, // salt для HKDF внутри (не нужен)
-                null  // другие параметры
+                null,
+                null
             );
 
-            logger.Log($"🔐 Computed shared secret (first 16 bytes): {Convert.ToHexString(sharedSecret.AsSpan(0, 16))}");
-
-            // Деривируем финальный AES-ключ через HKDF с нашей солью
             var salt = await GetSaltAsync();
             return HKDF.DeriveKey(
                 ikm: sharedSecret,
@@ -144,15 +140,20 @@ namespace MIN.Services.Connection.Cryptographing
         {
             using var ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
             using var rsa = RSA.Create(2048);
-
             var salt = RandomNumberGenerator.GetBytes(32);
+
+            var ecdhPublicKeyPem = NormalizePem(ecdh.ExportSubjectPublicKeyInfoPem());
+            var ecdhPublicKeyDer = ecdh.ExportSubjectPublicKeyInfo();
+            var ecdhPublicKeyDerBase64 = Convert.ToBase64String(ecdhPublicKeyDer);
 
             return new KeyPair
             {
-                EcdhPublicKeyPem = NormalizePem(ecdh.ExportSubjectPublicKeyInfoPem()),
-                EncryptedEcdhPrivateKeyPem = Protect(ecdh.ExportPkcs8PrivateKeyPem()),
+                EcdhPublicKeyPem = ecdhPublicKeyPem,
+                EncryptedEcdhPrivateKeyPem = Protect(NormalizePem(ecdh.ExportPkcs8PrivateKeyPem())),
+                EcdhPublicKeyDerBase64 = ecdhPublicKeyDerBase64,
+
                 RsaPublicKeyPem = NormalizePem(rsa.ExportSubjectPublicKeyInfoPem()),
-                EncryptedRsaPrivateKeyPem = Protect(rsa.ExportPkcs8PrivateKeyPem()),
+                EncryptedRsaPrivateKeyPem = Protect(NormalizePem(rsa.ExportPkcs8PrivateKeyPem())),
 
                 SaltHex = Convert.ToHexString(salt),
                 CreatedAt = DateTime.UtcNow
@@ -161,13 +162,7 @@ namespace MIN.Services.Connection.Cryptographing
 
         private async Task SaveKeysAsync(KeyPair keys)
         {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-
-            var json = JsonSerializer.Serialize(keys, options);
+            var json = JsonSerializer.Serialize(keys, jsonOptions);
             await File.WriteAllTextAsync(keysPath, json);
         }
 
@@ -177,7 +172,7 @@ namespace MIN.Services.Connection.Cryptographing
                 return new Dictionary<string, string>();
 
             var json = await File.ReadAllTextAsync(partnersPath);
-            return JsonSerializer.Deserialize<Dictionary<string, string>>(json)
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(json, jsonOptions)
                 ?? new Dictionary<string, string>();
         }
 
