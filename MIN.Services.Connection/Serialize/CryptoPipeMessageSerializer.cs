@@ -23,7 +23,6 @@ namespace MIN.Services.Connection.Serialize
         };
         private readonly ICryptoProvider cryptoProvider;
 
-
         public CryptoPipeMessageSerializer(ICryptoProvider cryptoProvider)
         {
             this.cryptoProvider = cryptoProvider;

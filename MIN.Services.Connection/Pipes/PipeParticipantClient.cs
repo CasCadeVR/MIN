@@ -76,7 +76,6 @@ namespace MIN.Services.Connection.Pipes
 
                 await SendHandshakeMessageAsync(cancellationTokenSource.Token);
                 _ = ReceiveMessagesAsync(cancellationTokenSource.Token);
-                await SendJoinNotificationAsync(cancellationTokenSource.Token);
             }
             catch (TimeoutException)
             {
@@ -99,17 +98,44 @@ namespace MIN.Services.Connection.Pipes
         {
             try
             {
+                var firstMessage = await serializer.ReadMessageAsync(pipe!, roomHostParticipantId, cancellationToken);
+
+                if (firstMessage is HandshakeMessage serverHandshake)
+                {
+                    await cryptoProvider.InitializeSessionAsync(serverHandshake.UserId, serverHandshake);
+                    logger.Log($"Сессия с сервером {serverHandshake.UserId} инициализирована");
+
+                    await SendRoomInfoMessageAsync(cancellationToken);
+                    logger.Log($"Отправлен запрос RoomInfoRequest");
+
+                    var responseMessage = await serializer.ReadMessageAsync(pipe!, roomHostParticipantId, cancellationToken);
+
+                    if (responseMessage is RoomInfoMessage roomInfo)
+                    {
+                        logger.Log($"Получена RoomInfo: {roomInfo.RoomName}");
+                        HandleRoomInfoAsync(roomInfo, cancellationToken);
+
+                        await SendJoinNotificationAsync(cancellationToken);
+                        logger.Log($"Отправлен JOIN");
+                    }
+                    else
+                    {
+                        logger.Log($"⚠Ожидали RoomInfo, получили: {responseMessage?.GetType().Name}", LogLevel.Warning);
+                    }
+                }
+                else
+                {
+                    logger.Log($"Сервер не отправил Handshake первым. Получено: {firstMessage?.GetType().Name}", LogLevel.Error);
+                    return;
+                }
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var message = await serializer.ReadMessageAsync(pipe!, roomHostParticipantId, cancellationToken);
 
                     switch (message)
                     {
-                        case HandshakeMessage serverHandshake:
-                            logger.Log($"Получен Handshake от сервера: {serverHandshake.UserId}");
-                            await cryptoProvider.InitializeSessionAsync(serverHandshake.UserId, serverHandshake);
-                            logger.Log($"Сессия с сервером {serverHandshake.UserId} инициализирована");
-                            break;
+                       // case HandshakeMessage
 
                         case RoomInfoMessage roomInfo:
                             logger.Log($"Получена RoomInfo: {roomInfo.RoomName}");
@@ -235,6 +261,25 @@ namespace MIN.Services.Connection.Pipes
             catch (Exception ex)
             {
                 logger.Log($"Ошибка у клиента в отправке Handshake сообщения: {ex.Message}", LogLevel.Error);
+            }
+        }
+
+        private async Task SendRoomInfoMessageAsync(CancellationToken cancellationToken)
+        {
+            if (selfParticipant == null || pipe == null || !pipe.IsConnected)
+            {
+                return;
+            }
+
+            var request = new RoomInfoMessage();
+
+            try
+            {
+                await serializer.WriteMessageAsync(pipe, request, roomHostParticipantId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Log($"Ошибка у клиента в отправке RoomInfoMessage сообщения: {ex.Message}", LogLevel.Error);
             }
         }
 

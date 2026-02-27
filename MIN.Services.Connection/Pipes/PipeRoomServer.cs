@@ -161,8 +161,18 @@ namespace MIN.Services.Connection.Pipes
                     logger.Log($"Сервер отправляет Handshake клиенту {clientHandshake.UserId}");
                     await serializer.WriteMessageAsync(connection.Pipe, serverHandshake, clientHandshake.UserId, cancellationToken);
 
-                    logger.Log($"Сервер отправляет RoomInfo...");
-                    await SendRoomInfoAsync(connection, cancellationToken);
+                    var requestMessage = await serializer.ReadMessageAsync(connection.Pipe, connection.Participant.Id, cancellationToken);
+
+                    if (requestMessage is RoomInfoMessage)
+                    {
+                        logger.Log($"Получен RoomInfoRequest от {clientHandshake.UserId}. Отправляю RoomInfo...");
+                        await SendRoomInfoAsync(connection, cancellationToken);
+                    }
+                    else
+                    {
+                        logger.Log($"⚠Ожидали RoomInfoRequest, получили: {requestMessage?.GetType().Name}", LogLevel.Warning);
+                        return;
+                    }
                 }
                 else
                 {
