@@ -174,6 +174,7 @@ namespace MIN.Services.Connection.Pipes
                 {
                     var message = await serializer.ReadMessageAsync(connection.Pipe, connection.Participant.Id, cancellationToken);
 
+                    
                     switch (message)
                     {
                         case ChatMessage chatMessage when chatMessage.MessageType == MessageType.System
@@ -182,6 +183,7 @@ namespace MIN.Services.Connection.Pipes
                             connection.Participant = joiningParticipant;
 
                             room?.AddParticipant(joiningParticipant);
+                            room!.AddMessage(chatMessage);
 
                             await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
                             break;
@@ -191,17 +193,19 @@ namespace MIN.Services.Connection.Pipes
                             var leavingParticipant = ParseParticipantFromMessage(chatMessage);
 
                             room?.RemoveParticipantById(leavingParticipant.Id);
+                            room!.AddMessage(chatMessage);
 
                             await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
                             break;
 
                         case ChatMessage chatMessage:
+                            room!.AddMessage(chatMessage);
                             await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
                             break;
 
                         default:
                             logger.Log("Сервер какое-то неизвестное сообщение");
-                            break;
+                            continue;
                     }
                 }
             }

@@ -105,6 +105,10 @@ namespace MIN.Desktop
             }
 
             this.room = room;
+            if (roomState == RoomState.Joined)
+            {
+                UpdateChatFlow();
+            }
             UpdateStats();
         }
 
@@ -197,7 +201,6 @@ namespace MIN.Desktop
                 classroom.Text = DesktopConstants.UndefinedPCName;
             }
 
-            UpdateChatFlow();
             UpdateParticipantFlow();
         }
 
@@ -220,9 +223,40 @@ namespace MIN.Desktop
 
             foreach (var message in room.ChatHistory)
             {
+                if (message.MessageType == MessageType.System)
+                {
+                    if (message.Content.StartsWith("JOIN:"))
+                    {
+                        var participant = ParseParticipantFromMessage(message);
+                        SendParticipantJoinedMessage(participant);
+                        continue;
+                    }
+                    else if (message.Content.StartsWith("LEAVE:"))
+                    {
+                        var participant = ParseParticipantFromMessage(message);
+                        SendParticipantLeftMessage(participant);
+                        continue;
+                    }
+                }
+
                 AddMessageToChatFlow(message);
             }
         }
+
+        private Participant ParseParticipantFromMessage(ChatMessage message)
+        {
+            var parts = message.Content.Split(':', 3);
+            var name = parts.Length > 1 ? parts[1] : "Unknown";
+            var id = parts.Length > 2 ? Guid.Parse(parts[2]) : Guid.NewGuid();
+
+            return new Participant
+            {
+                Id = id,
+                Name = name,
+                PCName = message.SenderPCName
+            };
+        }
+
 
         private void AddMessageToChatFlow(ChatMessage message)
         {
