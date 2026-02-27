@@ -1,8 +1,8 @@
-using System.Threading.Tasks;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Components;
@@ -22,6 +22,7 @@ namespace MIN.Desktop
     public partial class ChatForm : StyledForm
     {
         private readonly IChatRoomService chatRoomService;
+        private readonly INotificationService notificationService;
         private readonly CancellationTokenSource formCancellationTokenSource = new();
         private readonly SynchronizationContext uiContext;
 
@@ -30,7 +31,7 @@ namespace MIN.Desktop
         /// </summary>
         private Room room { get; set; }
 
-        public ChatForm(IChatRoomService chatRoomService, Room room)
+        public ChatForm(IChatRoomService chatRoomService, INotificationService notificationService, Room room)
         {
             InitializeComponent();
             uiContext = SynchronizationContext.Current
@@ -138,6 +139,10 @@ namespace MIN.Desktop
             }
 
             room.AddMessage(message);
+            if (!(this.WindowState == FormWindowState.Normal && this.Focused))
+            {
+                notificationService.Notify(message);
+            }
             AddMessageToChatFlow(message);
         }
 

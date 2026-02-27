@@ -1,5 +1,6 @@
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Services.Contracts.Interfaces;
@@ -13,6 +14,7 @@ namespace MIN.Desktop
     {
         private readonly IChatRoomService chatRoomService;
         private readonly ISettingsProvider settingsProvider;
+        private readonly INotificationService notificationService;
         private readonly ILoggerProvider loggerProvider;
         private readonly ILocalNetworkComputerProvider networkComputerProvider;
         private readonly SynchronizationContext uiContext;
@@ -20,13 +22,14 @@ namespace MIN.Desktop
 
         private Settings settings => settingsProvider.GetSettings();
 
-        public MainForm(IChatRoomService chatRoomService, ISettingsProvider settingsProvider, ILoggerProvider loggerProvider)
+        public MainForm(IChatRoomService chatRoomService, ISettingsProvider settingsProvider, INotificationService notificationService, ILoggerProvider loggerProvider)
         {
             InitializeComponent();
 
             this.chatRoomService = chatRoomService;
             this.settingsProvider = settingsProvider;
             this.loggerProvider = loggerProvider;
+            this.notificationService = notificationService;
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -71,9 +74,6 @@ namespace MIN.Desktop
 
                 var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, settings.DiscoveryTimeout, cancellationToken: cancellationTokenSource.Token);
 
-                totalRoomsCount.Text = $"Всего нашлось комнат: {discoveredRooms.Count()}";
-
-                // Обновляем UI списком найденных комнат
                 uiContext.Post(_ => UpdateDiscoveredRoomsList(discoveredRooms), null);
             }
             catch (Exception ex)
@@ -103,8 +103,10 @@ namespace MIN.Desktop
                     }
                 };
 
-                var card = new RoomCard(chatRoomService, room);
-                card.Parent = flowLayoutPanel;
+                var card = new RoomCard(chatRoomService, room)
+                {
+                    Parent = flowLayoutPanel
+                };
                 card.Clicked += () => OnRoomConnection(parsed);
                 card.Disposed += (s, e) =>
                 {
@@ -112,6 +114,8 @@ namespace MIN.Desktop
                     totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
                 };
             }
+
+            totalRoomsCount.Text = $"Всего нашлось комнат: {rooms.Count()}";
         }
 
         private async void findRooms_Click(object sender, EventArgs e)
@@ -154,7 +158,7 @@ namespace MIN.Desktop
                     MessageBox.Show($"Произошла ошибка: {ex.Message}");
                 }
 
-                var chatForm = new ChatForm(chatRoomService, room);
+                var chatForm = new ChatForm(chatRoomService, notificationService, room);
                 chatForm.Show();
 
                 return true;

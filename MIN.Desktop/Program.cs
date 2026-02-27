@@ -10,6 +10,7 @@ using MIN.Services.Connection.Pipes.Discovering;
 using MIN.Services.Connection.Serialize;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Services;
+using System.Reflection;
 
 namespace MIN.Desktop
 {
@@ -32,10 +33,14 @@ namespace MIN.Desktop
 
         private static void ConfigureServices(IServiceCollection services)
         {
+            var appVersion = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0, 0);
+            services.AddSingleton(appVersion);
+
             services.AddSingleton<ILoggerProvider, LoggerProvider>();
 
             services.AddSingleton<IKeyProvider, KeyProvider>();
             services.AddSingleton<ICryptoProvider, CryptoProvider>();
+            services.AddSingleton<IUpdateService, GitHubUpdateService>();
 
             services.AddSingleton<IPipeMessageSerializer, CommonPipeMessageSerializer>();
             services.AddSingleton<ISettingsProvider, SettingsProvider>();
