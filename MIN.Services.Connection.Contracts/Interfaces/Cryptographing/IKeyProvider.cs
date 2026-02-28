@@ -19,14 +19,9 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Cryptographing
         Task<ECDiffieHellman> GetEcdhPrivateKeyAsync();
 
         /// <summary>
-        /// Получить публичный RSA-ключ для подписи (опционально)
-        /// </summary>
-        Task<RSA?> GetRsaPrivateKeyAsync();
-
-        /// <summary>
         /// Вычислить общий секрет с собеседником по его публичному ECDH-ключу
         /// </summary>
-        Task<byte[]> ComputeSharedSecretAsync(string partnerEcdhPublicKeyPem);
+        Task<byte[]> ComputeSharedSecretAsync(string partnerEcdhPublicKeyDerBase64);
 
         /// <summary>
         /// Сохранить публичный ключ собеседника (для TOFU)
@@ -37,10 +32,5 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Cryptographing
         /// Получить сохранённый публичный ключ собеседника
         /// </summary>
         Task<string?> GetPartnerPublicKeyAsync(Guid partnerId);
-
-        /// <summary>
-        /// Получить соль для HKDF
-        /// </summary>
-        Task<byte[]> GetSaltAsync();
     }
 }

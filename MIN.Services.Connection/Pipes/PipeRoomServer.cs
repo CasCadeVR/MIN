@@ -154,6 +154,7 @@ namespace MIN.Services.Connection.Pipes
                 if (firstMessage is HandshakeMessage clientHandshake)
                 {
                     await cryptoProvider.InitializeSessionAsync(clientHandshake.UserId, clientHandshake);
+                    logger.Log($"Сессия с клиентом {clientHandshake.UserId} инициализирована");
                     connection.Participant!.Id = clientHandshake.UserId;
 
                     var serverHandshake = await cryptoProvider.CreateHandshakeAsync(room!.HostParticipant.Id);
@@ -161,7 +162,7 @@ namespace MIN.Services.Connection.Pipes
                     logger.Log($"Сервер отправляет Handshake клиенту {clientHandshake.UserId}");
                     await serializer.WriteMessageAsync(connection.Pipe, serverHandshake, clientHandshake.UserId, cancellationToken);
 
-                    var requestMessage = await serializer.ReadMessageAsync(connection.Pipe, connection.Participant.Id, cancellationToken);
+                    var requestMessage = await serializer.ReadMessageAsync(connection.Pipe, clientHandshake.UserId, cancellationToken);
 
                     if (requestMessage is RoomInfoMessage)
                     {

@@ -44,7 +44,7 @@ namespace MIN.Desktop
             services.AddSingleton<IUpdateService, GitHubUpdateService>();
             services.AddSingleton<INotificationService, NotificationService>();
 
-            services.AddSingleton<IPipeMessageSerializer, CommonPipeMessageSerializer>();
+            services.AddSingleton<IPipeMessageSerializer, CryptoPipeMessageSerializer>();
             services.AddSingleton<ISettingsProvider, SettingsProvider>();
             services.AddSingleton<IChatRoomService, ChatRoomService>();
 

@@ -50,7 +50,6 @@ namespace MIN.Services.Connection.Pipes
             if (IsConnected) await DisconnectAsync();
 
             roomHostParticipantId = room.HostParticipant.Id;
-
             var roomId = room.Id;
 
             if (!PipeNameProvider.IsValidPipeName(roomId.ToString()))
@@ -102,8 +101,8 @@ namespace MIN.Services.Connection.Pipes
 
                 if (firstMessage is HandshakeMessage serverHandshake)
                 {
-                    await cryptoProvider.InitializeSessionAsync(serverHandshake.UserId, serverHandshake);
-                    logger.Log($"Сессия с сервером {serverHandshake.UserId} инициализирована");
+                    await cryptoProvider.InitializeSessionAsync(roomHostParticipantId, serverHandshake);
+                    logger.Log($"Сессия с сервером {roomHostParticipantId} инициализирована");
 
                     await SendRoomInfoMessageAsync(cancellationToken);
                     logger.Log($"Отправлен запрос RoomInfoRequest");

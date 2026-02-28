@@ -15,7 +15,6 @@ namespace MIN.Services.Connection.Serialize
     /// </summary>
     public class CryptoPipeMessageSerializer : IPipeMessageSerializer
     {
-        private readonly ConcurrentDictionary<Stream, Guid> streamToPartner = new();
         private readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -45,10 +44,8 @@ namespace MIN.Services.Connection.Serialize
             switch (messageType)
             {
                 case MessageTypeTag.HandshakeMessage:
-                    var handshake = JsonSerializer.Deserialize<HandshakeMessage>(dataBuffer, JsonOptions);
-                    streamToPartner[stream] = handshake!.UserId;
-                    await cryptoProvider.InitializeSessionAsync(handshake.UserId, handshake);
-                    return handshake;
+                    return JsonSerializer.Deserialize<HandshakeMessage>(dataBuffer, JsonOptions)
+                        ?? throw new InvalidDataException("Failed to deserialize HandshakeMessage");
 
                 case MessageTypeTag.DiscoveredRoom:
                     return JsonSerializer.Deserialize<DiscoveredRoom>(dataBuffer, JsonOptions)

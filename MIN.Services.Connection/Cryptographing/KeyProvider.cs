@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Contracts.Models.Cryptographing;
-using MIN.Services.Contracts.Interfaces;
 
 namespace MIN.Services.Connection.Cryptographing
 {
@@ -18,20 +17,18 @@ namespace MIN.Services.Connection.Cryptographing
             PropertyNameCaseInsensitive = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
-        private readonly ILoggerProvider logger;
+
         private readonly string keysPath;
         private readonly string partnersPath;
         private KeyPair? cachedKeys;
         private readonly SemaphoreSlim _lock = new(1, 1);
         private bool disposed;
 
-        public KeyProvider(ILoggerProvider logger)
+        public KeyProvider()
         {
-            // Храним ключи в %AppData%\MIN-Messenger\
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var dir = Path.Combine(appData, "MIN-Messenger");
             Directory.CreateDirectory(dir);
-            this.logger = logger;
 
             keysPath = Path.Combine(dir, "keys.json");
             partnersPath = Path.Combine(dir, "partners.json");
@@ -72,49 +69,38 @@ namespace MIN.Services.Connection.Cryptographing
             var decryptedPem = Unprotect(keys.EncryptedEcdhPrivateKeyPem);
 
             var ecdh = ECDiffieHellman.Create();
-            ecdh.ImportFromPem(NormalizePem(decryptedPem));
+            ecdh.ImportFromPem(decryptedPem);
             return ecdh;
-        }
-
-        public async Task<RSA?> GetRsaPrivateKeyAsync()
-        {
-            var keys = await GetLocalKeysAsync();
-
-            if (string.IsNullOrEmpty(keys.EncryptedRsaPrivateKeyPem))
-                return null;
-
-            var decryptedPem = Unprotect(keys.EncryptedRsaPrivateKeyPem);
-
-            var rsa = RSA.Create();
-            rsa.ImportFromPem(NormalizePem(decryptedPem));
-            return rsa;
         }
 
         public async Task<byte[]> ComputeSharedSecretAsync(string partnerEcdhPublicKeyDerBase64)
         {
-            logger.Log($"🔐 My ECDH public (first 32 chars): {cachedKeys!.EcdhPublicKeyPem}");
-            logger.Log($"🔐 Partner ECDH public (first 32 chars): {partnerEcdhPublicKeyDerBase64}...");
             var partnerPublicKeyBytes = Convert.FromBase64String(partnerEcdhPublicKeyDerBase64);
-
             using var myEcdh = await GetEcdhPrivateKeyAsync();
+
+            var myPublicKeyBytes = myEcdh.ExportSubjectPublicKeyInfo();
+            var myPublicKeyBase64 = Convert.ToBase64String(myPublicKeyBytes);
+
             using var partnerEcdh = ECDiffieHellman.Create();
             partnerEcdh.ImportSubjectPublicKeyInfo(partnerPublicKeyBytes, out _);
 
             var sharedSecret = myEcdh.DeriveKeyFromHash(
                 partnerEcdh.PublicKey,
                 HashAlgorithmName.SHA256,
-                null,
-                null
-            );
+                null, null);
 
-            var salt = await GetSaltAsync();
-            return HKDF.DeriveKey(
+            var sharedSecretHex = Convert.ToHexString(sharedSecret);
+
+            var aesKey = HKDF.DeriveKey(
                 ikm: sharedSecret,
-                salt: salt,
+                salt: null,
                 info: "encryption"u8.ToArray(),
-                outputLength: 32, // AES-256
-                hashAlgorithmName: HashAlgorithmName.SHA256
-            );
+                outputLength: 32,
+                hashAlgorithmName: HashAlgorithmName.SHA256);
+
+            var aesKeyHex = Convert.ToHexString(aesKey);
+
+            return aesKey;
         }
 
         public async Task SavePartnerPublicKeyAsync(Guid partnerId, string ecdhPublicKeyPem)
@@ -130,32 +116,15 @@ namespace MIN.Services.Connection.Cryptographing
             return partners.TryGetValue(partnerId.ToString(), out var key) ? key : null;
         }
 
-        public async Task<byte[]> GetSaltAsync()
-        {
-            var keys = await GetLocalKeysAsync();
-            return Convert.FromHexString(keys.SaltHex);
-        }
-
         private async Task<KeyPair> GenerateNewKeysAsync()
         {
             using var ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
-            using var rsa = RSA.Create(2048);
-            var salt = RandomNumberGenerator.GetBytes(32);
-
-            var ecdhPublicKeyPem = NormalizePem(ecdh.ExportSubjectPublicKeyInfoPem());
-            var ecdhPublicKeyDer = ecdh.ExportSubjectPublicKeyInfo();
-            var ecdhPublicKeyDerBase64 = Convert.ToBase64String(ecdhPublicKeyDer);
 
             return new KeyPair
             {
-                EcdhPublicKeyPem = ecdhPublicKeyPem,
-                EncryptedEcdhPrivateKeyPem = Protect(NormalizePem(ecdh.ExportPkcs8PrivateKeyPem())),
-                EcdhPublicKeyDerBase64 = ecdhPublicKeyDerBase64,
-
-                RsaPublicKeyPem = NormalizePem(rsa.ExportSubjectPublicKeyInfoPem()),
-                EncryptedRsaPrivateKeyPem = Protect(NormalizePem(rsa.ExportPkcs8PrivateKeyPem())),
-
-                SaltHex = Convert.ToHexString(salt),
+                EcdhPublicKeyPem = ecdh.ExportSubjectPublicKeyInfoPem(),
+                EncryptedEcdhPrivateKeyPem = Protect(ecdh.ExportPkcs8PrivateKeyPem()),
+                EcdhPublicKeyDerBase64 = Convert.ToBase64String(ecdh.ExportSubjectPublicKeyInfo()),
                 CreatedAt = DateTime.UtcNow
             };
         }
@@ -205,7 +174,6 @@ namespace MIN.Services.Connection.Cryptographing
         /// </summary>
         private string Unprotect(string protectedBase64)
         {
-
             if (!OperatingSystem.IsWindows())
             {
                 throw new PlatformNotSupportedException("К сожалению, пока только на Windows");
@@ -225,16 +193,6 @@ namespace MIN.Services.Connection.Cryptographing
 
             _lock.Dispose();
             disposed = true;
-        }
-
-        private static string NormalizePem(string pem)
-        {
-            if (string.IsNullOrWhiteSpace(pem)) return pem;
-
-            return pem
-                .Replace("\r\n", "\n")
-                .Replace("\r", "\n")
-                .Trim();
         }
     }
 }
