@@ -170,7 +170,7 @@ namespace MIN.Services.Connection.Pipes
                     }
                     else
                     {
-                        logger.Log($"⚠Ожидали RoomInfoRequest, получили: {requestMessage?.GetType().Name}", LogLevel.Warning);
+                        logger.Log($"Ожидали RoomInfoRequest, получили: {requestMessage?.GetType().Name}", LogLevel.Error);
                         return;
                     }
                 }
@@ -183,13 +183,18 @@ namespace MIN.Services.Connection.Pipes
                 while (!cancellationToken.IsCancellationRequested && connection.Pipe.IsConnected)
                 {
                     var message = await serializer.ReadMessageAsync(connection.Pipe, connection.Participant.Id, cancellationToken);
-                    
+
                     switch (message)
                     {
                         case ChatMessage chatMessage when chatMessage.MessageType == MessageType.System
                                 && chatMessage.Content.StartsWith("JOIN:"):
                             var joiningParticipant = ParseParticipantFromMessage(chatMessage);
                             connection.Participant = joiningParticipant;
+
+                            if (connection.Participant.Id == room!.HostParticipant.Id)
+                            {
+                                room.HostParticipant.Name = joiningParticipant.Name;
+                            }
 
                             room?.AddParticipant(joiningParticipant);
                             room!.AddMessage(chatMessage);
@@ -213,7 +218,7 @@ namespace MIN.Services.Connection.Pipes
                             break;
 
                         default:
-                            logger.Log("Сервер какое-то неизвестное сообщение");
+                            logger.Log("Сервер получил какое-то неизвестное сообщение");
                             continue;
                     }
                 }

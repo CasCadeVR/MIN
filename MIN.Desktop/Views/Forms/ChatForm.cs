@@ -188,7 +188,7 @@ namespace MIN.Desktop
             Text = $"MIN - Комната {room.Name}";
             Title.Text = $"Комната {room.Name}";
             participantsInfo.Text = $"{room.CurrentParticipants.Count}/{room.MaximumParticipants}";
-            hostName.Text = room.HostParticipant.Name;
+            hostName.Text = AppUserProvider.Instance.CurrentUser.PCName == room.HostParticipant.PCName ? "Ты" : room.HostParticipant.Name;
             editButton.Visible = AppUserProvider.Instance.CurrentUser.PCName == room.HostParticipant.PCName;
 
             if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.PCName, out int roomNumber, out int computerNumber))

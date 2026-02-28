@@ -20,14 +20,16 @@ namespace MIN.Services.Connection.Cryptographing
             var sharedSecret = await keyProvider.ComputeSharedSecretAsync(handshake.EcdhPublicKeyDerBase64);
             sharedSecrets[partnerId] = sharedSecret;
 
-            // Сохраняем публичный ключ партнёра для будущих проверок (TOFU)
             await keyProvider.SavePartnerPublicKeyAsync(partnerId, handshake.EcdhPublicKeyDerBase64);
         }
 
         private byte[] GetSessionKey(Guid partnerId)
         {
             if (sharedSecrets.TryGetValue(partnerId, out var key))
+            {
                 return key;
+            }
+
             throw new InvalidOperationException($"Session not initialized for partner: {partnerId}");
         }
 

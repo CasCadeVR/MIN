@@ -81,11 +81,12 @@
             // participantName
             // 
             participantName.AutoSize = true;
-            participantName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            participantName.Dock = DockStyle.Fill;
+            participantName.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             participantName.ForeColor = Color.FromArgb(0, 0, 0);
             participantName.Location = new Point(3, 0);
             participantName.Name = "participantName";
-            participantName.Size = new Size(35, 17);
+            participantName.Size = new Size(169, 24);
             participantName.TabIndex = 0;
             participantName.Text = "Имя";
             // 
