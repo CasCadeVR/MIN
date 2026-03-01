@@ -39,7 +39,7 @@
             // 
             tableLayoutPanelLabels.ColumnCount = 2;
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 64F));
+            tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
             tableLayoutPanelLabels.Controls.Add(participantRole, 1, 0);
             tableLayoutPanelLabels.Controls.Add(lastOnline, 0, 1);
             tableLayoutPanelLabels.Controls.Add(participantName, 0, 0);
@@ -80,13 +80,14 @@
             // 
             // participantName
             // 
+            participantName.AutoEllipsis = true;
             participantName.AutoSize = true;
             participantName.Dock = DockStyle.Fill;
             participantName.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             participantName.ForeColor = Color.FromArgb(0, 0, 0);
             participantName.Location = new Point(3, 0);
             participantName.Name = "participantName";
-            participantName.Size = new Size(169, 24);
+            participantName.Size = new Size(185, 24);
             participantName.TabIndex = 0;
             participantName.Text = "Имя";
             // 

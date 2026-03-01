@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
@@ -27,6 +28,7 @@ namespace MIN.Services.Connection.Pipes
         // Текущее состояние (только одно активное подключение)
         private Room? currentRoom;
         private Participant? selfParticipant;
+        private CancellationTokenSource? cancellationTokenSource = new();
         private bool isDisposed;
         private IDiscoveryServer discoveryServer = null!;
         private IDiscoveryClient discoveryClient = null!;
@@ -53,7 +55,7 @@ namespace MIN.Services.Connection.Pipes
 
             this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
             this.client.RoomInfoReceived += (s, e) => OnRoomInfoReceived(e);
-            this.client.ParticipantJoined += (s, e) => OnTransportParticipantJoined(e);
+            this.client.ParticipantJoined += async (s, e) => await OnTransportParticipantJoined(e);
             this.client.ParticipantLeft += (s, e) => OnTransportParticipantLeft(e);
             this.client.Disconnected += (s, e) => OnTransportDisconnected();
         }
@@ -91,9 +93,6 @@ namespace MIN.Services.Connection.Pipes
             selfParticipant = host;
 
             await server.StartAsync(currentRoom, cancellationToken);
-
-            discoveryServer = new DiscoveryServer(host, server.Room, serializer, logger);
-            await discoveryServer.StartAsync(cancellationToken);
             return currentRoom;
         }
 
@@ -105,6 +104,7 @@ namespace MIN.Services.Connection.Pipes
             }
 
             selfParticipant = participant;
+            cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             await client.ConnectAsync(room, selfParticipant, timeoutMs, cancellationToken);
         }
@@ -214,9 +214,16 @@ namespace MIN.Services.Connection.Pipes
         /// <summary>
         /// Участник присоединился к комнате
         /// </summary>
-        private void OnTransportParticipantJoined(Participant participant)
+        private async Task OnTransportParticipantJoined(Participant participant)
         {
             currentRoom?.AddParticipant(participant);
+
+            if (participant.Id == server.Room.HostParticipant.Id)
+            {
+                discoveryServer = new DiscoveryServer(participant, server.Room, serializer, logger);
+                await discoveryServer.StartAsync(cancellationTokenSource!.Token);
+            }
+
             ParticipantJoined?.Invoke(this, new ParticipantJoinedEventArgs(participant));
         }
 

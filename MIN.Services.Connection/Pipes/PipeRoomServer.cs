@@ -101,7 +101,10 @@ namespace MIN.Services.Connection.Pipes
                     await StartMeetingProcedure(connection, cancellationToken);
 
                     connection.ProcessingTask = HandleClientMessagesAsync(connection, cancellationToken)
-                        .ContinueWith(async (_) =>  await HandleClientConnectionLossAsync(connection, cancellationToken), cancellationToken);
+                        .ContinueWith(async (_) =>
+                    {
+                        await HandleClientConnectionLossAsync(connection, cancellationToken);
+                    }, cancellationToken);
 
                     CreateNewConnectionSlot(cancellationToken);
                 }
@@ -132,21 +135,24 @@ namespace MIN.Services.Connection.Pipes
                 return; // TODO might need to change host here
             }
 
-            if (connection.Participant != null)
-            {
-                logger.Log($"Участник {connection.Participant.Name} отключился от комнаты {room?.Name}");
-                room?.RemoveParticipantById(connection.Participant.Id);
-                var chatMessage = GetParticipantLeaveMessage(connection.Participant, cancellationToken);
-
-                room!.AddMessage(chatMessage);
-                await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
-
-            }
-
             lock (activeConnections)
             {
                 activeConnections.Remove(connection);
             }
+
+            if (connection.Participant != null)
+            {
+                logger.Log($"Участник {connection.Participant.Name} отключился от комнаты {room?.Name}");
+                if (room?.RemoveParticipantById(connection.Participant.Id) == false)
+                {
+                    throw new ArgumentNullException($"Не нашёлся участник с id {connection.Participant.Id}");
+                }
+                var chatMessage = GetParticipantLeaveMessage(connection.Participant);
+
+                room!.AddMessage(chatMessage);
+                await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
+            }
+
             await connection.DisposeAsync();
 
             CreateNewConnectionSlot(cancellationToken);
@@ -196,7 +202,7 @@ namespace MIN.Services.Connection.Pipes
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 // Client disconnected
-                await HandleClientConnectionLossAsync(connection, cancellationToken);
+                logger.Log($"Клиент {connection.Participant?.Name} отключился во время знакомства: {ex.Message}");
             }
         }
 
@@ -255,7 +261,7 @@ namespace MIN.Services.Connection.Pipes
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 // Client disconnected
-                await HandleClientConnectionLossAsync(connection, cancellationToken);
+                logger.Log($"Клиент {connection.Participant?.Name} отключился: {ex.Message}");
             }
         }
 
@@ -272,7 +278,7 @@ namespace MIN.Services.Connection.Pipes
             };
 
 
-        private ChatMessage GetParticipantLeaveMessage(Participant participant, CancellationToken cancellationToken)
+        private static ChatMessage GetParticipantLeaveMessage(Participant participant)
             => new()
             {
                 SenderName = participant.Name,

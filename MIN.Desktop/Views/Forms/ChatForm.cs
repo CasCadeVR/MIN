@@ -274,7 +274,19 @@ namespace MIN.Desktop
             }
             else if (message.MessageType == MessageType.Text)
             {
-                rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName)
+                var removeHeaders = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName;
+
+                foreach (ChatMessageRow previousRow in chatFlow.Controls)
+                {
+                    var child = previousRow.container.Controls[0];
+
+                    if (child is ChatMessageCard)
+                    {
+                        removeHeaders |= (child as ChatMessageCard)!.senderName.Text == message.SenderName;
+                    }
+                }
+
+                rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders)
                 {
                     Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
                         ? AnchorStyles.Right
@@ -287,8 +299,6 @@ namespace MIN.Desktop
             chatFlow.Controls.Add(row);
             chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
             chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
-            chatFlow.VerticalScroll.Visible = false;
-            chatFlow.HorizontalScroll.Visible = false;
         }
 
         protected override void ApplyStylings()

@@ -25,6 +25,10 @@ namespace MIN.Desktop.Components
 
         private void ApplyStylings()
         {
+            participantName.Font = FontScheme.Monospace;
+            lastOnline.Font = FontScheme.Caption;
+            participantRole.Font = FontScheme.Monospace;
+
             tableLayoutPanelLabels.BackColor = ColorScheme.IncomingMessageBackground;
             this.Dock = DockStyle.Top;
         }

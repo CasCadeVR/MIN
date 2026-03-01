@@ -25,7 +25,7 @@ public static class FontScheme
     /// <summary>
     /// Моноширинный (для кода, номеров, идентификаторов)
     /// </summary>
-    public static readonly Font Monospace = new Font("Consolas", 10F, FontStyle.Regular, GraphicsUnit.Point);
+    public static readonly Font Monospace = new Font("Lucida Sans Typewriter", 10f, FontStyle.Regular, GraphicsUnit.Point);
 
     /// <summary>
     /// Крупный акцентный (для кнопок, важных надписей)

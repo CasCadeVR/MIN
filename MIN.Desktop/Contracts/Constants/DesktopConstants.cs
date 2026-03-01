@@ -8,5 +8,5 @@ public static class DesktopConstants
     /// <summary>
     /// Не распознаный компьютер
     /// </summary>
-    public static readonly string UndefinedPCName = "Не распознано";
+    public static readonly string UndefinedPCName = "ХЗ";
 }

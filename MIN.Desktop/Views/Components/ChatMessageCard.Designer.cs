@@ -63,6 +63,7 @@
             sendTime.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             sendTime.ForeColor = Color.FromArgb(0, 0, 0);
             sendTime.Location = new Point(262, 49);
+            sendTime.Margin = new Padding(0, 0, 3, 3);
             sendTime.Name = "sendTime";
             sendTime.ReadOnly = true;
             sendTime.Size = new Size(46, 18);
@@ -93,13 +94,14 @@
             senderName.Dock = DockStyle.Fill;
             senderName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             senderName.ForeColor = Color.FromArgb(0, 0, 0);
-            senderName.Location = new Point(3, 2);
-            senderName.Margin = new Padding(3, 2, 3, 2);
+            senderName.Location = new Point(3, 3);
+            senderName.Margin = new Padding(3, 3, 0, 0);
             senderName.Name = "senderName";
             senderName.ReadOnly = true;
-            senderName.Size = new Size(253, 18);
+            senderName.Size = new Size(256, 18);
             senderName.TabIndex = 0;
             senderName.Text = "Отправитель";
+            senderName.WordWrap = false;
             // 
             // sendMessage
             // 
@@ -109,11 +111,11 @@
             sendMessage.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             sendMessage.ForeColor = Color.Black;
             sendMessage.Location = new Point(3, 22);
-            sendMessage.Margin = new Padding(3, 0, 0, 0);
+            sendMessage.Margin = new Padding(3, 0, 0, 3);
             sendMessage.Multiline = true;
             sendMessage.Name = "sendMessage";
             sendMessage.ReadOnly = true;
-            sendMessage.Size = new Size(256, 48);
+            sendMessage.Size = new Size(256, 45);
             sendMessage.TabIndex = 5;
             sendMessage.Text = "Сообщение";
             // 
@@ -123,7 +125,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(tableLayoutPanelLabels);
             Margin = new Padding(15, 3, 15, 3);
-            MinimumSize = new Size(0, 60);
+            MinimumSize = new Size(0, 30);
             Name = "ChatMessageCard";
             Size = new Size(311, 70);
             tableLayoutPanelLabels.ResumeLayout(false);
@@ -136,7 +138,7 @@
         private TableLayoutPanel tableLayoutPanelLabels;
         private Textboxes.ReadonlyTextbox sendTime;
         private Textboxes.ReadonlyTextbox sendRole;
-        private Textboxes.ReadonlyTextbox senderName;
         private Textboxes.ReadonlyTextbox sendMessage;
+        public Textboxes.ReadonlyTextbox senderName;
     }
 }

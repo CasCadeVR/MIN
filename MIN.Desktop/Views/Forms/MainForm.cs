@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Interfaces;
@@ -166,7 +165,6 @@ namespace MIN.Desktop
                 {
                     MessageBox.Show($"Произошла ошибка: {ex.Message}");
                 }
-
 
                 return true;
             }

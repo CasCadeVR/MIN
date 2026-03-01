@@ -39,7 +39,7 @@ namespace MIN.Services.Connection.Pipes
         /// </summary>
         public async Task ConnectAsync(Room room, Participant selfParticipant, int timeoutMs = 1000, CancellationToken cancellationToken = default)
         {
-            if (IsConnected) await DisconnectAsync();
+            if (IsConnected) await DisconnectAsync(CancellationToken.None);
 
             roomHostParticipantId = room.HostParticipant.Id;
             var roomId = room.Id;
@@ -136,7 +136,7 @@ namespace MIN.Services.Connection.Pipes
         {
             try
             {
-                while (!cancellationToken.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested && !isDisposed && IsConnected)
                 {
                     var message = await serializer.ReadMessageAsync(pipe!, roomHostParticipantId, cancellationToken);
 

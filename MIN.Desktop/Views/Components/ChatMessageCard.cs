@@ -11,36 +11,35 @@ namespace MIN.Desktop.Components
     {
         private readonly ChatMessage chatMessage;
         private readonly bool hostMessage;
+        private readonly bool removeHeaders;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>
         /// </summary>
-        public ChatMessageCard(ChatMessage chatMessage, bool hostMessage)
+        public ChatMessageCard(ChatMessage chatMessage, bool hostMessage, bool removeHeaders)
         {
             InitializeComponent();
             this.chatMessage = chatMessage;
             this.hostMessage = hostMessage;
+            this.removeHeaders = removeHeaders;
             FillLabels();
             ApplyStylings();
         }
 
         private void ApplyStylings()
         {
-            Height = senderName.Height
-                + sendMessage.PreferredSize.Height
-                + sendTime.Height
-                + sendMessage.Padding.Vertical;
+            if (removeHeaders)
+            {
+                tableLayoutPanelLabels.RowStyles[0].Height = 0;
+                senderName.Visible = false;
+                sendRole.Visible = false;
+            }
 
-            Width = Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
-                + Math.Max(sendMessage.PreferredSize.Width, senderName.PreferredSize.Width)
-                + sendMessage.Padding.Horizontal
-                + sendMessage.Margin.Horizontal;
+            ResizeOutOfPrefferedSize();
 
             var senderColor = chatMessage.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
-             ? ColorScheme.OutgoingMessageBackground
-             : ColorScheme.IncomingMessageBackground;
-
-            var senderFont = FontScheme.Monospace;
+                ? ColorScheme.OutgoingMessageBackground
+                : ColorScheme.IncomingMessageBackground;
 
             senderName.BackColor = senderColor;
             sendRole.BackColor = senderColor;
@@ -48,10 +47,22 @@ namespace MIN.Desktop.Components
             sendTime.BackColor = senderColor;
             tableLayoutPanelLabels.BackColor = senderColor;
 
-            senderName.Font = senderFont;
-            sendRole.Font = senderFont;
-            sendMessage.Font = senderFont;
-            sendTime.Font = senderFont;
+            senderName.Font = FontScheme.Monospace;
+            sendRole.Font = FontScheme.Monospace;
+            sendTime.Font = FontScheme.Monospace;
+            sendMessage.Font = FontScheme.Default;
+        }
+
+        public void ResizeOutOfPrefferedSize()
+        {
+            Height = Convert.ToInt32(tableLayoutPanelLabels.RowStyles[0].Height)
+               + sendMessage.PreferredSize.Height
+               + sendMessage.Margin.Vertical * 4;
+
+            Width = Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
+                + Math.Max(sendMessage.PreferredSize.Width, senderName.PreferredSize.Width)
+                + sendMessage.Padding.Horizontal
+                + sendMessage.Margin.Horizontal;
         }
 
         private void FillLabels()
