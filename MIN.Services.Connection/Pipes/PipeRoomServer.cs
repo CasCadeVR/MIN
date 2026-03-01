@@ -97,8 +97,10 @@ namespace MIN.Services.Connection.Pipes
                     // Client connected here
 
                     var connection = new ClientConnection(clientPipeSlot);
-                    
-                    connection.ProcessingTask = HandleClientConnectionAsync(connection, cancellationToken)
+
+                    await StartMeetingProcedure(connection, cancellationToken);
+
+                    connection.ProcessingTask = HandleClientMessagesAsync(connection, cancellationToken)
                         .ContinueWith(async (_) =>  await HandleClientConnectionLossAsync(connection, cancellationToken), cancellationToken);
 
                     CreateNewConnectionSlot(cancellationToken);
@@ -140,15 +142,15 @@ namespace MIN.Services.Connection.Pipes
             CreateNewConnectionSlot(cancellationToken);
         }
 
-        private async Task HandleClientConnectionAsync(ClientConnection connection, CancellationToken cancellationToken)
+        private async Task StartMeetingProcedure(ClientConnection connection, CancellationToken cancellationToken)
         {
-            lock (activeConnections)
-            {
-                activeConnections.Add(connection);
-            }
-
             try
             {
+                lock (activeConnections)
+                {
+                    activeConnections.Add(connection);
+                }
+
                 var firstMessage = await serializer.ReadMessageAsync(connection.Pipe, connection.Participant?.Id ?? Guid.Empty, cancellationToken);
 
                 if (firstMessage is HandshakeMessage clientHandshake)
@@ -164,10 +166,10 @@ namespace MIN.Services.Connection.Pipes
 
                     var requestMessage = await serializer.ReadMessageAsync(connection.Pipe, clientHandshake.UserId, cancellationToken);
 
-                    if (requestMessage is RoomInfoMessage)
+                    if (requestMessage is RoomInfoRequestMessage)
                     {
                         logger.Log($"Получен RoomInfoRequest от {clientHandshake.UserId}. Отправляю RoomInfo...");
-                        await SendRoomInfoAsync(connection, cancellationToken);
+                        await SendMessageAsync(connection, GetRoomInfo(), cancellationToken);
                     }
                     else
                     {
@@ -180,7 +182,18 @@ namespace MIN.Services.Connection.Pipes
                     logger.Log($"Клиент не отправил Handshake первым. Отключаем.", LogLevel.Error);
                     return;
                 }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Client disconnected
+                await HandleClientConnectionLossAsync(connection, cancellationToken);
+            }
+        }
 
+        private async Task HandleClientMessagesAsync(ClientConnection connection, CancellationToken cancellationToken)
+        {
+            try
+            {
                 while (!cancellationToken.IsCancellationRequested && connection.Pipe.IsConnected)
                 {
                     var message = await serializer.ReadMessageAsync(connection.Pipe, connection.Participant.Id, cancellationToken);
@@ -207,6 +220,11 @@ namespace MIN.Services.Connection.Pipes
                                 && chatMessage.Content.StartsWith("LEAVE:"):
                             var leavingParticipant = ParseParticipantFromMessage(chatMessage);
 
+                            if (leavingParticipant.Id == room.HostParticipant.Id!)
+                            {
+                                return; // TODO might need to change host here
+                            }
+
                             room?.RemoveParticipantById(leavingParticipant.Id);
                             room!.AddMessage(chatMessage);
 
@@ -216,6 +234,21 @@ namespace MIN.Services.Connection.Pipes
                         case ChatMessage chatMessage:
                             room!.AddMessage(chatMessage);
                             await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
+                            break;
+
+                        case RoomInfoRequestMessage roomInfoRequestMessage:
+                            if (!string.IsNullOrEmpty(roomInfoRequestMessage.RoomName))
+                            {
+                                room.Name = roomInfoRequestMessage.RoomName;
+                            }
+
+                            if (roomInfoRequestMessage.MaxParticipants != null)
+                            {
+                                room.MaximumParticipants = (int)roomInfoRequestMessage.MaxParticipants;
+                            }
+
+                            var roomInfo = GetRoomInfo();
+                            await BroadcastMessageAsync(connection, roomInfo, cancellationToken);
                             break;
 
                         default:
@@ -231,9 +264,8 @@ namespace MIN.Services.Connection.Pipes
             }
         }
 
-        private async Task SendRoomInfoAsync(ClientConnection connection, CancellationToken cancellationToken)
-        {
-            var roomInfo = new RoomInfoMessage
+        private RoomInfoMessage GetRoomInfo()
+            => new()
             {
                 RoomId = room!.Id,
                 RoomName = room.Name,
@@ -244,10 +276,8 @@ namespace MIN.Services.Connection.Pipes
                 ChatHistory = room.ChatHistory.Select(m => m.GetSerializableCopy()).ToList(),
             };
 
-            await serializer.WriteMessageAsync(connection.Pipe, roomInfo, connection.Participant.Id, cancellationToken);
-        }
-
-        public async Task BroadcastMessageAsync(ClientConnection sender, ChatMessage message, CancellationToken ct)
+        public async Task BroadcastMessageAsync<T>(ClientConnection sender, T message, CancellationToken ct)
+            where T : class
         {
             var tasks = new List<Task>();
 
@@ -282,7 +312,8 @@ namespace MIN.Services.Connection.Pipes
             };
         }
 
-        public async Task SendMessageAsync(ClientConnection connection, ChatMessage message, CancellationToken cancellationToken = default)
+        public async Task SendMessageAsync<T>(ClientConnection connection, T message, CancellationToken cancellationToken = default)
+            where T : class
         {
             if (!IsRunning) throw new InvalidOperationException("Сервер не работает");
             await serializer.WriteMessageAsync(connection.Pipe, message, connection.Participant.Id, cancellationToken);

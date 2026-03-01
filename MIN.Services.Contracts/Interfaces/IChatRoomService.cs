@@ -1,6 +1,7 @@
 ﻿using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Contracts.Models.Events;
+using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Services.Contracts.Interfaces
 {
@@ -31,9 +32,19 @@ namespace MIN.Services.Contracts.Interfaces
         Task JoinRoomAsync(Room room, Participant participant, int timeoutMs = 1000, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Отправить сообщение в текущую комнату
+        /// Отправить сообщение в комнату
         /// </summary>
         Task SendMessageAsync(string content, MessageType type = MessageType.Text, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Получить обновлённую статистику комнаты от сервера
+        /// </summary>
+        Task GetUpdatedRoomInfoAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Отправить обновлённые данные о комнате
+        /// </summary>
+        Task SendUpdateRoomRequestAsync(RoomInfoRequestMessage request, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Отключиться от комнаты

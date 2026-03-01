@@ -20,7 +20,7 @@ namespace MIN.Desktop.Components.Textboxes
         /// </summary>
         public ReadonlyTextbox()
         {
-            Font = FontScheme.Heading3;
+            Font = FontScheme.Monospace;
             BorderStyle = BorderStyle.None;
             ForeColor = ColorScheme.TextPrimary;
             ReadOnly = true;

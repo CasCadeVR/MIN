@@ -55,7 +55,7 @@ namespace MIN.Desktop
                 var createdRoom = await chatRoomService.CreateRoomAsync(room.Name, room.MaximumParticipants, AppUserProvider.Instance.CurrentUser, cancellationTokenSource.Token);
 
                 //await PerfromSearch(CancellationToken.None);
-                if (!await OnRoomConnection(createdRoom))
+                if (!await OnRoomConnection(createdRoom, createdRoom.CurrentParticipants.Count))
                 {
                     await chatRoomService.DisconnectAsync();
                 }
@@ -107,7 +107,7 @@ namespace MIN.Desktop
                 {
                     Parent = flowLayoutPanel
                 };
-                card.Clicked += () => OnRoomConnection(parsed);
+                card.Clicked += () => OnRoomConnection(parsed, room.CurrentParticipants);
                 card.Disposed += (s, e) =>
                 {
                     card.UnsubscribeFromChatEvents();
@@ -123,7 +123,7 @@ namespace MIN.Desktop
             await PerfromSearch();
         }
 
-        private async Task<bool> OnRoomConnection(Room room)
+        private async Task<bool> OnRoomConnection(Room room, int currentParticipantCount)
         {
             if (room == null)
             {
@@ -139,7 +139,8 @@ namespace MIN.Desktop
                 return false;
             }
 
-            if (room.CurrentParticipants.Any(p => p.PCName == AppUserProvider.Instance.CurrentUser.PCName))
+            if (room.HostParticipant.PCName == AppUserProvider.Instance.CurrentUser.PCName
+                && currentParticipantCount != 0)
             {
                 MessageBox.Show("Вы уже подключены к этой комнате.", "Информация",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -153,6 +154,10 @@ namespace MIN.Desktop
                 {
                     var chatForm = new ChatForm(chatRoomService, notificationService);
                     await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, settings.DiscoveryTimeout, cancellationTokenSource.Token);
+                    chatForm.FormClosing += (sender, e) =>
+                    {
+                        chatRoomService.DisconnectAsync(cancellationTokenSource.Token);
+                    };
                     chatForm.Show();
 
                 }

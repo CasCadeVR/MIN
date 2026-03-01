@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
@@ -57,6 +56,9 @@ namespace MIN.Services.Connection.Serialize
                 case MessageTypeTag.RoomInfo:
                     return await DecryptAndDeserializeAsync<RoomInfoMessage>(dataBuffer, senderId);
 
+                case MessageTypeTag.RoomInfoRequest:
+                    return await DecryptAndDeserializeAsync<RoomInfoRequestMessage>(dataBuffer, senderId);
+
                 default:
                     throw new InvalidDataException($"Unknown message type: {messageType}");
             }
@@ -93,6 +95,7 @@ namespace MIN.Services.Connection.Serialize
                     RoomInfoMessage => MessageTypeTag.RoomInfo,
                     DiscoveredRoom => MessageTypeTag.DiscoveredRoom,
                     HandshakeMessage => MessageTypeTag.HandshakeMessage,
+                    RoomInfoRequestMessage => MessageTypeTag.RoomInfoRequest,
                     _ => throw new ArgumentException($"Unsupported message type: {typeof(T).Name}")
                 };
             }

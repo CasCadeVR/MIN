@@ -40,11 +40,18 @@ namespace MIN.Desktop.Components
              ? ColorScheme.OutgoingMessageBackground
              : ColorScheme.IncomingMessageBackground;
 
+            var senderFont = FontScheme.Monospace;
+
             senderName.BackColor = senderColor;
             sendRole.BackColor = senderColor;
             sendMessage.BackColor = senderColor;
             sendTime.BackColor = senderColor;
             tableLayoutPanelLabels.BackColor = senderColor;
+
+            senderName.Font = senderFont;
+            sendRole.Font = senderFont;
+            sendMessage.Font = senderFont;
+            sendTime.Font = senderFont;
         }
 
         private void FillLabels()

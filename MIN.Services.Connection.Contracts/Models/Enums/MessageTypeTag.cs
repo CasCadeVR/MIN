@@ -7,7 +7,8 @@
     {
         HandshakeMessage = 0,
         DiscoveredRoom = 1,
-        RoomInfo = 2,
-        ChatMessage = 3,
+        ChatMessage = 2,
+        RoomInfo = 3,
+        RoomInfoRequest = 4,
     }
 }

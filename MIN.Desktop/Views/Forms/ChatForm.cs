@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -141,9 +142,10 @@ namespace MIN.Desktop
             }
 
             room.AddMessage(message);
-            if (!(this.WindowState == FormWindowState.Normal && this.Focused))
+            //if (!(this.WindowState == FormWindowState.Normal && this.Focused))
+            if (true)
             {
-                //notificationService.Notify(message);
+                notificationService.Notify(message);
             }
             AddMessageToChatFlow(message);
         }
@@ -370,16 +372,15 @@ namespace MIN.Desktop
             chatFlow_Resize(sender, e);
         }
 
-        protected override async void OnFormClosing(FormClosingEventArgs e)
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
             UnsubscribeFromChatEvents();
-            await formCancellationTokenSource.CancelAsync();
+            formCancellationTokenSource.Cancel();
             formCancellationTokenSource.Dispose();
-            await chatRoomService.DisconnectAsync();
             base.OnFormClosing(e);
         }
 
-        private void editButton_Click(object sender, EventArgs e)
+        private async void editButton_Click(object sender, EventArgs e)
         {
             var editForm = new RoomCreateForm(room);
             var result = editForm.ShowDialog();
@@ -389,7 +390,11 @@ namespace MIN.Desktop
             }
             else if (result == DialogResult.OK)
             {
-                room.UpdateInfo(room);
+                await chatRoomService.SendUpdateRoomRequestAsync(new RoomInfoRequestMessage()
+                {
+                    RoomName = editForm.Room.Name,
+                    MaxParticipants = editForm.Room.MaximumParticipants,
+                }, formCancellationTokenSource.Token);
             }
         }
 

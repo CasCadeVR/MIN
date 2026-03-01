@@ -109,6 +109,34 @@ namespace MIN.Services.Connection.Pipes
             await client.ConnectAsync(room, selfParticipant, timeoutMs, cancellationToken);
         }
 
+        /// <inheritdoc cref="IPipeParticipantClient.GetUpdatedRoomInfoAsync(CancellationToken)"/>
+        async Task IChatRoomService.GetUpdatedRoomInfoAsync(CancellationToken cancellationToken = default)
+        {
+            if (isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(ChatRoomService));
+            }
+
+            if (currentRoom == null || selfParticipant == null)
+                throw new InvalidOperationException("Not connected to any room");
+
+            await client.GetUpdatedRoomInfoAsync(cancellationToken);
+        }
+
+        /// <inheritdoc cref="IPipeParticipantClient.SendUpdatedRoomRequestAsync(RoomInfoRequestMessage, CancellationToken)"/>
+        public async Task SendUpdateRoomRequestAsync(RoomInfoRequestMessage request, CancellationToken cancellationToken = default)
+        {
+            if (isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(ChatRoomService));
+            }
+
+            if (currentRoom == null || selfParticipant == null)
+                throw new InvalidOperationException("Not connected to any room");
+
+            await client.SendUpdatedRoomRequestAsync(request, cancellationToken);
+        }
+
         async Task IChatRoomService.SendMessageAsync(string content, MessageType type, CancellationToken cancellationToken)
         {
             if (isDisposed)

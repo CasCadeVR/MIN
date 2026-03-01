@@ -1,3 +1,4 @@
+using System.Windows.Forms;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Services.Contracts.Interfaces;
@@ -23,8 +24,9 @@ namespace MIN.Desktop
         private void AddLogMessage(string message)
         {
             logListBox.Items.Add(message);
+            int visibleItems = logListBox.ClientSize.Height / logListBox.ItemHeight;
+            logListBox.TopIndex = Math.Max(logListBox.Items.Count - visibleItems + 1, 0);
         }
-
 
         protected override void ApplyStylings()
         {

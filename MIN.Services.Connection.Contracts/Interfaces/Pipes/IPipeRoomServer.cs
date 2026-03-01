@@ -1,7 +1,5 @@
-﻿using System.IO.Pipes;
-using MIN.Services.Connection.Contracts.Models;
+﻿using MIN.Services.Connection.Contracts.Models;
 using MIN.Services.Contracts.Models;
-using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
 {
@@ -21,14 +19,14 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         Task StopAsync();
 
         /// <summary>
-        /// Отправить сообщения
+        /// Отправить сообщения определённому участнику
         /// </summary>
-        Task SendMessageAsync(ClientConnection sender, ChatMessage message, CancellationToken cancellationToken = default);
+        Task SendMessageAsync<T>(ClientConnection sender, T message, CancellationToken cancellationToken = default) where T : class;
 
         /// <summary>
-        /// Отправить серверное сообщение
+        /// Отправить серверное сообщение всем участникам
         /// </summary>
-        Task BroadcastMessageAsync(ClientConnection sender, ChatMessage message, CancellationToken cancellationToken = default);
+        Task BroadcastMessageAsync<T>(ClientConnection sender, T message, CancellationToken cancellationToken = default) where T : class;
 
         /// <summary>
         /// Активен

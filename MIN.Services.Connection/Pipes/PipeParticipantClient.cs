@@ -11,18 +11,18 @@ using MIN.Services.Services;
 namespace MIN.Services.Connection.Pipes
 {
     /// <inheritdoc cref="IPipeParticipantClient"/>
-    public sealed class PipeParticipantClient : IPipeParticipantClient
+    public sealed class PipeParticipantClient(IPipeMessageSerializer serializer, ICryptoProvider cryptoProvider, ILoggerProvider logger) : IPipeParticipantClient
     {
-        private readonly IPipeMessageSerializer serializer;
-        private readonly ICryptoProvider cryptoProvider;
-        private readonly ILoggerProvider logger;
+        private readonly IPipeMessageSerializer serializer = serializer;
+        private readonly ICryptoProvider cryptoProvider = cryptoProvider;
+        private readonly ILoggerProvider logger = logger;
 
         private NamedPipeClientStream? pipe;
         private CancellationTokenSource? cancellationTokenSource;
         private Room? currentRoom;
         private Participant? selfParticipant;
         private bool isDisposed;
-        private Guid roomHostParticipantId;
+        private Guid roomHostParticipantId = Guid.Empty;
 
         public event EventHandler<ChatMessage>? MessageReceived;
         public event EventHandler<Room>? RoomInfoReceived;
@@ -33,14 +33,6 @@ namespace MIN.Services.Connection.Pipes
         public bool IsConnected => pipe?.IsConnected == true && !isDisposed;
 
         public Room? Room => currentRoom;
-
-        public PipeParticipantClient(IPipeMessageSerializer serializer, ICryptoProvider cryptoProvider, ILoggerProvider logger)
-        {
-            this.serializer = serializer;
-            this.cryptoProvider = cryptoProvider;
-            this.logger = logger;
-            roomHostParticipantId = Guid.Empty;
-        }
 
         /// <summary>
         /// Подключиться к существующей комнате
@@ -71,9 +63,8 @@ namespace MIN.Services.Connection.Pipes
             try
             {
                 logger.Log($"Подключаюсь к комнате {room.Name} c id {roomId}");
-                await pipe.ConnectAsync(timeoutMs, cancellationTokenSource.Token);
-
-                await SendHandshakeMessageAsync(cancellationTokenSource.Token);
+                await pipe.ConnectAsync(timeoutMs, cancellationToken);
+                await StartMeetingProcedureAsync(cancellationToken);
                 _ = ReceiveMessagesAsync(cancellationTokenSource.Token);
             }
             catch (TimeoutException)
@@ -90,13 +81,12 @@ namespace MIN.Services.Connection.Pipes
             }
         }
 
-        /// <summary>
-        /// Фоновое чтение всех входящих сообщений
-        /// </summary>
-        private async Task ReceiveMessagesAsync(CancellationToken cancellationToken)
+        private async Task StartMeetingProcedureAsync(CancellationToken cancellationToken)
         {
             try
             {
+                await SendHandshakeMessageAsync(cancellationToken);
+
                 var firstMessage = await serializer.ReadMessageAsync(pipe!, roomHostParticipantId, cancellationToken);
 
                 if (firstMessage is HandshakeMessage serverHandshake)
@@ -104,8 +94,7 @@ namespace MIN.Services.Connection.Pipes
                     await cryptoProvider.InitializeSessionAsync(roomHostParticipantId, serverHandshake);
                     logger.Log($"Сессия с сервером {roomHostParticipantId} инициализирована");
 
-                    await SendRoomInfoMessageAsync(cancellationToken);
-                    logger.Log($"Отправлен запрос RoomInfoRequest");
+                    await GetUpdatedRoomInfoAsync(cancellationToken);
 
                     var responseMessage = await serializer.ReadMessageAsync(pipe!, roomHostParticipantId, cancellationToken);
 
@@ -115,7 +104,6 @@ namespace MIN.Services.Connection.Pipes
                         HandleRoomInfoAsync(roomInfo, cancellationToken);
 
                         await SendJoinNotificationAsync(cancellationToken);
-                        logger.Log($"Отправлен JOIN");
                     }
                     else
                     {
@@ -127,15 +115,33 @@ namespace MIN.Services.Connection.Pipes
                     logger.Log($"Сервер не отправил Handshake первым. Получено: {firstMessage?.GetType().Name}", LogLevel.Error);
                     return;
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                logger.Log("Я прекратил получать сообщения от сервера");
+            }
+            catch (IOException ex) when (!isDisposed)
+            {
+                logger.Log($"Я отключился от сервера: {ex.Message}");
+                await DisconnectAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Log($"Ошибка у клиента: {ex.Message}", LogLevel.Error);
+                await DisconnectAsync(cancellationToken);
+            }
+        }
 
+        private async Task ReceiveMessagesAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var message = await serializer.ReadMessageAsync(pipe!, roomHostParticipantId, cancellationToken);
 
                     switch (message)
                     {
-                       // case HandshakeMessage
-
                         case RoomInfoMessage roomInfo:
                             logger.Log($"Получена RoomInfo: {roomInfo.RoomName}");
                             HandleRoomInfoAsync(roomInfo, cancellationToken);
@@ -222,11 +228,6 @@ namespace MIN.Services.Connection.Pipes
 
         private void HandleChatMessage(ChatMessage message)
         {
-            if (message.SenderPCName == selfParticipant?.PCName && message.Time == default)
-            {
-                message.Time = TimeOnly.FromDateTime(DateTime.Now);
-            }
-
             MessageReceived?.Invoke(this, message);
         }
 
@@ -260,25 +261,6 @@ namespace MIN.Services.Connection.Pipes
             catch (Exception ex)
             {
                 logger.Log($"Ошибка у клиента в отправке Handshake сообщения: {ex.Message}", LogLevel.Error);
-            }
-        }
-
-        private async Task SendRoomInfoMessageAsync(CancellationToken cancellationToken)
-        {
-            if (selfParticipant == null || pipe == null || !pipe.IsConnected)
-            {
-                return;
-            }
-
-            var request = new RoomInfoMessage();
-
-            try
-            {
-                await serializer.WriteMessageAsync(pipe, request, roomHostParticipantId, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                logger.Log($"Ошибка у клиента в отправке RoomInfoMessage сообщения: {ex.Message}", LogLevel.Error);
             }
         }
 
@@ -325,9 +307,45 @@ namespace MIN.Services.Connection.Pipes
             await serializer.WriteMessageAsync(pipe, leaveMessage, roomHostParticipantId, cancellationToken);
         }
 
-        /// <summary>
-        /// Отправить сообщение в комнату
-        /// </summary>
+        /// <inheritdoc cref="IPipeParticipantClient.GetUpdatedRoomInfoAsync(CancellationToken)"/>
+        public async Task GetUpdatedRoomInfoAsync(CancellationToken cancellationToken = default)
+        {
+            if (selfParticipant == null || pipe == null || !pipe.IsConnected)
+            {
+                return;
+            }
+
+            var request = new RoomInfoRequestMessage();
+
+            try
+            {
+                await serializer.WriteMessageAsync(pipe, request, roomHostParticipantId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Log($"Ошибка у клиента в отправке RoomInfoMessage сообщения: {ex.Message}", LogLevel.Error);
+            }
+        }
+
+        /// <inheritdoc cref="IPipeParticipantClient.SendUpdatedRoomRequestAsync(RoomInfoRequestMessage, CancellationToken)"/>
+        public async Task SendUpdatedRoomRequestAsync(RoomInfoRequestMessage request, CancellationToken cancellationToken = default)
+        {
+            if (selfParticipant == null || pipe == null || !pipe.IsConnected)
+            {
+                return;
+            }
+
+            try
+            {
+                await serializer.WriteMessageAsync(pipe, request, roomHostParticipantId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Log($"Ошибка у клиента в отправке RoomInfoMessage сообщения: {ex.Message}", LogLevel.Error);
+            }
+        }
+
+        /// <inheritdoc cref="IPipeParticipantClient.SendMessageAsync(ChatMessage, CancellationToken)"/>
         public async Task SendMessageAsync(ChatMessage message, CancellationToken cancellationToken = default)
         {
             if (!IsConnected || pipe == null || !pipe.IsConnected)

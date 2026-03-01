@@ -25,6 +25,16 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         Task SendMessageAsync(ChatMessage message, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Получить обновлённую статистику комнаты от сервера
+        /// </summary>
+        Task GetUpdatedRoomInfoAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Отправить обновлённые данные о комнате
+        /// </summary>
+        Task SendUpdatedRoomRequestAsync(RoomInfoRequestMessage request, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Активен
         /// </summary>
         bool IsConnected { get; }
