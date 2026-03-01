@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -142,8 +141,7 @@ namespace MIN.Desktop
             }
 
             room.AddMessage(message);
-            //if (!(this.WindowState == FormWindowState.Normal && this.Focused))
-            if (true)
+            if (!(this.WindowState == FormWindowState.Normal && this.Focused))
             {
                 notificationService.Notify(message);
             }

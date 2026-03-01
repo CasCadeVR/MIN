@@ -127,10 +127,20 @@ namespace MIN.Services.Connection.Pipes
 
         private async Task HandleClientConnectionLossAsync(ClientConnection connection, CancellationToken cancellationToken)
         {
+            if (room == null || connection.Participant.Id == room.HostParticipant.Id!)
+            {
+                return; // TODO might need to change host here
+            }
+
             if (connection.Participant != null)
             {
                 logger.Log($"Участник {connection.Participant.Name} отключился от комнаты {room?.Name}");
                 room?.RemoveParticipantById(connection.Participant.Id);
+                var chatMessage = GetParticipantLeaveMessage(connection.Participant, cancellationToken);
+
+                room!.AddMessage(chatMessage);
+                await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
+
             }
 
             lock (activeConnections)
@@ -216,21 +226,6 @@ namespace MIN.Services.Connection.Pipes
                             await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
                             break;
 
-                        case ChatMessage chatMessage when chatMessage.MessageType == MessageType.System
-                                && chatMessage.Content.StartsWith("LEAVE:"):
-                            var leavingParticipant = ParseParticipantFromMessage(chatMessage);
-
-                            if (leavingParticipant.Id == room.HostParticipant.Id!)
-                            {
-                                return; // TODO might need to change host here
-                            }
-
-                            room?.RemoveParticipantById(leavingParticipant.Id);
-                            room!.AddMessage(chatMessage);
-
-                            await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
-                            break;
-
                         case ChatMessage chatMessage:
                             room!.AddMessage(chatMessage);
                             await BroadcastMessageAsync(connection, chatMessage, cancellationToken);
@@ -239,12 +234,12 @@ namespace MIN.Services.Connection.Pipes
                         case RoomInfoRequestMessage roomInfoRequestMessage:
                             if (!string.IsNullOrEmpty(roomInfoRequestMessage.RoomName))
                             {
-                                room.Name = roomInfoRequestMessage.RoomName;
+                                room!.Name = roomInfoRequestMessage.RoomName;
                             }
 
                             if (roomInfoRequestMessage.MaxParticipants != null)
                             {
-                                room.MaximumParticipants = (int)roomInfoRequestMessage.MaxParticipants;
+                                room!.MaximumParticipants = (int)roomInfoRequestMessage.MaxParticipants;
                             }
 
                             var roomInfo = GetRoomInfo();
@@ -274,6 +269,17 @@ namespace MIN.Services.Connection.Pipes
                 HostPCName = room.HostParticipant.PCName,
                 CurrentParticipants = room.CurrentParticipants.Select(p => p.GetSerializableCopy()).ToList(),
                 ChatHistory = room.ChatHistory.Select(m => m.GetSerializableCopy()).ToList(),
+            };
+
+
+        private ChatMessage GetParticipantLeaveMessage(Participant participant, CancellationToken cancellationToken)
+            => new()
+            {
+                SenderName = participant.Name,
+                SenderPCName = participant.PCName,
+                Content = $"LEAVE:{participant.Name}:{participant.Id}",
+                MessageType = MessageType.System,
+                Time = TimeOnly.FromDateTime(DateTime.Now)
             };
 
         public async Task BroadcastMessageAsync<T>(ClientConnection sender, T message, CancellationToken ct)

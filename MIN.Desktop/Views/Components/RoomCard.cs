@@ -146,6 +146,11 @@ namespace MIN.Desktop.Components
                 connectButton.Text = "Заполнено";
                 connectButton.BackColor = ColorScheme.RoomFilled;
             }
+            else
+            {
+                connectButton.Text = "Присоединиться";
+                connectButton.BackColor = ColorScheme.SecondaryAccent;
+            }
         }
 
         private void connectButton_Click(object sender, EventArgs e)

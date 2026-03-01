@@ -290,23 +290,6 @@ namespace MIN.Services.Connection.Pipes
             }
         }
 
-        private async Task SendLeaveNotificationAsync(CancellationToken cancellationToken)
-        {
-            if (selfParticipant == null || pipe == null || !pipe.IsConnected)
-                return;
-
-            var leaveMessage = new ChatMessage
-            {
-                SenderName = selfParticipant.Name,
-                SenderPCName = selfParticipant.PCName,
-                Content = $"LEAVE:{selfParticipant.Name}:{selfParticipant.Id}",
-                MessageType = MessageType.System,
-                Time = TimeOnly.FromDateTime(DateTime.Now)
-            };
-
-            await serializer.WriteMessageAsync(pipe, leaveMessage, roomHostParticipantId, cancellationToken);
-        }
-
         /// <inheritdoc cref="IPipeParticipantClient.GetUpdatedRoomInfoAsync(CancellationToken)"/>
         public async Task GetUpdatedRoomInfoAsync(CancellationToken cancellationToken = default)
         {
@@ -376,15 +359,6 @@ namespace MIN.Services.Connection.Pipes
 
             isDisposed = true;
             cancellationTokenSource?.Cancel();
-
-            if (pipe.IsConnected && selfParticipant != null)
-            {
-                try
-                {
-                    await SendLeaveNotificationAsync(CancellationToken.None);
-                }
-                catch { /* Игнорируем ошибки при отправке LEAVE */ }
-            }
 
             await pipe.DisposeAsync();
             pipe = null;

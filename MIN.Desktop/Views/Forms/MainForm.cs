@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Interfaces;
@@ -195,6 +196,11 @@ namespace MIN.Desktop
             {
                 settingsProvider.SaveSettings(settingsForm.Settings);
             }
+        }
+
+        private async void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            await chatRoomService.DisconnectAsync(CancellationToken.None);
         }
     }
 }
