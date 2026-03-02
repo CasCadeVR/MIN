@@ -218,7 +218,7 @@ namespace MIN.Services.Connection.Pipes
         {
             currentRoom?.AddParticipant(participant);
 
-            if (participant.Id == server.Room.HostParticipant.Id)
+            if (participant.Id == currentRoom?.HostParticipant.Id)
             {
                 discoveryServer = new DiscoveryServer(participant, server.Room, serializer, logger);
                 await discoveryServer.StartAsync(cancellationTokenSource!.Token);

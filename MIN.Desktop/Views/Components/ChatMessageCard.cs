@@ -49,7 +49,7 @@ namespace MIN.Desktop.Components
 
             senderName.Font = FontScheme.Monospace;
             sendRole.Font = FontScheme.Monospace;
-            sendTime.Font = FontScheme.Monospace;
+            sendTime.Font = FontScheme.Caption;
             sendMessage.Font = FontScheme.Default;
         }
 
@@ -57,12 +57,10 @@ namespace MIN.Desktop.Components
         {
             Height = Convert.ToInt32(tableLayoutPanelLabels.RowStyles[0].Height)
                + sendMessage.PreferredSize.Height
-               + sendMessage.Margin.Vertical * 4;
+               + sendMessage.Margin.Vertical * 2;
 
             Width = Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
-                + Math.Max(sendMessage.PreferredSize.Width, senderName.PreferredSize.Width)
-                + sendMessage.Padding.Horizontal
-                + sendMessage.Margin.Horizontal;
+                + Math.Max(sendMessage.PreferredSize.Width, senderName.PreferredSize.Width);
         }
 
         private void FillLabels()

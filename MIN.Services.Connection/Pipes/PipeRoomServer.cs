@@ -56,7 +56,7 @@ namespace MIN.Services.Connection.Pipes
         {
             var systemMsg = new ChatMessage
             {
-                Content = $"Комната '{room!.Name}' Была создана {room.HostParticipant.Name} в {TimeOnly.FromDateTime(DateTime.Now):t}",
+                Content = $"Комната {room!.Name} Была создана в {TimeOnly.FromDateTime(DateTime.Now):t}",
                 MessageType = MessageType.System,
                 Time = TimeOnly.FromDateTime(DateTime.Now)
             };

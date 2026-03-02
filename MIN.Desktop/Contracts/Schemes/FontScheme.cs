@@ -20,7 +20,7 @@ public static class FontScheme
     /// <summary>
     /// Мелкий текст (подсказки, подписи)
     /// </summary>
-    public static readonly Font Caption = new Font("Segoe UI", 8.25f, FontStyle.Regular);
+    public static readonly Font Caption = new Font("Segoe UI", 8f, FontStyle.Regular);
 
     /// <summary>
     /// Моноширинный (для кода, номеров, идентификаторов)

@@ -3,15 +3,15 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-	<Version>0.9.0</Version>
-	  <!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>
-	<SelfContained>true</SelfContained>
-	<PublishSingleFile>true</PublishSingleFile>
-	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>-->
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+	<!--<PublishSingleFile>true</PublishSingleFile>
+	<SelfContained>true</SelfContained>-->
+	<Version>1.0.1</Version>
+	<!--<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>-->
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,6 +39,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Components\Controls\RadioButtons\DefaultRadioButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\Labels\PrimaryLabel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Components\Labels\CaptionLabel.cs">

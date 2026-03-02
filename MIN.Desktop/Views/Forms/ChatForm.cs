@@ -267,7 +267,7 @@ namespace MIN.Desktop
 
             if (message.MessageType == MessageType.System)
             {
-                rowControl = new Heading3Label()
+                rowControl = new PrimaryLabel()
                 {
                     Text = message.Content,
                     Anchor = AnchorStyles.None,
@@ -282,6 +282,7 @@ namespace MIN.Desktop
                 if (lastMessage != null)
                 {
                     minutesPassed = (message.Time - lastMessage.Time).Minutes;
+                    minutesPassed = minutesPassed > 10 ? 10 : minutesPassed;
                     removeHeaders |= lastMessage.SenderPCName == message.SenderPCName;
                 }
 
@@ -292,7 +293,7 @@ namespace MIN.Desktop
                         : AnchorStyles.Left,
                 };
 
-                row.Margin = new Padding(0, minutesPassed * 2, 0, 0);
+                row.Margin = new Padding(0, (minutesPassed * 2) / 5, 0, 0);
 
                 lastMessage = message;
             }
