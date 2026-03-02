@@ -1,3 +1,4 @@
+using System.Windows.Forms.VisualStyles;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -27,6 +28,7 @@ namespace MIN.Desktop
         private readonly SynchronizationContext uiContext;
 
         private Room room = null!;
+        private ChatMessage lastMessage = null!;
 
         public ChatForm(IChatRoomService chatRoomService, INotificationService notificationService)
         {
@@ -268,7 +270,6 @@ namespace MIN.Desktop
                 rowControl = new Heading3Label()
                 {
                     Text = message.Content,
-                    Height = row.Height,
                     Anchor = AnchorStyles.None,
                 };
             }
@@ -276,14 +277,12 @@ namespace MIN.Desktop
             {
                 var removeHeaders = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName;
 
-                foreach (ChatMessageRow previousRow in chatFlow.Controls)
-                {
-                    var child = previousRow.container.Controls[0];
+                var minutesPassed = 0;
 
-                    if (child is ChatMessageCard)
-                    {
-                        removeHeaders |= (child as ChatMessageCard)!.senderName.Text == message.SenderName;
-                    }
+                if (lastMessage != null)
+                {
+                    minutesPassed = (message.Time - lastMessage.Time).Minutes;
+                    removeHeaders |= lastMessage.SenderPCName == message.SenderPCName;
                 }
 
                 rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders)
@@ -292,6 +291,10 @@ namespace MIN.Desktop
                         ? AnchorStyles.Right
                         : AnchorStyles.Left,
                 };
+
+                row.Margin = new Padding(0, minutesPassed * 2, 0, 0);
+
+                lastMessage = message;
             }
 
             row.Size = new Size(chatFlow.Width - (row.Margin.Left * 2) - chatFlow.Margin.Left, rowControl.Height);
