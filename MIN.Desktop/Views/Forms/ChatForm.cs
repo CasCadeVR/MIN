@@ -1,4 +1,3 @@
-using System.Windows.Forms.VisualStyles;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -51,6 +50,9 @@ namespace MIN.Desktop
             chatRoomService.ParticipantLeft += OnParticipantLeftEvent;
             chatRoomService.RoomStateChanged += OnRoomStateChangedEvent;
             chatRoomService.ConnectionLost += ConnectionLostEvent;
+
+            notificationService.OnNotificationClick += () => this.WindowState = FormWindowState.Normal;
+            notificationService.NotificationTurnOffClicked += () => this.notificationComboBox.Checked = false;
         }
 
         private void UnsubscribeFromChatEvents()
@@ -143,9 +145,9 @@ namespace MIN.Desktop
             }
 
             room.AddMessage(message);
-            if (!(this.WindowState == FormWindowState.Normal && this.Focused))
+            if (notificationComboBox.Checked && this.WindowState == FormWindowState.Minimized)
             {
-                notificationService.Notify(message);
+                notificationService.Notify(message, room.Name);
             }
             AddMessageToChatFlow(message);
         }
@@ -316,6 +318,7 @@ namespace MIN.Desktop
             hostName.ForeColor = ColorScheme.TextOnAccent;
             computer.ForeColor = ColorScheme.TextOnAccent;
             classroom.ForeColor = ColorScheme.TextOnAccent;
+            notificationComboBox.ForeColor = ColorScheme.TextOnAccent;
 
             captionLabel1.ForeColor = ColorScheme.TextOnAccent;
             captionLabel2.ForeColor = ColorScheme.TextOnAccent;

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Threading;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
@@ -218,7 +217,7 @@ namespace MIN.Services.Connection.Pipes
         {
             currentRoom?.AddParticipant(participant);
 
-            if (participant.Id == currentRoom?.HostParticipant.Id)
+            if (IsHost)
             {
                 discoveryServer = new DiscoveryServer(participant, server.Room, serializer, logger);
                 await discoveryServer.StartAsync(cancellationTokenSource!.Token);

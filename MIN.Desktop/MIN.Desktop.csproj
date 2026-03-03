@@ -32,6 +32,12 @@
     <Compile Update="Components\Controls\Buttons\InvertedButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="Components\Controls\CheckBoxes\BaseCheckBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\Controls\CheckBoxes\DefaultCheckBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="Components\Controls\DGVs\OneColumnDataGridView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -64,19 +70,19 @@
     <Compile Update="Views\Components\ChatMessageCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Views\Forms\LogForm.cs">
+    <Compile Update="Views\Forms\HelperForms\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Views\Forms\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Views\Forms\ParticipantCreateForm.cs">
+    <Compile Update="Views\Forms\HelperForms\ParticipantCreateForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Views\Forms\ChatForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Views\Forms\RoomCreateForm.cs">
+    <Compile Update="Views\Forms\HelperForms\RoomCreateForm.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

@@ -73,6 +73,16 @@ namespace MIN.Desktop.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap logoImage {
+            get {
+                object obj = ResourceManager.GetObject("logoImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap paperclip {
             get {
                 object obj = ResourceManager.GetObject("paperclip", resourceCulture);
