@@ -1,4 +1,4 @@
-using MIN.Desktop.Components;
+п»їusing MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
@@ -72,9 +72,14 @@ namespace MIN.Desktop
                     ? networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString())
                     : settings.PreferredPCNames;
 
-                var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, settings.DiscoveryTimeout, cancellationToken: cancellationTokenSource.Token);
-
-                uiContext.Post(_ => UpdateDiscoveredRoomsList(discoveredRooms), null);
+                flowLayoutPanel.Controls.Clear();
+                var roomsCount = 0;
+                await foreach (var room in chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, settings.DiscoveryTimeout, cancellationToken: cancellationTokenSource.Token))
+                {
+                    roomsCount += 1;
+                    AddDiscoveredRoom(room);
+                    totalRoomsCount.Text = $"Р’СЃРµРіРѕ РЅР°С€Р»РѕСЃСЊ РєРѕРјРЅР°С‚: {roomsCount}";
+                }
             }
             catch (Exception ex)
             {
@@ -86,36 +91,29 @@ namespace MIN.Desktop
             }
         }
 
-        private void UpdateDiscoveredRoomsList(IEnumerable<DiscoveredRoom> rooms)
+        private void AddDiscoveredRoom(DiscoveredRoom room)
         {
-            flowLayoutPanel.Controls.Clear();
-
-            foreach (var room in rooms)
+            var parsed = new Room(room.RoomName, room.MaximumParticipants)
             {
-                var parsed = new Room(room.RoomName, room.MaximumParticipants)
+                Id = room.RoomId,
+                HostParticipant = new Participant()
                 {
-                    Id = room.RoomId,
-                    HostParticipant = new Participant()
-                    {
-                        Id = room.HostId,
-                        Name = room.HostName,
-                        PCName = room.HostPCName,
-                    }
-                };
+                    Id = room.HostId,
+                    Name = room.HostName,
+                    PCName = room.HostPCName,
+                }
+            };
 
-                var card = new RoomCard(chatRoomService, room)
-                {
-                    Parent = flowLayoutPanel
-                };
-                card.Clicked += () => OnRoomConnection(parsed, room.CurrentParticipants);
-                card.Disposed += (s, e) =>
-                {
-                    card.UnsubscribeFromChatEvents();
-                    totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
-                };
-            }
-
-            totalRoomsCount.Text = $"Всего нашлось комнат: {rooms.Count()}";
+            var card = new RoomCard(chatRoomService, room)
+            {
+                Parent = flowLayoutPanel
+            };
+            card.Clicked += () => OnRoomConnection(parsed, room.CurrentParticipants);
+            card.Disposed += (s, e) =>
+            {
+                card.UnsubscribeFromChatEvents();
+                totalRoomsCount.Text = $"Р’СЃРµРіРѕ РЅР°С€Р»РѕСЃСЊ РєРѕРјРЅР°С‚: {flowLayoutPanel.Controls.Count}";
+            };
         }
 
         private async void findRooms_Click(object sender, EventArgs e)
@@ -127,14 +125,14 @@ namespace MIN.Desktop
         {
             if (room == null)
             {
-                MessageBox.Show("Невозможно подключиться: комнаты больше нет.", "Ошибка",
+                MessageBox.Show("РќРµРІРѕР·РјРѕР¶РЅРѕ РїРѕРґРєР»СЋС‡РёС‚СЊСЃСЏ: РєРѕРјРЅР°С‚С‹ Р±РѕР»СЊС€Рµ РЅРµС‚.", "РћС€РёР±РєР°",
                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
             if (room.IsFull)
             {
-                MessageBox.Show("Невозможно подключиться: комната заполнена.", "Ошибка",
+                MessageBox.Show("РќРµРІРѕР·РјРѕР¶РЅРѕ РїРѕРґРєР»СЋС‡РёС‚СЊСЃСЏ: РєРѕРјРЅР°С‚Р° Р·Р°РїРѕР»РЅРµРЅР°.", "РћС€РёР±РєР°",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
@@ -142,7 +140,7 @@ namespace MIN.Desktop
             if (room.HostParticipant.PCName == AppUserProvider.Instance.CurrentUser.PCName
                 && currentParticipantCount != 0)
             {
-                MessageBox.Show("Вы уже подключены к этой комнате.", "Информация",
+                MessageBox.Show("Р’С‹ СѓР¶Рµ РїРѕРґРєР»СЋС‡РµРЅС‹ Рє СЌС‚РѕР№ РєРѕРјРЅР°С‚Рµ.", "РРЅС„РѕСЂРјР°С†РёСЏ",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
@@ -163,7 +161,7 @@ namespace MIN.Desktop
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Произошла ошибка: {ex.Message}");
+                    MessageBox.Show($"РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°: {ex.Message}");
                 }
 
                 return true;
