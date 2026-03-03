@@ -81,7 +81,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void FillFields()
         {
             roomName.Text = $"Комната {messageRoomName}";
-            senderAndContent.Text = $"{message.SenderName}:{message.Content}";
+            senderAndContent.Text = $"{message.SenderName}: {message.Content}";
         }
 
         protected override void ApplyStylings()
