@@ -59,26 +59,26 @@ namespace MIN.Services.Connection.Pipes
             this.client.Disconnected += (s, e) => OnTransportDisconnected();
         }
 
-        async Task<IEnumerable<DiscoveredRoom>> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
+        async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
         {
-            var discoveredRooms = new ConcurrentBag<DiscoveredRoom>();
-            var tasks = targetPCNames.Select(async pcName =>
+            foreach (var pcName in targetPCNames)
             {
+                DiscoveredRoom? room = null;
                 try
                 {
                     discoveryClient = new DiscoveryClient(serializer, logger);
                     logger.Log($"Пытаюсь достучаться до компьютера: {pcName}...", LogLevel.Information);
-                    var room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs));
-                    discoveredRooms.Add(room!);
+                    room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs));
                 }
                 catch (RoomDiscoveryException ex)
                 {
                     logger.Log($"Не удалось достучаться до компьютера: {pcName}: {ex.Message}", LogLevel.Information);
                 }
-            });
-
-            await Task.WhenAll(tasks);
-            return discoveredRooms.ToList();
+                if (room != null)
+                {
+                    yield return room;
+                }
+            }
         }
 
         async Task<Room> IChatRoomService.CreateRoomAsync(string roomName, int maxParticipants, Participant host, CancellationToken cancellationToken)
