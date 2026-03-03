@@ -72,9 +72,14 @@ namespace MIN.Desktop
                     ? networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString())
                     : settings.PreferredPCNames;
 
-                var discoveredRooms = await chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, settings.DiscoveryTimeout, cancellationToken: cancellationTokenSource.Token);
-
-                uiContext.Post(_ => UpdateDiscoveredRoomsList(discoveredRooms), null);
+                flowLayoutPanel.Controls.Clear();
+                var roomsCount = 0;
+                await foreach (var room in chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, settings.DiscoveryTimeout, cancellationToken: cancellationTokenSource.Token))
+                {
+                    roomsCount += 1;
+                    AddDiscoveredRoom(room);
+                    totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
+                }
             }
             catch (Exception ex)
             {
@@ -86,36 +91,29 @@ namespace MIN.Desktop
             }
         }
 
-        private void UpdateDiscoveredRoomsList(IEnumerable<DiscoveredRoom> rooms)
+        private void AddDiscoveredRoom(DiscoveredRoom room)
         {
-            flowLayoutPanel.Controls.Clear();
-
-            foreach (var room in rooms)
+            var parsed = new Room(room.RoomName, room.MaximumParticipants)
             {
-                var parsed = new Room(room.RoomName, room.MaximumParticipants)
+                Id = room.RoomId,
+                HostParticipant = new Participant()
                 {
-                    Id = room.RoomId,
-                    HostParticipant = new Participant()
-                    {
-                        Id = room.HostId,
-                        Name = room.HostName,
-                        PCName = room.HostPCName,
-                    }
-                };
+                    Id = room.HostId,
+                    Name = room.HostName,
+                    PCName = room.HostPCName,
+                }
+            };
 
-                var card = new RoomCard(chatRoomService, room)
-                {
-                    Parent = flowLayoutPanel
-                };
-                card.Clicked += () => OnRoomConnection(parsed, room.CurrentParticipants);
-                card.Disposed += (s, e) =>
-                {
-                    card.UnsubscribeFromChatEvents();
-                    totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
-                };
-            }
-
-            totalRoomsCount.Text = $"Всего нашлось комнат: {rooms.Count()}";
+            var card = new RoomCard(chatRoomService, room)
+            {
+                Parent = flowLayoutPanel
+            };
+            card.Clicked += () => OnRoomConnection(parsed, room.CurrentParticipants);
+            card.Disposed += (s, e) =>
+            {
+                card.UnsubscribeFromChatEvents();
+                totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
+            };
         }
 
         private async void findRooms_Click(object sender, EventArgs e)
