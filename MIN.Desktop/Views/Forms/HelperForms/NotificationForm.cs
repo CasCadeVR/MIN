@@ -16,8 +16,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private const int ANIMATION_DURATION_MS = 400;
         private const int DISPLAY_DURATION_MS = 5000;
 
-        private int animationSteps = 0;
-        private int totalSteps = 0;
+        private int animationSteps;
+        private int totalSteps;
         private Point finalLocation;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         /// </summary>
         public event Action? NotificationClicked;
 
-        private bool isClosing = false;
+        private bool isClosing;
 
         public NotificationForm(ChatMessage message, string messageRoomName)
         {
@@ -46,11 +46,11 @@ namespace MIN.Desktop.Views.Forms.HelperForms
 
         private void SetupNotificationProperties()
         {
-            this.ShowInTaskbar = false;
-            this.TopMost = true;
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.Opacity = 0;
-            this.StartPosition = FormStartPosition.Manual;
+            ShowInTaskbar = false;
+            TopMost = true;
+            FormBorderStyle = FormBorderStyle.None;
+            Opacity = 0;
+            StartPosition = FormStartPosition.Manual;
         }
 
         private void InitializeEvents()
@@ -63,7 +63,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void OnClicked()
         {
             Close();
-            this.NotificationClicked?.Invoke();
+            NotificationClicked?.Invoke();
         }
 
         private void InitializeTimers()
@@ -97,7 +97,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         public void StartAppearAnimation(Point targetLocation)
         {
             finalLocation = targetLocation;
-            this.Location = new Point(finalLocation.X, finalLocation.Y + 50);
+            Location = new Point(finalLocation.X, finalLocation.Y + 50);
 
             totalSteps = ANIMATION_DURATION_MS / ANIMATION_INTERVAL_MS;
             animationSteps = 0;
@@ -107,17 +107,17 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void AppearTimer_Tick(object sender, EventArgs e)
         {
             animationSteps++;
-            double progress = (double)animationSteps / totalSteps;
+            var progress = (double)animationSteps / totalSteps;
 
-            this.Opacity = progress;
-            int currentY = finalLocation.Y + (int)(50 * (1 - progress));
-            this.Location = new Point(finalLocation.X, currentY);
+            Opacity = progress;
+            var currentY = finalLocation.Y + (int)(50 * (1 - progress));
+            Location = new Point(finalLocation.X, currentY);
 
             if (animationSteps >= totalSteps)
             {
                 appearTimer.Stop();
-                this.Opacity = 1.0;
-                this.Location = finalLocation;
+                Opacity = 1.0;
+                Location = finalLocation;
                 closeTimer.Start();
             }
         }
@@ -141,19 +141,19 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void DisappearTimer_Tick(object sender, EventArgs e)
         {
             animationSteps++;
-            double progress = (double)animationSteps / totalSteps;
+            var progress = (double)animationSteps / totalSteps;
 
-            this.Opacity = 1.0 - progress;
+            Opacity = 1.0 - progress;
 
-            int currentY = finalLocation.Y + (int)(50 * progress);
-            this.Location = new Point(finalLocation.X, currentY);
+            var currentY = finalLocation.Y + (int)(50 * progress);
+            Location = new Point(finalLocation.X, currentY);
 
             if (animationSteps >= totalSteps)
             {
                 disappearTimer.Stop();
                 disappearTimer.Dispose();
-                this.Close();
-                this.Dispose();
+                Close();
+                Dispose();
             }
         }
 

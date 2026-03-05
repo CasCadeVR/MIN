@@ -30,19 +30,15 @@ public class Room(string name = "Room", int maximumParticipants = 2)
     /// </summary>
     public virtual Participant HostParticipant { get; set; } = null!;
 
-    private List<ChatMessage> chatHistory { get; set; } = new();
-
     /// <summary>
     /// Получить историю чата
     /// </summary>
-    public List<ChatMessage> ChatHistory => ChatHistory.OrderBy(x => x.Time).ToList();
-
-    private List<Participant> currentParticipants { get; set; } = new();
+    public List<ChatMessage> ChatHistory { get; private set; } = new();
 
     /// <summary>
     /// Получить текущих участников комнаты
     /// </summary>
-    public List<Participant> CurrentParticipants => currentParticipants;
+    public List<Participant> CurrentParticipants { get; private set; } = new();
 
     /// <summary>
     /// Заполнена ли комната
@@ -59,7 +55,7 @@ public class Room(string name = "Room", int maximumParticipants = 2)
             throw new InvalidOperationException("Достигнуто максимальное количество участников.");
         }
 
-        currentParticipants.Add(participant);
+        CurrentParticipants.Add(participant);
     }
 
     /// <summary>
@@ -67,8 +63,8 @@ public class Room(string name = "Room", int maximumParticipants = 2)
     /// </summary>
     public bool RemoveParticipantById(Guid id)
     {
-        var foundParticipant = currentParticipants.Where(x => x.Id == id).FirstOrDefault();
-        return currentParticipants.Remove(foundParticipant!);
+        var foundParticipant = CurrentParticipants.Where(x => x.Id == id).FirstOrDefault();
+        return CurrentParticipants.Remove(foundParticipant!);
     }
 
     /// <summary>

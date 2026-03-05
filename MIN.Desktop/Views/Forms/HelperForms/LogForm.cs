@@ -24,7 +24,7 @@ namespace MIN.Desktop
         private void AddLogMessage(string message)
         {
             logListBox.Items.Add(message);
-            int visibleItems = logListBox.ClientSize.Height / logListBox.ItemHeight;
+            var visibleItems = logListBox.ClientSize.Height / logListBox.ItemHeight;
             logListBox.TopIndex = Math.Max(logListBox.Items.Count - visibleItems + 1, 0);
         }
 

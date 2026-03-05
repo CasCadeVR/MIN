@@ -44,7 +44,7 @@ namespace MIN.Services.Services
         /// <returns></returns>
         public static string CreateComputerName(int roomNumber, int computerNumber)
         {
-            StringBuilder baseName = new StringBuilder();
+            var baseName = new StringBuilder();
             baseName.Append("C" + roomNumber);
 
             if (computerNumber > 0 && computerNumber < 10)

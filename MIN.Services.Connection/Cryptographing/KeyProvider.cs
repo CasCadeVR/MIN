@@ -10,7 +10,7 @@ namespace MIN.Services.Connection.Cryptographing
     /// <inheritdoc cref="IKeyProvider"/>
     public class KeyProvider : IKeyProvider
     {
-        private static readonly JsonSerializerOptions jsonOptions = new()
+        private readonly static JsonSerializerOptions jsonOptions = new()
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -57,7 +57,7 @@ namespace MIN.Services.Connection.Cryptographing
                 }
                 else
                 {
-                    cachedKeys = await GenerateNewKeysAsync();
+                    cachedKeys = GenerateNewKeys();
                     await SaveKeysAsync(cachedKeys);
                 }
 
@@ -122,7 +122,7 @@ namespace MIN.Services.Connection.Cryptographing
             return partners.TryGetValue(partnerId.ToString(), out var key) ? key : null;
         }
 
-        private async Task<KeyPair> GenerateNewKeysAsync()
+        private KeyPair GenerateNewKeys()
         {
             using var ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
 

@@ -10,7 +10,7 @@ namespace MIN.Services.Services
         {
             var result = new List<string>();
 
-            for (int i = 1; i <= maxComputers; i++)
+            for (var i = 1; i <= maxComputers; i++)
             {
                 var pcName = CollegePCNameParser.CreateComputerName(Convert.ToInt32(searchZone), i);
 

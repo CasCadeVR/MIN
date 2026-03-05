@@ -15,7 +15,7 @@ namespace MIN.Desktop
         /// </summary>
         public Room Room { get; set; }
 
-        private bool isNew = false;
+        private bool isNew;
 
         public RoomCreateForm(Room? room = null)
         {

@@ -20,7 +20,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
         private readonly Room room;
 
         private CancellationTokenSource? cancellationTokenSource;
-        private bool isRunning = false;
+        private bool isRunning;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="DiscoveryServer"/>

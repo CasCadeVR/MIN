@@ -7,7 +7,7 @@ namespace MIN.Desktop.Infrastructure.Services
     /// </summary>
     public class AppUserProvider
     {
-        private static readonly Lazy<AppUserProvider> instance =
+        private readonly static Lazy<AppUserProvider> instance =
             new Lazy<AppUserProvider>(() => new AppUserProvider());
 
         /// <summary>

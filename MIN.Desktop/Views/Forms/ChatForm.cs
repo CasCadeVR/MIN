@@ -51,8 +51,8 @@ namespace MIN.Desktop
             chatRoomService.RoomStateChanged += OnRoomStateChangedEvent;
             chatRoomService.ConnectionLost += ConnectionLostEvent;
 
-            notificationService.OnNotificationClick += () => this.WindowState = FormWindowState.Normal;
-            notificationService.NotificationTurnOffClicked += () => this.notificationComboBox.Checked = false;
+            notificationService.OnNotificationClick += () => WindowState = FormWindowState.Normal;
+            notificationService.NotificationTurnOffClicked += () => notificationComboBox.Checked = false;
         }
 
         private void UnsubscribeFromChatEvents()
@@ -145,7 +145,7 @@ namespace MIN.Desktop
             }
 
             room.AddMessage(message);
-            if (notificationComboBox.Checked && this.WindowState == FormWindowState.Minimized)
+            if (notificationComboBox.Checked && WindowState == FormWindowState.Minimized)
             {
                 notificationService.Notify(message, room.Name);
             }
@@ -364,7 +364,7 @@ namespace MIN.Desktop
 
         private void disconnectButton_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void chatFlow_Resize(object sender, EventArgs e)
