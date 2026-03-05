@@ -1,3 +1,4 @@
+using System.Windows.Forms;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -145,7 +146,7 @@ namespace MIN.Desktop
             }
 
             room.AddMessage(message);
-            if (notificationComboBox.Checked && this.WindowState == FormWindowState.Minimized)
+            if (notificationComboBox.Checked && (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus))
             {
                 notificationService.Notify(message, room.Name);
             }
@@ -305,6 +306,8 @@ namespace MIN.Desktop
             chatFlow.Controls.Add(row);
             chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
             chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
+
+            chatFlow_Resize(this, null);
         }
 
         protected override void ApplyStylings()
@@ -328,6 +331,7 @@ namespace MIN.Desktop
 
             participantsFlow.BackColor = ColorScheme.DividerColor;
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;
+            chatFlow.HorizontalScroll.Maximum = 0;
 
             tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
             tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
@@ -353,7 +357,7 @@ namespace MIN.Desktop
 
             try
             {
-                await chatRoomService.SendMessageAsync(messageTextBox.Text, MessageType.Text);
+                await chatRoomService.SendMessageAsync(messageTextBox.Text.Trim(), MessageType.Text);
             }
             catch (Exception ex) when (ex is ArgumentException)
             {
@@ -371,8 +375,19 @@ namespace MIN.Desktop
         {
             foreach (ChatMessageRow control in chatFlow.Controls)
             {
-                control.Width = chatFlow.Width - (control.Margin.Left * 2) - chatFlow.Margin.Left;
+                control.Width = chatFlow.Width - control.Margin.Horizontal;
+
+                var child = control.container.Controls[0];
+
+                if (child is ChatMessageCard)
+                {
+                    control.Height = (child as ChatMessageCard)!.ResizeOutOfPrefferedSize() + child.Margin.Vertical;
+                }
             }
+
+            chatFlow.AutoScroll = false;
+            chatFlow.HorizontalScroll.Visible = false;
+            chatFlow.AutoScroll = true;
         }
 
         private void closeButton_Click(object sender, EventArgs e)

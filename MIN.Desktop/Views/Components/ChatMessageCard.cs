@@ -35,8 +35,6 @@ namespace MIN.Desktop.Components
                 sendRole.Visible = false;
             }
 
-            ResizeOutOfPrefferedSize();
-
             var senderColor = chatMessage.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
                 ? ColorScheme.OutgoingMessageBackground
                 : ColorScheme.IncomingMessageBackground;
@@ -53,14 +51,37 @@ namespace MIN.Desktop.Components
             sendMessage.Font = FontScheme.Default;
         }
 
-        public void ResizeOutOfPrefferedSize()
+        public int ResizeOutOfPrefferedSize()
         {
-            Height = Convert.ToInt32(tableLayoutPanelLabels.RowStyles[0].Height)
-               + sendMessage.PreferredSize.Height
-               + sendMessage.Margin.Vertical * 2;
+            Width = Math.Min(Convert.ToInt32(Parent == null ? 0 : Parent.Width * 0.7),
+                Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
+                + Math.Max(sendMessage.PreferredSize.Width, senderName.PreferredSize.Width)
+                + sendMessage.Margin.Horizontal * 2); ;
 
-            Width = Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
-                + Math.Max(sendMessage.PreferredSize.Width, senderName.PreferredSize.Width);
+            int availableWidth = Width
+                - sendMessage.Margin.Horizontal * 2
+                - Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width);
+
+            int lineCount = CalculateLineCount(sendMessage, availableWidth);
+
+            var gottenHeight = Convert.ToInt32(tableLayoutPanelLabels.RowStyles[0].Height)
+                + (lineCount * sendMessage.Font.Height)
+                + sendMessage.Margin.Vertical * 2;
+
+            Height = gottenHeight;
+            return gottenHeight;
+        }
+
+        private static int CalculateLineCount(TextBox textBox, int availableWidth)
+        {
+            int originalWidth = textBox.Width;
+            textBox.Width = availableWidth;
+
+            int lastCharLine = textBox.GetLineFromCharIndex(textBox.Text.Length - 1);
+            int lines = lastCharLine + 1;
+
+            textBox.Width = originalWidth;
+            return Math.Max(1, lines);
         }
 
         private void FillLabels()
