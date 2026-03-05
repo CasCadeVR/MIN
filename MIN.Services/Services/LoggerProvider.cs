@@ -11,8 +11,8 @@ namespace MIN.Services.Services
     {
         private List<string> messages = [];
 
-        ///<inheritdoc cref="ILoggerProvider.OnLogRecieved"/>
-        public event EventHandler<string>? OnLogRecieved;
+        ///<inheritdoc cref="ILoggerProvider.OnLogReceived"/>
+        public event EventHandler<string>? OnLogReceived;
 
         void ILoggerProvider.Log(string message, LogLevel level)
         {
@@ -24,7 +24,7 @@ namespace MIN.Services.Services
             formatted.Append(message);
             var result = formatted.ToString();
             messages.Add(result);
-            OnLogRecieved?.Invoke(this, result);
+            OnLogReceived?.Invoke(this, result);
         }
 
         IEnumerable<string> ILoggerProvider.GetLogHistory()

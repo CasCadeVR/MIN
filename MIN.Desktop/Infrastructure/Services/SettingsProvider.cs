@@ -7,7 +7,7 @@ namespace MIN.Desktop.Infrastructure.Services
     ///<inheritdoc cref="ISettingsProvider"/>
     public class SettingsProvider : ISettingsProvider
     {
-        private static readonly string SettingsFilePath = Path.Combine(Application.StartupPath, "appsettings.json");
+        private static readonly string settingsFilePath = Path.Combine(Application.StartupPath, "appsettings.json");
 
         private Settings settings;
 
@@ -27,10 +27,10 @@ namespace MIN.Desktop.Infrastructure.Services
         {
             try
             {
-                if (!File.Exists(SettingsFilePath))
+                if (!File.Exists(settingsFilePath))
                     settings = new Settings();
 
-                var json = File.ReadAllText(SettingsFilePath);
+                var json = File.ReadAllText(settingsFilePath);
                 settings = JsonSerializer.Deserialize<Settings>(json) ?? new Settings();
             }
             catch
@@ -44,7 +44,7 @@ namespace MIN.Desktop.Infrastructure.Services
             try
             {
                 var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(SettingsFilePath, json);
+                File.WriteAllText(settingsFilePath, json);
             }
             catch (Exception ex)
             {

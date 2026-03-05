@@ -341,10 +341,10 @@ namespace MIN.Desktop
 
         private async void sendButton_Click(object sender, EventArgs e)
         {
-            await sendMessage();
+            await SendMessage();
         }
 
-        private async Task sendMessage()
+        private async Task SendMessage()
         {
             if (!IsMessageValid())
             {
@@ -419,7 +419,7 @@ namespace MIN.Desktop
             {
                 if ((ModifierKeys & Keys.Shift) == 0)
                 {
-                    await sendMessage();
+                    await SendMessage();
                     changeMessageBoxSize();
                     e.Handled = true;
                 }

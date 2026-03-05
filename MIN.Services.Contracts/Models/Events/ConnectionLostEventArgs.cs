@@ -6,7 +6,7 @@
 public class ConnectionLostEventArgs : EventArgs
 {
     /// <summary>
-    /// Причниа потери связи
+    /// Причина потери связи
     /// </summary>
     public string Reason { get; }
 

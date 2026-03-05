@@ -4,7 +4,7 @@ using MIN.Services.Contracts.Models;
 namespace MIN.Services.Connection.Contracts.Models
 {
     /// <summary>
-    /// Слот Подключения сервера и клиента
+    /// Слот подключения сервера и клиента
     /// </summary>
     public class ClientConnection(NamedPipeServerStream pipe) : IAsyncDisposable
     {

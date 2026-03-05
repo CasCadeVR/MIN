@@ -10,7 +10,7 @@ namespace MIN.Services.Contracts.Interfaces
         /// <summary>
         /// Событие на получение лога
         /// </summary>
-        event EventHandler<string>? OnLogRecieved;
+        event EventHandler<string>? OnLogReceived;
 
         /// <summary>
         /// Залогировать

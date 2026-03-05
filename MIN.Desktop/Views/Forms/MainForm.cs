@@ -62,7 +62,7 @@ namespace MIN.Desktop
             }
         }
 
-        private async Task PerfromSearch()
+        private async Task PerformSearch()
         {
             uiContext.Post(_ => findRooms.Enabled = false, null);
 
@@ -118,7 +118,7 @@ namespace MIN.Desktop
 
         private async void findRooms_Click(object sender, EventArgs e)
         {
-            await PerfromSearch();
+            await PerformSearch();
         }
 
         private async Task<bool> OnRoomConnection(Room room, int currentParticipantCount)

@@ -3,15 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36811.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Desktop", "MIN.Desktop\MIN.Desktop.csproj", "{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Desktop", "MIN.Desktop\MIN.Desktop.csproj", "{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Services.Contracts", "MIN.Services.Contracts\MIN.Services.Contracts.csproj", "{C0BDD3E5-6D7A-449B-99A1-4B303DA283E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Services.Contracts", "MIN.Services.Contracts\MIN.Services.Contracts.csproj", "{C0BDD3E5-6D7A-449B-99A1-4B303DA283E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Services", "MIN.Services\MIN.Services.csproj", "{BB7F2BB5-55B6-43E4-909B-B643EF6B6964}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Services", "MIN.Services\MIN.Services.csproj", "{BB7F2BB5-55B6-43E4-909B-B643EF6B6964}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Services.Connection", "MIN.Services.Connection\MIN.Services.Connection.csproj", "{EFC11A3D-6D0D-45C7-AC1C-B2FF0B20A562}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Services.Connection", "MIN.Services.Connection\MIN.Services.Connection.csproj", "{EFC11A3D-6D0D-45C7-AC1C-B2FF0B20A562}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Services.Connection.Contracts", "MIN.Services.Connection.Contracts\MIN.Services.Connection.Contracts.csproj", "{8566CB2C-8931-4987-8670-A3854C743EEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Services.Connection.Contracts", "MIN.Services.Connection.Contracts\MIN.Services.Connection.Contracts.csproj", "{8566CB2C-8931-4987-8670-A3854C743EEE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EB1B905-7DA5-4FC1-87EB-1B7A0CCAA0E1}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

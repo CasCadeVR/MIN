@@ -13,10 +13,10 @@ namespace MIN.Desktop
         {
             InitializeComponent();
             this.loggerProvider = loggerProvider;
-            loggerProvider.OnLogRecieved += OnLogRecieved;
+            loggerProvider.OnLogReceived += OnLogReceived;
         }
 
-        private void OnLogRecieved(object? sender, string e)
+        private void OnLogReceived(object? sender, string e)
         {
             AddLogMessage(e);
         }
@@ -49,7 +49,7 @@ namespace MIN.Desktop
 
         private void LogForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            loggerProvider.OnLogRecieved -= OnLogRecieved;
+            loggerProvider.OnLogReceived -= OnLogReceived;
         }
     }
 }
