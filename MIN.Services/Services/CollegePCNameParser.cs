@@ -19,13 +19,19 @@ namespace MIN.Services.Services
             var match = Regex.Match(pcName, @"^C(\d{3})(\d{1,2})$");
 
             if (!match.Success)
+            {
                 return false;
+            }
 
             if (!int.TryParse(match.Groups[1].Value, out roomNumber))
+            {
                 return false;
+            }
 
             if (!int.TryParse(match.Groups[2].Value, out computerNumber))
+            {
                 return false;
+            }
 
             return true;
         }

@@ -32,7 +32,7 @@ namespace MIN.Services.Connection.Pipes
         private IDiscoveryServer discoveryServer = null!;
         private IDiscoveryClient discoveryClient = null!;
 
-        private bool isHost => selfParticipant?.PCName == currentRoom?.HostParticipant.PCName;
+        private bool IsHost => selfParticipant?.PCName == currentRoom?.HostParticipant.PCName;
 
         // События для подписки UI
         public event EventHandler<ParticipantJoinedEventArgs>? ParticipantJoined;
@@ -165,7 +165,7 @@ namespace MIN.Services.Connection.Pipes
 
             try
             {
-                if (isHost && server.IsRunning)
+                if (IsHost && server.IsRunning)
                 {
                     if (client.IsConnected)
                     {
@@ -174,7 +174,7 @@ namespace MIN.Services.Connection.Pipes
                     await server.StopAsync();
                     await discoveryServer.StopAsync();
                 }
-                else if (!isHost && client.IsConnected)
+                else if (!IsHost && client.IsConnected)
                 {
                     await client.DisconnectAsync(cancellationToken);
                 }
@@ -217,7 +217,7 @@ namespace MIN.Services.Connection.Pipes
         {
             currentRoom?.AddParticipant(participant);
 
-            if (isHost)
+            if (IsHost)
             {
                 discoveryServer = new DiscoveryServer(participant, server.Room, serializer, logger);
                 await discoveryServer.StartAsync(cancellationTokenSource!.Token);
@@ -251,7 +251,7 @@ namespace MIN.Services.Connection.Pipes
                 }
 
                 ConnectionLost?.Invoke(this, new ConnectionLostEventArgs(
-                    isHost ? "Сервер был остановлен хостом" : "Соединение к комнате потеряно"));
+                    IsHost ? "Сервер был остановлен хостом" : "Соединение к комнате потеряно"));
             });
         }
 

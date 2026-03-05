@@ -35,7 +35,10 @@ namespace MIN.Services.Services
                 var root = doc.RootElement;
 
                 var latestVersionStr = root.GetProperty("tag_name").GetString()?.TrimStart('v', 'V');
-                if (latestVersionStr == null) return new UpdateCheckResult();
+                if (latestVersionStr == null)
+                {
+                    return new UpdateCheckResult();
+                }
 
                 var latestVersion = new Version(latestVersionStr);
                 var releaseUrl = root.GetProperty("html_url").GetString();

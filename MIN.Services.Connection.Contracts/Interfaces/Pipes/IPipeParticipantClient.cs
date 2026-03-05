@@ -50,7 +50,7 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         event EventHandler<Participant>? ParticipantJoined;
 
         event EventHandler<Participant>? ParticipantLeft;
-        
+
         event EventHandler? Disconnected;
     }
 }

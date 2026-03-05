@@ -35,7 +35,11 @@ namespace MIN.Services.Connection.Pipes.Discovering
 
         async Task IDiscoveryServer.StartAsync(CancellationToken cancellationToken)
         {
-            if (isRunning) await StopAsync();
+            if (isRunning)
+            {
+                await StopAsync();
+            }
+
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             isRunning = true;
             _ = AcceptDiscoveryRequestsAsync(cancellationTokenSource.Token);

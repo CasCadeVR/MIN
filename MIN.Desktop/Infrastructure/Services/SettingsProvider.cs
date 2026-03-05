@@ -28,7 +28,9 @@ namespace MIN.Desktop.Infrastructure.Services
             try
             {
                 if (!File.Exists(settingsFilePath))
+                {
                     settings = new Settings();
+                }
 
                 var json = File.ReadAllText(settingsFilePath);
                 settings = JsonSerializer.Deserialize<Settings>(json) ?? new Settings();

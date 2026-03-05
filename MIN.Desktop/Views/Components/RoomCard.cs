@@ -126,13 +126,13 @@ namespace MIN.Desktop.Components
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
-            } 
+            }
             else
             {
                 computer.Text = DesktopConstants.UndefinedPCName;
                 classroom.Text = DesktopConstants.UndefinedPCName;
             }
-           
+
             setConnectButtonAccordingToRoomCount();
         }
 

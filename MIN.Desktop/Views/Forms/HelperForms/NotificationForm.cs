@@ -30,7 +30,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         /// </summary>
         public event Action? NotificationClicked;
 
-        private bool _isClosing = false;
+        private bool isClosing = false;
 
         public NotificationForm(ChatMessage message, string messageRoomName)
         {
@@ -124,8 +124,11 @@ namespace MIN.Desktop.Views.Forms.HelperForms
 
         private void StartDisappearAnimation()
         {
-            if (_isClosing) return;
-            _isClosing = true;
+            if (isClosing)
+            {
+                return;
+            }
+            isClosing = true;
 
             closeTimer.Stop();
             appearTimer.Stop();
@@ -156,7 +159,10 @@ namespace MIN.Desktop.Views.Forms.HelperForms
 
         private void CloseNotification()
         {
-            if (_isClosing) return;
+            if (isClosing)
+            {
+                return;
+            }
             StartDisappearAnimation();
         }
 

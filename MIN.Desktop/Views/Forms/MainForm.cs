@@ -20,7 +20,7 @@ namespace MIN.Desktop
         private readonly SynchronizationContext uiContext;
         private readonly CancellationTokenSource cancellationTokenSource = new();
 
-        private Settings settings => settingsProvider.GetSettings();
+        private Settings Settings => settingsProvider.GetSettings();
 
         public MainForm(IChatRoomService chatRoomService, ISettingsProvider settingsProvider, INotificationService notificationService, ILoggerProvider loggerProvider)
         {
@@ -68,13 +68,13 @@ namespace MIN.Desktop
 
             try
             {
-                var availablePCs = settings.SearchMethod == SearchMethod.ClassRoom
+                var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
                     ? networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString())
-                    : settings.PreferredPCNames;
+                    : Settings.PreferredPCNames;
 
                 flowLayoutPanel.Controls.Clear();
                 var roomsCount = 0;
-                await foreach (var room in chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, settings.DiscoveryTimeout, cancellationToken: cancellationTokenSource.Token))
+                await foreach (var room in chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, Settings.DiscoveryTimeout, cancellationToken: cancellationTokenSource.Token))
                 {
                     roomsCount += 1;
                     AddDiscoveredRoom(room);
@@ -151,7 +151,7 @@ namespace MIN.Desktop
                 try
                 {
                     var chatForm = new ChatForm(chatRoomService, notificationService);
-                    await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, settings.DiscoveryTimeout, cancellationTokenSource.Token);
+                    await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, Settings.DiscoveryTimeout, cancellationTokenSource.Token);
                     chatForm.FormClosing += (sender, e) =>
                     {
                         chatRoomService.DisconnectAsync(cancellationTokenSource.Token);

@@ -127,7 +127,7 @@ namespace MIN.Desktop
             SendParticipantLeftMessage(participant);
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
-        
+
         private void OnConnectionLost(string reason)
         {
             MessageBox.Show(reason, "Подключение разорвано",

@@ -38,7 +38,10 @@ namespace MIN.Services.Connection.Pipes
 
         public async Task StartAsync(Room room, CancellationToken cancellationToken = default)
         {
-            if (isRunning) await StopAsync();
+            if (isRunning)
+            {
+                await StopAsync();
+            }
 
             this.room = room.GetSerializableCopy();
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -327,7 +330,10 @@ namespace MIN.Services.Connection.Pipes
         public async Task SendMessageAsync<T>(ClientConnection connection, T message, CancellationToken cancellationToken = default)
             where T : class
         {
-            if (!isRunning) throw new InvalidOperationException("Сервер не работает");
+            if (!isRunning)
+            {
+                throw new InvalidOperationException("Сервер не работает");
+            }
             await serializer.WriteMessageAsync(connection.Pipe, message, connection.Participant.Id, cancellationToken);
         }
 

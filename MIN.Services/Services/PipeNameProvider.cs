@@ -5,13 +5,13 @@
     /// </summary>
     public static class PipeNameProvider
     {
-        private const string pipePrefix = "MIN_Chat_";
+        private const string PipePrefix = "MIN_Chat_";
 
         /// <summary>
         /// Генерация имени канала для комнаты по её уникальному идентификатору
         /// </summary>
         public static string GetRoomPipeName(Guid roomId) =>
-            $"{pipePrefix}{roomId:N}";
+            $"{PipePrefix}{roomId:N}";
 
         /// <summary>
         /// Валидация имени (защита от инъекций в имя канала)

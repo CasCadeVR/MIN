@@ -8,14 +8,17 @@ namespace MIN.Desktop.Infrastructure.Services
     public class NotificationService : INotificationService
     {
         private static readonly List<NotificationForm> activeNotifications = new List<NotificationForm>();
-        private static readonly object _lock = new object();
+        private static readonly object @lock = new object();
 
         public event Action? OnNotificationClick;
         public event Action? NotificationTurnOffClicked;
 
         void INotificationService.Notify(ChatMessage message, string roomName)
         {
-            if (Application.OpenForms.Count == 0) return;
+            if (Application.OpenForms.Count == 0)
+            {
+                return;
+            }
 
             Form mainForm = Application.OpenForms[0];
 
@@ -31,12 +34,12 @@ namespace MIN.Desktop.Infrastructure.Services
 
         private void CreateAndShow(ChatMessage message, string roomName)
         {
-            lock (_lock)
+            lock (@lock)
             {
                 var notification = new NotificationForm(message, roomName);
 
                 Screen screen = Screen.FromPoint(Cursor.Position);
-                if (screen == null) screen = Screen.PrimaryScreen;
+                screen ??= Screen.PrimaryScreen!;
 
                 int baseX = screen.WorkingArea.Right - 10;
                 int baseY = screen.WorkingArea.Bottom - 10;
@@ -47,7 +50,7 @@ namespace MIN.Desktop.Infrastructure.Services
 
                 notification.FormClosed += (s, e) =>
                 {
-                    lock (_lock)
+                    lock (@lock)
                     {
                         activeNotifications.Remove(notification);
                         RepositionAll(screen, baseX, baseY);

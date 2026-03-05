@@ -35,7 +35,7 @@ public class Room(string name = "Room", int maximumParticipants = 2)
     /// <summary>
     /// Получить историю чата
     /// </summary>
-    public List<ChatMessage> ChatHistory => chatHistory.OrderBy(x => x.Time).ToList();
+    public List<ChatMessage> ChatHistory => ChatHistory.OrderBy(x => x.Time).ToList();
 
     private List<Participant> currentParticipants { get; set; } = new();
 
@@ -75,8 +75,8 @@ public class Room(string name = "Room", int maximumParticipants = 2)
     /// Добавить сообщение
     /// </summary>
     public void AddMessage(ChatMessage message)
-        => chatHistory.Add(message);
-    
+        => ChatHistory.Add(message);
+
     /// <summary>
     /// Обновить информацию о комнате
     /// </summary>

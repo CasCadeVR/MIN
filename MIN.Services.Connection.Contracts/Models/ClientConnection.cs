@@ -31,7 +31,7 @@ namespace MIN.Services.Connection.Contracts.Models
                 try
                 {
                     await Pipe.DisposeAsync();
-                } 
+                }
                 catch { }
             }
         }

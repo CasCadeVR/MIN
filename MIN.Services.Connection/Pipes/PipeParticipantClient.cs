@@ -39,7 +39,10 @@ namespace MIN.Services.Connection.Pipes
         /// </summary>
         public async Task ConnectAsync(Room room, Participant selfParticipant, int timeoutMs = 1000, CancellationToken cancellationToken = default)
         {
-            if (IsConnected) await DisconnectAsync(CancellationToken.None);
+            if (IsConnected)
+            {
+                await DisconnectAsync(CancellationToken.None);
+            }
 
             roomHostParticipantId = room.HostParticipant.Id;
             var roomId = room.Id;
