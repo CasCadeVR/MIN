@@ -70,7 +70,9 @@ namespace MIN.Services.Connection.Cryptographing
             var key = GetSessionKey(partnerId);
 
             if (encryptedData.Length < 12 + 16)
+            {
                 throw new InvalidDataException($"Invalid encrypted data: length {encryptedData.Length} < 28");
+            }
 
             var iv = encryptedData.AsSpan(0, 12).ToArray();
             var authTag = encryptedData.AsSpan(encryptedData.Length - 16, 16).ToArray();
@@ -106,7 +108,11 @@ namespace MIN.Services.Connection.Cryptographing
 
         void IDisposable.Dispose()
         {
-            if (disposed) return;
+            if (disposed)
+            {
+                return;
+            }
+
             disposed = true;
         }
     }

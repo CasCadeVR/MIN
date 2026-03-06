@@ -25,7 +25,7 @@ namespace MIN.Desktop.Components.Controls.DGVs
 
         protected virtual void ApplyBaseStyles()
         {
-           base.ApplyBaseStyles();
+            base.ApplyBaseStyles();
             DefaultCellStyle.ForeColor = ColorScheme.TextOnAccent;
         }
     }

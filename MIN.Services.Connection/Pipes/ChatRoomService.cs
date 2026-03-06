@@ -42,21 +42,21 @@ namespace MIN.Services.Connection.Pipes
         public event EventHandler<ConnectionLostEventArgs>? ConnectionLost;
 
         public ChatRoomService(
-            IPipeRoomServer server, 
+            IPipeRoomServer server,
             IPipeParticipantClient client,
             IPipeMessageSerializer serializer,
-            ILoggerProvider logger
-        ) {
+            ILoggerProvider logger)
+        {
             this.server = server;
             this.client = client;
             this.serializer = serializer;
             this.logger = logger;
 
-            this.client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
-            this.client.RoomInfoReceived += (s, e) => OnRoomInfoReceived(e);
-            this.client.ParticipantJoined += async (s, e) => await OnTransportParticipantJoined(e);
-            this.client.ParticipantLeft += (s, e) => OnTransportParticipantLeft(e);
-            this.client.Disconnected += (s, e) => OnTransportDisconnected();
+            client.MessageReceived += (s, e) => OnTransportMessageReceived(e);
+            client.RoomInfoReceived += (s, e) => OnRoomInfoReceived(e);
+            client.ParticipantJoined += async (s, e) => await OnTransportParticipantJoined(e);
+            client.ParticipantLeft += (s, e) => OnTransportParticipantLeft(e);
+            client.Disconnected += (s, e) => OnTransportDisconnected();
         }
 
         async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
@@ -83,8 +83,7 @@ namespace MIN.Services.Connection.Pipes
 
         async Task<Room> IChatRoomService.CreateRoomAsync(string roomName, int maxParticipants, Participant host, CancellationToken cancellationToken)
         {
-            if (isDisposed)
-                throw new ObjectDisposedException(nameof(ChatRoomService));
+            ObjectDisposedException.ThrowIf(isDisposed, nameof(ChatRoomService));
 
             await DisconnectAsync(cancellationToken);
 
@@ -97,10 +96,7 @@ namespace MIN.Services.Connection.Pipes
 
         async Task IChatRoomService.JoinRoomAsync(Room room, Participant participant, int timeoutMs, CancellationToken cancellationToken)
         {
-            if (isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(ChatRoomService));
-            }
+            ObjectDisposedException.ThrowIf(isDisposed, nameof(ChatRoomService));
 
             selfParticipant = participant;
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -111,13 +107,12 @@ namespace MIN.Services.Connection.Pipes
         /// <inheritdoc cref="IPipeParticipantClient.GetUpdatedRoomInfoAsync(CancellationToken)"/>
         async Task IChatRoomService.GetUpdatedRoomInfoAsync(CancellationToken cancellationToken = default)
         {
-            if (isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(ChatRoomService));
-            }
+            ObjectDisposedException.ThrowIf(isDisposed, nameof(ChatRoomService));
 
             if (currentRoom == null || selfParticipant == null)
+            {
                 throw new InvalidOperationException("Not connected to any room");
+            }
 
             await client.GetUpdatedRoomInfoAsync(cancellationToken);
         }
@@ -125,26 +120,24 @@ namespace MIN.Services.Connection.Pipes
         /// <inheritdoc cref="IPipeParticipantClient.SendUpdatedRoomRequestAsync(RoomInfoRequestMessage, CancellationToken)"/>
         public async Task SendUpdateRoomRequestAsync(RoomInfoRequestMessage request, CancellationToken cancellationToken = default)
         {
-            if (isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(ChatRoomService));
-            }
+            ObjectDisposedException.ThrowIf(isDisposed, nameof(ChatRoomService));
 
             if (currentRoom == null || selfParticipant == null)
+            {
                 throw new InvalidOperationException("Not connected to any room");
+            }
 
             await client.SendUpdatedRoomRequestAsync(request, cancellationToken);
         }
 
         async Task IChatRoomService.SendMessageAsync(string content, MessageType type, CancellationToken cancellationToken)
         {
-            if (isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(ChatRoomService));
-            }
+            ObjectDisposedException.ThrowIf(isDisposed, nameof(ChatRoomService));
 
             if (currentRoom == null || selfParticipant == null)
+            {
                 throw new InvalidOperationException("Not connected to any room");
+            }
 
             var message = new ChatMessage
             {
@@ -161,7 +154,9 @@ namespace MIN.Services.Connection.Pipes
         public async Task DisconnectAsync(CancellationToken cancellationToken = default)
         {
             if (isDisposed)
+            {
                 return;
+            }
 
             try
             {
@@ -273,15 +268,32 @@ namespace MIN.Services.Connection.Pipes
         public async ValueTask DisposeAsync()
         {
             if (isDisposed)
+            {
                 return;
+            }
 
             isDisposed = true;
             await DisconnectAsync();
 
-            if (server is IAsyncDisposable sd) await sd.DisposeAsync();
-            if (client is IAsyncDisposable cd) await cd.DisposeAsync();
-            if (discoveryClient is IAsyncDisposable dc) await dc.DisposeAsync();
-            if (discoveryServer is IAsyncDisposable ds) await ds.DisposeAsync();
+            if (server is IAsyncDisposable sd)
+            {
+                await sd.DisposeAsync();
+            }
+
+            if (client is IAsyncDisposable cd)
+            {
+                await cd.DisposeAsync();
+            }
+
+            if (discoveryClient is IAsyncDisposable dc)
+            {
+                await dc.DisposeAsync();
+            }
+
+            if (discoveryServer is IAsyncDisposable ds)
+            {
+                await ds.DisposeAsync();
+            }
         }
     }
 }

@@ -7,13 +7,13 @@ namespace MIN.Desktop.Infrastructure.Services
     /// </summary>
     public class AppUserProvider
     {
-        private static readonly Lazy<AppUserProvider> _instance =
+        private readonly static Lazy<AppUserProvider> instance =
             new Lazy<AppUserProvider>(() => new AppUserProvider());
 
         /// <summary>
         /// Подгрузка экземпляра по появлению пользователя
         /// </summary>
-        public static AppUserProvider Instance => _instance.Value;
+        public static AppUserProvider Instance => instance.Value;
 
         /// <summary>
         /// Текущий пользователь

@@ -13,7 +13,7 @@ namespace MIN.Services.Contracts.Interfaces
         Settings GetSettings();
 
         /// <summary>
-        /// Созранить настройки
+        /// Сохранить настройки
         /// </summary>
         void SaveSettings(Settings settings);
     }

@@ -10,7 +10,7 @@ namespace MIN.Services.Connection.Cryptographing
     /// <inheritdoc cref="IKeyProvider"/>
     public class KeyProvider : IKeyProvider
     {
-        private static readonly JsonSerializerOptions jsonOptions = new()
+        private readonly static JsonSerializerOptions jsonOptions = new()
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -21,7 +21,7 @@ namespace MIN.Services.Connection.Cryptographing
         private readonly string keysPath;
         private readonly string partnersPath;
         private KeyPair? cachedKeys;
-        private readonly SemaphoreSlim _lock = new(1, 1);
+        private readonly SemaphoreSlim @lock = new(1, 1);
         private bool disposed;
 
         public KeyProvider()
@@ -36,12 +36,18 @@ namespace MIN.Services.Connection.Cryptographing
 
         public async Task<KeyPair> GetLocalKeysAsync()
         {
-            if (cachedKeys != null) return cachedKeys;
+            if (cachedKeys != null)
+            {
+                return cachedKeys;
+            }
 
-            await _lock.WaitAsync();
+            await @lock.WaitAsync();
             try
             {
-                if (cachedKeys != null) return cachedKeys;
+                if (cachedKeys != null)
+                {
+                    return cachedKeys;
+                }
 
                 if (File.Exists(keysPath))
                 {
@@ -51,7 +57,7 @@ namespace MIN.Services.Connection.Cryptographing
                 }
                 else
                 {
-                    cachedKeys = await GenerateNewKeysAsync();
+                    cachedKeys = GenerateNewKeys();
                     await SaveKeysAsync(cachedKeys);
                 }
 
@@ -59,7 +65,7 @@ namespace MIN.Services.Connection.Cryptographing
             }
             finally
             {
-                _lock.Release();
+                @lock.Release();
             }
         }
 
@@ -116,7 +122,7 @@ namespace MIN.Services.Connection.Cryptographing
             return partners.TryGetValue(partnerId.ToString(), out var key) ? key : null;
         }
 
-        private async Task<KeyPair> GenerateNewKeysAsync()
+        private KeyPair GenerateNewKeys()
         {
             using var ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
 
@@ -138,7 +144,9 @@ namespace MIN.Services.Connection.Cryptographing
         private async Task<Dictionary<string, string>> LoadPartnersAsync()
         {
             if (!File.Exists(partnersPath))
+            {
                 return new Dictionary<string, string>();
+            }
 
             var json = await File.ReadAllTextAsync(partnersPath);
             return JsonSerializer.Deserialize<Dictionary<string, string>>(json, jsonOptions)
@@ -189,9 +197,12 @@ namespace MIN.Services.Connection.Cryptographing
 
         public void Dispose()
         {
-            if (disposed) return;
+            if (disposed)
+            {
+                return;
+            }
 
-            _lock.Dispose();
+            @lock.Dispose();
             disposed = true;
         }
     }

@@ -2,10 +2,13 @@
 
 namespace MIN.Services.Contracts.Models
 {
+    /// <summary>
+    /// Настройки
+    /// </summary>
     public class Settings
     {
         /// <summary>
-        /// Время ожиждания поиска комнаты
+        /// Время ожидания поиска комнаты
         /// </summary>
         public int DiscoveryTimeout { get; set; } = 1000;
 

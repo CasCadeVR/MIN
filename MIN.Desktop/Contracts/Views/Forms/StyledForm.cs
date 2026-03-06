@@ -8,7 +8,7 @@ namespace MIN.Desktop.Contracts.Views.Forms
         public StyledForm()
         {
             InitializeComponent();
-            this.Icon = Resources.logo;
+            Icon = Resources.logo;
         }
 
         protected override void OnLoad(EventArgs e)
@@ -24,7 +24,7 @@ namespace MIN.Desktop.Contracts.Views.Forms
 
         protected virtual void ApplyStylings()
         {
-            this.BackColor = ColorScheme.FormBackground;
+            BackColor = ColorScheme.FormBackground;
         }
     }
 }

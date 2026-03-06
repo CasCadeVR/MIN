@@ -39,13 +39,18 @@ namespace MIN.Services.Connection.Pipes
         /// </summary>
         public async Task ConnectAsync(Room room, Participant selfParticipant, int timeoutMs = 1000, CancellationToken cancellationToken = default)
         {
-            if (IsConnected) await DisconnectAsync(CancellationToken.None);
+            if (IsConnected)
+            {
+                await DisconnectAsync(CancellationToken.None);
+            }
 
             roomHostParticipantId = room.HostParticipant.Id;
             var roomId = room.Id;
 
             if (!PipeNameProvider.IsValidPipeName(roomId.ToString()))
+            {
                 throw new ArgumentException("Invalid room ID", nameof(roomId));
+            }
 
             isDisposed = false;
 
@@ -284,7 +289,7 @@ namespace MIN.Services.Connection.Pipes
             {
                 await serializer.WriteMessageAsync(pipe, joinMessage, roomHostParticipantId, cancellationToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Log($"Ошибка у клиента в отправке JOIN сообщения: {ex.Message}", LogLevel.Error);
             }
@@ -346,7 +351,7 @@ namespace MIN.Services.Connection.Pipes
             message.Time = TimeOnly.FromDateTime(DateTime.Now);
             message.TimestampUtc = DateTime.UtcNow;
 
-             await serializer.WriteMessageAsync(pipe, message, roomHostParticipantId, cancellationToken);
+            await serializer.WriteMessageAsync(pipe, message, roomHostParticipantId, cancellationToken);
         }
 
         /// <summary>
@@ -355,7 +360,9 @@ namespace MIN.Services.Connection.Pipes
         public async Task DisconnectAsync(CancellationToken cancellationToken = default)
         {
             if (isDisposed || pipe == null || !pipe.IsConnected)
+            {
                 return;
+            }
 
             isDisposed = true;
             cancellationTokenSource?.Cancel();

@@ -18,7 +18,7 @@
 
             var trimmed = cleaned.Trim('_');
 
-            int length = Math.Min(trimmed.Length, 100);
+            var length = Math.Min(trimmed.Length, 100);
             return trimmed.Substring(0, length);
         }
     }

@@ -31,7 +31,9 @@ namespace MIN.Services.Connection.Serialize
             var length = BitConverter.ToInt32(lengthBuffer, 0);
 
             if (length <= 0 || length > ChatMessageConstants.MaximumMessageSize)
+            {
                 throw new InvalidDataException($"Invalid message size: {length}");
+            }
 
             // Читаем тип сообщения
             var typeBuffer = new byte[1];

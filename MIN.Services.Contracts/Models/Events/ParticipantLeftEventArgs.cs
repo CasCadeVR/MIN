@@ -13,5 +13,8 @@ public class ParticipantLeftEventArgs : EventArgs
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantLeftEventArgs"/>
     /// </summary>
-    public ParticipantLeftEventArgs(Participant participant) => Participant = participant;
+    public ParticipantLeftEventArgs(Participant participant)
+    {
+        Participant = participant;
+    }
 }

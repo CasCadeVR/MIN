@@ -1,5 +1,8 @@
 ﻿namespace MIN.Services.Contracts.Interfaces
 {
+    /// <summary>
+    /// Сервис по работе с компьютерами в локальной сети
+    /// </summary>
     public interface ILocalNetworkComputerProvider
     {
         /// <summary>

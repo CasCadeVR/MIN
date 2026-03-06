@@ -15,7 +15,7 @@ using System.Reflection;
 
 namespace MIN.Desktop
 {
-    internal static class Program
+    static internal class Program
     {
         /// <summary>
         /// The main entry point for the application.

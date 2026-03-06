@@ -16,7 +16,6 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         /// <summary>
         /// Отключиться от сервера
         /// </summary>
-        /// <returns></returns>
         Task DisconnectAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         bool IsConnected { get; }
 
         /// <summary>
-        /// В какой комнате сейчас находиться участник
+        /// В какой комнате сейчас находится участник
         /// </summary>
         Room? Room { get; }
 
@@ -51,7 +50,7 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         event EventHandler<Participant>? ParticipantJoined;
 
         event EventHandler<Participant>? ParticipantLeft;
-        
+
         event EventHandler? Disconnected;
     }
 }

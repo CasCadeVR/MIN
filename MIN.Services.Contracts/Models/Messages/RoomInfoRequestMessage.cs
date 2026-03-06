@@ -1,5 +1,8 @@
 ﻿namespace MIN.Services.Contracts.Models.Messages;
 
+/// <summary>
+/// Запрос информации о комнате
+/// </summary>
 public class RoomInfoRequestMessage()
 {
     /// <summary>

@@ -30,7 +30,7 @@ namespace MIN.Desktop.Components
             participantRole.Font = FontScheme.Monospace;
 
             tableLayoutPanelLabels.BackColor = ColorScheme.IncomingMessageBackground;
-            this.Dock = DockStyle.Top;
+            Dock = DockStyle.Top;
         }
 
         private void FillLabels()

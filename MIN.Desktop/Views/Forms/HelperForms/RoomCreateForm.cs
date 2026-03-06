@@ -5,6 +5,9 @@ using MIN.Services.Contracts.Models;
 
 namespace MIN.Desktop
 {
+    /// <summary>
+    /// Форма создания комнаты
+    /// </summary>
     public partial class RoomCreateForm : StyledForm
     {
         /// <summary>
@@ -12,7 +15,7 @@ namespace MIN.Desktop
         /// </summary>
         public Room Room { get; set; }
 
-        private bool isNew = false;
+        private bool isNew;
 
         public RoomCreateForm(Room? room = null)
         {
