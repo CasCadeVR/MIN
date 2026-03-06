@@ -145,7 +145,7 @@ namespace MIN.Desktop
             }
 
             room.AddMessage(message);
-            if (notificationComboBox.Checked && WindowState == FormWindowState.Minimized)
+            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
             {
                 notificationService.Notify(message, room.Name);
             }
@@ -160,7 +160,6 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
-            room.AddMessage(roomMessage);
             AddMessageToChatFlow(roomMessage);
         }
 
@@ -172,7 +171,6 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
-            room.AddMessage(roomMessage);
             AddMessageToChatFlow(roomMessage);
         }
 

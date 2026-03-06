@@ -47,12 +47,9 @@ namespace MIN.Services.Connection.Pipes
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             isRunning = true;
 
-            for (int i = 0; i < room.MaximumParticipants; i++)
-            {
-                _ = AcceptClientAsync(cancellationTokenSource.Token);
-            }
-
             SendRoomCreatedInfo();
+
+            _ = AcceptClientAsync(cancellationTokenSource.Token);
         }
 
         private void SendRoomCreatedInfo()

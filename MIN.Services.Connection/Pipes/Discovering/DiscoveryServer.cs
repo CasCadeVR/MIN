@@ -1,10 +1,10 @@
 ﻿using System.IO.Pipes;
-using MIN.Services.Connection.Contracts.Interfaces.Serialize;
-using MIN.Services.Contracts.Models;
-using MIN.Services.Connection.Contracts.Interfaces.Discovering;
-using System.Security.Principal;
 using System.Security.AccessControl;
+using System.Security.Principal;
+using MIN.Services.Connection.Contracts.Interfaces.Discovering;
+using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Contracts.Interfaces;
+using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
 
 namespace MIN.Services.Connection.Pipes.Discovering
@@ -12,26 +12,19 @@ namespace MIN.Services.Connection.Pipes.Discovering
     /// <summary>
     /// Сервер для обнаружения
     /// </summary>
-    public class DiscoveryServer : IDiscoveryServer, IAsyncDisposable
+    /// <remarks>
+    /// Инициализирует новый экземпляр <see cref="DiscoveryServer"/>
+    /// </remarks>
+    public class DiscoveryServer(Participant hostParticipant, Room room, IPipeMessageSerializer serializer, ILoggerProvider logger) : IDiscoveryServer, IAsyncDisposable
     {
-        private readonly IPipeMessageSerializer serializer;
-        private readonly ILoggerProvider logger;
-        private readonly Participant hostParticipant;
-        private readonly Room room;
+        private readonly IPipeMessageSerializer serializer = serializer;
+        private readonly ILoggerProvider logger = logger;
+        private readonly Participant hostParticipant = hostParticipant;
+        private readonly Room room = room;
 
         private CancellationTokenSource? cancellationTokenSource;
+        private PipeSecurity? pipeSecurity;
         private bool isRunning;
-
-        /// <summary>
-        /// Инициализирует новый экземпляр <see cref="DiscoveryServer"/>
-        /// </summary>
-        public DiscoveryServer(Participant hostParticipant, Room room, IPipeMessageSerializer serializer, ILoggerProvider logger)
-        {
-            this.hostParticipant = hostParticipant;
-            this.room = room;
-            this.serializer = serializer;
-            this.logger = logger;
-        }
 
         async Task IDiscoveryServer.StartAsync(CancellationToken cancellationToken)
         {
@@ -40,14 +33,23 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 await StopAsync();
             }
 
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new PlatformNotSupportedException("Windows only");
+            }
+
+            pipeSecurity = new PipeSecurity();
+            pipeSecurity.AddAccessRule(new PipeAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance, AccessControlType.Allow));
+
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             isRunning = true;
             _ = AcceptDiscoveryRequestsAsync(cancellationTokenSource.Token);
         }
 
-        private async Task AcceptDiscoveryRequestsAsync(CancellationToken ct)
+        private async Task AcceptDiscoveryRequestsAsync(CancellationToken cancellationToken)
         {
-            while (!ct.IsCancellationRequested && isRunning)
+            while (!cancellationToken.IsCancellationRequested && isRunning)
             {
                 try
                 {
@@ -56,24 +58,16 @@ namespace MIN.Services.Connection.Pipes.Discovering
                         throw new PlatformNotSupportedException("Windows only");
                     }
 
-                    var securityIdentifier = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
-
-                    var pipeSecurity = new PipeSecurity();
-                    pipeSecurity.AddAccessRule(
-                        new PipeAccessRule(securityIdentifier,
-                            PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
-                            AccessControlType.Allow));
-
                     using var pipe = NamedPipeServerStreamAcl.Create(
                         DiscoveryPipeNameProvider.GetDiscoveryPipeName(hostParticipant.PCName),
                         PipeDirection.InOut,
-                        1,
+                        NamedPipeServerStream.MaxAllowedServerInstances,
                         PipeTransmissionMode.Byte,
                         PipeOptions.Asynchronous | PipeOptions.WriteThrough,
                         0, 0,
                         pipeSecurity);
 
-                    await pipe!.WaitForConnectionAsync(ct);
+                    await pipe!.WaitForConnectionAsync(cancellationToken);
 
                     var roomInfo = new DiscoveredRoom
                     {
@@ -86,7 +80,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                         CurrentParticipants = room.CurrentParticipants.Count,
                     };
 
-                    await serializer.WriteMessageAsync(pipe!, roomInfo, Guid.Empty, ct);
+                    await serializer.WriteMessageAsync(pipe!, roomInfo, Guid.Empty, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -114,6 +108,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
         /// <inheritdoc cref="IDiscoveryServer.StopAsync"/>
         public async Task StopAsync()
         {
+            isRunning = false;
             await cancellationTokenSource!.CancelAsync();
         }
 
