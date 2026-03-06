@@ -1,4 +1,3 @@
-using System.Windows.Forms;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -331,7 +330,6 @@ namespace MIN.Desktop
 
             participantsFlow.BackColor = ColorScheme.DividerColor;
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;
-            chatFlow.HorizontalScroll.Maximum = 0;
 
             tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
             tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
