@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
