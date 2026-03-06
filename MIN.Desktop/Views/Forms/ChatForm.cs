@@ -384,10 +384,6 @@ namespace MIN.Desktop
                     control.Height = (child as ChatMessageCard)!.ResizeOutOfPrefferedSize() + child.Margin.Vertical;
                 }
             }
-
-            chatFlow.AutoScroll = false;
-            chatFlow.HorizontalScroll.Visible = false;
-            chatFlow.AutoScroll = true;
         }
 
         private void closeButton_Click(object sender, EventArgs e)
