@@ -10,6 +10,6 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Discovering
         /// <summary>
         /// Обнаружить комнату
         /// </summary>
-        Task<DiscoveredRoom?> DiscoverRoomAsync(string targetPCName, TimeSpan timeout);
+        Task<DiscoveredRoom?> DiscoverRoomAsync(string targetPCName, TimeSpan timeout, CancellationToken cancellationToken);
     }
 }
