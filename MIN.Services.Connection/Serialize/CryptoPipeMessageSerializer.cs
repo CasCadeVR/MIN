@@ -14,7 +14,7 @@ namespace MIN.Services.Connection.Serialize
     /// </summary>
     public class CryptoPipeMessageSerializer : IPipeMessageSerializer
     {
-        private readonly JsonSerializerOptions JsonOptions = new()
+        private readonly JsonSerializerOptions jsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -43,11 +43,11 @@ namespace MIN.Services.Connection.Serialize
             switch (messageType)
             {
                 case MessageTypeTag.HandshakeMessage:
-                    return JsonSerializer.Deserialize<HandshakeMessage>(dataBuffer, JsonOptions)
+                    return JsonSerializer.Deserialize<HandshakeMessage>(dataBuffer, jsonOptions)
                         ?? throw new InvalidDataException("Failed to deserialize HandshakeMessage");
 
                 case MessageTypeTag.DiscoveredRoom:
-                    return JsonSerializer.Deserialize<DiscoveredRoom>(dataBuffer, JsonOptions)
+                    return JsonSerializer.Deserialize<DiscoveredRoom>(dataBuffer, jsonOptions)
                         ?? throw new InvalidDataException("Failed to deserialize DiscoveredRoom");
 
                 case MessageTypeTag.ChatMessage:
@@ -72,17 +72,17 @@ namespace MIN.Services.Connection.Serialize
 
             if (message is HandshakeMessage handshake)
             {
-                payload = JsonSerializer.SerializeToUtf8Bytes(handshake, JsonOptions);
+                payload = JsonSerializer.SerializeToUtf8Bytes(handshake, jsonOptions);
                 messageType = MessageTypeTag.HandshakeMessage;
             }
             else if (message is DiscoveredRoom discoveredRoom)
             {
-                payload = JsonSerializer.SerializeToUtf8Bytes(message, JsonOptions);
+                payload = JsonSerializer.SerializeToUtf8Bytes(message, jsonOptions);
                 messageType = MessageTypeTag.DiscoveredRoom;
             }
             else
             {
-                var json = JsonSerializer.SerializeToUtf8Bytes(message, JsonOptions);
+                var json = JsonSerializer.SerializeToUtf8Bytes(message, jsonOptions);
                 if (json.Length > ChatMessageConstants.MaximumMessageSize)
                 {
                     throw new ArgumentException("Message too large", nameof(message));
@@ -119,7 +119,7 @@ namespace MIN.Services.Connection.Serialize
             }
 
             var decrypted = cryptoProvider.DecryptMessage(encryptedData, senderId);
-            return JsonSerializer.Deserialize<T>(decrypted, JsonOptions)
+            return JsonSerializer.Deserialize<T>(decrypted, jsonOptions)
                 ?? throw new InvalidDataException($"Failed to deserialize {typeof(T).Name}");
         }
     }

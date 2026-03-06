@@ -82,13 +82,13 @@ namespace MIN.Desktop.Components
 
         private void OnParticipantJoined(Participant participant)
         {
-            this.room.CurrentParticipants++;
+            room.CurrentParticipants++;
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 
         private void OnParticipantLeft(Participant participant)
         {
-            this.room.CurrentParticipants--;
+            room.CurrentParticipants--;
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
 
@@ -96,7 +96,7 @@ namespace MIN.Desktop.Components
         {
             if (roomState == RoomState.Disconnected)
             {
-                this.Dispose();
+                Dispose();
                 return;
             }
 
@@ -104,7 +104,7 @@ namespace MIN.Desktop.Components
             this.room.HostName = room.HostParticipant.Name;
             this.room.HostPCName = room.HostParticipant.PCName;
             this.room.CurrentParticipants = room.CurrentParticipants.Count;
-            this.room.MaximumParticipants = room.MaximumParticipants;
+            room.MaximumParticipants = room.MaximumParticipants;
             UpdateStats();
         }
 
@@ -118,21 +118,21 @@ namespace MIN.Desktop.Components
 
         private void UpdateStats()
         {
-            Title.Text = $"Комната {this.room.RoomName}";
-            participantsInfo.Text = $"{this.room.CurrentParticipants}/{this.room.MaximumParticipants}";
-            hostName.Text = this.room.HostName;
+            Title.Text = $"Комната {room.RoomName}";
+            participantsInfo.Text = $"{room.CurrentParticipants}/{room.MaximumParticipants}";
+            hostName.Text = room.HostName;
 
-            if (CollegePCNameParser.TryParseComputerName(this.room.HostPCName, out int roomNumber, out int computerNumber))
+            if (CollegePCNameParser.TryParseComputerName(room.HostPCName, out int roomNumber, out int computerNumber))
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
-            } 
+            }
             else
             {
                 computer.Text = DesktopConstants.UndefinedPCName;
                 classroom.Text = DesktopConstants.UndefinedPCName;
             }
-           
+
             setConnectButtonAccordingToRoomCount();
         }
 

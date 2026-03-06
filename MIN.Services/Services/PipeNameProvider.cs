@@ -1,7 +1,7 @@
 ﻿namespace MIN.Services.Services
 {
     /// <summary>
-    /// Сервис для предостваления имени pipe
+    /// Сервис для предоставления имени pipe
     /// </summary>
     public static class PipeNameProvider
     {

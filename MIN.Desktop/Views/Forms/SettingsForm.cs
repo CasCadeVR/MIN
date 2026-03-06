@@ -24,7 +24,7 @@ namespace MIN.Desktop
             this.loggerProvider = loggerProvider;
             InitializeComponent();
             FillControls();
-            enableOutOfRadioButtons();
+            EnableOutOfRadioButtons();
         }
 
         private void FillControls()
@@ -37,15 +37,15 @@ namespace MIN.Desktop
 
         private void SetPCNames(List<string> pcNames)
         {
-            bool allowAdd = preferredPcNameList.AllowUserToAddRows;
+            var allowAdd = preferredPcNameList.AllowUserToAddRows;
             preferredPcNameList.AllowUserToAddRows = false;
             preferredPcNameList.Rows.Clear();
 
             if (pcNames != null)
             {
-                foreach (string pcName in pcNames)
+                foreach (var pcName in pcNames)
                 {
-                    string cleanName = pcName?.Trim();
+                    var cleanName = pcName.Trim();
                     if (!string.IsNullOrEmpty(cleanName))
                     {
                         preferredPcNameList.Rows.Add(cleanName);
@@ -79,13 +79,15 @@ namespace MIN.Desktop
             foreach (DataGridViewRow row in preferredPcNameList.Rows)
             {
                 if (row.IsNewRow)
+                {
                     continue;
+                }
 
                 var cellValue = row.Cells[0].Value;
 
                 if (cellValue != null)
                 {
-                    string pcName = cellValue.ToString().Trim();
+                    var pcName = cellValue.ToString()!.Trim();
                     if (!string.IsNullOrEmpty(pcName))
                     {
                         pcNames.Add(pcName);
@@ -96,7 +98,7 @@ namespace MIN.Desktop
             return pcNames;
         }
 
-        private void enableOutOfRadioButtons()
+        private void EnableOutOfRadioButtons()
         {
             classRoomDescription.Enabled = classRoomSearch.Checked;
             pcNameDescription.Enabled = preferredSearch.Checked;
@@ -106,26 +108,32 @@ namespace MIN.Desktop
 
         private void preferredSearch_CheckedChanged(object sender, EventArgs e)
         {
-            enableOutOfRadioButtons();
+            EnableOutOfRadioButtons();
         }
 
         private void classRoomSearch_CheckedChanged(object sender, EventArgs e)
         {
-            enableOutOfRadioButtons();
+            EnableOutOfRadioButtons();
         }
 
         private void preferredPcNameList_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
             if (e.ColumnIndex == 0)
             {
-                string newValue = e.FormattedValue?.ToString()?.Trim();
-                if (string.IsNullOrEmpty(newValue)) return;
+                var newValue = e.FormattedValue!.ToString()!.Trim();
+                if (string.IsNullOrEmpty(newValue))
+                {
+                    return;
+                }
 
                 foreach (DataGridViewRow row in preferredPcNameList.Rows)
                 {
-                    if (row.IsNewRow || row.Index == e.RowIndex) continue;
+                    if (row.IsNewRow || row.Index == e.RowIndex)
+                    {
+                        continue;
+                    }
 
-                    string existing = row.Cells[0].Value?.ToString()?.Trim();
+                    var existing = row.Cells[0].Value.ToString()!.Trim();
                     if (string.Equals(existing, newValue, StringComparison.OrdinalIgnoreCase))
                     {
                         MessageBox.Show("Такое имя компьютера уже существует.");

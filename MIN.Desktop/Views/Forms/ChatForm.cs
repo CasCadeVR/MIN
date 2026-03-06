@@ -52,8 +52,8 @@ namespace MIN.Desktop
             chatRoomService.RoomStateChanged += OnRoomStateChangedEvent;
             chatRoomService.ConnectionLost += ConnectionLostEvent;
 
-            notificationService.OnNotificationClick += () => this.WindowState = FormWindowState.Normal;
-            notificationService.NotificationTurnOffClicked += () => this.notificationComboBox.Checked = false;
+            notificationService.OnNotificationClick += () => WindowState = FormWindowState.Normal;
+            notificationService.NotificationTurnOffClicked += () => notificationComboBox.Checked = false;
         }
 
         private void UnsubscribeFromChatEvents()
@@ -128,7 +128,7 @@ namespace MIN.Desktop
             SendParticipantLeftMessage(participant);
             UpdateStatsAndInvoke(OnParticipantJoined, participant);
         }
-        
+
         private void OnConnectionLost(string reason)
         {
             MessageBox.Show(reason, "Подключение разорвано",
@@ -146,7 +146,7 @@ namespace MIN.Desktop
             }
 
             room.AddMessage(message);
-            if (notificationComboBox.Checked && (this.WindowState == FormWindowState.Minimized || !this.ContainsFocus))
+            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
             {
                 notificationService.Notify(message, room.Name);
             }
@@ -345,10 +345,10 @@ namespace MIN.Desktop
 
         private async void sendButton_Click(object sender, EventArgs e)
         {
-            await sendMessage();
+            await SendMessage();
         }
 
-        private async Task sendMessage()
+        private async Task SendMessage()
         {
             if (!IsMessageValid())
             {
@@ -368,7 +368,7 @@ namespace MIN.Desktop
 
         private void disconnectButton_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void chatFlow_Resize(object sender, EventArgs e)
@@ -430,7 +430,7 @@ namespace MIN.Desktop
             {
                 if ((ModifierKeys & Keys.Shift) == 0)
                 {
-                    await sendMessage();
+                    await SendMessage();
                     changeMessageBoxSize();
                     e.Handled = true;
                 }

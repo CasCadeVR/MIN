@@ -38,7 +38,7 @@ public class ChatMessage
     public MessageType MessageType { get; set; }
 
     /// <summary>
-    /// Само сообщение
+    /// Содержимое сообщения
     /// </summary>
     public string Content { get; set; } = string.Empty;
 }

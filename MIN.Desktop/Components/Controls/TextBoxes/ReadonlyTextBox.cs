@@ -32,7 +32,7 @@ namespace MIN.Desktop.Components.Textboxes
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             // Пытаемся найти родительский контейнер, который умеет скроллиться
-            Control parent = this.Parent!;
+            Control parent = Parent!;
 
             while (parent != null)
             {
@@ -42,7 +42,7 @@ namespace MIN.Desktop.Components.Textboxes
                     // отправляем событие колесика ему.
 
                     // Координаты мыши должны быть экранными для SendMessage
-                    Point screenPoint = this.PointToScreen(new Point(e.X, e.Y));
+                    Point screenPoint = PointToScreen(new Point(e.X, e.Y));
                     IntPtr wParam = new IntPtr((e.Delta << 16));
                     IntPtr lParam = new IntPtr((screenPoint.Y << 16) | (screenPoint.X & 0xFFFF));
 

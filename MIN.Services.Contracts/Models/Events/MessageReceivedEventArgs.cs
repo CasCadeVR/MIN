@@ -15,5 +15,8 @@ public class MessageReceivedEventArgs : EventArgs
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MessageReceivedEventArgs"/>
     /// </summary>
-    public MessageReceivedEventArgs(ChatMessage сhatMessage) => Message = сhatMessage;
+    public MessageReceivedEventArgs(ChatMessage сhatMessage)
+    {
+        Message = сhatMessage;
+    }
 }

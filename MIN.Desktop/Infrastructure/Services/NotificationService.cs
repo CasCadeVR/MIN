@@ -7,15 +7,18 @@ namespace MIN.Desktop.Infrastructure.Services
     /// <inheritdoc cref="INotificationService"/>
     public class NotificationService : INotificationService
     {
-        private static readonly List<NotificationForm> activeNotifications = new List<NotificationForm>();
-        private static readonly object _lock = new object();
+        private readonly static List<NotificationForm> activeNotifications = new List<NotificationForm>();
+        private readonly static object @lock = new object();
 
         public event Action? OnNotificationClick;
         public event Action? NotificationTurnOffClicked;
 
         void INotificationService.Notify(ChatMessage message, string roomName)
         {
-            if (Application.OpenForms.Count == 0) return;
+            if (Application.OpenForms.Count == 0)
+            {
+                return;
+            }
 
             Form mainForm = Application.OpenForms[0];
 
@@ -31,15 +34,15 @@ namespace MIN.Desktop.Infrastructure.Services
 
         private void CreateAndShow(ChatMessage message, string roomName)
         {
-            lock (_lock)
+            lock (@lock)
             {
                 var notification = new NotificationForm(message, roomName);
 
-                Screen screen = Screen.FromPoint(Cursor.Position);
-                if (screen == null) screen = Screen.PrimaryScreen;
+                var screen = Screen.FromPoint(Cursor.Position);
+                screen ??= Screen.PrimaryScreen!;
 
-                int baseX = screen.WorkingArea.Right - 10;
-                int baseY = screen.WorkingArea.Bottom - 10;
+                var baseX = screen.WorkingArea.Right - 10;
+                var baseY = screen.WorkingArea.Bottom - 10;
 
                 activeNotifications.Add(notification);
 
@@ -47,7 +50,7 @@ namespace MIN.Desktop.Infrastructure.Services
 
                 notification.FormClosed += (s, e) =>
                 {
-                    lock (_lock)
+                    lock (@lock)
                     {
                         activeNotifications.Remove(notification);
                         RepositionAll(screen, baseX, baseY);
@@ -62,12 +65,12 @@ namespace MIN.Desktop.Infrastructure.Services
 
         private static void RepositionAll(Screen screen, int baseX, int baseY)
         {
-            int offsetY = 0;
+            var offsetY = 0;
 
             foreach (var notification in activeNotifications)
             {
-                int targetY = baseY - notification.Height - offsetY - 10;
-                int targetX = baseX - notification.Width;
+                var targetY = baseY - notification.Height - offsetY - 10;
+                var targetX = baseX - notification.Width;
                 notification.Location = new Point(targetX, targetY);
                 offsetY += notification.Height + 10;
             }

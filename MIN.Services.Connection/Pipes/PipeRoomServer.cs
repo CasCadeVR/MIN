@@ -23,7 +23,7 @@ namespace MIN.Services.Connection.Pipes
 
         private CancellationTokenSource? cancellationTokenSource;
         private Room? room;
-        private bool IsRunning = false;
+        private bool isRunning = false;
 
         public PipeRoomServer(IPipeMessageSerializer serializer, ICryptoProvider cryptoProvider, ILoggerProvider logger)
         {
@@ -34,15 +34,18 @@ namespace MIN.Services.Connection.Pipes
 
         /// <inheritdoc cref="IPipeRoomServer.Room"/>
         public Room? Room => room;
-        bool IPipeRoomServer.IsRunning => IsRunning;
+        bool IPipeRoomServer.IsRunning => isRunning;
 
         public async Task StartAsync(Room room, CancellationToken cancellationToken = default)
         {
-            if (IsRunning) await StopAsync();
+            if (isRunning)
+            {
+                await StopAsync();
+            }
 
             this.room = room.GetSerializableCopy();
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            IsRunning = true;
+            isRunning = true;
 
             for (int i = 0; i < room.MaximumParticipants; i++)
             {
@@ -66,7 +69,7 @@ namespace MIN.Services.Connection.Pipes
 
         private async Task AcceptClientAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested && IsRunning)
+            while (!cancellationToken.IsCancellationRequested && isRunning)
             {
                 try
                 {
@@ -122,7 +125,7 @@ namespace MIN.Services.Connection.Pipes
 
         private void CreateNewConnectionSlot(CancellationToken cancellationToken)
         {
-            if (IsRunning && activeConnections.Count < room!.MaximumParticipants)
+            if (isRunning && activeConnections.Count < room!.MaximumParticipants)
             {
                 _ = AcceptClientAsync(cancellationToken);
             }
@@ -327,13 +330,16 @@ namespace MIN.Services.Connection.Pipes
         public async Task SendMessageAsync<T>(ClientConnection connection, T message, CancellationToken cancellationToken = default)
             where T : class
         {
-            if (!IsRunning) throw new InvalidOperationException("Сервер не работает");
+            if (!isRunning)
+            {
+                throw new InvalidOperationException("Сервер не работает");
+            }
             await serializer.WriteMessageAsync(connection.Pipe, message, connection.Participant.Id, cancellationToken);
         }
 
         public async Task StopAsync()
         {
-            IsRunning = false;
+            isRunning = false;
             cancellationTokenSource?.Cancel();
 
             // Очистка подключений

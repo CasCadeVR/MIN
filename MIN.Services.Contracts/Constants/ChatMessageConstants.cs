@@ -8,5 +8,5 @@ public static class ChatMessageConstants
     /// <summary>
     /// Максимальный размер сообщения (64 КБ)
     /// </summary>
-    public static readonly long MaximumMessageSize = 64 * 1024;
+    public readonly static long MaximumMessageSize = 64 * 1024;
 }

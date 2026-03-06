@@ -10,7 +10,8 @@ namespace MIN.Services.Extensions
         /// <summary>
         /// Создаёт полную копию комнаты для сериализации
         /// </summary>
-        public static Room GetSerializableCopy(this Room room) {
+        public static Room GetSerializableCopy(this Room room)
+        {
             var copy = new Room(room.Name, room.MaximumParticipants)
             {
                 Id = room.Id,
