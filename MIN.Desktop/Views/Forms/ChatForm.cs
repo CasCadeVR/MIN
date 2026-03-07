@@ -375,7 +375,7 @@ namespace MIN.Desktop
             {
                 if (!splitContainerSideBar.Panel2Collapsed)
                 {
-                    closeButton_Click(sender, new EventArgs());
+                    closeButton_Click(sender, e);
                 }
                 aboutButton.Visible = false;
             }
