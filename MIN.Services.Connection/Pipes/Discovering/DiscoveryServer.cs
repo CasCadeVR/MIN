@@ -25,15 +25,9 @@ namespace MIN.Services.Connection.Pipes.Discovering
 
         private CancellationTokenSource? cancellationTokenSource;
         private PipeSecurity? pipeSecurity;
-        private bool isRunning;
 
         async Task IDiscoveryServer.StartAsync(CancellationToken cancellationToken)
         {
-            if (isRunning)
-            {
-                await StopAsync();
-            }
-
             if (!OperatingSystem.IsWindows())
             {
                 throw new PlatformNotSupportedException("Windows only");
@@ -44,13 +38,12 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance, AccessControlType.Allow));
 
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            isRunning = true;
             _ = AcceptDiscoveryRequestsAsync(cancellationTokenSource.Token);
         }
 
         private async Task AcceptDiscoveryRequestsAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested && isRunning)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
@@ -87,16 +80,16 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 throw new PlatformNotSupportedException("Windows only");
             }
 
-            var pipe = NamedPipeServerStreamAcl.Create(
+            using var pipe = NamedPipeServerStreamAcl.Create(
                 DiscoveryPipeNameProvider.GetDiscoveryPipeName(hostParticipant.PCName),
                 PipeDirection.InOut,
-                NamedPipeServerStream.MaxAllowedServerInstances,
+                room.MaximumParticipants,
                 PipeTransmissionMode.Byte,
                 PipeOptions.Asynchronous,
                 0, 0,
                 pipeSecurity);
 
-            await pipe!.WaitForConnectionAsync(cancellationToken);
+            await pipe.WaitForConnectionAsync(cancellationToken);
 
             var roomInfo = new DiscoveredRoom
             {
@@ -109,7 +102,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 CurrentParticipants = room.CurrentParticipants.Count,
             };
 
-            await serializer.WriteMessageAsync(pipe!, roomInfo, Guid.Empty, cancellationToken);
+            await serializer.WriteMessageAsync(pipe, roomInfo, Guid.Empty, cancellationToken);
         }
 
         async Task IDiscoveryServer.StopAsync()
@@ -120,7 +113,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
         /// <inheritdoc cref="IDiscoveryServer.StopAsync"/>
         public async Task StopAsync()
         {
-            isRunning = false;
             requestSemaphore.Dispose();
             await cancellationTokenSource!.CancelAsync();
         }
