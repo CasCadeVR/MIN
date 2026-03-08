@@ -146,8 +146,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            room.AddMessage(message);
-            if (notificationComboBox.Checked && WindowState == FormWindowState.Minimized)
+            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
             {
                 notificationService.Notify(message, room.Name);
             }
@@ -162,7 +161,6 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
-            room.AddMessage(roomMessage);
             AddMessageToChatFlow(roomMessage);
         }
 
@@ -174,7 +172,6 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
-            room.AddMessage(roomMessage);
             AddMessageToChatFlow(roomMessage);
         }
 
@@ -267,7 +264,7 @@ namespace MIN.Desktop
         private void AddMessageToChatFlow(ChatMessage message)
         {
             var row = new ChatMessageRow();
-            Control rowControl = new Label();
+            Control rowControl = null!;
 
             if (message.MessageType == MessageType.System)
             {
@@ -276,6 +273,8 @@ namespace MIN.Desktop
                     Text = message.Content,
                     Anchor = AnchorStyles.None,
                 };
+
+                row.Height = rowControl.Height;
             }
             else if (message.MessageType == MessageType.Text)
             {
@@ -286,7 +285,7 @@ namespace MIN.Desktop
                 if (lastMessage != null)
                 {
                     minutesPassed = (message.Time - lastMessage.Time).Minutes;
-                    minutesPassed = minutesPassed > 10 ? 10 : minutesPassed;
+                    minutesPassed = minutesPassed > 4 ? 8 : minutesPassed + 4;
                     removeHeaders |= lastMessage.SenderPCName == message.SenderPCName;
                 }
 
@@ -297,15 +296,21 @@ namespace MIN.Desktop
                         : AnchorStyles.Left,
                 };
 
-                row.Margin = new Padding(0, (minutesPassed * 2) / 5, 0, 0);
+                row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, 0);
 
                 lastMessage = message;
             }
 
-            row.Size = new Size(chatFlow.Width - (row.Margin.Left * 2) - chatFlow.Margin.Left, rowControl.Height);
+            row.Width = chatFlow.Width - chatFlow.Margin.Left;
             row.container.Controls.Add(rowControl);
             chatFlow.Controls.Add(row);
             chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
+
+            if (rowControl is ChatMessageCard)
+            {
+                row.Height = (rowControl as ChatMessageCard)!.ResizeOutOfPrefferedSize();
+            }
+
             chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
         }
 
@@ -355,7 +360,7 @@ namespace MIN.Desktop
 
             try
             {
-                await chatRoomService.SendMessageAsync(messageTextBox.Text, MessageType.Text);
+                await chatRoomService.SendMessageAsync(messageTextBox.Text.Trim(), MessageType.Text);
             }
             catch (Exception ex) when (ex is ArgumentException)
             {
@@ -384,9 +389,16 @@ namespace MIN.Desktop
                 aboutButton.Visible = true;
             }
 
-            foreach (ChatMessageRow control in chatFlow.Controls)
+            foreach (ChatMessageRow row in chatFlow.Controls)
             {
-                control.Width = chatFlow.Width - (control.Margin.Left * 2) - chatFlow.Margin.Left;
+                row.Width = chatFlow.Width - row.Margin.Horizontal;
+
+                var child = row.container.Controls[0];
+
+                if (child is ChatMessageCard)
+                {
+                    row.Height = (child as ChatMessageCard)!.ResizeOutOfPrefferedSize();
+                }
             }
         }
 

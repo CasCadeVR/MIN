@@ -40,7 +40,7 @@
             // 
             tableLayoutPanelLabels.ColumnCount = 2;
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 41F));
+            tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32F));
             tableLayoutPanelLabels.Controls.Add(sendTime, 1, 1);
             tableLayoutPanelLabels.Controls.Add(sendRole, 1, 0);
             tableLayoutPanelLabels.Controls.Add(senderName, 0, 0);
@@ -60,13 +60,13 @@
             sendTime.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             sendTime.BackColor = SystemColors.Control;
             sendTime.BorderStyle = BorderStyle.None;
-            sendTime.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            sendTime.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendTime.ForeColor = Color.FromArgb(0, 0, 0);
-            sendTime.Location = new Point(270, 52);
+            sendTime.Location = new Point(279, 55);
             sendTime.Margin = new Padding(0, 0, 3, 0);
             sendTime.Name = "sendTime";
             sendTime.ReadOnly = true;
-            sendTime.Size = new Size(38, 18);
+            sendTime.Size = new Size(29, 15);
             sendTime.TabIndex = 4;
             sendTime.Text = "Время";
             sendTime.TextAlign = HorizontalAlignment.Right;
@@ -76,13 +76,13 @@
             sendRole.BackColor = SystemColors.Control;
             sendRole.BorderStyle = BorderStyle.None;
             sendRole.Dock = DockStyle.Right;
-            sendRole.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            sendRole.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendRole.ForeColor = Color.FromArgb(0, 0, 0);
-            sendRole.Location = new Point(273, 2);
+            sendRole.Location = new Point(282, 2);
             sendRole.Margin = new Padding(3, 2, 3, 2);
             sendRole.Name = "sendRole";
             sendRole.ReadOnly = true;
-            sendRole.Size = new Size(35, 18);
+            sendRole.Size = new Size(26, 15);
             sendRole.TabIndex = 1;
             sendRole.Text = "Роль";
             sendRole.TextAlign = HorizontalAlignment.Right;
@@ -98,7 +98,7 @@
             senderName.Margin = new Padding(3, 3, 0, 0);
             senderName.Name = "senderName";
             senderName.ReadOnly = true;
-            senderName.Size = new Size(267, 18);
+            senderName.Size = new Size(276, 18);
             senderName.TabIndex = 0;
             senderName.Text = "Отправитель";
             senderName.WordWrap = false;
@@ -115,7 +115,7 @@
             sendMessage.Multiline = true;
             sendMessage.Name = "sendMessage";
             sendMessage.ReadOnly = true;
-            sendMessage.Size = new Size(267, 45);
+            sendMessage.Size = new Size(276, 45);
             sendMessage.TabIndex = 5;
             sendMessage.Text = "Сообщение";
             // 
@@ -124,7 +124,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(tableLayoutPanelLabels);
-            Margin = new Padding(15, 3, 15, 3);
+            Margin = new Padding(0);
             MinimumSize = new Size(0, 22);
             Name = "ChatMessageCard";
             Size = new Size(311, 70);
