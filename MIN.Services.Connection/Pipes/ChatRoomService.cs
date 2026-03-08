@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
@@ -68,7 +67,7 @@ namespace MIN.Services.Connection.Pipes
                 {
                     discoveryClient = new DiscoveryClient(serializer, logger);
                     logger.Log($"Пытаюсь достучаться до компьютера: {pcName}...", LogLevel.Information);
-                    room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs));
+                    room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs), cancellationToken);
                 }
                 catch (RoomDiscoveryException ex)
                 {

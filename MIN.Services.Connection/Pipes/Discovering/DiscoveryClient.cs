@@ -1,4 +1,5 @@
-﻿using System.IO.Pipes;
+﻿using System.Diagnostics;
+using System.IO.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models.Exceptions;
@@ -22,9 +23,8 @@ namespace MIN.Services.Connection.Pipes.Discovering
             this.logger = logger;
         }
 
-        async Task<DiscoveredRoom?> IDiscoveryClient.DiscoverRoomAsync(string targetPCName, TimeSpan timeout)
+        async Task<DiscoveredRoom?> IDiscoveryClient.DiscoverRoomAsync(string targetPCName, TimeSpan timeout, CancellationToken cancellationToken)
         {
-            var cts = new CancellationTokenSource(timeout);
             var pipeName = DiscoveryPipeNameProvider.GetDiscoveryPipeName(targetPCName);
 
             using var pipe = new NamedPipeClientStream(
@@ -34,22 +34,25 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough
             );
 
+            var timeoutTask = Task.Delay(timeout, cancellationToken);
+            var connectTask = pipe.ConnectAsync(cancellationToken);
+
             try
             {
-                await pipe.ConnectAsync(cts.Token);
+                var completed = await Task.WhenAny(connectTask, timeoutTask);
+                if (completed == timeoutTask)
+                {
+                    throw new RoomDiscoveryException($"Время подключение к {targetPCName} вышло");
+                }
 
                 logger.Log($"Опа, нашёл у {targetPCName} комнатку");
 
-                if (await serializer.ReadMessageAsync(pipe, Guid.Empty, cts.Token) is not DiscoveredRoom discoveryInfo)
+                if (await serializer.ReadMessageAsync(pipe, Guid.Empty, cancellationToken) is not DiscoveredRoom discoveryInfo)
                 {
                     return null;
                 }
 
                 return discoveryInfo;
-            }
-            catch (TimeoutException)
-            {
-                throw new RoomDiscoveryException($"Время подключение к {targetPCName} вышло");
             }
             catch (Exception ex) when (ex is not RoomDiscoveryException)
             {
