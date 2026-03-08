@@ -74,7 +74,7 @@ namespace MIN.Desktop
 
                 flowLayoutPanel.Controls.Clear();
                 var roomsCount = 0;
-                await foreach (var room in chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, Settings.DiscoveryTimeout, cancellationToken: cancellationTokenSource.Token))
+                await foreach (var room in chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, Settings.DiscoveryTimeout))
                 {
                     roomsCount += 1;
                     AddDiscoveredRoom(room);

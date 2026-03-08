@@ -14,23 +14,18 @@ using MIN.Services.Services;
 
 namespace MIN.Services.Connection.Pipes
 {
-    public sealed class PipeRoomServer : IPipeRoomServer, IAsyncDisposable
+    public sealed class PipeRoomServer(IPipeMessageSerializer serializer, ICryptoProvider cryptoProvider, ILoggerProvider logger) : IPipeRoomServer, IAsyncDisposable
     {
-        private readonly IPipeMessageSerializer serializer;
-        private readonly ICryptoProvider cryptoProvider;
-        private readonly ILoggerProvider logger;
-        private readonly List<ClientConnection> activeConnections = new();
+        private readonly IPipeMessageSerializer serializer = serializer;
+        private readonly ICryptoProvider cryptoProvider = cryptoProvider;
+        private readonly ILoggerProvider logger = logger;
+        private readonly List<ClientConnection> activeConnections = [];
 
         private CancellationTokenSource? cancellationTokenSource;
+        private SemaphoreSlim? connectionSlots;
+        private PipeSecurity? pipeSecurity;
         private Room? room;
         private bool isRunning = false;
-
-        public PipeRoomServer(IPipeMessageSerializer serializer, ICryptoProvider cryptoProvider, ILoggerProvider logger)
-        {
-            this.serializer = serializer;
-            this.cryptoProvider = cryptoProvider;
-            this.logger = logger;
-        }
 
         /// <inheritdoc cref="IPipeRoomServer.Room"/>
         public Room? Room => room;
@@ -38,6 +33,11 @@ namespace MIN.Services.Connection.Pipes
 
         public async Task StartAsync(Room room, CancellationToken cancellationToken = default)
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new PlatformNotSupportedException("К сожалению, пока только на Windows");
+            }
+
             if (isRunning)
             {
                 await StopAsync();
@@ -45,14 +45,16 @@ namespace MIN.Services.Connection.Pipes
 
             this.room = room.GetSerializableCopy();
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            connectionSlots = new SemaphoreSlim(room.MaximumParticipants, room.MaximumParticipants);
             isRunning = true;
 
-            for (int i = 0; i < room.MaximumParticipants; i++)
-            {
-                _ = AcceptClientAsync(cancellationTokenSource.Token);
-            }
+            pipeSecurity = new PipeSecurity();
+            pipeSecurity.AddAccessRule(new PipeAccessRule(new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                    PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance, AccessControlType.Allow));
 
             SendRoomCreatedInfo();
+
+            _ = AcceptClientAsync(cancellationTokenSource.Token);
         }
 
         private void SendRoomCreatedInfo()
@@ -69,22 +71,16 @@ namespace MIN.Services.Connection.Pipes
 
         private async Task AcceptClientAsync(CancellationToken cancellationToken)
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new PlatformNotSupportedException("К сожалению, пока только на Windows");
+            }
+
             while (!cancellationToken.IsCancellationRequested && isRunning)
             {
                 try
                 {
-                    if (!OperatingSystem.IsWindows())
-                    {
-                        throw new PlatformNotSupportedException("К сожалению, пока только на Windows");
-                    }
-
-                    var securityIdentifier = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
-
-                    var pipeSecurity = new PipeSecurity();
-                    pipeSecurity.AddAccessRule(
-                        new PipeAccessRule(securityIdentifier,
-                            PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
-                    AccessControlType.Allow));
+                    await connectionSlots!.WaitAsync(cancellationToken);
 
                     var clientPipeSlot = NamedPipeServerStreamAcl.Create(
                         PipeNameProvider.GetRoomPipeName(room!.Id),
@@ -109,7 +105,10 @@ namespace MIN.Services.Connection.Pipes
                         await HandleClientConnectionLossAsync(connection, cancellationToken);
                     }, cancellationToken);
 
-                    CreateNewConnectionSlot(cancellationToken);
+                    if (activeConnections.Count < room!.MaximumParticipants)
+                    {
+                        continue;
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -118,16 +117,9 @@ namespace MIN.Services.Connection.Pipes
                 }
                 catch (IOException ex) when (ex.Message.Contains("pipe is being closed"))
                 {
+                    connectionSlots!.Release();
                     continue;
                 }
-            }
-        }
-
-        private void CreateNewConnectionSlot(CancellationToken cancellationToken)
-        {
-            if (isRunning && activeConnections.Count < room!.MaximumParticipants)
-            {
-                _ = AcceptClientAsync(cancellationToken);
             }
         }
 
@@ -157,8 +149,7 @@ namespace MIN.Services.Connection.Pipes
             }
 
             await connection.DisposeAsync();
-
-            CreateNewConnectionSlot(cancellationToken);
+            connectionSlots!.Release();
         }
 
         private async Task StartMeetingProcedure(ClientConnection connection, CancellationToken cancellationToken)
@@ -340,14 +331,18 @@ namespace MIN.Services.Connection.Pipes
         public async Task StopAsync()
         {
             isRunning = false;
-            cancellationTokenSource?.Cancel();
+            connectionSlots?.Dispose();
+            if (cancellationTokenSource != null)
+            {
+                await cancellationTokenSource.CancelAsync();
+            }
 
             // Очистка подключений
             lock (activeConnections)
             {
                 foreach (var connection in activeConnections.ToList())
                 {
-                    connection.DisposeAsync();
+                    connection?.DisposeAsync();
                 }
                 activeConnections.Clear();
             }

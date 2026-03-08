@@ -27,7 +27,7 @@ namespace MIN.Services.Connection.Serialize
         }
 
         // Формат сообщения: [4 байта: длина][1 байт: тип][N байт: данные]
-        async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, Guid senderId, CancellationToken cancellationToken = default)
+        async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, Guid senderId, CancellationToken cancellationToken)
         {
             var lengthBuffer = new byte[4];
             await stream.ReadExactlyAsync(lengthBuffer, cancellationToken);
@@ -51,20 +51,20 @@ namespace MIN.Services.Connection.Serialize
                         ?? throw new InvalidDataException("Failed to deserialize DiscoveredRoom");
 
                 case MessageTypeTag.ChatMessage:
-                    return await DecryptAndDeserializeAsync<ChatMessage>(dataBuffer, senderId);
+                    return DecryptAndDeserialize<ChatMessage>(dataBuffer, senderId);
 
                 case MessageTypeTag.RoomInfo:
-                    return await DecryptAndDeserializeAsync<RoomInfoMessage>(dataBuffer, senderId);
+                    return DecryptAndDeserialize<RoomInfoMessage>(dataBuffer, senderId);
 
                 case MessageTypeTag.RoomInfoRequest:
-                    return await DecryptAndDeserializeAsync<RoomInfoRequestMessage>(dataBuffer, senderId);
+                    return DecryptAndDeserialize<RoomInfoRequestMessage>(dataBuffer, senderId);
 
                 default:
                     throw new InvalidDataException($"Unknown message type: {messageType}");
             }
         }
 
-        async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, Guid recipientId, CancellationToken cancellationToken = default)
+        async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, Guid recipientId, CancellationToken cancellationToken)
             where T : class
         {
             byte[] payload;
@@ -108,7 +108,7 @@ namespace MIN.Services.Connection.Serialize
             await stream.FlushAsync(cancellationToken);
         }
 
-        private async Task<T> DecryptAndDeserializeAsync<T>(
+        private T DecryptAndDeserialize<T>(
             byte[] encryptedData,
             Guid senderId) where T : class
         {

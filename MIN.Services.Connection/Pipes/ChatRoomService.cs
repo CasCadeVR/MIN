@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
-using MIN.Services.Connection.Contracts.Interfaces.Discovering;
+﻿using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models.Exceptions;
@@ -59,7 +57,7 @@ namespace MIN.Services.Connection.Pipes
             client.Disconnected += (s, e) => OnTransportDisconnected();
         }
 
-        async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
+        async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs)
         {
             foreach (var pcName in targetPCNames)
             {
@@ -105,7 +103,7 @@ namespace MIN.Services.Connection.Pipes
         }
 
         /// <inheritdoc cref="IPipeParticipantClient.GetUpdatedRoomInfoAsync(CancellationToken)"/>
-        async Task IChatRoomService.GetUpdatedRoomInfoAsync(CancellationToken cancellationToken = default)
+        async Task IChatRoomService.GetUpdatedRoomInfoAsync(CancellationToken cancellationToken)
         {
             ObjectDisposedException.ThrowIf(isDisposed, nameof(ChatRoomService));
 
@@ -166,8 +164,11 @@ namespace MIN.Services.Connection.Pipes
                     {
                         await client.DisconnectAsync(cancellationToken);
                     }
+                    if (discoveryServer != null)
+                    {
+                        await discoveryServer.StopAsync();
+                    }
                     await server.StopAsync();
-                    await discoveryServer.StopAsync();
                 }
                 else if (!IsHost && client.IsConnected)
                 {
@@ -176,7 +177,7 @@ namespace MIN.Services.Connection.Pipes
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error during disconnect: {ex.Message}");
+                logger.Log($"Произошла ошибка во время отключения от сервера: {ex.Message}", LogLevel.Error);
             }
             finally
             {
@@ -212,9 +213,9 @@ namespace MIN.Services.Connection.Pipes
         {
             currentRoom?.AddParticipant(participant);
 
-            if (IsHost)
+            if (IsHost && server.IsRunning)
             {
-                discoveryServer = new DiscoveryServer(participant, server.Room, serializer, logger);
+                discoveryServer = new DiscoveryServer(participant, server.Room!, serializer, logger);
                 await discoveryServer.StartAsync(cancellationTokenSource!.Token);
             }
 

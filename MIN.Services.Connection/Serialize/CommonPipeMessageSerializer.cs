@@ -23,7 +23,7 @@ namespace MIN.Services.Connection.Serialize
         };
 
         // Формат сообщения: [4 байта: длина][1 байт: тип][N байт: данные]
-        async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, Guid senderId, CancellationToken cancellationToken = default)
+        async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, Guid senderId, CancellationToken cancellationToken)
         {
             // Читаем длину
             var lengthBuffer = new byte[4];
@@ -66,7 +66,7 @@ namespace MIN.Services.Connection.Serialize
             };
         }
 
-        async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, Guid recipientId, CancellationToken cancellationToken = default)
+        async Task IPipeMessageSerializer.WriteMessageAsync<T>(Stream stream, T message, Guid recipientId, CancellationToken cancellationToken)
             where T : class
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, JsonOptions);
