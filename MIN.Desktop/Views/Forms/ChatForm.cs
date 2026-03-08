@@ -25,6 +25,7 @@ namespace MIN.Desktop
         private readonly INotificationService notificationService;
         private readonly CancellationTokenSource formCancellationTokenSource = new();
         private readonly SynchronizationContext uiContext;
+        private readonly int hideSideBarWidth;
 
         private Room room = null!;
         private ChatMessage lastMessage = null!;
@@ -39,6 +40,7 @@ namespace MIN.Desktop
 
             this.chatRoomService = chatRoomService;
             this.notificationService = notificationService;
+            hideSideBarWidth = MinimumSize.Width + splitContainerSideBar.Panel2.Width;
 
             SubscribeToChatEvents();
         }
@@ -367,6 +369,19 @@ namespace MIN.Desktop
 
         private void chatFlow_Resize(object sender, EventArgs e)
         {
+            if (Width <= hideSideBarWidth)
+            {
+                if (!splitContainerSideBar.Panel2Collapsed)
+                {
+                    closeButton_Click(sender, e);
+                }
+                aboutButton.Visible = false;
+            }
+            else
+            {
+                aboutButton.Visible = true;
+            }
+
             foreach (ChatMessageRow control in chatFlow.Controls)
             {
                 control.Width = chatFlow.Width - (control.Margin.Left * 2) - chatFlow.Margin.Left;
