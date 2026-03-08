@@ -21,6 +21,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
         private readonly ILoggerProvider logger = logger;
         private readonly Participant hostParticipant = hostParticipant;
         private readonly Room room = room;
+        private readonly SemaphoreSlim requestSemaphore = new(1, 1);
 
         private CancellationTokenSource? cancellationTokenSource;
         private PipeSecurity? pipeSecurity;
@@ -53,34 +54,9 @@ namespace MIN.Services.Connection.Pipes.Discovering
             {
                 try
                 {
-                    if (!OperatingSystem.IsWindows())
-                    {
-                        throw new PlatformNotSupportedException("Windows only");
-                    }
+                    await requestSemaphore.WaitAsync(cancellationToken);
 
-                    using var pipe = NamedPipeServerStreamAcl.Create(
-                        DiscoveryPipeNameProvider.GetDiscoveryPipeName(hostParticipant.PCName),
-                        PipeDirection.InOut,
-                        NamedPipeServerStream.MaxAllowedServerInstances,
-                        PipeTransmissionMode.Byte,
-                        PipeOptions.Asynchronous | PipeOptions.WriteThrough,
-                        0, 0,
-                        pipeSecurity);
-
-                    await pipe!.WaitForConnectionAsync(cancellationToken);
-
-                    var roomInfo = new DiscoveredRoom
-                    {
-                        RoomId = room.Id,
-                        RoomName = room.Name,
-                        HostId = room.HostParticipant.Id,
-                        HostName = room.HostParticipant.Name,
-                        HostPCName = room.HostParticipant.PCName,
-                        MaximumParticipants = room.MaximumParticipants,
-                        CurrentParticipants = room.CurrentParticipants.Count,
-                    };
-
-                    await serializer.WriteMessageAsync(pipe!, roomInfo, Guid.Empty, cancellationToken);
+                    await WaitForClientAndAcceptIt(cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -97,7 +73,43 @@ namespace MIN.Services.Connection.Pipes.Discovering
                     logger.Log($"Сервер обнаружения поймал ошибку: {ex.Message}", LogLevel.Error);
                     continue;
                 }
+                finally
+                {
+                    requestSemaphore.Release();
+                }
             }
+        }
+
+        private async Task WaitForClientAndAcceptIt(CancellationToken cancellationToken)
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new PlatformNotSupportedException("Windows only");
+            }
+
+            var pipe = NamedPipeServerStreamAcl.Create(
+                DiscoveryPipeNameProvider.GetDiscoveryPipeName(hostParticipant.PCName),
+                PipeDirection.InOut,
+                NamedPipeServerStream.MaxAllowedServerInstances,
+                PipeTransmissionMode.Byte,
+                PipeOptions.Asynchronous,
+                0, 0,
+                pipeSecurity);
+
+            await pipe!.WaitForConnectionAsync(cancellationToken);
+
+            var roomInfo = new DiscoveredRoom
+            {
+                RoomId = room.Id,
+                RoomName = room.Name,
+                HostId = room.HostParticipant.Id,
+                HostName = room.HostParticipant.Name,
+                HostPCName = room.HostParticipant.PCName,
+                MaximumParticipants = room.MaximumParticipants,
+                CurrentParticipants = room.CurrentParticipants.Count,
+            };
+
+            await serializer.WriteMessageAsync(pipe!, roomInfo, Guid.Empty, cancellationToken);
         }
 
         async Task IDiscoveryServer.StopAsync()
@@ -109,6 +121,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
         public async Task StopAsync()
         {
             isRunning = false;
+            requestSemaphore.Dispose();
             await cancellationTokenSource!.CancelAsync();
         }
 
