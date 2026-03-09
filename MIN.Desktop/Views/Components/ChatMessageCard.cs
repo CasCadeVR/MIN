@@ -81,9 +81,8 @@ namespace MIN.Desktop.Components
         private int CalculateLineCount()
         {
             var lastCharLine = sendMessage.GetLineFromCharIndex(sendMessage.Text.Length - 1);
-            var lines = lastCharLine + 1;
-
-            return Math.Max(1, lines);
+            var resultLines = Math.Max(1, lastCharLine + 1);
+            return resultLines;
         }
 
         private void FillLabels()

@@ -1,4 +1,3 @@
-using System.Windows.Forms;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -27,7 +26,9 @@ namespace MIN.Desktop
         private readonly CancellationTokenSource formCancellationTokenSource = new();
         private readonly SynchronizationContext uiContext;
         private readonly int hideSideBarWidth;
+        private readonly System.Windows.Forms.Timer resizeTimer = new() { Interval = 150 };
 
+        private bool isResizing;
         private Room room = null!;
         private ChatMessage lastMessage = null!;
 
@@ -38,6 +39,12 @@ namespace MIN.Desktop
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
+            resizeTimer.Tick += (s, e) =>
+            {
+                resizeTimer.Stop();
+                isResizing = false;
+                PerformResize();
+            };
 
             this.chatRoomService = chatRoomService;
             this.notificationService = notificationService;
@@ -272,57 +279,65 @@ namespace MIN.Desktop
 
         private void AddMessageToChatFlow(ChatMessage message)
         {
-            var row = new ChatMessageRow();
-            Control rowControl = null!;
-
-            if (message.MessageType == MessageType.System)
+            chatFlow.SuspendLayout();
+            try
             {
-                rowControl = new PrimaryLabel()
+                var row = new ChatMessageRow();
+                Control rowControl = null!;
+
+                if (message.MessageType == MessageType.System)
                 {
-                    Text = message.Content,
-                    Anchor = AnchorStyles.None,
-                };
+                    rowControl = new PrimaryLabel()
+                    {
+                        Text = message.Content,
+                        Anchor = AnchorStyles.None,
+                    };
 
-                row.Height = rowControl.Height;
-            }
-            else if (message.MessageType == MessageType.Text)
-            {
-                var isSelfMessage = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName;
-
-                var minutesPassed = 0;
-
-                if (lastMessage != null)
+                    row.Height = rowControl.Height;
+                }
+                else if (message.MessageType == MessageType.Text)
                 {
-                    isSelfMessage |= lastMessage.SenderPCName == message.SenderPCName;
+                    var isSelfMessage = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName;
 
-                    minutesPassed = (message.Time - lastMessage.Time).Minutes;
-                    minutesPassed = minutesPassed > 4 ? 8 : minutesPassed + 4;
+                    var minutesPassed = 0;
+
+                    if (lastMessage != null)
+                    {
+                        isSelfMessage |= lastMessage.SenderPCName == message.SenderPCName;
+
+                        minutesPassed = (message.Time - lastMessage.Time).Minutes;
+                        minutesPassed = minutesPassed > 4 ? 8 : minutesPassed + 4;
+                    }
+
+                    rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders: isSelfMessage)
+                    {
+                        Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
+                            ? AnchorStyles.Right
+                            : AnchorStyles.Left,
+                        Margin = new Padding(20, 0, 20, 0)
+                    };
+
+                    row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
+
+                    lastMessage = message;
                 }
 
-                rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders: isSelfMessage)
+                row.Width = chatFlow.Width - chatFlow.Margin.Left;
+                row.container.Controls.Add(rowControl);
+                chatFlow.Controls.Add(row);
+                chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
+
+                if (rowControl is ChatMessageCard)
                 {
-                    Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
-                        ? AnchorStyles.Right
-                        : AnchorStyles.Left,
-                    Margin = new Padding(20, 0, 20, 0)
-                };
+                    row.Height = (rowControl as ChatMessageCard)!.ResizeOutOfPrefferedSize();
+                }
 
-                row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
-
-                lastMessage = message;
             }
-
-            row.Width = chatFlow.Width - chatFlow.Margin.Left;
-            row.container.Controls.Add(rowControl);
-            chatFlow.Controls.Add(row);
-            chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
-
-            if (rowControl is ChatMessageCard)
+            finally
             {
-                row.Height = (rowControl as ChatMessageCard)!.ResizeOutOfPrefferedSize();
+                chatFlow.ResumeLayout(true);
+                chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
             }
-
-            chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
         }
 
         protected override void ApplyStylings()
@@ -400,16 +415,32 @@ namespace MIN.Desktop
                 aboutButton.Visible = true;
             }
 
-            foreach (ChatMessageRow row in chatFlow.Controls)
+            if (!isResizing)
             {
-                row.Width = chatFlow.Width - row.Margin.Horizontal;
+                isResizing = true;
+                resizeTimer.Stop();
+                resizeTimer.Start();
+            }
+        }
 
-                var child = row.container.Controls[0];
-
-                if (child is ChatMessageCard)
+        private void PerformResize()
+        {
+            chatFlow.SuspendLayout();
+            try
+            {
+                foreach (ChatMessageRow row in chatFlow.Controls)
                 {
-                    row.Height = (child as ChatMessageCard)!.ResizeOutOfPrefferedSize();
+                    row.Width = chatFlow.Width - row.Margin.Horizontal;
+                    var child = row.container.Controls[0];
+                    if (child is ChatMessageCard card)
+                    {
+                        row.Height = card.ResizeOutOfPrefferedSize();
+                    }
                 }
+            }
+            finally
+            {
+                chatFlow.ResumeLayout();
             }
         }
 

@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop
+﻿using MIN.Desktop.Components.Controls.FlowLayoutPanels;
+
+namespace MIN.Desktop
 {
     partial class ChatForm
     {
@@ -34,7 +36,7 @@
             tableLayoutPanelHeader = new TableLayoutPanel();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             tableLayoutPanel2 = new TableLayoutPanel();
-            chatFlow = new FlowLayoutPanel();
+            chatFlow = new NoHorizontalScrollListView();
             tableLayoutPanelButtons = new TableLayoutPanel();
             fileButton = new MIN.Desktop.Components.CommonButton();
             sendButton = new MIN.Desktop.Components.CommonButton();
@@ -535,7 +537,7 @@
         private SplitContainer splitContainer;
         private TableLayoutPanel tableLayoutPanelHeader;
         private Components.Labels.Heading1Label Title;
-        private FlowLayoutPanel chatFlow;
+        private NoHorizontalScrollListView chatFlow;
         private TableLayoutPanel tableLayoutPanelButtons;
         private Components.CommonButton fileButton;
         private Components.CommonButton sendButton;
