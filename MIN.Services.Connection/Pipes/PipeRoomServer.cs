@@ -265,6 +265,7 @@ namespace MIN.Services.Connection.Pipes
                 RoomId = room!.Id,
                 RoomName = room.Name,
                 MaxParticipants = room.MaximumParticipants,
+                HostId = room.HostParticipant.Id,
                 HostName = room.HostParticipant.Name,
                 HostPCName = room.HostParticipant.PCName,
                 CurrentParticipants = room.CurrentParticipants.Select(p => p.GetSerializableCopy()).ToList(),

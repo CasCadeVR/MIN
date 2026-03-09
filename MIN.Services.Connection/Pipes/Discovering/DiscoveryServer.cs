@@ -21,7 +21,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
         private readonly ILoggerProvider logger = logger;
         private readonly Participant hostParticipant = hostParticipant;
         private readonly Room room = room;
-        private readonly SemaphoreSlim requestSemaphore = new(1, 1);
 
         private CancellationTokenSource? cancellationTokenSource;
         private PipeSecurity? pipeSecurity;
@@ -47,8 +46,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
             {
                 try
                 {
-                    await requestSemaphore.WaitAsync(cancellationToken);
-
                     await WaitForClientAndAcceptIt(cancellationToken);
                 }
                 catch (OperationCanceledException)
@@ -66,10 +63,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
                     logger.Log($"Сервер обнаружения поймал ошибку: {ex.Message}", LogLevel.Error);
                     continue;
                 }
-                finally
-                {
-                    requestSemaphore.Release();
-                }
             }
         }
 
@@ -83,7 +76,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
             using var pipe = NamedPipeServerStreamAcl.Create(
                 DiscoveryPipeNameProvider.GetDiscoveryPipeName(hostParticipant.PCName),
                 PipeDirection.InOut,
-                room.MaximumParticipants,
+                1,
                 PipeTransmissionMode.Byte,
                 PipeOptions.Asynchronous,
                 0, 0,
@@ -113,7 +106,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
         /// <inheritdoc cref="IDiscoveryServer.StopAsync"/>
         public async Task StopAsync()
         {
-            requestSemaphore.Dispose();
             await cancellationTokenSource!.CancelAsync();
         }
 
