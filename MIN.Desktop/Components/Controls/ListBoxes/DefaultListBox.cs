@@ -11,11 +11,6 @@ namespace MIN.Desktop.Components.Controls.ListBoxes
     {
         public DefaultListBox()
         {
-            ApplyBaseStyles();
-        }
-
-        protected virtual void ApplyBaseStyles()
-        {
             base.ApplyBaseStyles();
         }
     }

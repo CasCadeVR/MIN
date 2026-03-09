@@ -30,6 +30,7 @@ namespace MIN.Services.Connection.Contracts.Models
             {
                 try
                 {
+                    Pipe.Disconnect();
                     await Pipe.DisposeAsync();
                 }
                 catch { }

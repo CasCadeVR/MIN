@@ -56,6 +56,7 @@
             captionLabel1 = new MIN.Desktop.Components.Labels.CaptionLabel();
             hostName = new MIN.Desktop.Components.Labels.Heading3Label();
             notificationComboBox = new MIN.Desktop.Components.Controls.CheckBoxes.DefaultCheckBox();
+            notifyIcon = new NotifyIcon(components);
             ((System.ComponentModel.ISupportInitialize)splitContainerSideBar).BeginInit();
             splitContainerSideBar.Panel1.SuspendLayout();
             splitContainerSideBar.Panel2.SuspendLayout();
@@ -494,6 +495,11 @@
             notificationComboBox.Text = "Уведомления";
             notificationComboBox.UseVisualStyleBackColor = false;
             // 
+            // notifyIcon
+            // 
+            notifyIcon.Text = "notifyIcon";
+            notifyIcon.Visible = true;
+            // 
             // ChatForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -503,6 +509,7 @@
             Margin = new Padding(3, 4, 3, 4);
             MinimumSize = new Size(250, 298);
             Name = "ChatForm";
+            StartPosition = FormStartPosition.CenterParent;
             Text = "MIN";
             splitContainerSideBar.Panel1.ResumeLayout(false);
             splitContainerSideBar.Panel2.ResumeLayout(false);
