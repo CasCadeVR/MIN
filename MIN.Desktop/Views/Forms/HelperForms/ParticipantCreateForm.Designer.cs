@@ -190,6 +190,7 @@
             Controls.Add(splitContainer);
             MinimumSize = new Size(432, 193);
             Name = "ParticipantCreateForm";
+            StartPosition = FormStartPosition.CenterParent;
             Text = "MIN - Подключение к комнате";
             Load += ParticipantCreateForm_Load;
             splitContainer.Panel1.ResumeLayout(false);

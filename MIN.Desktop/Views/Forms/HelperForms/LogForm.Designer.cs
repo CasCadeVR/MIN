@@ -106,6 +106,7 @@
             Margin = new Padding(3, 4, 3, 4);
             MinimumSize = new Size(432, 191);
             Name = "LogForm";
+            StartPosition = FormStartPosition.Manual;
             Text = "MIN - Логи";
             FormClosing += LogForm_FormClosing;
             Load += LogForm_Load;
