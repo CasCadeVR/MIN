@@ -68,11 +68,7 @@ namespace MIN.Desktop.Components
 
             Width = wantedWidth;
 
-            var availableWidth = Width
-                - sendMessage.Margin.Horizontal * 2
-                - Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width);
-
-            var lineCount = CalculateLineCount(sendMessage, availableWidth);
+            var lineCount = CalculateLineCount();
 
             var gottenHeight = Convert.ToInt32(tableLayoutPanelLabels.RowStyles[0].Height)
                 + (lineCount * sendMessage.Font.Height)
@@ -82,15 +78,11 @@ namespace MIN.Desktop.Components
             return gottenHeight;
         }
 
-        private static int CalculateLineCount(TextBox textBox, int availableWidth)
+        private int CalculateLineCount()
         {
-            var originalWidth = textBox.Width;
-            textBox.Width = availableWidth;
-
-            var lastCharLine = textBox.GetLineFromCharIndex(textBox.Text.Length - 1);
+            var lastCharLine = sendMessage.GetLineFromCharIndex(sendMessage.Text.Length - 1);
             var lines = lastCharLine + 1;
 
-            textBox.Width = originalWidth;
             return Math.Max(1, lines);
         }
 

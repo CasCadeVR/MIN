@@ -1,3 +1,4 @@
+using System.Windows.Forms;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
@@ -161,6 +162,10 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
+            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
+            {
+                notificationService.Notify(roomMessage, room.Name);
+            }
             AddMessageToChatFlow(roomMessage);
         }
 
@@ -172,6 +177,10 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
+            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
+            {
+                notificationService.Notify(roomMessage, room.Name);
+            }
             AddMessageToChatFlow(roomMessage);
         }
 
@@ -194,7 +203,7 @@ namespace MIN.Desktop
             hostName.Text = AppUserProvider.Instance.CurrentUser.PCName == room.HostParticipant.PCName ? "Ты" : room.HostParticipant.Name;
             editButton.Visible = AppUserProvider.Instance.CurrentUser.PCName == room.HostParticipant.PCName;
 
-            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.PCName, out int roomNumber, out int computerNumber))
+            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.PCName, out var roomNumber, out var computerNumber))
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
@@ -278,25 +287,27 @@ namespace MIN.Desktop
             }
             else if (message.MessageType == MessageType.Text)
             {
-                var removeHeaders = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName;
+                var isSelfMessage = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName;
 
                 var minutesPassed = 0;
 
                 if (lastMessage != null)
                 {
+                    isSelfMessage |= lastMessage.SenderPCName == message.SenderPCName;
+
                     minutesPassed = (message.Time - lastMessage.Time).Minutes;
                     minutesPassed = minutesPassed > 4 ? 8 : minutesPassed + 4;
-                    removeHeaders |= lastMessage.SenderPCName == message.SenderPCName;
                 }
 
-                rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders)
+                rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders: isSelfMessage)
                 {
                     Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
                         ? AnchorStyles.Right
                         : AnchorStyles.Left,
+                    Margin = new Padding(20, 0, 20, 0)
                 };
 
-                row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, 0);
+                row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
 
                 lastMessage = message;
             }

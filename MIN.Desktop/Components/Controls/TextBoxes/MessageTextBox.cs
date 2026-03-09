@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace MIN.Desktop.Components.Controls.TextBoxes
+﻿namespace MIN.Desktop.Components.Controls.TextBoxes
 {
     /// <summary>
     /// Текстовое поле для ввода сообщений с автоматическим изменением высоты (до 10 строк)
@@ -44,8 +42,21 @@ namespace MIN.Desktop.Components.Controls.TextBoxes
         /// </summary>
         public int UpdateHeight()
         {
-            var totalHeight = Math.Max(Math.Min(PreferredSize.Height, MaxHeightpx), MinHeightpx) + PaddingVertical;
+            var lineCount = CalculateLineCount();
+
+            var gottenHeight = (lineCount * Font.Height) + Margin.Vertical * 2;
+
+            var totalHeight = Math.Max(Math.Min(gottenHeight, MaxHeightpx), MinHeightpx) + PaddingVertical;
+
             return totalHeight;
+        }
+
+        private int CalculateLineCount()
+        {
+            var lastCharLine = GetLineFromCharIndex(Text.Length - 1);
+            var lines = lastCharLine + 1;
+
+            return Math.Max(1, lines);
         }
     }
 }
