@@ -23,6 +23,8 @@ namespace MIN.Desktop
             Room = room ?? new Room();
 
             InitializeComponent();
+
+            Shown += (_, _) => roomName.Focus();
         }
 
         protected override void ApplyStylings()
@@ -82,11 +84,6 @@ namespace MIN.Desktop
                     DialogResult = DialogResult.Abort;
                 }
             }
-        }
-
-        private void RoomCreateForm_Load(object sender, EventArgs e)
-        {
-            roomName.Focus();
         }
     }
 }

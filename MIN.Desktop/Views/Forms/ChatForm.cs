@@ -327,9 +327,9 @@ namespace MIN.Desktop
                 chatFlow.Controls.Add(row);
                 chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
 
-                if (rowControl is ChatMessageCard)
+                if (rowControl is ChatMessageCard card)
                 {
-                    row.Height = (rowControl as ChatMessageCard)!.ResizeOutOfPrefferedSize();
+                    row.Height = card.ResizeOutOfPrefferedSize();
                 }
 
             }

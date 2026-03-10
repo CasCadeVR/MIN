@@ -1,5 +1,6 @@
 ﻿using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Desktop.Views.Forms.HelperForms
@@ -81,7 +82,9 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void FillFields()
         {
             roomName.Text = $"Комната {messageRoomName}";
-            senderAndContent.Text = $"{message.SenderName}: {message.Content}";
+            senderAndContent.Text = message.MessageType == MessageType.Text
+                ? $"{message.SenderName}: {message.Content}"
+                : $"{message.Content}";
         }
 
         protected override void ApplyStylings()

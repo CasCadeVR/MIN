@@ -52,13 +52,13 @@ namespace MIN.Desktop.Components
         }
 
         /// <summary>
-        /// Подстроивает размеры сообщений под текст внутри и возвращает высоту
+        /// Подстроивает размеры сообщений под текст внутри и возвращает полученную высоту
         /// </summary>
         public int ResizeOutOfPrefferedSize()
         {
-            var wantedWidth = Math.Min(Convert.ToInt32(Parent!.Width * 0.7),
+            var wantedWidth = Math.Min(Convert.ToInt32(Parent!.Width * 0.85),
                 Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
-                + Math.Max(sendMessage.PreferredSize.Width, senderName.PreferredSize.Width)
+                + Math.Max(sendMessage.PreferredSize.Width, removeHeaders ? 0 : senderName.PreferredSize.Width)
                 + sendMessage.Margin.Horizontal * 2);
 
             if (Width == wantedWidth)
@@ -71,7 +71,7 @@ namespace MIN.Desktop.Components
             var lineCount = CalculateLineCount();
 
             var gottenHeight = Convert.ToInt32(tableLayoutPanelLabels.RowStyles[0].Height)
-                + (lineCount * sendMessage.Font.Height)
+                + (lineCount * (sendMessage.Font.Height - 1))
                 + sendMessage.Margin.Vertical * 2;
 
             Height = gottenHeight;

@@ -227,7 +227,6 @@
             Name = "RoomCreateForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "MIN - Создание комнаты";
-            Load += RoomCreateForm_Load;
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();

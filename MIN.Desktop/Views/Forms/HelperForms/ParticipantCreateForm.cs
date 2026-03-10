@@ -4,11 +4,19 @@ using MIN.Desktop.Infrastructure.Services;
 
 namespace MIN.Desktop
 {
+    /// <summary>
+    /// ‘орма создани€ участника
+    /// </summary>
     public partial class ParticipantCreateForm : StyledForm
     {
+        /// <summary>
+        /// »нициализирует новый экземпл€р <see cref="ParticipantCreateForm"/>
+        /// </summary>
         public ParticipantCreateForm()
         {
             InitializeComponent();
+
+            Shown += (_, _) => participantName.Focus();
         }
 
         protected override void ApplyStylings()
