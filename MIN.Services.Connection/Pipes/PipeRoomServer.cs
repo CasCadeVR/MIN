@@ -5,6 +5,7 @@ using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models;
+using MIN.Services.Contracts.Constants;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
@@ -45,7 +46,7 @@ namespace MIN.Services.Connection.Pipes
 
             this.room = room.GetSerializableCopy();
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            connectionSlots = new SemaphoreSlim(room.MaximumParticipants, room.MaximumParticipants);
+            connectionSlots = new SemaphoreSlim(this.room.MaximumParticipants, this.room.MaximumParticipants);
             isRunning = true;
 
             pipeSecurity = new PipeSecurity();
@@ -85,7 +86,7 @@ namespace MIN.Services.Connection.Pipes
                     var clientPipeSlot = NamedPipeServerStreamAcl.Create(
                         PipeNameProvider.GetRoomPipeName(room!.Id),
                         PipeDirection.InOut,
-                        room.MaximumParticipants,
+                        RoomServerConstants.TheoreticallyMaximumMessageSize,
                         PipeTransmissionMode.Byte,
                         PipeOptions.Asynchronous | PipeOptions.WriteThrough,
                         0, 0,
@@ -104,11 +105,6 @@ namespace MIN.Services.Connection.Pipes
                     {
                         await HandleClientConnectionLossAsync(connection, cancellationToken);
                     }, cancellationToken);
-
-                    if (activeConnections.Count < room!.MaximumParticipants)
-                    {
-                        continue;
-                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -239,7 +235,13 @@ namespace MIN.Services.Connection.Pipes
 
                             if (roomInfoRequestMessage.MaxParticipants != null)
                             {
+                                var previousMaximumParticipants = room!.MaximumParticipants;
                                 room!.MaximumParticipants = (int)roomInfoRequestMessage.MaxParticipants;
+
+                                if (room!.MaximumParticipants > previousMaximumParticipants)
+                                {
+                                    connectionSlots!.Release();
+                                }
                             }
 
                             var roomInfo = GetRoomInfo();

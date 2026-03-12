@@ -25,12 +25,11 @@ namespace MIN.Desktop.Components
 
         private void ApplyStylings()
         {
-            participantName.Font = FontScheme.Monospace;
-            lastOnline.Font = FontScheme.Caption;
-            participantRole.Font = FontScheme.Monospace;
+            participantName.Font = FontScheme.Caption;
+            lastOnline.Font = FontScheme.MicroCaption;
+            participantRole.Font = FontScheme.Caption;
 
             tableLayoutPanelLabels.BackColor = ColorScheme.IncomingMessageBackground;
-            Dock = DockStyle.Top;
         }
 
         private void FillLabels()
@@ -43,6 +42,7 @@ namespace MIN.Desktop.Components
             else
             {
                 participantRole.Text = "";
+                tableLayoutPanelLabels.ColumnStyles[1].Width = 0;
             }
 
             var lastMessage = room.ChatHistory

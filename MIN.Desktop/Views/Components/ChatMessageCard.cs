@@ -46,8 +46,8 @@ namespace MIN.Desktop.Components
             tableLayoutPanelLabels.BackColor = senderColor;
 
             senderName.Font = FontScheme.Monospace;
-            sendRole.Font = FontScheme.Monospace;
-            sendTime.Font = FontScheme.Caption;
+            sendRole.Font = FontScheme.MicroCaption;
+            sendTime.Font = FontScheme.MicroCaption;
             sendMessage.Font = FontScheme.Default;
         }
 

@@ -39,7 +39,7 @@
             // 
             tableLayoutPanelLabels.ColumnCount = 2;
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 36F));
             tableLayoutPanelLabels.Controls.Add(participantRole, 1, 0);
             tableLayoutPanelLabels.Controls.Add(lastOnline, 0, 1);
             tableLayoutPanelLabels.Controls.Add(participantName, 0, 0);
@@ -48,7 +48,7 @@
             tableLayoutPanelLabels.Margin = new Padding(0);
             tableLayoutPanelLabels.Name = "tableLayoutPanelLabels";
             tableLayoutPanelLabels.RowCount = 2;
-            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanelLabels.Size = new Size(239, 40);
             tableLayoutPanelLabels.TabIndex = 2;
@@ -57,11 +57,11 @@
             // 
             participantRole.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             participantRole.AutoSize = true;
-            participantRole.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            participantRole.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
             participantRole.ForeColor = Color.FromArgb(0, 0, 0);
-            participantRole.Location = new Point(197, 0);
+            participantRole.Location = new Point(208, 0);
             participantRole.Name = "participantRole";
-            participantRole.Size = new Size(39, 17);
+            participantRole.Size = new Size(28, 20);
             participantRole.TabIndex = 3;
             participantRole.Text = "Роль";
             // 
@@ -72,9 +72,9 @@
             lastOnline.Dock = DockStyle.Fill;
             lastOnline.Font = new Font("Segoe UI", 6.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             lastOnline.ForeColor = Color.FromArgb(0, 0, 0);
-            lastOnline.Location = new Point(3, 24);
+            lastOnline.Location = new Point(3, 20);
             lastOnline.Name = "lastOnline";
-            lastOnline.Size = new Size(233, 16);
+            lastOnline.Size = new Size(233, 20);
             lastOnline.TabIndex = 2;
             lastOnline.Text = "Последний раз в сети";
             // 
@@ -83,11 +83,11 @@
             participantName.AutoEllipsis = true;
             participantName.AutoSize = true;
             participantName.Dock = DockStyle.Fill;
-            participantName.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            participantName.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
             participantName.ForeColor = Color.FromArgb(0, 0, 0);
             participantName.Location = new Point(3, 0);
             participantName.Name = "participantName";
-            participantName.Size = new Size(185, 24);
+            participantName.Size = new Size(197, 20);
             participantName.TabIndex = 0;
             participantName.Text = "Имя";
             // 
@@ -97,7 +97,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(tableLayoutPanelLabels);
             Margin = new Padding(5);
-            MinimumSize = new Size(239, 40);
+            MinimumSize = new Size(0, 40);
             Name = "ParticipantCard";
             Size = new Size(239, 40);
             tableLayoutPanelLabels.ResumeLayout(false);

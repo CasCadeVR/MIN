@@ -23,6 +23,11 @@ public static class FontScheme
     public readonly static Font Caption = new Font("Segoe UI", 8f, FontStyle.Regular);
 
     /// <summary>
+    /// Очень мелкий текст
+    /// </summary>
+    public readonly static Font MicroCaption = new Font("Segoe UI", 7f, FontStyle.Regular);
+
+    /// <summary>
     /// Моноширинный (для кода, номеров, идентификаторов)
     /// </summary>
     public readonly static Font Monospace = new Font("Lucida Sans Typewriter", 10f, FontStyle.Regular, GraphicsUnit.Point);

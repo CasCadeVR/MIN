@@ -61,7 +61,11 @@ namespace MIN.Desktop
             chatRoomService.RoomStateChanged += OnRoomStateChangedEvent;
             chatRoomService.ConnectionLost += ConnectionLostEvent;
 
-            notificationService.OnNotificationClick += () => WindowState = FormWindowState.Normal;
+            notificationService.OnNotificationClick += () =>
+            {
+                WindowState = FormWindowState.Normal;
+                Focus();
+            };
             notificationService.NotificationTurnOffClicked += () => notificationComboBox.Checked = false;
         }
 
@@ -99,11 +103,11 @@ namespace MIN.Desktop
             uiContext.Post(_ => OnConnectionLost(e.Reason), null);
         }
 
-        private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity)
+        private void UpdateStatsAndInvoke()
         {
             if (InvokeRequired)
             {
-                Invoke(action, entity);
+                Invoke(UpdateStatsAndInvoke);
                 return;
             }
 
@@ -129,13 +133,13 @@ namespace MIN.Desktop
         private void OnParticipantJoined(Participant participant)
         {
             SendParticipantJoinedMessage(participant);
-            UpdateStatsAndInvoke(OnParticipantJoined, participant);
+            UpdateStatsAndInvoke();
         }
 
         private void OnParticipantLeft(Participant participant)
         {
             SendParticipantLeftMessage(participant);
-            UpdateStatsAndInvoke(OnParticipantJoined, participant);
+            UpdateStatsAndInvoke();
         }
 
         private void OnConnectionLost(string reason)
@@ -231,8 +235,7 @@ namespace MIN.Desktop
             foreach (var participant in room.CurrentParticipants)
             {
                 var card = new ParticipantCard(participant, room);
-                card.MinimumSize = new Size(Width - splitContainerSideBar.SplitterDistance - (card.Margin.Left * 6), card.Height);
-                card.Size = card.MinimumSize;
+                card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
                 participantsFlow.Controls.Add(card);
             }
         }
@@ -322,7 +325,7 @@ namespace MIN.Desktop
                     lastMessage = message;
                 }
 
-                row.Width = chatFlow.Width - chatFlow.Margin.Left;
+                row.Width = chatFlow.Width;
                 row.container.Controls.Add(rowControl);
                 chatFlow.Controls.Add(row);
                 chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
@@ -331,7 +334,6 @@ namespace MIN.Desktop
                 {
                     row.Height = card.ResizeOutOfPrefferedSize();
                 }
-
             }
             finally
             {
@@ -361,10 +363,10 @@ namespace MIN.Desktop
 
             participantsFlow.BackColor = ColorScheme.DividerColor;
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;
+            chatFlow.Padding = new Padding(chatFlow.Padding.Left, chatFlow.Padding.Top, chatFlow.Padding.Right, 8);
 
             tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
             tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
-            changeMessageBoxSize();
         }
 
         private bool IsMessageValid()
@@ -503,6 +505,14 @@ namespace MIN.Desktop
         private void messageTextBox_TextChanged(object sender, EventArgs e)
         {
             changeMessageBoxSize();
+        }
+
+        private void participantsFlow_Resize(object sender, EventArgs e)
+        {
+            foreach (ParticipantCard card in participantsFlow.Controls.OfType<ParticipantCard>())
+            {
+                card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
+            }
         }
     }
 }
