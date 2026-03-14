@@ -67,6 +67,7 @@
             // 
             // lastOnline
             // 
+            lastOnline.AutoEllipsis = true;
             lastOnline.AutoSize = true;
             tableLayoutPanelLabels.SetColumnSpan(lastOnline, 2);
             lastOnline.Dock = DockStyle.Fill;

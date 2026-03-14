@@ -33,14 +33,14 @@
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             connectButton = new CommonButton();
             tableLayoutPanelLabels = new TableLayoutPanel();
+            creatorLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            roomNumberLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            currentlyConnectedLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
             computer = new MIN.Desktop.Components.Labels.Heading3Label();
             classroom = new MIN.Desktop.Components.Labels.Heading3Label();
             hostName = new MIN.Desktop.Components.Labels.Heading3Label();
             computerNumberLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
-            currentlyConnectedLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
-            roomNumberLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
-            creatorLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -86,6 +86,7 @@
             // Title
             // 
             Title.Anchor = AnchorStyles.None;
+            Title.AutoEllipsis = true;
             Title.AutoSize = true;
             Title.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             Title.ForeColor = Color.Black;
@@ -138,6 +139,42 @@
             tableLayoutPanelLabels.Size = new Size(255, 121);
             tableLayoutPanelLabels.TabIndex = 1;
             // 
+            // creatorLabel
+            // 
+            creatorLabel.Anchor = AnchorStyles.Right;
+            creatorLabel.AutoSize = true;
+            creatorLabel.Font = new Font("Segoe UI", 8.25F);
+            creatorLabel.ForeColor = Color.Black;
+            creatorLabel.Location = new Point(60, 8);
+            creatorLabel.Name = "creatorLabel";
+            creatorLabel.Size = new Size(64, 13);
+            creatorLabel.TabIndex = 11;
+            creatorLabel.Text = "Создатель:";
+            // 
+            // roomNumberLabel
+            // 
+            roomNumberLabel.Anchor = AnchorStyles.Right;
+            roomNumberLabel.AutoSize = true;
+            roomNumberLabel.Font = new Font("Segoe UI", 8.25F);
+            roomNumberLabel.ForeColor = Color.Black;
+            roomNumberLabel.Location = new Point(70, 38);
+            roomNumberLabel.Name = "roomNumberLabel";
+            roomNumberLabel.Size = new Size(54, 13);
+            roomNumberLabel.TabIndex = 10;
+            roomNumberLabel.Text = "Кабинет:";
+            // 
+            // currentlyConnectedLabel
+            // 
+            currentlyConnectedLabel.Anchor = AnchorStyles.Right;
+            currentlyConnectedLabel.AutoSize = true;
+            currentlyConnectedLabel.Font = new Font("Segoe UI", 8.25F);
+            currentlyConnectedLabel.ForeColor = Color.Black;
+            currentlyConnectedLabel.Location = new Point(45, 99);
+            currentlyConnectedLabel.Name = "currentlyConnectedLabel";
+            currentlyConnectedLabel.Size = new Size(79, 13);
+            currentlyConnectedLabel.TabIndex = 9;
+            currentlyConnectedLabel.Text = "Подключено:";
+            // 
             // participantsInfo
             // 
             participantsInfo.Anchor = AnchorStyles.Left;
@@ -177,6 +214,7 @@
             // hostName
             // 
             hostName.Anchor = AnchorStyles.Left;
+            hostName.AutoEllipsis = true;
             hostName.AutoSize = true;
             hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             hostName.ForeColor = Color.FromArgb(0, 0, 0);
@@ -197,42 +235,6 @@
             computerNumberLabel.Size = new Size(59, 13);
             computerNumberLabel.TabIndex = 8;
             computerNumberLabel.Text = "№ Компа:";
-            // 
-            // currentlyConnectedLabel
-            // 
-            currentlyConnectedLabel.Anchor = AnchorStyles.Right;
-            currentlyConnectedLabel.AutoSize = true;
-            currentlyConnectedLabel.Font = new Font("Segoe UI", 8.25F);
-            currentlyConnectedLabel.ForeColor = Color.Black;
-            currentlyConnectedLabel.Location = new Point(45, 99);
-            currentlyConnectedLabel.Name = "currentlyConnectedLabel";
-            currentlyConnectedLabel.Size = new Size(79, 13);
-            currentlyConnectedLabel.TabIndex = 9;
-            currentlyConnectedLabel.Text = "Подключено:";
-            // 
-            // roomNumberLabel
-            // 
-            roomNumberLabel.Anchor = AnchorStyles.Right;
-            roomNumberLabel.AutoSize = true;
-            roomNumberLabel.Font = new Font("Segoe UI", 8.25F);
-            roomNumberLabel.ForeColor = Color.Black;
-            roomNumberLabel.Location = new Point(70, 38);
-            roomNumberLabel.Name = "roomNumberLabel";
-            roomNumberLabel.Size = new Size(54, 13);
-            roomNumberLabel.TabIndex = 10;
-            roomNumberLabel.Text = "Кабинет:";
-            // 
-            // creatorLabel
-            // 
-            creatorLabel.Anchor = AnchorStyles.Right;
-            creatorLabel.AutoSize = true;
-            creatorLabel.Font = new Font("Segoe UI", 8.25F);
-            creatorLabel.ForeColor = Color.Black;
-            creatorLabel.Location = new Point(60, 8);
-            creatorLabel.Name = "creatorLabel";
-            creatorLabel.Size = new Size(64, 13);
-            creatorLabel.TabIndex = 11;
-            creatorLabel.Text = "Создатель:";
             // 
             // RoomCard
             // 

@@ -365,12 +365,12 @@ namespace MIN.Desktop
             editButton.Dock = DockStyle.Right;
             editButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             editButton.FlatStyle = FlatStyle.Flat;
-            editButton.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            editButton.Font = new Font("Segoe UI", 6.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             editButton.ForeColor = Color.FromArgb(248, 249, 255);
-            editButton.Location = new Point(147, 3);
+            editButton.Location = new Point(127, 3);
             editButton.Name = "editButton";
             editButton.Padding = new Padding(8, 4, 8, 4);
-            editButton.Size = new Size(37, 37);
+            editButton.Size = new Size(57, 37);
             editButton.TabIndex = 17;
             editButton.Text = ". . .";
             editButton.UseVisualStyleBackColor = false;

@@ -26,6 +26,7 @@ namespace MIN.Desktop
         private readonly CancellationTokenSource formCancellationTokenSource = new();
         private readonly SynchronizationContext uiContext;
         private readonly int hideSideBarWidth;
+        private readonly int messageMinPadding = 4;
         private readonly System.Windows.Forms.Timer resizeTimer = new() { Interval = 150 };
 
         private bool isResizing;
@@ -309,7 +310,7 @@ namespace MIN.Desktop
                         isSelfMessage |= lastMessage.SenderPCName == message.SenderPCName;
 
                         minutesPassed = (message.Time - lastMessage.Time).Minutes;
-                        minutesPassed = minutesPassed > 4 ? 8 : minutesPassed + 4;
+                        minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
                     }
 
                     rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders: isSelfMessage)
@@ -363,7 +364,7 @@ namespace MIN.Desktop
 
             participantsFlow.BackColor = ColorScheme.DividerColor;
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;
-            chatFlow.Padding = new Padding(chatFlow.Padding.Left, chatFlow.Padding.Top, chatFlow.Padding.Right, 8);
+            chatFlow.Padding = new Padding(chatFlow.Padding.Left, chatFlow.Padding.Top, chatFlow.Padding.Right, messageMinPadding);
 
             tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
             tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
