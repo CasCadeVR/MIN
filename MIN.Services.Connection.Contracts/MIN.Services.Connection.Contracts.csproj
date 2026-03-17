@@ -10,4 +10,8 @@
     <ProjectReference Include="..\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Enums\" />
+  </ItemGroup>
+
 </Project>

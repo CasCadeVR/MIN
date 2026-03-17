@@ -1,4 +1,4 @@
-﻿using MIN.Services.Contracts.Models;
+﻿using MIN.Services.Contracts.Models.Participants;
 
 namespace MIN.Desktop.Infrastructure.Services
 {

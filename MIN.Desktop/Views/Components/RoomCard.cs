@@ -4,6 +4,8 @@ using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Contracts.Models.Events;
+using MIN.Services.Contracts.Models.Participants;
+using MIN.Services.Contracts.Models.Rooms;
 using MIN.Services.Services;
 
 namespace MIN.Desktop.Components

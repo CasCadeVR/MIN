@@ -1,5 +1,6 @@
 ﻿using MIN.Desktop.Contracts;
-using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Models.Participants;
+using MIN.Services.Contracts.Models.Rooms;
 
 namespace MIN.Desktop.Components
 {

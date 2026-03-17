@@ -6,6 +6,8 @@ using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Contracts.Models.Participants;
+using MIN.Services.Contracts.Models.Rooms;
 
 namespace MIN.Services.Connection.Pipes.Discovering
 {

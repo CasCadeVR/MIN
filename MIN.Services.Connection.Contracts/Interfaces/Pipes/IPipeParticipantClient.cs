@@ -1,5 +1,6 @@
-﻿using MIN.Services.Contracts.Models;
-using MIN.Services.Contracts.Models.Messages;
+﻿using MIN.Services.Contracts.Models.Messages;
+using MIN.Services.Contracts.Models.Participants;
+using MIN.Services.Contracts.Models.Rooms;
 
 namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
 {

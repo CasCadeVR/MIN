@@ -1,44 +1,51 @@
-﻿using MIN.Services.Contracts.Models.Messages;
+﻿using MIN.Entities.Contracts;
+using MIN.Messaging.Contracts.Messages;
 
-namespace MIN.Services.Contracts.Models;
+namespace MIN.Entities;
 
 /// <summary>
 /// Комната
 /// </summary>
-/// <remarks>
-/// Инициализирует новый экземпляр <see cref="Room"/>
-/// </remarks>
-public class Room(string name = "Room", int maximumParticipants = 2)
+public class Room : IRoomData
 {
     /// <summary>
-    /// Идентификатор комнаты
+    /// Инициализирует новый экземпляр <see cref="Room"/>
     /// </summary>
+    public Room(string name = "Неизвестная Комната", int maximumParticipants = 2)
+    {
+        Name = name;
+        MaximumParticipants = maximumParticipants;
+    }
+
+    /// <inheritdoc />
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    /// <summary>
-    /// Название комнаты
-    /// </summary>
-    public string Name { get; set; } = name;
+    /// <inheritdoc />
+    public string Name { get; set; }
 
-    /// <summary>
-    /// Максимальное количество участников
-    /// </summary>
-    public int MaximumParticipants { get; set; } = maximumParticipants;
+    /// <inheritdoc />
+    public int MaximumParticipants { get; set; }
+
+    /// <inheritdoc />
+    public int ParticipantCount => CurrentParticipants.Count;
+
+    /// <inheritdoc />
+    public bool IsActive { get; set; }
 
     /// <summary>
     /// Хост комнаты
     /// </summary>
-    public virtual Participant HostParticipant { get; set; } = null!;
+    public IParticipantData HostParticipant { get; set; } = null!;
 
     /// <summary>
     /// Получить историю чата
     /// </summary>
-    public List<ChatMessage> ChatHistory { get; private set; } = new();
+    public List<IMessage> ChatHistory { get; private set; } = new();
 
     /// <summary>
     /// Получить текущих участников комнаты
     /// </summary>
-    public List<Participant> CurrentParticipants { get; private set; } = new();
+    public List<IParticipantData> CurrentParticipants { get; private set; } = new();
 
     /// <summary>
     /// Заполнена ли комната
@@ -48,7 +55,7 @@ public class Room(string name = "Room", int maximumParticipants = 2)
     /// <summary>
     /// Добавить участника в комнату
     /// </summary>
-    public void AddParticipant(Participant participant)
+    public void AddParticipant(IParticipantData participant)
     {
         if (IsFull)
         {
@@ -70,16 +77,25 @@ public class Room(string name = "Room", int maximumParticipants = 2)
     /// <summary>
     /// Добавить сообщение
     /// </summary>
-    public void AddMessage(ChatMessage message)
+    public void AddMessage(IMessage message)
         => ChatHistory.Add(message);
 
     /// <summary>
     /// Обновить информацию о комнате
     /// </summary>
-    public void UpdateInfo(Room room)
+    public void UpdateInfo(IRoomData room)
     {
         Name = room.Name;
         MaximumParticipants = room.MaximumParticipants;
-        HostParticipant = room.HostParticipant;
     }
+
+    /// <summary>
+    /// Деактивировать комнату
+    /// </summary>
+    public void Deactivate() => IsActive = false;
+
+    /// <summary>
+    /// Активировать комнату
+    /// </summary>
+    public void Activate() => IsActive = true;
 }

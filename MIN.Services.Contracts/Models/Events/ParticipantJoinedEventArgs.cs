@@ -1,4 +1,6 @@
-﻿namespace MIN.Services.Contracts.Models.Events;
+﻿using MIN.Services.Contracts.Models.Participants;
+
+namespace MIN.Services.Contracts.Models.Events;
 
 /// <summary>
 /// Аргументы события входа участника

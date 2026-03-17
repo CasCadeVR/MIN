@@ -1,7 +1,7 @@
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Infrastructure.Services;
-using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Models.Rooms;
 
 namespace MIN.Desktop
 {

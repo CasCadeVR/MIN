@@ -6,6 +6,7 @@ using MIN.Desktop.Infrastructure.Services;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Contracts.Models.Rooms;
 using MIN.Services.Services;
 
 namespace MIN.Desktop

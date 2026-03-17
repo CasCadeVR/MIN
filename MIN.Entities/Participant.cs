@@ -1,9 +1,11 @@
-﻿namespace MIN.Services.Contracts.Models;
+﻿using MIN.Entities.Contracts;
+
+namespace MIN.Entities;
 
 /// <summary>
 /// Участник комнаты
 /// </summary>
-public class Participant
+public class Participant : IParticipantData
 {
     /// <summary>
     /// Идентификатор участника

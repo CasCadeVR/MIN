@@ -1,4 +1,5 @@
 ﻿using MIN.Services.Contracts.Models.Enums;
+using MIN.Services.Contracts.Models.Rooms;
 
 namespace MIN.Services.Contracts.Models.Events;
 

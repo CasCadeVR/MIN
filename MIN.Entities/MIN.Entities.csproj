@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MIN.Entities.Contracts\MIN.Entities.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Messaging.Contracts\MIN.Messaging.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

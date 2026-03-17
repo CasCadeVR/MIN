@@ -1,5 +1,5 @@
 ﻿using MIN.Services.Connection.Contracts.Models;
-using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Models.Rooms;
 
 namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
 {

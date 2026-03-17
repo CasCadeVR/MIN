@@ -1,5 +1,5 @@
 ﻿using System.IO.Pipes;
-using MIN.Services.Contracts.Models;
+using MIN.Services.Contracts.Models.Participants;
 
 namespace MIN.Services.Connection.Contracts.Models
 {

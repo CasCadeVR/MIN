@@ -1,0 +1,262 @@
+MIN
++-- .editorconfig
++-- .gitignore
++-- get-structure.ps1
++-- images
+|   +-- logoImage.png
+|   +-- paperclip.png
+|   +-- send.png
+|   +-- settings.png
++-- MIN.Cryptography
+|   +-- CryptoProvider.cs
+|   +-- KeyProvider.cs
+|   +-- MIN.Cryptography.csproj
+|   +-- Storage
+|       +-- FileSystemKeyStorage.cs
++-- MIN.Cryptography.Contracts
+|   +-- Interfaces
+|   |   +-- ICryptoProvider.cs
+|   |   +-- IKeyProvider.cs
+|   |   +-- Storage
+|   |       +-- IKeyStorage.cs
+|   +-- MIN.Cryptography.Contracts.csproj
+|   +-- Models
+|       +-- KeyPair.cs
++-- MIN.Desktop
+|   +-- Components
+|   |   +-- Controls
+|   |   |   +-- Buttons
+|   |   |   |   +-- CommonButton.cs
+|   |   |   |   +-- InvertedButton.cs
+|   |   |   +-- CheckBoxes
+|   |   |   |   +-- BaseCheckBox.cs
+|   |   |   |   +-- DefaultCheckBox.cs
+|   |   |   +-- DGVs
+|   |   |   |   +-- BaseDataGridView.cs
+|   |   |   |   +-- OneColumnDataGridView.cs
+|   |   |   +-- FlowLayoutPanels
+|   |   |   |   +-- NoHorizontalScrollFlowLayoutPanel.cs
+|   |   |   +-- ListBoxes
+|   |   |   |   +-- BaseListBox.cs
+|   |   |   |   +-- DefaultListBox.cs
+|   |   |   +-- NumericUpDowns
+|   |   |   |   +-- BaseNumericUpDown.cs
+|   |   |   |   +-- DefaultNumericUpDown.cs
+|   |   |   +-- RadioButtons
+|   |   |   |   +-- BaseRadioButton.cs
+|   |   |   |   +-- DefaultRadioButton.cs
+|   |   |   +-- TextBoxes
+|   |   |       +-- BaseTextBox.cs
+|   |   |       +-- DefaultTextBox.cs
+|   |   |       +-- MessageTextBox.cs
+|   |   |       +-- ReadonlyTextBox.cs
+|   |   +-- Labels
+|   |       +-- BaseLabel.cs
+|   |       +-- CaptionLabel.cs
+|   |       +-- Heading1Label.cs
+|   |       +-- Heading3Label.cs
+|   |       +-- PrimaryLabel.cs
+|   +-- Contracts
+|   |   +-- Constants
+|   |   |   +-- DesktopConstants.cs
+|   |   +-- Interfaces
+|   |   |   +-- INotificationService.cs
+|   |   |   +-- IStyled.cs
+|   |   +-- Schemes
+|   |   |   +-- ColorScheme.cs
+|   |   |   +-- FontScheme.cs
+|   |   +-- Views
+|   |       +-- Forms
+|   |           +-- BaseForm.cs
+|   |           +-- BaseForm.Designer.cs
+|   |           +-- BaseForm.resx
+|   |           +-- StyledForm.cs
+|   |           +-- StyledForm.Designer.cs
+|   |           +-- StyledForm.resx
+|   +-- Infrastructure
+|   |   +-- Services
+|   |       +-- AppUserProvider.cs
+|   |       +-- NotificationService.cs
+|   |       +-- SettingsProvider.cs
+|   +-- logo.ico
+|   +-- MIN.Desktop.csproj
+|   +-- MIN.Desktop.csproj.user
+|   +-- Program.cs
+|   +-- Properties
+|   |   +-- Resources.Designer.cs
+|   |   +-- Resources.resx
+|   +-- Resources
+|   |   +-- logo.png
+|   |   +-- logoImage.png
+|   |   +-- paperclip.png
+|   |   +-- send.png
+|   |   +-- settings.png
+|   +-- Views
+|       +-- Components
+|       |   +-- ChatMessageCard.cs
+|       |   +-- ChatMessageCard.Designer.cs
+|       |   +-- ChatMessageCard.resx
+|       |   +-- ChatMessageRow.cs
+|       |   +-- ChatMessageRow.Designer.cs
+|       |   +-- ChatMessageRow.resx
+|       |   +-- ParticipantCard.cs
+|       |   +-- ParticipantCard.Designer.cs
+|       |   +-- ParticipantCard.resx
+|       |   +-- RoomCard.cs
+|       |   +-- RoomCard.Designer.cs
+|       |   +-- RoomCard.resx
+|       +-- Forms
+|           +-- ChatForm.cs
+|           +-- ChatForm.Designer.cs
+|           +-- ChatForm.resx
+|           +-- HelperForms
+|           |   +-- LogForm.cs
+|           |   +-- LogForm.Designer.cs
+|           |   +-- LogForm.resx
+|           |   +-- NotificationForm.cs
+|           |   +-- NotificationForm.Designer.cs
+|           |   +-- NotificationForm.resx
+|           |   +-- ParticipantCreateForm.cs
+|           |   +-- ParticipantCreateForm.Designer.cs
+|           |   +-- ParticipantCreateForm.resx
+|           |   +-- RoomCreateForm.cs
+|           |   +-- RoomCreateForm.Designer.cs
+|           |   +-- RoomCreateForm.resx
+|           +-- MainForm.cs
+|           +-- MainForm.Designer.cs
+|           +-- MainForm.resx
+|           +-- SettingsForm.cs
+|           +-- SettingsForm.Designer.cs
+|           +-- SettingsForm.resx
++-- MIN.Entities
+|   +-- MIN.Entities.csproj
+|   +-- Participant.cs
+|   +-- Room.cs
++-- MIN.Entities.Contracts
+|   +-- IParticipantData.cs
+|   +-- IRoomData.cs
+|   +-- MIN.Entities.Contracts.csproj
++-- MIN.Events
+|   +-- Class1.cs
+|   +-- MIN.Events.csproj
++-- MIN.Events.Contracts
+|   +-- Class1.cs
+|   +-- MIN.Events.Contracts.csproj
++-- MIN.Messaging
+|   +-- Class1.cs
+|   +-- MIN.Messaging.csproj
++-- MIN.Messaging.Contracts
+|   +-- Dispatcher
+|   +-- Handlers
+|   +-- Messages
+|   |   +-- BaseMessage.cs
+|   |   +-- IMessage.cs
+|   |   +-- MessageTypeTag.cs
+|   +-- MIN.Messaging.Contracts.csproj
+|   +-- Models
+|       +-- Entities
+|       |   +-- ParticipantInfo.cs
+|       |   +-- RoomInfo.cs
+|       +-- RoomRelated
+|       |   +-- ParticipantRelated
+|       |       +-- ChatTextMessage.cs
+|       |       +-- ParticipantJoinedMessage.cs
+|       |       +-- ParticipantLeftMessage.cs
+|       +-- Stateless
+|           +-- DiscoveryRequestMessage.cs
+|           +-- DiscoveryResponseMessage.cs
+|           +-- HandshakeAckMessage.cs
+|           +-- HandshakeMessage.cs
+|           +-- RoomInfoMessage.cs
+|           +-- RoomInfoRequestMessage.cs
++-- MIN.Services
+|   +-- Extensions
+|   |   +-- ChatMessageExtensions.cs
+|   |   +-- ParticipantExtensions.cs
+|   |   +-- RoomExtensions.cs
+|   +-- MIN.Services.csproj
+|   +-- Services
+|       +-- CollegeNetworkComputerProvider.cs
+|       +-- CollegePCNameParser.cs
+|       +-- GitHubUpdateService.cs
+|       +-- LoggerProvider.cs
+|       +-- PipeNameProvider.cs
++-- MIN.Services.Connection
+|   +-- Cryptographing
+|   |   +-- CryptoProvider.cs
+|   |   +-- KeyProvider.cs
+|   +-- MIN.Services.Connection.csproj
+|   +-- Pipes
+|   |   +-- ChatRoomService.cs
+|   |   +-- Discovering
+|   |   |   +-- DiscoveryClient.cs
+|   |   |   +-- DiscoveryPipeNameProvider.cs
+|   |   |   +-- DiscoveryServer.cs
+|   |   +-- PipeParticipantClient.cs
+|   |   +-- PipeRoomServer.cs
+|   +-- Serialize
+|       +-- CommonPipeMessageSerializer.cs
+|       +-- CryptoPipeMessageSerializer.cs
++-- MIN.Services.Connection.Contracts
+|   +-- Interfaces
+|   |   +-- Cryptographing
+|   |   |   +-- ICryptoProvider.cs
+|   |   |   +-- IKeyProvider.cs
+|   |   +-- Discovering
+|   |   |   +-- IDiscoveryClient.cs
+|   |   |   +-- IDiscoveryServer.cs
+|   |   +-- Pipes
+|   |   |   +-- IPipeParticipantClient.cs
+|   |   |   +-- IPipeRoomServer.cs
+|   |   +-- Serialize
+|   |       +-- IPipeMessageSerializer.cs
+|   +-- MIN.Services.Connection.Contracts.csproj
+|   +-- Models
+|       +-- ClientConnection.cs
+|       +-- Cryptographing
+|       |   +-- KeyPair.cs
+|       +-- Enums
+|       +-- Exceptions
+|           +-- RoomDiscoveryException.cs
++-- MIN.Services.Connection.Tests
+|   +-- CryptographyTests.cs
+|   +-- MIN.Services.Connection.Tests.csproj
++-- MIN.Services.Contracts
+|   +-- Constants
+|   |   +-- ChatMessageConstants.cs
+|   |   +-- RoomServerConstants.cs
+|   +-- Interfaces
+|   |   +-- IChatRoomService.cs
+|   |   +-- ILocalNetworkComputerProvider.cs
+|   |   +-- ILoggerProvider.cs
+|   |   +-- ISettingsProvider.cs
+|   |   +-- IUpdateService.cs
+|   +-- MIN.Services.Contracts.csproj
+|   +-- Models
+|       +-- DiscoveredRoom.cs
+|       +-- Enums
+|       |   +-- LogLevel.cs
+|       |   +-- RoomState.cs
+|       |   +-- SearchMethod.cs
+|       +-- Events
+|       |   +-- ConnectionLostEventArgs.cs
+|       |   +-- MessageReceivedEventArgs.cs
+|       |   +-- ParticipantJoinedEventArgs.cs
+|       |   +-- ParticipantLeftEventArgs.cs
+|       |   +-- RoomStateChangedEventArgs.cs
+|       +-- Participants
+|       |   +-- Participant.cs
+|       +-- Rooms
+|       |   +-- Room.cs
+|       +-- Settings.cs
+|       +-- Updates
+|           +-- UpdateCheckResult.cs
++-- MIN.sln
++-- MIN.Transport.Contracts
+|   +-- Class1.cs
+|   +-- MIN.Transport.Contracts.csproj
++-- MIN.Transport.NamedPipes
+|   +-- Class1.cs
+|   +-- MIN.Transport.NamedPipes.csproj
++-- README.md
++-- structure.txt
