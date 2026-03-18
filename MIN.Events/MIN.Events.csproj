@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MIN.Events.Contracts\MIN.Events.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Messaging\MIN.Messaging.csproj" />
+  </ItemGroup>
+
 </Project>

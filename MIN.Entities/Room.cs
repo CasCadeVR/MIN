@@ -1,5 +1,5 @@
 ﻿using MIN.Entities.Contracts;
-using MIN.Messaging.Contracts.Messages;
+using MIN.Messaging.Contracts;
 
 namespace MIN.Entities;
 

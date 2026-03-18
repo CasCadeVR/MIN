@@ -7,11 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Handlers\" />
-    <Folder Include="Dispatcher\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MIN.Entities.Contracts\MIN.Entities.Contracts.csproj" />
   </ItemGroup>
 
