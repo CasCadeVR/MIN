@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.IO.Pipes;
+﻿using System.IO.Pipes;
+using System.Net.NetworkInformation;
 using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models.Exceptions;
@@ -25,6 +25,8 @@ namespace MIN.Services.Connection.Pipes.Discovering
 
         async Task<DiscoveredRoom?> IDiscoveryClient.DiscoverRoomAsync(string targetPCName, TimeSpan timeout, CancellationToken cancellationToken)
         {
+            await PingAsync(targetPCName, timeout, cancellationToken);
+
             var pipeName = DiscoveryPipeNameProvider.GetDiscoveryPipeName(targetPCName);
 
             using var pipe = new NamedPipeClientStream(
@@ -53,6 +55,29 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 }
 
                 return discoveryInfo;
+            }
+            catch (Exception ex) when (ex is not RoomDiscoveryException)
+            {
+                throw new RoomDiscoveryException(ex.Message);
+            }
+        }
+
+        private async Task PingAsync(string host, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            try
+            {
+                using var pingSender = new Ping();
+                var pingTask = pingSender.SendPingAsync(host, timeout, cancellationToken: cancellationToken);
+                if (await Task.WhenAny(pingTask, Task.Delay(timeout, cancellationToken)) == pingTask)
+                {
+                    var reply = await pingTask;
+                    if (reply.Status == IPStatus.Success)
+                    {
+                        return;
+                    }
+                    throw new RoomDiscoveryException(reply.Status.ToString());
+                }
+                throw new RoomDiscoveryException("Истекло время проверки порта.");
             }
             catch (Exception ex) when (ex is not RoomDiscoveryException)
             {

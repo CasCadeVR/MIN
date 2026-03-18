@@ -60,19 +60,37 @@ namespace MIN.Services.Connection.Pipes
 
         async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
         {
+            var roomDiscoveringTasks = new List<RoomDiscoveringTask>();
+            discoveryClient = new DiscoveryClient(serializer, logger);
+
             foreach (var pcName in targetPCNames)
             {
+                logger.Log($"Пытаюсь достучаться до компьютера: {pcName}...", LogLevel.Information);
+                var roomDiscoveringTask = new RoomDiscoveringTask
+                {
+                    PcName = pcName,
+                    Task = discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs), cancellationToken)
+                };
+                roomDiscoveringTasks.Add(roomDiscoveringTask);
+            }
+
+            while (roomDiscoveringTasks.Count > 0)
+            {
+                var firstFinished = await Task.WhenAny(roomDiscoveringTasks.Select(t => t.Task));
+                var finishedTask = roomDiscoveringTasks.First(t => t.Task == firstFinished);
+
+                roomDiscoveringTasks.Remove(finishedTask);
+
                 DiscoveredRoom? room = null;
                 try
                 {
-                    discoveryClient = new DiscoveryClient(serializer, logger);
-                    logger.Log($"Пытаюсь достучаться до компьютера: {pcName}...", LogLevel.Information);
-                    room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs), cancellationToken);
+                    room = await firstFinished;
                 }
                 catch (RoomDiscoveryException ex)
                 {
-                    logger.Log($"Не удалось достучаться до компьютера: {pcName}: {ex.Message}", LogLevel.Information);
+                    logger.Log($"Не удалось достучаться до компьютера: {finishedTask.PcName}: {ex.Message}", LogLevel.Information);
                 }
+
                 if (room != null)
                 {
                     yield return room;
