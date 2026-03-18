@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using MIN.Services.Connection.Contracts.Interfaces.Discovering;
+﻿using MIN.Services.Connection.Contracts.Interfaces.Discovering;
 using MIN.Services.Connection.Contracts.Interfaces.Pipes;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
 using MIN.Services.Connection.Contracts.Models.Exceptions;
@@ -58,7 +57,7 @@ namespace MIN.Services.Connection.Pipes
             client.Disconnected += (s, e) => OnTransportDisconnected();
         }
 
-        async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs)
+        async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
         {
             var roomDiscoveringTasks = new List<RoomDiscoveringTask>();
             discoveryClient = new DiscoveryClient(serializer, logger);
@@ -74,12 +73,12 @@ namespace MIN.Services.Connection.Pipes
                 roomDiscoveringTasks.Add(roomDiscoveringTask);
             }
 
-            while (roomDiscoveringTasks.Count > 0)
+            var activeTasks = roomDiscoveringTasks.ToDictionary(t => t.Task, t => t);
+            while (activeTasks.Count > 0)
             {
-                var firstFinished = await Task.WhenAny(roomDiscoveringTasks.Select(t => t.Task));
-                var finishedTask = roomDiscoveringTasks.First(t => t.Task == firstFinished);
-
-                roomDiscoveringTasks.Remove(finishedTask);
+                var firstFinished = await Task.WhenAny(activeTasks.Keys);
+                var discoveringTask = activeTasks[firstFinished];
+                activeTasks.Remove(firstFinished);
 
                 DiscoveredRoom? room = null;
                 try
@@ -88,7 +87,7 @@ namespace MIN.Services.Connection.Pipes
                 }
                 catch (RoomDiscoveryException ex)
                 {
-                    logger.Log($"Не удалось достучаться до компьютера: {finishedTask.PcName}: {ex.Message}", LogLevel.Information);
+                    logger.Log($"Не удалось достучаться до компьютера: {discoveringTask.PcName}: {ex.Message}");
                 }
 
                 if (room != null)

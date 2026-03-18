@@ -54,6 +54,8 @@ namespace MIN.Services.Connection.Pipes.Discovering
                     return null;
                 }
 
+                logger.Log("Получил сообщения");
+
                 return discoveryInfo;
             }
             catch (Exception ex) when (ex is not RoomDiscoveryException)

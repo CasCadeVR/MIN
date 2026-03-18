@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
 using MIN.Services.Connection.Contracts.Interfaces.Serialize;
@@ -30,15 +31,24 @@ namespace MIN.Services.Connection.Serialize
         async Task<object> IPipeMessageSerializer.ReadMessageAsync(Stream stream, Guid senderId, CancellationToken cancellationToken)
         {
             var lengthBuffer = new byte[4];
+            var sw = Stopwatch.StartNew();
             await stream.ReadExactlyAsync(lengthBuffer, cancellationToken);
+            sw.Stop();
+            Debug.WriteLine($"Чтение заняло {sw.ElapsedMilliseconds}ms");
             var length = BitConverter.ToInt32(lengthBuffer, 0);
 
             var typeBuffer = new byte[1];
+            sw.Restart();
             await stream.ReadExactlyAsync(typeBuffer, cancellationToken);
+            sw.Stop();
+            Debug.WriteLine($"Чтение заняло {sw.ElapsedMilliseconds}ms");
             var messageType = (MessageTypeTag)typeBuffer[0];
 
             var dataBuffer = new byte[length];
+            sw.Restart();
             await stream.ReadExactlyAsync(dataBuffer, cancellationToken);
+            sw.Stop();
+            Debug.WriteLine($"Чтение заняло {sw.ElapsedMilliseconds}ms");
 
             switch (messageType)
             {
