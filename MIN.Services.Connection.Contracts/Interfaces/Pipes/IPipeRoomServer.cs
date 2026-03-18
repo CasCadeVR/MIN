@@ -36,6 +36,6 @@ namespace MIN.Services.Connection.Contracts.Interfaces.Pipes
         /// <summary>
         /// Привязанная к серверу комната
         /// </summary>
-        Room Room { get; }
+        Room? Room { get; }
     }
 }

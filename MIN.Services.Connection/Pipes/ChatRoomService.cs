@@ -58,7 +58,7 @@ namespace MIN.Services.Connection.Pipes
             client.Disconnected += (s, e) => OnTransportDisconnected();
         }
 
-        async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
+        async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs)
         {
             var roomDiscoveringTasks = new List<RoomDiscoveringTask>();
             discoveryClient = new DiscoveryClient(serializer, logger);
@@ -122,7 +122,7 @@ namespace MIN.Services.Connection.Pipes
         }
 
         /// <inheritdoc cref="IPipeParticipantClient.GetUpdatedRoomInfoAsync(CancellationToken)"/>
-        async Task IChatRoomService.GetUpdatedRoomInfoAsync(CancellationToken cancellationToken = default)
+        async Task IChatRoomService.GetUpdatedRoomInfoAsync(CancellationToken cancellationToken)
         {
             ObjectDisposedException.ThrowIf(isDisposed, nameof(ChatRoomService));
 
@@ -183,8 +183,11 @@ namespace MIN.Services.Connection.Pipes
                     {
                         await client.DisconnectAsync(cancellationToken);
                     }
+                    if (discoveryServer != null)
+                    {
+                        await discoveryServer.StopAsync();
+                    }
                     await server.StopAsync();
-                    await discoveryServer.StopAsync();
                 }
                 else if (!IsHost && client.IsConnected)
                 {
@@ -193,7 +196,7 @@ namespace MIN.Services.Connection.Pipes
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error during disconnect: {ex.Message}");
+                logger.Log($"Произошла ошибка во время отключения от сервера: {ex.Message}", LogLevel.Error);
             }
             finally
             {
@@ -229,9 +232,9 @@ namespace MIN.Services.Connection.Pipes
         {
             currentRoom?.AddParticipant(participant);
 
-            if (IsHost)
+            if (currentRoom!.HostParticipant.Id == participant.Id && server.IsRunning)
             {
-                discoveryServer = new DiscoveryServer(participant, server.Room, serializer, logger);
+                discoveryServer = new DiscoveryServer(participant, server.Room!, serializer, logger);
                 await discoveryServer.StartAsync(cancellationTokenSource!.Token);
             }
 

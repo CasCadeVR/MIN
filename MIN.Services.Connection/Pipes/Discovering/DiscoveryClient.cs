@@ -9,7 +9,7 @@ using MIN.Services.Contracts.Models;
 namespace MIN.Services.Connection.Pipes.Discovering
 {
     /// <inheritdoc cref="IDiscoveryClient"/>
-    public class DiscoveryClient : IDiscoveryClient, IAsyncDisposable
+    public class DiscoveryClient : IDiscoveryClient, IDisposable
     {
         private readonly IPipeMessageSerializer serializer;
         private readonly ILoggerProvider logger;
@@ -85,6 +85,6 @@ namespace MIN.Services.Connection.Pipes.Discovering
             }
         }
 
-        public async ValueTask DisposeAsync() { }
+        public void Dispose() { }
     }
 }

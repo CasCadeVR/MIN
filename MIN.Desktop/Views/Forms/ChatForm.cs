@@ -25,7 +25,11 @@ namespace MIN.Desktop
         private readonly INotificationService notificationService;
         private readonly CancellationTokenSource formCancellationTokenSource = new();
         private readonly SynchronizationContext uiContext;
+        private readonly int hideSideBarWidth;
+        private readonly int messageMinPadding = 4;
+        private readonly System.Windows.Forms.Timer resizeTimer = new() { Interval = 150 };
 
+        private bool isResizing;
         private Room room = null!;
         private ChatMessage lastMessage = null!;
 
@@ -36,9 +40,16 @@ namespace MIN.Desktop
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
+            resizeTimer.Tick += (s, e) =>
+            {
+                resizeTimer.Stop();
+                isResizing = false;
+                PerformResize();
+            };
 
             this.chatRoomService = chatRoomService;
             this.notificationService = notificationService;
+            hideSideBarWidth = MinimumSize.Width + splitContainerSideBar.Panel2.Width;
 
             SubscribeToChatEvents();
         }
@@ -51,7 +62,11 @@ namespace MIN.Desktop
             chatRoomService.RoomStateChanged += OnRoomStateChangedEvent;
             chatRoomService.ConnectionLost += ConnectionLostEvent;
 
-            notificationService.OnNotificationClick += () => WindowState = FormWindowState.Normal;
+            notificationService.OnNotificationClick += () =>
+            {
+                WindowState = FormWindowState.Normal;
+                Focus();
+            };
             notificationService.NotificationTurnOffClicked += () => notificationComboBox.Checked = false;
         }
 
@@ -89,11 +104,11 @@ namespace MIN.Desktop
             uiContext.Post(_ => OnConnectionLost(e.Reason), null);
         }
 
-        private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity)
+        private void UpdateStatsAndInvoke()
         {
             if (InvokeRequired)
             {
-                Invoke(action, entity);
+                Invoke(UpdateStatsAndInvoke);
                 return;
             }
 
@@ -119,13 +134,13 @@ namespace MIN.Desktop
         private void OnParticipantJoined(Participant participant)
         {
             SendParticipantJoinedMessage(participant);
-            UpdateStatsAndInvoke(OnParticipantJoined, participant);
+            UpdateStatsAndInvoke();
         }
 
         private void OnParticipantLeft(Participant participant)
         {
             SendParticipantLeftMessage(participant);
-            UpdateStatsAndInvoke(OnParticipantJoined, participant);
+            UpdateStatsAndInvoke();
         }
 
         private void OnConnectionLost(string reason)
@@ -144,8 +159,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            room.AddMessage(message);
-            if (notificationComboBox.Checked && WindowState == FormWindowState.Minimized)
+            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
             {
                 notificationService.Notify(message, room.Name);
             }
@@ -160,7 +174,10 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
-            room.AddMessage(roomMessage);
+            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
+            {
+                notificationService.Notify(roomMessage, room.Name);
+            }
             AddMessageToChatFlow(roomMessage);
         }
 
@@ -172,7 +189,10 @@ namespace MIN.Desktop
                 MessageType = MessageType.System,
             };
 
-            room.AddMessage(roomMessage);
+            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
+            {
+                notificationService.Notify(roomMessage, room.Name);
+            }
             AddMessageToChatFlow(roomMessage);
         }
 
@@ -195,7 +215,7 @@ namespace MIN.Desktop
             hostName.Text = AppUserProvider.Instance.CurrentUser.PCName == room.HostParticipant.PCName ? "Ты" : room.HostParticipant.Name;
             editButton.Visible = AppUserProvider.Instance.CurrentUser.PCName == room.HostParticipant.PCName;
 
-            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.PCName, out int roomNumber, out int computerNumber))
+            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.PCName, out var roomNumber, out var computerNumber))
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
@@ -216,8 +236,7 @@ namespace MIN.Desktop
             foreach (var participant in room.CurrentParticipants)
             {
                 var card = new ParticipantCard(participant, room);
-                card.MinimumSize = new Size(Width - splitContainerSideBar.SplitterDistance - (card.Margin.Left * 6), card.Height);
-                card.Size = card.MinimumSize;
+                card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
                 participantsFlow.Controls.Add(card);
             }
         }
@@ -264,47 +283,64 @@ namespace MIN.Desktop
 
         private void AddMessageToChatFlow(ChatMessage message)
         {
-            var row = new ChatMessageRow();
-            Control rowControl = new Label();
-
-            if (message.MessageType == MessageType.System)
+            chatFlow.SuspendLayout();
+            try
             {
-                rowControl = new PrimaryLabel()
-                {
-                    Text = message.Content,
-                    Anchor = AnchorStyles.None,
-                };
-            }
-            else if (message.MessageType == MessageType.Text)
-            {
-                var removeHeaders = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName;
+                var row = new ChatMessageRow();
+                Control rowControl = null!;
 
-                var minutesPassed = 0;
-
-                if (lastMessage != null)
+                if (message.MessageType == MessageType.System)
                 {
-                    minutesPassed = (message.Time - lastMessage.Time).Minutes;
-                    minutesPassed = minutesPassed > 10 ? 10 : minutesPassed;
-                    removeHeaders |= lastMessage.SenderPCName == message.SenderPCName;
+                    rowControl = new PrimaryLabel()
+                    {
+                        Text = message.Content,
+                        Anchor = AnchorStyles.None,
+                    };
+
+                    row.Height = rowControl.Height;
+                }
+                else if (message.MessageType == MessageType.Text)
+                {
+                    var isSelfMessage = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName;
+
+                    var minutesPassed = 0;
+
+                    if (lastMessage != null)
+                    {
+                        isSelfMessage |= lastMessage.SenderPCName == message.SenderPCName;
+
+                        minutesPassed = (message.Time - lastMessage.Time).Minutes;
+                        minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
+                    }
+
+                    rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders: isSelfMessage)
+                    {
+                        Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
+                            ? AnchorStyles.Right
+                            : AnchorStyles.Left,
+                        Margin = new Padding(20, 0, 20, 0)
+                    };
+
+                    row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
+
+                    lastMessage = message;
                 }
 
-                rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders)
+                row.Width = chatFlow.Width;
+                row.container.Controls.Add(rowControl);
+                chatFlow.Controls.Add(row);
+                chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
+
+                if (rowControl is ChatMessageCard card)
                 {
-                    Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
-                        ? AnchorStyles.Right
-                        : AnchorStyles.Left,
-                };
-
-                row.Margin = new Padding(0, (minutesPassed * 2) / 5, 0, 0);
-
-                lastMessage = message;
+                    row.Height = card.ResizeOutOfPrefferedSize();
+                }
             }
-
-            row.Size = new Size(chatFlow.Width - (row.Margin.Left * 2) - chatFlow.Margin.Left, rowControl.Height);
-            row.container.Controls.Add(rowControl);
-            chatFlow.Controls.Add(row);
-            chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
-            chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
+            finally
+            {
+                chatFlow.ResumeLayout(true);
+                chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
+            }
         }
 
         protected override void ApplyStylings()
@@ -328,10 +364,10 @@ namespace MIN.Desktop
 
             participantsFlow.BackColor = ColorScheme.DividerColor;
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;
+            chatFlow.Padding = new Padding(chatFlow.Padding.Left, chatFlow.Padding.Top, chatFlow.Padding.Right, messageMinPadding);
 
             tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
             tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
-            changeMessageBoxSize();
         }
 
         private bool IsMessageValid()
@@ -353,7 +389,7 @@ namespace MIN.Desktop
 
             try
             {
-                await chatRoomService.SendMessageAsync(messageTextBox.Text, MessageType.Text);
+                await chatRoomService.SendMessageAsync(messageTextBox.Text.Trim(), MessageType.Text);
             }
             catch (Exception ex) when (ex is ArgumentException)
             {
@@ -369,9 +405,45 @@ namespace MIN.Desktop
 
         private void chatFlow_Resize(object sender, EventArgs e)
         {
-            foreach (ChatMessageRow control in chatFlow.Controls)
+            if (Width <= hideSideBarWidth)
             {
-                control.Width = chatFlow.Width - (control.Margin.Left * 2) - chatFlow.Margin.Left;
+                if (!splitContainerSideBar.Panel2Collapsed)
+                {
+                    closeButton_Click(sender, e);
+                }
+                aboutButton.Visible = false;
+            }
+            else
+            {
+                aboutButton.Visible = true;
+            }
+
+            if (!isResizing)
+            {
+                isResizing = true;
+                resizeTimer.Stop();
+                resizeTimer.Start();
+            }
+        }
+
+        private void PerformResize()
+        {
+            chatFlow.SuspendLayout();
+            try
+            {
+                foreach (ChatMessageRow row in chatFlow.Controls)
+                {
+                    row.Width = chatFlow.Width - row.Margin.Horizontal;
+                    var child = row.container.Controls[0];
+                    if (child is ChatMessageCard card)
+                    {
+                        row.Height = card.ResizeOutOfPrefferedSize();
+                    }
+                }
+            }
+            finally
+            {
+                chatFlow.ResumeLayout();
             }
         }
 
@@ -434,6 +506,14 @@ namespace MIN.Desktop
         private void messageTextBox_TextChanged(object sender, EventArgs e)
         {
             changeMessageBoxSize();
+        }
+
+        private void participantsFlow_Resize(object sender, EventArgs e)
+        {
+            foreach (ParticipantCard card in participantsFlow.Controls.OfType<ParticipantCard>())
+            {
+                card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
+            }
         }
     }
 }

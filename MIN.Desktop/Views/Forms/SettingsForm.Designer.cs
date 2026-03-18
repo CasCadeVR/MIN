@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            var dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            var dataGridViewCellStyle2 = new DataGridViewCellStyle();
             splitContainer = new SplitContainer();
             tableLayoutPanelHeader = new TableLayoutPanel();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
@@ -316,14 +316,14 @@
             preferredPcNameList.BackgroundColor = Color.FromArgb(255, 255, 255);
             preferredPcNameList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             preferredPcNameList.Columns.AddRange(new DataGridViewColumn[] { PCName });
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = Color.FromArgb(106, 91, 255);
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 8.25F);
-            dataGridViewCellStyle1.ForeColor = Color.FromArgb(255, 255, 255);
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.False;
-            preferredPcNameList.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(106, 91, 255);
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 8.25F);
+            dataGridViewCellStyle2.ForeColor = Color.FromArgb(255, 255, 255);
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            preferredPcNameList.DefaultCellStyle = dataGridViewCellStyle2;
             preferredPcNameList.Dock = DockStyle.Fill;
             preferredPcNameList.Font = new Font("Segoe UI", 8.25F);
             preferredPcNameList.GridColor = Color.FromArgb(248, 249, 255);
@@ -359,7 +359,6 @@
             // 
             logButton.Anchor = AnchorStyles.Right;
             logButton.BackColor = Color.FromArgb(248, 249, 255);
-            logButton.DialogResult = DialogResult.Cancel;
             logButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
             logButton.FlatAppearance.BorderSize = 2;
             logButton.FlatStyle = FlatStyle.Flat;
@@ -383,6 +382,7 @@
             Margin = new Padding(3, 4, 3, 4);
             MinimumSize = new Size(432, 189);
             Name = "SettingsForm";
+            StartPosition = FormStartPosition.CenterParent;
             Text = "MIN - Настройки";
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);

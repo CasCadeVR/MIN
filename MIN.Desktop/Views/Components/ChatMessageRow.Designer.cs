@@ -38,7 +38,7 @@
             container.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             container.Dock = DockStyle.Fill;
             container.Location = new Point(0, 0);
-            container.Margin = new Padding(6);
+            container.Margin = new Padding(0);
             container.Name = "container";
             container.RowCount = 1;
             container.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -51,6 +51,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             Controls.Add(container);
+            Margin = new Padding(0);
             Name = "ChatMessageRow";
             Size = new Size(622, 70);
             ResumeLayout(false);

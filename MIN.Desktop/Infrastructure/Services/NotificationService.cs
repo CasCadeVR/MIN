@@ -20,9 +20,9 @@ namespace MIN.Desktop.Infrastructure.Services
                 return;
             }
 
-            Form mainForm = Application.OpenForms[0];
+            var mainForm = Application.OpenForms[0];
 
-            if (mainForm.InvokeRequired)
+            if (mainForm!.InvokeRequired)
             {
                 mainForm.Invoke(new Action(() => CreateAndShow(message, roomName)));
             }
@@ -37,6 +37,8 @@ namespace MIN.Desktop.Infrastructure.Services
             lock (@lock)
             {
                 var notification = new NotificationForm(message, roomName);
+                notification.NotificationTurnOffClicked += NotificationTurnOffClicked;
+                notification.NotificationClicked += OnNotificationClick;
 
                 var screen = Screen.FromPoint(Cursor.Position);
                 screen ??= Screen.PrimaryScreen!;
@@ -46,24 +48,23 @@ namespace MIN.Desktop.Infrastructure.Services
 
                 activeNotifications.Add(notification);
 
-                RepositionAll(screen, baseX, baseY);
+                RepositionAll(baseX, baseY);
 
                 notification.FormClosed += (s, e) =>
                 {
                     lock (@lock)
                     {
                         activeNotifications.Remove(notification);
-                        RepositionAll(screen, baseX, baseY);
+                        RepositionAll(baseX, baseY);
                     }
                 };
-                notification.NotificationTurnOffClicked += NotificationTurnOffClicked;
-                notification.NotificationClicked += OnNotificationClick;
+
                 notification.Show();
                 notification.StartAppearAnimation(notification.Location);
             }
         }
 
-        private static void RepositionAll(Screen screen, int baseX, int baseY)
+        private static void RepositionAll(int baseX, int baseY)
         {
             var offsetY = 0;
 

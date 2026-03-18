@@ -32,9 +32,9 @@
             notificationTurnOff = new MIN.Desktop.Components.Labels.CaptionLabel();
             logoName = new MIN.Desktop.Components.Labels.CaptionLabel();
             roomName = new MIN.Desktop.Components.Labels.PrimaryLabel();
-            senderAndContent = new MIN.Desktop.Components.Labels.PrimaryLabel();
             logo = new PictureBox();
             closeButton = new MIN.Desktop.Components.Labels.CaptionLabel();
+            senderAndContent = new MIN.Desktop.Components.Labels.PrimaryLabel();
             tableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)logo).BeginInit();
             SuspendLayout();
@@ -48,17 +48,18 @@
             tableLayoutPanel.Controls.Add(notificationTurnOff, 1, 0);
             tableLayoutPanel.Controls.Add(logoName, 0, 0);
             tableLayoutPanel.Controls.Add(roomName, 0, 1);
-            tableLayoutPanel.Controls.Add(senderAndContent, 0, 2);
-            tableLayoutPanel.Controls.Add(logo, 2, 1);
+            tableLayoutPanel.Controls.Add(logo, 2, 2);
             tableLayoutPanel.Controls.Add(closeButton, 2, 0);
+            tableLayoutPanel.Controls.Add(senderAndContent, 0, 2);
             tableLayoutPanel.Cursor = Cursors.Hand;
             tableLayoutPanel.Dock = DockStyle.Fill;
             tableLayoutPanel.Location = new Point(0, 0);
             tableLayoutPanel.Name = "tableLayoutPanel";
             tableLayoutPanel.RowCount = 3;
-            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 31.5789471F));
-            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 31.5789471F));
-            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 36.8421059F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel.Size = new Size(281, 77);
             tableLayoutPanel.TabIndex = 0;
             // 
@@ -69,7 +70,7 @@
             notificationTurnOff.Cursor = Cursors.Hand;
             notificationTurnOff.Font = new Font("Segoe UI", 8F);
             notificationTurnOff.ForeColor = Color.FromArgb(64, 64, 64);
-            notificationTurnOff.Location = new Point(162, 5);
+            notificationTurnOff.Location = new Point(162, 1);
             notificationTurnOff.Name = "notificationTurnOff";
             notificationTurnOff.Size = new Size(68, 13);
             notificationTurnOff.TabIndex = 5;
@@ -84,7 +85,7 @@
             logoName.Location = new Point(3, 0);
             logoName.Name = "logoName";
             logoName.Size = new Size(28, 13);
-            logoName.TabIndex = 1;
+            logoName.TabIndex = 0;
             logoName.Text = "MIN";
             // 
             // roomName
@@ -94,38 +95,22 @@
             tableLayoutPanel.SetColumnSpan(roomName, 2);
             roomName.Cursor = Cursors.Hand;
             roomName.Dock = DockStyle.Fill;
-            roomName.Font = new Font("Segoe UI", 9.75F);
+            roomName.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             roomName.ForeColor = Color.FromArgb(45, 43, 58);
-            roomName.Location = new Point(3, 24);
+            roomName.Location = new Point(3, 15);
             roomName.Name = "roomName";
-            roomName.Size = new Size(227, 24);
+            roomName.Size = new Size(227, 15);
             roomName.TabIndex = 2;
             roomName.Text = "Загрузка...";
-            // 
-            // senderAndContent
-            // 
-            senderAndContent.AutoEllipsis = true;
-            senderAndContent.AutoSize = true;
-            tableLayoutPanel.SetColumnSpan(senderAndContent, 2);
-            senderAndContent.Cursor = Cursors.Hand;
-            senderAndContent.Dock = DockStyle.Fill;
-            senderAndContent.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            senderAndContent.ForeColor = Color.FromArgb(45, 43, 58);
-            senderAndContent.Location = new Point(3, 48);
-            senderAndContent.Name = "senderAndContent";
-            senderAndContent.Size = new Size(227, 29);
-            senderAndContent.TabIndex = 3;
-            senderAndContent.Text = "Загрузка...";
             // 
             // logo
             // 
             logo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             logo.BackgroundImage = Properties.Resources.logoImage;
             logo.BackgroundImageLayout = ImageLayout.Zoom;
-            logo.Location = new Point(236, 27);
+            logo.Location = new Point(236, 33);
             logo.Name = "logo";
-            tableLayoutPanel.SetRowSpan(logo, 2);
-            logo.Size = new Size(42, 47);
+            logo.Size = new Size(42, 41);
             logo.TabIndex = 0;
             logo.TabStop = false;
             // 
@@ -141,10 +126,26 @@
             closeButton.Location = new Point(260, 3);
             closeButton.Margin = new Padding(3);
             closeButton.Name = "closeButton";
-            closeButton.Size = new Size(18, 18);
+            tableLayoutPanel.SetRowSpan(closeButton, 2);
+            closeButton.Size = new Size(18, 19);
             closeButton.TabIndex = 4;
             closeButton.Text = "X";
             closeButton.Click += closeButton_Click;
+            // 
+            // senderAndContent
+            // 
+            senderAndContent.AutoEllipsis = true;
+            senderAndContent.AutoSize = true;
+            tableLayoutPanel.SetColumnSpan(senderAndContent, 2);
+            senderAndContent.Dock = DockStyle.Fill;
+            senderAndContent.Font = new Font("Segoe UI", 9.75F);
+            senderAndContent.ForeColor = Color.FromArgb(45, 43, 58);
+            senderAndContent.Location = new Point(3, 30);
+            senderAndContent.Name = "senderAndContent";
+            senderAndContent.Size = new Size(227, 47);
+            senderAndContent.TabIndex = 6;
+            senderAndContent.Text = "Загрузка...";
+            senderAndContent.UseMnemonic = false;
             // 
             // NotificationForm
             // 
@@ -167,8 +168,8 @@
         private PictureBox logo;
         private Desktop.Components.Labels.CaptionLabel logoName;
         private Desktop.Components.Labels.PrimaryLabel roomName;
-        private Desktop.Components.Labels.PrimaryLabel senderAndContent;
         private Desktop.Components.Labels.CaptionLabel closeButton;
         private Desktop.Components.Labels.CaptionLabel notificationTurnOff;
+        private Desktop.Components.Labels.PrimaryLabel senderAndContent;
     }
 }

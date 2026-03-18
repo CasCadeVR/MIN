@@ -1,5 +1,6 @@
 ﻿using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Services.Contracts.Models.Enums;
 using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Desktop.Views.Forms.HelperForms
@@ -8,9 +9,9 @@ namespace MIN.Desktop.Views.Forms.HelperForms
     {
         private readonly ChatMessage message;
         private readonly string messageRoomName;
-        private System.Windows.Forms.Timer appearTimer;
-        private System.Windows.Forms.Timer disappearTimer;
-        private System.Windows.Forms.Timer closeTimer;
+        private System.Windows.Forms.Timer appearTimer = null!;
+        private System.Windows.Forms.Timer disappearTimer = null!;
+        private System.Windows.Forms.Timer closeTimer = null!;
 
         private const int ANIMATION_INTERVAL_MS = 16;
         private const int ANIMATION_DURATION_MS = 400;
@@ -56,8 +57,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void InitializeEvents()
         {
             tableLayoutPanel.MouseClick += (_, _) => OnClicked();
-            senderAndContent.MouseClick += (_, _) => OnClicked();
             roomName.MouseClick += (_, _) => OnClicked();
+            senderAndContent.MouseClick += (_, _) => OnClicked();
         }
 
         private void OnClicked()
@@ -69,26 +70,28 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void InitializeTimers()
         {
             appearTimer = new System.Windows.Forms.Timer { Interval = ANIMATION_INTERVAL_MS };
-            appearTimer.Tick += AppearTimer_Tick;
+            appearTimer.Tick += AppearTimer_Tick!;
 
             disappearTimer = new System.Windows.Forms.Timer { Interval = ANIMATION_INTERVAL_MS };
-            disappearTimer.Tick += DisappearTimer_Tick;
+            disappearTimer.Tick += DisappearTimer_Tick!;
 
             closeTimer = new System.Windows.Forms.Timer { Interval = DISPLAY_DURATION_MS };
-            closeTimer.Tick += (s, e) => CloseNotification();
+            closeTimer.Tick += (_, _) => CloseNotification();
         }
 
         private void FillFields()
         {
             roomName.Text = $"Комната {messageRoomName}";
-            senderAndContent.Text = $"{message.SenderName}: {message.Content}";
+            senderAndContent.Text = message.MessageType == MessageType.Text
+                ? $"{message.SenderName}: {message.Content}"
+                : $"{message.Content}";
         }
 
         protected override void ApplyStylings()
         {
             tableLayoutPanel.BackColor = ColorScheme.IncomingMessageBackground;
-            logoName.ForeColor = ColorScheme.PrimaryAccent;
-            roomName.ForeColor = ColorScheme.TextPrimary;
+            senderAndContent.Font = FontScheme.Monospace;
+            roomName.Font = FontScheme.Caption;
         }
 
         /// <summary>
@@ -128,6 +131,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             {
                 return;
             }
+            finalLocation = Location;
             isClosing = true;
 
             closeTimer.Stop();

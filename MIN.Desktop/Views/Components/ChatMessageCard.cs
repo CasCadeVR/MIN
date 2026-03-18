@@ -35,8 +35,6 @@ namespace MIN.Desktop.Components
                 sendRole.Visible = false;
             }
 
-            ResizeOutOfPrefferedSize();
-
             var senderColor = chatMessage.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
                 ? ColorScheme.OutgoingMessageBackground
                 : ColorScheme.IncomingMessageBackground;
@@ -48,19 +46,43 @@ namespace MIN.Desktop.Components
             tableLayoutPanelLabels.BackColor = senderColor;
 
             senderName.Font = FontScheme.Monospace;
-            sendRole.Font = FontScheme.Monospace;
-            sendTime.Font = FontScheme.Caption;
+            sendRole.Font = FontScheme.MicroCaption;
+            sendTime.Font = FontScheme.MicroCaption;
             sendMessage.Font = FontScheme.Default;
         }
 
-        public void ResizeOutOfPrefferedSize()
+        /// <summary>
+        /// Подстроивает размеры сообщений под текст внутри и возвращает полученную высоту
+        /// </summary>
+        public int ResizeOutOfPrefferedSize()
         {
-            Height = Convert.ToInt32(tableLayoutPanelLabels.RowStyles[0].Height)
-               + sendMessage.PreferredSize.Height
-               + sendMessage.Margin.Vertical * 2;
+            var wantedWidth = Math.Min(Convert.ToInt32(Parent!.Width * 0.85),
+                Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
+                + Math.Max(sendMessage.PreferredSize.Width, removeHeaders ? 0 : senderName.PreferredSize.Width)
+                + sendMessage.Margin.Horizontal * 2);
 
-            Width = Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
-                + Math.Max(sendMessage.PreferredSize.Width, senderName.PreferredSize.Width);
+            if (Width == wantedWidth)
+            {
+                return Height;
+            }
+
+            Width = wantedWidth;
+
+            var lineCount = CalculateLineCount();
+
+            var gottenHeight = Convert.ToInt32(tableLayoutPanelLabels.RowStyles[0].Height)
+                + (lineCount * (sendMessage.Font.Height - 1))
+                + sendMessage.Margin.Vertical * 2;
+
+            Height = gottenHeight;
+            return gottenHeight;
+        }
+
+        private int CalculateLineCount()
+        {
+            var lastCharLine = sendMessage.GetLineFromCharIndex(sendMessage.Text.Length - 1);
+            var resultLines = Math.Max(1, lastCharLine + 1);
+            return resultLines;
         }
 
         private void FillLabels()

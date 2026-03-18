@@ -23,6 +23,8 @@ namespace MIN.Desktop
             Room = room ?? new Room();
 
             InitializeComponent();
+
+            Shown += (_, _) => roomName.Focus();
         }
 
         protected override void ApplyStylings()
@@ -43,21 +45,29 @@ namespace MIN.Desktop
             }
         }
 
-        private bool IsRoomValid()
+        private void ValidateRoom()
         {
-            return !string.IsNullOrEmpty(Room.Name);
+            if (string.IsNullOrEmpty(roomName.Text))
+            {
+                throw new InvalidOperationException("Имя комнаты не может быть пустым");
+            }
+
+            if (!isNew && roomMaximumCount.Value < Room.CurrentParticipants.Count)
+            {
+                throw new InvalidOperationException("Максимальное количество участников не может быть меньше текущего количества участников");
+            }
         }
 
         private void createButton_Click(object sender, EventArgs e)
         {
-            Room.Name = roomName.Text;
-            Room.MaximumParticipants = Convert.ToInt32(roomMaximumCount.Value);
-            Room.HostParticipant = AppUserProvider.Instance.CurrentUser;
-
-            if (!IsRoomValid())
+            try
+            {
+                ValidateRoom();
+            }
+            catch (Exception ex) when (ex is InvalidOperationException)
             {
                 MessageBox.Show(
-                    "Имя комнаты не может быть пустым",
+                    ex.Message,
                     "Ошибка валидации",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Exclamation
@@ -65,6 +75,10 @@ namespace MIN.Desktop
 
                 return;
             }
+
+            Room.Name = roomName.Text;
+            Room.MaximumParticipants = Convert.ToInt32(roomMaximumCount.Value);
+            Room.HostParticipant = AppUserProvider.Instance.CurrentUser;
 
             DialogResult = DialogResult.OK;
         }
@@ -82,11 +96,6 @@ namespace MIN.Desktop
                     DialogResult = DialogResult.Abort;
                 }
             }
-        }
-
-        private void RoomCreateForm_Load(object sender, EventArgs e)
-        {
-            roomName.Focus();
         }
     }
 }
