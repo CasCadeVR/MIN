@@ -51,7 +51,6 @@ namespace MIN.Desktop
             services.AddTransient<IPipeRoomServer, PipeRoomServer>();
             services.AddTransient<IPipeParticipantClient, PipeParticipantClient>();
 
-            services.AddTransient<IDiscoveryServer, DiscoveryServer>();
             services.AddTransient<IDiscoveryClient, DiscoveryClient>();
 
             services.AddScoped<MainForm>();

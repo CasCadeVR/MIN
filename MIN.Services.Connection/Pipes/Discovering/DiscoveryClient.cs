@@ -36,13 +36,11 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough
             );
 
-            var timeoutTask = Task.Delay(timeout, cancellationToken);
             var connectTask = pipe.ConnectAsync(cancellationToken);
 
             try
             {
-                var completed = await Task.WhenAny(connectTask, timeoutTask);
-                if (completed == timeoutTask)
+                if (await Task.WhenAny(connectTask, Task.Delay(timeout, cancellationToken)) != connectTask)
                 {
                     throw new RoomDiscoveryException($"Время подключение к {targetPCName} вышло");
                 }
@@ -70,6 +68,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
             {
                 using var pingSender = new Ping();
                 var pingTask = pingSender.SendPingAsync(host, timeout, cancellationToken: cancellationToken);
+
                 if (await Task.WhenAny(pingTask, Task.Delay(timeout, cancellationToken)) == pingTask)
                 {
                     var reply = await pingTask;
@@ -79,7 +78,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                     }
                     throw new RoomDiscoveryException(reply.Status.ToString());
                 }
-                throw new RoomDiscoveryException("Истекло время проверки порта.");
+                throw new RoomDiscoveryException("Истекло время проверки хоста");
             }
             catch (Exception ex) when (ex is not RoomDiscoveryException)
             {

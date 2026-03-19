@@ -19,6 +19,7 @@ namespace MIN.Services.Connection.Pipes
     {
         private readonly IPipeRoomServer server;
         private readonly IPipeParticipantClient client;
+        private readonly IDiscoveryClient discoveryClient;
         private readonly IPipeMessageSerializer serializer;
         private readonly ILoggerProvider logger;
 
@@ -28,7 +29,6 @@ namespace MIN.Services.Connection.Pipes
         private CancellationTokenSource? cancellationTokenSource = new();
         private bool isDisposed;
         private IDiscoveryServer discoveryServer = null!;
-        private IDiscoveryClient discoveryClient = null!;
 
         private bool IsHost => selfParticipant?.PCName == currentRoom?.HostParticipant.PCName;
 
@@ -42,11 +42,13 @@ namespace MIN.Services.Connection.Pipes
         public ChatRoomService(
             IPipeRoomServer server,
             IPipeParticipantClient client,
+            IDiscoveryClient discoveryClient,
             IPipeMessageSerializer serializer,
             ILoggerProvider logger)
         {
             this.server = server;
             this.client = client;
+            this.discoveryClient = discoveryClient;
             this.serializer = serializer;
             this.logger = logger;
 
@@ -60,17 +62,15 @@ namespace MIN.Services.Connection.Pipes
         async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
         {
             var roomDiscoveringTasks = new List<RoomDiscoveringTask>();
-            discoveryClient = new DiscoveryClient(serializer, logger);
 
             foreach (var pcName in targetPCNames)
             {
                 logger.Log($"Пытаюсь достучаться до компьютера: {pcName}...", LogLevel.Information);
-                var roomDiscoveringTask = new RoomDiscoveringTask
+                roomDiscoveringTasks.Add(new RoomDiscoveringTask
                 {
                     PcName = pcName,
                     Task = discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs), cancellationToken)
-                };
-                roomDiscoveringTasks.Add(roomDiscoveringTask);
+                });
             }
 
             var activeTasks = roomDiscoveringTasks.ToDictionary(t => t.Task, t => t);
