@@ -54,7 +54,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                     return null;
                 }
 
-                logger.Log("Получил сообщения");
+                logger.Log($"Прочитал данные комнаты {targetPCName}");
 
                 return discoveryInfo;
             }
