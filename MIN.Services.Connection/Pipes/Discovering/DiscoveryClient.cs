@@ -37,7 +37,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
             );
 
             var timeoutTask = Task.Delay(timeout, cancellationToken);
-            var connectTask = pipe.ConnectAsync(cancellationToken);
+            var connectTask = pipe.ConnectAsync(timeout, cancellationToken);
 
             try
             {
