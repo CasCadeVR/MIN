@@ -36,7 +36,7 @@ namespace MIN.Services.Connection.Pipes.Discovering
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough
             );
 
-            var connectTask = pipe.ConnectAsync(cancellationToken);
+            var connectTask = pipe.ConnectAsync(timeout, cancellationToken);
 
             try
             {
