@@ -10,7 +10,7 @@ namespace MIN.Services.Contracts.Models
         /// <summary>
         /// Время ожидания поиска комнаты
         /// </summary>
-        public int DiscoveryTimeout { get; set; } = 100;
+        public int DiscoveryTimeout { get; set; } = 300;
 
         /// <summary>
         /// Метод поиска комнат
