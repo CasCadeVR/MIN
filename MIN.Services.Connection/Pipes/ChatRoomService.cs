@@ -21,6 +21,7 @@ namespace MIN.Services.Connection.Pipes
     {
         private readonly IPipeRoomServer server;
         private readonly IPipeParticipantClient client;
+        private readonly IDiscoveryClient discoveryClient;
         private readonly IPipeMessageSerializer serializer;
         private readonly ILoggerProvider logger;
 
@@ -30,7 +31,6 @@ namespace MIN.Services.Connection.Pipes
         private CancellationTokenSource? cancellationTokenSource = new();
         private bool isDisposed;
         private IDiscoveryServer discoveryServer = null!;
-        private IDiscoveryClient discoveryClient = null!;
 
         private bool IsHost => selfParticipant?.PCName == currentRoom?.HostParticipant.PCName;
 
@@ -44,11 +44,13 @@ namespace MIN.Services.Connection.Pipes
         public ChatRoomService(
             IPipeRoomServer server,
             IPipeParticipantClient client,
+            IDiscoveryClient discoveryClient,
             IPipeMessageSerializer serializer,
             ILoggerProvider logger)
         {
             this.server = server;
             this.client = client;
+            this.discoveryClient = discoveryClient;
             this.serializer = serializer;
             this.logger = logger;
 
@@ -59,21 +61,37 @@ namespace MIN.Services.Connection.Pipes
             client.Disconnected += (s, e) => OnTransportDisconnected();
         }
 
-        async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs)
+        async IAsyncEnumerable<DiscoveredRoom> IChatRoomService.DiscoverAvailableRoomsAsync(IEnumerable<string> targetPCNames, int timeoutMs, CancellationToken cancellationToken)
         {
+            var roomDiscoveringTasks = new List<RoomDiscoveringTask>();
+
             foreach (var pcName in targetPCNames)
             {
+                logger.Log($"Пытаюсь достучаться до компьютера: {pcName}...", LogLevel.Information);
+                roomDiscoveringTasks.Add(new RoomDiscoveringTask
+                {
+                    PcName = pcName,
+                    Task = discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs), cancellationToken)
+                });
+            }
+
+            var activeTasks = roomDiscoveringTasks.ToDictionary(t => t.Task, t => t);
+            while (activeTasks.Count > 0)
+            {
+                var firstFinished = await Task.WhenAny(activeTasks.Keys);
+                var discoveringTask = activeTasks[firstFinished];
+                activeTasks.Remove(firstFinished);
+
                 DiscoveredRoom? room = null;
                 try
                 {
-                    discoveryClient = new DiscoveryClient(serializer, logger);
-                    logger.Log($"Пытаюсь достучаться до компьютера: {pcName}...", LogLevel.Information);
-                    room = await discoveryClient.DiscoverRoomAsync(pcName, TimeSpan.FromMilliseconds(timeoutMs));
+                    room = await firstFinished;
                 }
                 catch (RoomDiscoveryException ex)
                 {
-                    logger.Log($"Не удалось достучаться до компьютера: {pcName}: {ex.Message}", LogLevel.Information);
+                    logger.Log($"Не удалось достучаться до компьютера: {discoveringTask.PcName}: {ex.Message}");
                 }
+
                 if (room != null)
                 {
                     yield return room;
