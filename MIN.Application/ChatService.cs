@@ -12,12 +12,12 @@ using MIN.Services.Contracts.Models.Participants;
 using MIN.Services.Contracts.Models.Rooms;
 using MIN.Services.Extensions;
 
-namespace MIN.Services.Connection.Pipes
+namespace MIN.Application
 {
     /// <summary>
-    /// Сервис по работе с подключениями
+    /// Сервис по работе с чатом
     /// </summary>
-    public class ChatRoomService : IChatRoomService, IAsyncDisposable
+    public class ChatService : IChatRoomService, IAsyncDisposable
     {
         private readonly IPipeRoomServer server;
         private readonly IPipeParticipantClient client;
@@ -41,7 +41,7 @@ namespace MIN.Services.Connection.Pipes
         public event EventHandler<RoomStateChangedEventArgs>? RoomStateChanged;
         public event EventHandler<ConnectionLostEventArgs>? ConnectionLost;
 
-        public ChatRoomService(
+        public ChatService(
             IPipeRoomServer server,
             IPipeParticipantClient client,
             IDiscoveryClient discoveryClient,

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MIN.Cryptography.Contracts\MIN.Cryptography.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

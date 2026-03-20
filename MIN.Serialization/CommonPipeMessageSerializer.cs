@@ -6,7 +6,7 @@ using MIN.Services.Contracts.Constants;
 using MIN.Services.Contracts.Models;
 using MIN.Services.Contracts.Models.Messages;
 
-namespace MIN.Services.Connection.Serialize
+namespace MIN.Serialization.Json
 {
     /// <summary>
     /// Обычный сериализатор сообщений

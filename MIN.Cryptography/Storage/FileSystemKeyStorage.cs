@@ -6,7 +6,7 @@ using MIN.Cryptography.Contracts.Models;
 namespace MIN.Cryptography.Storage
 {
     /// <summary>
-    /// Реализация хранилища ключей на основе файловой системы с использованием JSON
+    /// <see cref="IKeyStorage"/> на основе файловой системы
     /// </summary>
     public sealed class FileSystemKeyStorage : IKeyStorage, IDisposable
     {
@@ -34,7 +34,7 @@ namespace MIN.Cryptography.Storage
             };
         }
 
-        public async Task<KeyPair?> LoadLocalKeyPairAsync(CancellationToken cancellationToken = default)
+        async Task<KeyPair?> IKeyStorage.LoadLocalKeyPairAsync(CancellationToken cancellationToken)
         {
             await localKeyLock.WaitAsync(cancellationToken);
             try
@@ -57,7 +57,7 @@ namespace MIN.Cryptography.Storage
             }
         }
 
-        public async Task SaveLocalKeyPairAsync(KeyPair keyPair, CancellationToken cancellationToken = default)
+        async Task IKeyStorage.SaveLocalKeyPairAsync(KeyPair keyPair, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(keyPair);
 
@@ -73,6 +73,7 @@ namespace MIN.Cryptography.Storage
             }
         }
 
+        /// <inheritdoc />
         public async Task<Dictionary<Guid, byte[]>> LoadPartnerPublicKeysAsync(CancellationToken cancellationToken = default)
         {
             await partnersLock.WaitAsync(cancellationToken);
@@ -110,7 +111,7 @@ namespace MIN.Cryptography.Storage
             }
         }
 
-        public async Task SavePartnerPublicKeyAsync(Guid partnerId, byte[] publicKey, CancellationToken cancellationToken = default)
+        async Task IKeyStorage.SavePartnerPublicKeyAsync(Guid partnerId, byte[] publicKey, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(publicKey);
 
@@ -133,7 +134,7 @@ namespace MIN.Cryptography.Storage
             }
         }
 
-        public async Task<byte[]?> LoadPartnerPublicKeyAsync(Guid partnerId, CancellationToken cancellationToken = default)
+        async Task<byte[]?> IKeyStorage.LoadPartnerPublicKeyAsync(Guid partnerId, CancellationToken cancellationToken)
         {
             var partners = await LoadPartnerPublicKeysAsync(cancellationToken);
             return partners.TryGetValue(partnerId, out var key) ? key : null;

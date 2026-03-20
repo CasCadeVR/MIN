@@ -7,11 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
+    <Compile Remove="Models\Enums\**" />
+    <EmbeddedResource Remove="Models\Enums\**" />
+    <None Remove="Models\Enums\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Enums\" />
+    <ProjectReference Include="..\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

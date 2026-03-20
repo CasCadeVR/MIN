@@ -1,10 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
-using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
+using MIN.Cryptography.Contracts.Interfaces;
+using MIN.Messaging.Contracts.Entities;
+using MIN.Messaging.Stateless;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models.Enums;
-using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Cryptography
 {
@@ -19,10 +20,10 @@ namespace MIN.Cryptography
 
         async Task ICryptoProvider.InitializeSessionAsync(Guid partnerId, HandshakeMessage handshake)
         {
-            var sharedSecret = await keyProvider.ComputeSharedSecretAsync(handshake.EcdhPublicKeyDerBase64);
+            var sharedSecret = await keyProvider.ComputeSharedSecretAsync(handshake.PublicKey);
             sharedSecrets[partnerId] = sharedSecret;
 
-            await keyProvider.SavePartnerPublicKeyAsync(partnerId, handshake.EcdhPublicKeyDerBase64);
+            await keyProvider.SavePartnerPublicKeyAsync(partnerId, handshake.PublicKey);
         }
 
         private byte[] GetSessionKey(Guid partnerId)
@@ -35,15 +36,14 @@ namespace MIN.Cryptography
             throw new InvalidOperationException($"Session not initialized for partner: {partnerId}");
         }
 
-        async Task<HandshakeMessage> ICryptoProvider.CreateHandshakeAsync(Guid id)
+        async Task<HandshakeMessage> ICryptoProvider.CreateHandshakeAsync(ParticipantInfo selfParticipant)
         {
             var keys = await keyProvider.GetLocalKeysAsync();
 
             return new HandshakeMessage
             {
-                UserId = id,
-                EcdhPublicKeyDerBase64 = keys.EcdhPublicKeyDerBase64,
-                Timestamp = DateTimeOffset.UtcNow
+                Participant = selfParticipant,
+                PublicKey = keys.EcdhPublicKeyBytes
             };
         }
 
@@ -78,7 +78,6 @@ namespace MIN.Cryptography
             var authTag = encryptedData.AsSpan(encryptedData.Length - 16, 16).ToArray();
             var ciphertextLength = encryptedData.Length - 12 - 16;
             var ciphertext = encryptedData.AsSpan(12, ciphertextLength).ToArray();
-
 
             using var aesGcm = new AesGcm(key, tagSizeInBytes: 16);
             var plaintext = new byte[ciphertext.Length];

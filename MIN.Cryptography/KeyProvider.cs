@@ -65,8 +65,7 @@ namespace MIN.Cryptography
             return ecdh;
         }
 
-        /// <inheritdoc />
-        public async Task<byte[]> ComputeSharedSecretAsync(byte[] partnerPublicKeyBytes)
+        async Task<byte[]> IKeyProvider.ComputeSharedSecretAsync(byte[] partnerPublicKeyBytes)
         {
             using var myEcdh = await GetEcdhPrivateKeyAsync();
 
@@ -89,14 +88,12 @@ namespace MIN.Cryptography
             return aesKey;
         }
 
-        /// <inheritdoc />
-        public async Task SavePartnerPublicKeyAsync(Guid partnerId, byte[] partnerPublicKeyBytes)
+        async Task IKeyProvider.SavePartnerPublicKeyAsync(Guid partnerId, byte[] partnerPublicKeyBytes)
         {
             await storage.SavePartnerPublicKeyAsync(partnerId, partnerPublicKeyBytes);
         }
 
-        /// <inheritdoc />
-        public async Task<byte[]?> GetPartnerPublicKeyAsync(Guid partnerId)
+        async Task<byte[]?> IKeyProvider.GetPartnerPublicKeyAsync(Guid partnerId)
         {
             return await storage.LoadPartnerPublicKeyAsync(partnerId);
         }
@@ -109,7 +106,7 @@ namespace MIN.Cryptography
             {
                 EcdhPublicKeyPem = ecdh.ExportSubjectPublicKeyInfoPem(),
                 EncryptedEcdhPrivateKeyPem = Protect(ecdh.ExportPkcs8PrivateKeyPem()),
-                EcdhPublicKeyDerBase64 = Convert.ToBase64String(ecdh.ExportSubjectPublicKeyInfo()),
+                EcdhPublicKeyBytes = ecdh.ExportSubjectPublicKeyInfo(),
                 CreatedAt = DateTime.UtcNow
             };
         }

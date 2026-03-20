@@ -7,6 +7,13 @@ MIN
 |   +-- paperclip.png
 |   +-- send.png
 |   +-- settings.png
++-- MIN.Application
+|   +-- ChatService.cs
+|   +-- MIN.Application.csproj
++-- MIN.Application.Contracts
+|   +-- Interfaces
+|   |   +-- IChatService.cs
+|   +-- MIN.Application.Contracts.csproj
 +-- MIN.Cryptography
 |   +-- CryptoProvider.cs
 |   +-- KeyProvider.cs
@@ -128,6 +135,12 @@ MIN
 |           +-- SettingsForm.cs
 |           +-- SettingsForm.Designer.cs
 |           +-- SettingsForm.resx
++-- MIN.Dispatcher
+|   +-- Class1.cs
+|   +-- MIN.Dispatcher.csproj
++-- MIN.Dispatcher.Contracts
+|   +-- IMessageDispatcher.cs
+|   +-- MIN.Dispatcher.Contracts.csproj
 +-- MIN.Entities
 |   +-- MIN.Entities.csproj
 |   +-- Participant.cs
@@ -137,38 +150,53 @@ MIN
 |   +-- IRoomData.cs
 |   +-- MIN.Entities.Contracts.csproj
 +-- MIN.Events
-|   +-- Class1.cs
+|   +-- Base
+|   |   +-- BaseEvent.cs
+|   +-- ConnectionStatusChangedEvent.cs
+|   +-- ErrorOccurredEvent.cs
+|   +-- MessageReceivedEvent.cs
 |   +-- MIN.Events.csproj
+|   +-- ParticipantJoinedEvent.cs
+|   +-- ParticipantLeftEvent.cs
+|   +-- RoomStateChangedEvent.cs
 +-- MIN.Events.Contracts
-|   +-- Class1.cs
+|   +-- IEvent.cs
+|   +-- IEventBus.cs
 |   +-- MIN.Events.Contracts.csproj
-+-- MIN.Messaging
++-- MIN.Handlers
 |   +-- Class1.cs
-|   +-- MIN.Messaging.csproj
-+-- MIN.Messaging.Contracts
+|   +-- MIN.Handlers.csproj
++-- MIN.Handlers.Contracts
 |   +-- Dispatcher
-|   +-- Handlers
-|   +-- Messages
-|   |   +-- BaseMessage.cs
-|   |   +-- IMessage.cs
-|   |   +-- MessageTypeTag.cs
-|   +-- MIN.Messaging.Contracts.csproj
+|   |   +-- IMessageDispatcher.cs
+|   +-- IMessageHandler.cs
+|   +-- MIN.Handlers.Contracts.csproj
 |   +-- Models
-|       +-- Entities
-|       |   +-- ParticipantInfo.cs
-|       |   +-- RoomInfo.cs
+|       +-- HandlerResult.cs
+|       +-- MessageContext.cs
++-- MIN.Messaging
+|   +-- MIN.Messaging.csproj
+|   +-- RoomRelated
+|   |   +-- ParticipantRelated
+|   |       +-- ChatTextMessage.cs
+|   |       +-- ParticipantJoinedMessage.cs
+|   |       +-- ParticipantLeftMessage.cs
+|   +-- Stateless
+|       +-- HandshakeAckMessage.cs
+|       +-- HandshakeMessage.cs
 |       +-- RoomRelated
-|       |   +-- ParticipantRelated
-|       |       +-- ChatTextMessage.cs
-|       |       +-- ParticipantJoinedMessage.cs
-|       |       +-- ParticipantLeftMessage.cs
-|       +-- Stateless
 |           +-- DiscoveryRequestMessage.cs
 |           +-- DiscoveryResponseMessage.cs
-|           +-- HandshakeAckMessage.cs
-|           +-- HandshakeMessage.cs
-|           +-- RoomInfoMessage.cs
 |           +-- RoomInfoRequestMessage.cs
+|           +-- RoomInfoResponseMessage.cs
++-- MIN.Messaging.Contracts
+|   +-- BaseMessage.cs
+|   +-- Entities
+|   |   +-- ParticipantInfo.cs
+|   |   +-- RoomInfo.cs
+|   +-- IMessage.cs
+|   +-- MessageTypeTag.cs
+|   +-- MIN.Messaging.Contracts.csproj
 +-- MIN.Services
 |   +-- Extensions
 |   |   +-- ChatMessageExtensions.cs
@@ -182,9 +210,6 @@ MIN
 |       +-- LoggerProvider.cs
 |       +-- PipeNameProvider.cs
 +-- MIN.Services.Connection
-|   +-- Cryptographing
-|   |   +-- CryptoProvider.cs
-|   |   +-- KeyProvider.cs
 |   +-- MIN.Services.Connection.csproj
 |   +-- Pipes
 |   |   +-- ChatRoomService.cs
@@ -199,9 +224,6 @@ MIN
 |       +-- CryptoPipeMessageSerializer.cs
 +-- MIN.Services.Connection.Contracts
 |   +-- Interfaces
-|   |   +-- Cryptographing
-|   |   |   +-- ICryptoProvider.cs
-|   |   |   +-- IKeyProvider.cs
 |   |   +-- Discovering
 |   |   |   +-- IDiscoveryClient.cs
 |   |   |   +-- IDiscoveryServer.cs
@@ -213,9 +235,6 @@ MIN
 |   +-- MIN.Services.Connection.Contracts.csproj
 |   +-- Models
 |       +-- ClientConnection.cs
-|       +-- Cryptographing
-|       |   +-- KeyPair.cs
-|       +-- Enums
 |       +-- Exceptions
 |           +-- RoomDiscoveryException.cs
 +-- MIN.Services.Connection.Tests
@@ -233,28 +252,25 @@ MIN
 |   |   +-- IUpdateService.cs
 |   +-- MIN.Services.Contracts.csproj
 |   +-- Models
-|       +-- DiscoveredRoom.cs
 |       +-- Enums
 |       |   +-- LogLevel.cs
-|       |   +-- RoomState.cs
 |       |   +-- SearchMethod.cs
-|       +-- Events
-|       |   +-- ConnectionLostEventArgs.cs
-|       |   +-- MessageReceivedEventArgs.cs
-|       |   +-- ParticipantJoinedEventArgs.cs
-|       |   +-- ParticipantLeftEventArgs.cs
-|       |   +-- RoomStateChangedEventArgs.cs
-|       +-- Participants
-|       |   +-- Participant.cs
-|       +-- Rooms
-|       |   +-- Room.cs
+|       +-- RoomDiscoveringTask.cs
 |       +-- Settings.cs
 |       +-- Updates
 |           +-- UpdateCheckResult.cs
 +-- MIN.sln
 +-- MIN.Transport.Contracts
-|   +-- Class1.cs
+|   +-- ConnectionInfo.cs
+|   +-- EndpointInfo.cs
+|   +-- EndPoints
+|   |   +-- NamedPipeEndpoint.cs
+|   +-- Events
+|   |   +-- ConnectionStateChangedEventArgs.cs
+|   |   +-- RawMessageReceivedEventArgs.cs
+|   +-- ITransport.cs
 |   +-- MIN.Transport.Contracts.csproj
+|   +-- TransportType.cs
 +-- MIN.Transport.NamedPipes
 |   +-- Class1.cs
 |   +-- MIN.Transport.NamedPipes.csproj

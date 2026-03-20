@@ -28,6 +28,6 @@
         /// <summary>
         /// Для сетевого обмена
         /// </summary>
-        public string EcdhPublicKeyDerBase64 { get; set; } = string.Empty;
+        public byte[] EcdhPublicKeyBytes { get; set; } = null!;
     }
 }

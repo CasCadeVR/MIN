@@ -1,4 +1,4 @@
-﻿namespace MIN.Transport.Contracts.EndPoints;
+﻿namespace MIN.Transport.Contracts.Endpoints;
 
 /// <summary>
 /// Точка подключения для Named Pipes
