@@ -16,7 +16,7 @@ namespace MIN.Cryptography.Contracts.Interfaces
         /// <summary>
         /// Вызывается при первом контакте с собеседником
         /// </summary>
-        Task InitializeSessionAsync(Guid partnerId, HandshakeMessage handshake);
+        Task InitializeSessionAsync(Guid partnerId, byte[] partnerPublicKey);
 
         /// <summary>
         /// Создать сообщения рукопожатия

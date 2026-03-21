@@ -18,12 +18,12 @@ namespace MIN.Cryptography
         bool ICryptoProvider.IsSessionInitialized(Guid partnerId)
             => sharedSecrets.ContainsKey(partnerId);
 
-        async Task ICryptoProvider.InitializeSessionAsync(Guid partnerId, HandshakeMessage handshake)
+        async Task ICryptoProvider.InitializeSessionAsync(Guid partnerId, byte[] partnerPublicKey)
         {
-            var sharedSecret = await keyProvider.ComputeSharedSecretAsync(handshake.PublicKey);
+            var sharedSecret = await keyProvider.ComputeSharedSecretAsync(partnerPublicKey);
             sharedSecrets[partnerId] = sharedSecret;
 
-            await keyProvider.SavePartnerPublicKeyAsync(partnerId, handshake.PublicKey);
+            await keyProvider.SavePartnerPublicKeyAsync(partnerId, partnerPublicKey);
         }
 
         private byte[] GetSessionKey(Guid partnerId)

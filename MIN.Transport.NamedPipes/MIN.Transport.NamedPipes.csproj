@@ -6,4 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MIN.Cryptography.Contracts\MIN.Cryptography.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Serialization.Contracts\MIN.Serialization.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Transport.Contracts\MIN.Transport.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -22,4 +22,13 @@ public record ParticipantInfo : IParticipantData
         Id = participant.Id;
         Name = participant.Name;
     }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
+    /// </summary>
+    public ParticipantInfo(Guid id, string name)
+    {
+        Id = id;
+        Name = name;
+    }
 }

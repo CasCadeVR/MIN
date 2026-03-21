@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using MIN.Messaging.Contracts;
 using MIN.Serialization.Contracts;
@@ -16,8 +17,8 @@ public sealed class JsonMessageSerializer : IMessageSerializer
         WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
-
     private readonly Dictionary<MessageTypeTag, Func<byte[], IMessage>> deserializers;
+    private readonly IEnumerable<IMessage> registredMessges;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="JsonMessageSerializer"/>
@@ -26,6 +27,8 @@ public sealed class JsonMessageSerializer : IMessageSerializer
     {
         this.deserializers = deserializers;
     }
+
+    public static JsonSerializerOptions GetSerializerOptions() => serializerOptions;
 
     byte[] IMessageSerializer.Serialize(IMessage message)
     {
