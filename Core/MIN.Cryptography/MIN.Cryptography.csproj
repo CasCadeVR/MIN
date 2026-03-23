@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Contracts\Core\MIN.Cryptography.Contracts\MIN.Cryptography.Contracts.csproj" />
+    <ProjectReference Include="..\..\Contracts\Services\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>
