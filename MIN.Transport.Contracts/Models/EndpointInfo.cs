@@ -1,4 +1,6 @@
-﻿namespace MIN.Transport.Contracts;
+﻿using MIN.Transport.Contracts.Enum;
+
+namespace MIN.Transport.Contracts.Models;
 
 /// <summary>
 /// Базовый интерфейс для информации о точке подключения

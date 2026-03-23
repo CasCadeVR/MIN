@@ -1,11 +1,14 @@
 ﻿using System.Collections.Concurrent;
+using MIN.Cryptography.Contracts.Interfaces;
 using MIN.Messaging.Contracts.Entities;
 using MIN.Serialization.Contracts;
 using MIN.Services.Contracts.Interfaces;
-using MIN.Transport.Contracts;
-using MIN.Transport.Contracts.Endpoints;
+using MIN.Transport.Contracts.Interfaces;
+using MIN.Transport.Contracts.Constants;
 using MIN.Transport.Contracts.Events;
+using MIN.Transport.Contracts.Models;
 using MIN.Transport.NamedPipes.Client;
+using MIN.Transport.NamedPipes.Models;
 using MIN.Transport.NamedPipes.Server;
 
 namespace MIN.Transport.NamedPipes;
@@ -31,10 +34,13 @@ public sealed class NamedPipeTransport : ITransport
         this.logger = logger;
     }
 
+    /// <inheritdoc />
     public event EventHandler<RawMessageReceivedEventArgs>? RawMessageReceived;
+
+    /// <inheritdoc />
     public event EventHandler<ConnectionStateChangedEventArgs>? ConnectionStateChanged;
 
-    public async Task StartListeningAsync(Guid roomId, IEndpoint endpoint, CancellationToken cancellationToken = default)
+    async Task ITransport.StartLHostingAsync(Guid roomId, IEndpoint endpoint, CancellationToken cancellationToken)
     {
         if (endpoint is not NamedPipeEndpoint namedPipeEndpoint)
         {
@@ -46,10 +52,11 @@ public sealed class NamedPipeTransport : ITransport
             return;
         }
 
-        // TODO: максимальное количество участников нужно получить из конфигурации или от вызывающего кода
-        const int maxParticipants = 20;
-        var server = new NamedPipeServer(roomId, namedPipeEndpoint, maxParticipants, serializer, encryptor, logger);
-        server.MessageReceived += OnServerMessageReceived;
+        // TODO: максимальное количество участников нужно получить из конфигурации
+        const int maxParticipants = TransportConstants.TheoraticallyPossibleMaximumRoomSize;
+
+        var server = new NamedPipeServer(namedPipeEndpoint, maxParticipants, serializer, encryptor, logger);
+        server.RawMessageReceived += OnServerMessageReceived;
         server.ParticipantConnected += OnParticipantConnected;
         server.ParticipantDisconnected += OnParticipantDisconnected;
 
@@ -57,7 +64,7 @@ public sealed class NamedPipeTransport : ITransport
         await server.StartAsync(cancellationToken);
     }
 
-    public async Task StopListeningAsync(Guid roomId)
+    async Task ITransport.StopHostingAsync(Guid roomId)
     {
         if (servers.TryRemove(roomId, out var server))
         {
@@ -65,7 +72,7 @@ public sealed class NamedPipeTransport : ITransport
         }
     }
 
-    public async Task ConnectAsync(Guid roomId, IEndpoint endpoint, ParticipantInfo localParticipant, CancellationToken cancellationToken = default)
+    async Task ITransport.ConnectAsync(Guid roomId, IEndpoint endpoint, ParticipantInfo localParticipant, int timeoutMs, CancellationToken cancellationToken)
     {
         if (endpoint is not NamedPipeEndpoint namedPipeEndpoint)
         {
@@ -78,16 +85,16 @@ public sealed class NamedPipeTransport : ITransport
         }
 
         var client = new NamedPipeClient(namedPipeEndpoint, localParticipant, serializer, encryptor, logger);
-        client.MessageReceived += OnClientMessageReceived;
+        client.RawMessageReceived += OnClientMessageReceived;
         client.Disconnected += OnClientDisconnected;
 
         clients[roomId] = client;
-        await client.ConnectAsync(cancellationToken);
+        await client.ConnectAsync(timeoutMs, cancellationToken);
 
         ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, localParticipant.Id, true));
     }
 
-    public async Task DisconnectAsync(Guid roomId)
+    async Task ITransport.DisconnectAsync(Guid roomId)
     {
         if (clients.TryRemove(roomId, out var client))
         {
@@ -95,7 +102,7 @@ public sealed class NamedPipeTransport : ITransport
         }
     }
 
-    public async Task SendAsync(byte[] data, ParticipantInfo target, CancellationToken cancellationToken = default)
+    async Task ITransport.SendAsync(byte[] data, Guid roomId, ParticipantInfo target, CancellationToken cancellationToken)
     {
         // Отправляем конкретному участнику – если есть сервер для комнаты, отправляем через него
         // Пока предположим, что target – это сервер (для клиента), а сервер может отправлять конкретному клиенту.
@@ -123,15 +130,14 @@ public sealed class NamedPipeTransport : ITransport
         throw new InvalidOperationException("No active connection to send");
     }
 
-    public async Task BroadcastAsync(byte[] data, Guid roomId, ParticipantInfo? exclude = null, CancellationToken cancellationToken = default)
+    async Task ITransport.BroadcastAsync(byte[] data, Guid roomId, List<ParticipantInfo>? toExclude, CancellationToken cancellationToken)
     {
         if (servers.TryGetValue(roomId, out var server))
         {
-            await server.BroadcastAsync(data, exclude, cancellationToken);
+            await server.BroadcastAsync(data, toExclude, cancellationToken);
         }
         else if (clients.TryGetValue(roomId, out var client))
         {
-            // Для клиента broadcast не имеет смысла, но можно отправить хосту
             await client.SendAsync(data, cancellationToken);
         }
         else
@@ -142,7 +148,6 @@ public sealed class NamedPipeTransport : ITransport
 
     private void OnServerMessageReceived(object? sender, (byte[] Data, ParticipantInfo Sender) args)
     {
-        // Найти roomId для этого сервера
         var roomId = servers.FirstOrDefault(x => x.Value == sender).Key;
         if (roomId == Guid.Empty)
         {
@@ -154,13 +159,14 @@ public sealed class NamedPipeTransport : ITransport
 
     private void OnClientMessageReceived(object? sender, byte[] data)
     {
-        var roomId = clients.FirstOrDefault(x => x.Value == sender).Key;
+        var foundElement = clients.FirstOrDefault(x => x.Value == sender);
+        var roomId = foundElement.Key;
         if (roomId == Guid.Empty)
         {
             return;
         }
 
-        var client = (NamedPipeClient)sender!;
+        var client = foundElement.Value;
         var senderParticipant = client.ServerParticipant ?? throw new InvalidOperationException("No server participant");
         RawMessageReceived?.Invoke(this, new RawMessageReceivedEventArgs(data, roomId, senderParticipant));
     }
@@ -173,10 +179,11 @@ public sealed class NamedPipeTransport : ITransport
             return;
         }
 
-        ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, participant.Id, true));
+        ConnectionStateChanged?.Invoke(this,
+            new ConnectionStateChangedEventArgs(roomId, participant.Id, true));
     }
 
-    private void OnParticipantDisconnected(object? sender, ParticipantInfo participant)
+    private void OnParticipantDisconnected(object? sender, (string? reason, ParticipantInfo participant) disconnectInfo)
     {
         var roomId = servers.FirstOrDefault(x => x.Value == sender).Key;
         if (roomId == Guid.Empty)
@@ -184,20 +191,20 @@ public sealed class NamedPipeTransport : ITransport
             return;
         }
 
-        ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, participant.Id, false));
+        ConnectionStateChanged?.Invoke(this,
+            new ConnectionStateChangedEventArgs(roomId, disconnectInfo.participant.Id, false, disconnectInfo.reason));
     }
 
     private void OnClientDisconnected(object? sender, string? reason)
     {
-        var roomId = clients.FirstOrDefault(x => x.Value == sender).Key;
+        var foundElement = clients.FirstOrDefault(x => x.Value == sender);
+        var roomId = foundElement.Key;
         if (roomId == Guid.Empty)
         {
             return;
         }
 
-        // Здесь нужно получить ID локального участника, но у нас его нет в клиенте. Можно хранить в словаре отдельно.
-        // Для упрощения оставим ParticipantId = Guid.Empty
-        ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, Guid.Empty, false, reason));
+        ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, foundElement.Value.ClientParticipant.Id, false, reason));
         clients.TryRemove(roomId, out _);
     }
 }

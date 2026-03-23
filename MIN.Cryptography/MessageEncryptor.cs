@@ -6,19 +6,20 @@ using MIN.Messaging.Contracts.Entities;
 using MIN.Messaging.Stateless;
 using MIN.Services.Contracts.Interfaces;
 using MIN.Services.Contracts.Models.Enums;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MIN.Cryptography
 {
-    /// <inheritdoc cref="ICryptoProvider"/>
-    public class CryptoProvider(ILoggerProvider logger, IKeyProvider keyProvider) : ICryptoProvider, IDisposable
+    /// <inheritdoc cref="IMessageEncryptor"/>
+    public class MessageEncryptor(ILoggerProvider logger, IKeyProvider keyProvider) : IMessageEncryptor, IDisposable
     {
         private readonly ConcurrentDictionary<Guid, byte[]> sharedSecrets = new();
         private bool disposed;
 
-        bool ICryptoProvider.IsSessionInitialized(Guid partnerId)
+        bool IMessageEncryptor.IsSessionInitialized(Guid partnerId)
             => sharedSecrets.ContainsKey(partnerId);
 
-        async Task ICryptoProvider.InitializeSessionAsync(Guid partnerId, byte[] partnerPublicKey)
+        async Task IMessageEncryptor.InitializeSessionWithPartnerAsync(Guid partnerId, byte[] partnerPublicKey)
         {
             var sharedSecret = await keyProvider.ComputeSharedSecretAsync(partnerPublicKey);
             sharedSecrets[partnerId] = sharedSecret;
@@ -36,7 +37,7 @@ namespace MIN.Cryptography
             throw new InvalidOperationException($"Session not initialized for partner: {partnerId}");
         }
 
-        async Task<HandshakeMessage> ICryptoProvider.CreateHandshakeAsync(ParticipantInfo selfParticipant)
+        async Task<HandshakeMessage> IMessageEncryptor.CreateSelfHandshakeMessageAsync(ParticipantInfo selfParticipant)
         {
             var keys = await keyProvider.GetLocalKeysAsync();
 
@@ -47,7 +48,7 @@ namespace MIN.Cryptography
             };
         }
 
-        byte[] ICryptoProvider.EncryptMessage(byte[] plaintext, Guid partnerId)
+        byte[] IMessageEncryptor.EncryptMessage(byte[] plaintext, Guid partnerId)
         {
             var key = GetSessionKey(partnerId);
             var iv = RandomNumberGenerator.GetBytes(12);
@@ -65,7 +66,7 @@ namespace MIN.Cryptography
             return ms.ToArray();
         }
 
-        byte[] ICryptoProvider.DecryptMessage(byte[] encryptedData, Guid partnerId)
+        byte[] IMessageEncryptor.DecryptMessage(byte[] encryptedData, Guid partnerId)
         {
             var key = GetSessionKey(partnerId);
 
@@ -104,6 +105,16 @@ namespace MIN.Cryptography
                 throw;
             }
         }
+
+        bool IMessageEncryptor.IsEncrypted(byte[] data) => data.Length > 0 && (data[0] & 0x01) != 0;
+
+        byte[] IMessageEncryptor.AddEncryptionHeader(byte[] data, bool encrypted)
+        {
+            data[0] &= (byte)(encrypted ? 0x01 : 0x00);
+            return data;
+        }
+
+        byte[] IMessageEncryptor.RemoveEncryptionHeader(byte[] data) => data.Skip(1).ToArray();
 
         void IDisposable.Dispose()
         {

@@ -21,18 +21,18 @@ public sealed class ConnectionStateChangedEventArgs : EventArgs
     public bool IsConnected { get; }
 
     /// <summary>
-    /// Сообщение об ошибке (при отключении из-за ошибки)
+    /// Сообщение об отключении
     /// </summary>
-    public string? ErrorMessage { get; }
+    public string? Reason { get; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ConnectionStateChangedEventArgs"/>
     /// </summary>
-    public ConnectionStateChangedEventArgs(Guid roomId, Guid participantId, bool isConnected, string? errorMessage = null)
+    public ConnectionStateChangedEventArgs(Guid roomId, Guid participantId, bool isConnected, string? reason = null)
     {
         RoomId = roomId;
         ParticipantId = participantId;
         IsConnected = isConnected;
-        ErrorMessage = errorMessage;
+        Reason = reason;
     }
 }

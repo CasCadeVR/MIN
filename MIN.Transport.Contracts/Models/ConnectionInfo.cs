@@ -1,4 +1,4 @@
-﻿namespace MIN.Transport.Contracts;
+﻿namespace MIN.Transport.Contracts.Models;
 
 /// <summary>
 /// Информация о текущем соединении

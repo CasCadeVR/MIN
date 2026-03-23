@@ -1,4 +1,4 @@
-﻿namespace MIN.Transport.Contracts;
+﻿namespace MIN.Transport.Contracts.Enum;
 
 /// <summary>
 /// Тип транспортного протокола

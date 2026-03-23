@@ -4,9 +4,9 @@ using MIN.Messaging.Stateless;
 namespace MIN.Cryptography.Contracts.Interfaces
 {
     /// <summary>
-    /// Помошник в шифровании
+    /// Помощник в шифровании
     /// </summary>
-    public interface ICryptoProvider
+    public interface IMessageEncryptor
     {
         /// <summary>
         /// Проверить, инициализирована ли сессия с собеседником
@@ -16,12 +16,12 @@ namespace MIN.Cryptography.Contracts.Interfaces
         /// <summary>
         /// Вызывается при первом контакте с собеседником
         /// </summary>
-        Task InitializeSessionAsync(Guid partnerId, byte[] partnerPublicKey);
+        Task InitializeSessionWithPartnerAsync(Guid partnerId, byte[] partnerPublicKey);
 
         /// <summary>
         /// Создать сообщения рукопожатия
         /// </summary>
-        Task<HandshakeMessage> CreateHandshakeAsync(ParticipantInfo selfParticipant);
+        Task<HandshakeMessage> CreateSelfHandshakeMessageAsync(ParticipantInfo selfParticipant);
 
         /// <summary>
         /// Закодировать сообщение
@@ -32,5 +32,20 @@ namespace MIN.Cryptography.Contracts.Interfaces
         /// Раскодировать сообщение
         /// </summary>
         byte[] DecryptMessage(byte[] encryptedData, Guid partnerId);
+
+        /// <summary>
+        /// Добавить заголовок шифрования
+        /// </summary>
+        byte[] AddEncryptionHeader(byte[] data, bool encrypted);
+
+        /// <summary>
+        /// Проверяет по заголовку, зашифровано ли сообщение
+        /// </summary>
+        bool IsEncrypted(byte[] data);
+
+        /// <summary>
+        /// Убрать заголовок шифрования
+        /// </summary>
+        byte[] RemoveEncryptionHeader(byte[] data);
     }
 }

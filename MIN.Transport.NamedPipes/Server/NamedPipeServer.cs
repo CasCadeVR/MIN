@@ -2,12 +2,11 @@
 using System.Security.AccessControl;
 using System.Security.Principal;
 using MIN.Cryptography.Contracts.Interfaces;
-using MIN.Entities.Contracts;
 using MIN.Messaging.Contracts.Entities;
 using MIN.Messaging.Stateless;
 using MIN.Serialization.Contracts;
 using MIN.Services.Contracts.Interfaces;
-using MIN.Transport.Contracts.Endpoints;
+using MIN.Transport.Contracts.Constants;
 using MIN.Transport.NamedPipes.Models;
 
 namespace MIN.Transport.NamedPipes.Server;
@@ -17,49 +16,52 @@ namespace MIN.Transport.NamedPipes.Server;
 /// </summary>
 internal sealed class NamedPipeServer : IAsyncDisposable
 {
-    private readonly Guid roomId;
     private readonly NamedPipeEndpoint endpoint;
-    private readonly IMessageSerializer serializer;
-    private readonly ICryptoProvider cryptoProvider;
-    private readonly ILoggerProvider logger;
     private readonly SemaphoreSlim connectionSlots;
     private readonly List<NamedPipeConnection> connections = new();
+
+    private readonly IMessageSerializer serializer;
+    private readonly IMessageEncryptor encryptor;
+    private readonly ILoggerProvider logger;
+
     private CancellationTokenSource? cts;
     private bool isRunning;
 
+    /// <summary>
+    /// Инициализирует новый экзмепляр <see cref="NamedPipeServer"/>
+    /// </summary>
     public NamedPipeServer(
-        Guid roomId,
         NamedPipeEndpoint endpoint,
         int maxParticipants,
         IMessageSerializer serializer,
-        ICryptoProvider cryptoProvider,
+        IMessageEncryptor encryptor,
         ILoggerProvider logger)
     {
-        this.roomId = roomId;
         this.endpoint = endpoint;
         this.serializer = serializer;
-        this.cryptoProvider = cryptoProvider;
+        this.encryptor = encryptor;
         this.logger = logger;
+
         connectionSlots = new SemaphoreSlim(maxParticipants, maxParticipants);
     }
 
     /// <summary>
     /// Событие, возникающее при получении сообщения от участника
     /// </summary>
-    public event EventHandler<(byte[] Data, ParticipantInfo Sender)>? MessageReceived;
+    public event EventHandler<(byte[] Data, ParticipantInfo Sender)>? RawMessageReceived;
 
     /// <summary>
-    /// Событие, возникающее при подключении нового участника (после handshake)
+    /// Событие, возникающее при подключении нового участника
     /// </summary>
     public event EventHandler<ParticipantInfo>? ParticipantConnected;
 
     /// <summary>
     /// Событие, возникающее при отключении участника
     /// </summary>
-    public event EventHandler<ParticipantInfo>? ParticipantDisconnected;
+    public event EventHandler<(string reason, ParticipantInfo Sender)>? ParticipantDisconnected;
 
     /// <summary>
-    /// Запускает сервер
+    /// Запустить сервер
     /// </summary>
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -75,7 +77,7 @@ internal sealed class NamedPipeServer : IAsyncDisposable
     }
 
     /// <summary>
-    /// Останавливает сервер и закрывает все соединения
+    /// Останавить сервер и закрывает все соединения
     /// </summary>
     public async Task StopAsync()
     {
@@ -95,7 +97,7 @@ internal sealed class NamedPipeServer : IAsyncDisposable
     }
 
     /// <summary>
-    /// Отправляет сообщение конкретному участнику
+    /// Отправить сообщение конкретному участнику
     /// </summary>
     public async Task SendToParticipantAsync(byte[] data, ParticipantInfo target, CancellationToken cancellationToken = default)
     {
@@ -109,12 +111,14 @@ internal sealed class NamedPipeServer : IAsyncDisposable
     }
 
     /// <summary>
-    /// Рассылает сообщение всем участникам (кроме исключённого)
+    /// Разослать сообщение всем участникам (кроме исключённого)
     /// </summary>
-    public async Task BroadcastAsync(byte[] data, ParticipantInfo? exclude = null, CancellationToken cancellationToken = default)
+    public async Task BroadcastAsync(byte[] data, IEnumerable<ParticipantInfo>? toExclude = null, CancellationToken cancellationToken = default)
     {
+        var excludeIds = toExclude?.Select(p => p.Id).ToHashSet() ?? [];
+
         var tasks = connections
-            .Where(c => exclude == null || c.Participant?.Id != exclude.Id)
+            .Where(c => !excludeIds.Contains(c.Participant?.Id ?? Guid.Empty))
             .Select(c => c.SendAsync(data, cancellationToken))
             .ToList();
 
@@ -143,13 +147,15 @@ internal sealed class NamedPipeServer : IAsyncDisposable
                 var pipe = NamedPipeServerStreamAcl.Create(
                     endpoint.PipeName,
                     PipeDirection.InOut,
-                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    TransportConstants.TheoraticallyPossibleMaximumRoomSize,
                     PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous | PipeOptions.WriteThrough,
                     0, 0,
                     pipeSecurity);
 
                 await pipe.WaitForConnectionAsync(cancellationToken);
+
+                // Client connected here
 
                 var connection = new NamedPipeConnection(pipe, endpoint);
                 connections.Add(connection);
@@ -162,7 +168,7 @@ internal sealed class NamedPipeServer : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                logger.Log($"Error accepting client: {ex.Message}");
+                logger.Log($"Произошла ошибка во время принятия клиента: {ex.Message}");
                 connectionSlots.Release();
             }
         }
@@ -170,7 +176,7 @@ internal sealed class NamedPipeServer : IAsyncDisposable
 
     private async Task HandleConnectionAsync(NamedPipeConnection connection, CancellationToken cancellationToken)
     {
-        connection.MessageReceived += async (_, data) =>
+        connection.RawMessageReceived += async (_, data) =>
         {
             await OnConnectionMessageReceivedAsync(connection, data, cancellationToken);
         };
@@ -179,43 +185,37 @@ internal sealed class NamedPipeServer : IAsyncDisposable
             OnConnectionDisconnected(connection, reason);
         };
 
-        await connection.StartReadingAsync(cancellationToken);
-
-        // Выполняем handshake
         try
         {
             await PerformHandshakeAsync(connection, cancellationToken);
         }
         catch (Exception ex)
         {
-            logger.Log($"Handshake failed: {ex.Message}");
+            logger.Log($"Handshake не удался: {ex.Message}");
             await connection.DisposeAsync();
         }
+
+        await connection.StartReadingAsync(cancellationToken);
     }
 
     private async Task PerformHandshakeAsync(NamedPipeConnection connection, CancellationToken cancellationToken)
     {
-        // Ждём HandshakeMessage
         var data = await ReadMessageAsync(connection, cancellationToken);
-        var message = serializer.Deserialize(data);
+        var deserializedHandshake = serializer.Deserialize(data);
 
-        if (message is not HandshakeMessage handshake)
+        if (deserializedHandshake is not HandshakeMessage handshake)
         {
-            throw new InvalidOperationException("Expected HandshakeMessage");
+            throw new InvalidOperationException($"Ожидали HandshakeMessage, получили {deserializedHandshake.GetType()}");
         }
 
-        // Устанавливаем общий секрет
-        await cryptoProvider.InitializeSessionAsync(handshake.Participant.Id, handshake.PublicKey);
+        await encryptor.InitializeSessionWithPartnerAsync(handshake.Participant.Id, handshake.PublicKey);
 
-        var selfHandshake = await cryptoProvider.CreateHandshakeAsync(null!);
+        var selfHandshake = await encryptor.CreateSelfHandshakeMessageAsync(null!);
 
         // Отправляем HandshakeAckMessage
-        var ack = new HandshakeAckMessage
-        {
-            PublicKey = selfHandshake.PublicKey
-        };
-        var ackData = serializer.Serialize(ack);
-        await connection.SendAsync(ackData, cancellationToken);
+        var ack = new HandshakeAckMessage(selfHandshake);
+        var serializedAck = serializer.Serialize(ack);
+        await connection.SendAsync(serializedAck, cancellationToken);
 
         // Сохраняем участника
         var participant = new ParticipantInfo(handshake.Participant.Id, handshake.Participant.Name);
@@ -232,19 +232,19 @@ internal sealed class NamedPipeServer : IAsyncDisposable
             return;
         }
 
-        // Расшифровываем при необходимости (если заголовок указывает на шифрование)
         byte[] plainData;
-        if (IsEncrypted(data))
+
+        if (encryptor.IsEncrypted(data))
         {
-            var encrypted = RemoveHeader(data);
-            plainData = cryptoProvider.DecryptMessage(encrypted, connection.Participant.Id);
+            var encrypted = encryptor.RemoveEncryptionHeader(data);
+            plainData = encryptor.DecryptMessage(encrypted, connection.Participant.Id);
         }
         else
         {
-            plainData = RemoveHeader(data);
+            plainData = encryptor.RemoveEncryptionHeader(data);
         }
 
-        MessageReceived?.Invoke(this, (plainData, connection.Participant));
+        RawMessageReceived?.Invoke(this, (plainData, connection.Participant));
     }
 
     private void OnConnectionDisconnected(NamedPipeConnection connection, string? reason)
@@ -254,24 +254,18 @@ internal sealed class NamedPipeServer : IAsyncDisposable
 
         if (connection.Participant != null)
         {
-            ParticipantDisconnected?.Invoke(this, connection.Participant);
+            ParticipantDisconnected?.Invoke(this, (reason ?? string.Empty, connection.Participant));
         }
     }
 
     private async Task<byte[]> ReadMessageAsync(NamedPipeConnection connection, CancellationToken cancellationToken)
     {
-        // Здесь нужно реализовать чтение с заголовком длины или фиксированным буфером.
-        // Для простоты пока предполагаем, что сообщение целиком помещается в буфер.
-        // В реальности нужно читать заголовок длины.
-        var buffer = new byte[4096];
+        var buffer = new byte[TransportConstants.MaximumBufferSize];
         var bytesRead = await connection.Pipe.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
         var data = new byte[bytesRead];
         Array.Copy(buffer, data, bytesRead);
         return data;
     }
-
-    private bool IsEncrypted(byte[] data) => data.Length > 0 && (data[0] & 0x01) != 0;
-    private byte[] RemoveHeader(byte[] data) => data.Skip(1).ToArray();
 
     /// <summary>
     /// Освобождает ресурсы

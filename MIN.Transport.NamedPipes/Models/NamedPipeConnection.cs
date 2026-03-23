@@ -1,54 +1,55 @@
 ﻿using System.IO.Pipes;
 using MIN.Messaging.Contracts.Entities;
-using MIN.Transport.Contracts.Endpoints;
 
 namespace MIN.Transport.NamedPipes.Models;
 
 /// <summary>
-/// Представляет соединение через Named Pipe
+/// Соединение через Named Pipe
 /// </summary>
 internal sealed class NamedPipeConnection : IAsyncDisposable
 {
-    private readonly PipeStream pipe;
     private readonly CancellationTokenSource cancellationTokenSource = new();
     private bool disposed;
 
+    /// <summary>
+    /// Инициализирует новый экзмепляр <see cref="NamedPipeConnection"/>
+    /// </summary>
     public NamedPipeConnection(PipeStream pipe, NamedPipeEndpoint endpoint, ParticipantInfo? participant = null)
     {
-        this.pipe = pipe;
+        Pipe = pipe;
         Endpoint = endpoint;
         Participant = participant;
     }
 
     /// <summary>
+    /// Идентификатор соединения
+    /// </summary>
+    public Guid Id { get; } = Guid.NewGuid();
+
+    /// <summary>
     /// Точка подключения
     /// </summary>
-    public NamedPipeEndpoint Endpoint { get; }
+    public NamedPipeEndpoint Endpoint { get; } = null!;
 
     /// <summary>
     /// Pipe подключения
     /// </summary>
-    public PipeStream Pipe { get; }
+    public PipeStream Pipe { get; } = null!;
 
     /// <summary>
-    /// Участник, связанный с этим соединением (устанавливается после handshake)
+    /// Участник, связанный с этим соединением
     /// </summary>
     public ParticipantInfo? Participant { get; set; }
 
     /// <summary>
-    /// Идентификатор соединения (генерируется автоматически)
+    /// Активно ли соединение
     /// </summary>
-    public Guid ConnectionId { get; } = Guid.NewGuid();
-
-    /// <summary>
-    /// Флаг, указывающий, активно ли соединение
-    /// </summary>
-    public bool IsConnected => pipe.IsConnected && !disposed;
+    public bool IsConnected => Pipe.IsConnected && !disposed;
 
     /// <summary>
     /// Событие получения сообщения
     /// </summary>
-    public event EventHandler<byte[]>? MessageReceived;
+    public event EventHandler<byte[]>? RawMessageReceived;
 
     /// <summary>
     /// Событие отключения
@@ -69,7 +70,7 @@ internal sealed class NamedPipeConnection : IAsyncDisposable
             {
                 while (!linkedCts.Token.IsCancellationRequested && IsConnected)
                 {
-                    var bytesRead = await pipe.ReadAsync(buffer.AsMemory(0, buffer.Length), linkedCts.Token);
+                    var bytesRead = await Pipe.ReadAsync(buffer.AsMemory(0, buffer.Length), linkedCts.Token);
                     if (bytesRead == 0)
                     {
                         break;
@@ -77,7 +78,7 @@ internal sealed class NamedPipeConnection : IAsyncDisposable
 
                     var data = new byte[bytesRead];
                     Array.Copy(buffer, data, bytesRead);
-                    OnMessageReceived(data);
+                    OnRawMessageReceived(data);
                 }
             }
             catch (OperationCanceledException)
@@ -105,13 +106,13 @@ internal sealed class NamedPipeConnection : IAsyncDisposable
             throw new InvalidOperationException("Connection is not active");
         }
 
-        await pipe.WriteAsync(data.AsMemory(), cancellationToken);
-        await pipe.FlushAsync(cancellationToken);
+        await Pipe.WriteAsync(data.AsMemory(), cancellationToken);
+        await Pipe.FlushAsync(cancellationToken);
     }
 
-    private void OnMessageReceived(byte[] data)
+    private void OnRawMessageReceived(byte[] data)
     {
-        MessageReceived?.Invoke(this, data);
+        RawMessageReceived?.Invoke(this, data);
     }
 
     private void OnDisconnected(string? reason)
@@ -134,9 +135,9 @@ internal sealed class NamedPipeConnection : IAsyncDisposable
 
         try
         {
-            if (pipe.IsConnected)
+            if (Pipe.IsConnected)
             {
-                await pipe.DisposeAsync();
+                await Pipe.DisposeAsync();
             }
         }
         catch
