@@ -36,7 +36,12 @@ namespace MIN.Cryptography.Contracts.Interfaces
         /// <summary>
         /// Добавить заголовок шифрования
         /// </summary>
-        byte[] AddEncryptionHeader(byte[] data, bool encrypted);
+        byte[] AddEncryptionHeader(byte[] secretData);
+
+        /// <summary>
+        /// Добавить пустой заголовок
+        /// </summary>
+        byte[] AddPlainHeader(byte[] plainData);
 
         /// <summary>
         /// Проверяет по заголовку, зашифровано ли сообщение

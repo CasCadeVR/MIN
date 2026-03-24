@@ -11,8 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Contracts\Core\MIN.Messaging.Contracts\MIN.Messaging.Contracts.csproj" />
-    <ProjectReference Include="..\..\Infrastructure\Serialization\MIN.Serialization\MIN.Serialization.Json.csproj" />
+    <ProjectReference Include="..\..\Core\Serialization\MIN.Serialization\MIN.Serialization.Json.csproj" />
   </ItemGroup>
 
 </Project>

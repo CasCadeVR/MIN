@@ -1,5 +1,6 @@
 ﻿using MIN.Handlers.Contracts.Models;
 using MIN.Messaging.Contracts;
+using MIN.Messaging.Contracts.Interfaces;
 
 namespace MIN.Handlers.Contracts
 {

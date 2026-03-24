@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using MIN.Messaging.Contracts;
+using MIN.Messaging.Contracts.Interfaces;
 using MIN.Serialization.Contracts;
 using MIN.Serialization.Json;
 

@@ -6,4 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Contracts\Infrastructure\MIN.Handlers.Contracts\MIN.Handlers.Contracts.csproj" />
+    <ProjectReference Include="..\..\Contracts\Services\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Handlers\" />
+  </ItemGroup>
+
 </Project>

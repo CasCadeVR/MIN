@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\MIN.Transport.Contracts\MIN.Transport.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Contracts\Core\MIN.Transport.Contracts\MIN.Transport.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Contracts\Services\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

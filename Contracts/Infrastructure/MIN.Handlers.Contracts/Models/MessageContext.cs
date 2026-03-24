@@ -1,5 +1,4 @@
 ﻿using MIN.Messaging.Contracts.Entities;
-using MIN.Transport.Contracts;
 
 namespace MIN.Handlers.Contracts.Models;
 
@@ -17,11 +16,6 @@ public sealed class MessageContext
     /// Идентификатор комнаты, в которой было получено сообщение
     /// </summary>
     public Guid RoomId { get; init; }
-
-    /// <summary>
-    /// Транспорт, через который можно отправить ответные сообщения
-    /// </summary>
-    public ITransport? Transport { get; init; }
 
     /// <summary>
     /// Токен отмены для длительных операций
