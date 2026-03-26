@@ -1,5 +1,5 @@
-﻿using MIN.Events.Base;
-using MIN.Messaging.Contracts.Entities;
+﻿using MIN.Entities;
+using MIN.Events.Base;
 
 namespace MIN.Events.Events;
 
@@ -11,7 +11,7 @@ public sealed class RoomStateChangedEvent : BaseEvent
     /// <summary>
     /// Информация о комнате
     /// </summary>
-    public RoomInfo Room { get; init; } = null!;
+    public Room Room { get; init; } = null!;
 
     /// <summary>
     /// Предыдущее состояние активности

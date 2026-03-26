@@ -10,10 +10,23 @@ using MIN.Services.Contracts.Models.Enums;
 namespace MIN.Cryptography
 {
     /// <inheritdoc cref="IMessageEncryptor"/>
-    public class MessageEncryptor(ILoggerProvider logger, IKeyProvider keyProvider) : IMessageEncryptor, IDisposable
+    public class MessageEncryptor : IMessageEncryptor, IDisposable
     {
+        private readonly ILoggerProvider logger;
+        private readonly IKeyProvider keyProvider;
+        private readonly IIdentityService identityService;
         private readonly ConcurrentDictionary<Guid, byte[]> sharedSecrets = new();
         private bool disposed;
+
+        /// <summary>
+        /// Инициализирует новый экземпляр <see cref="MessageEncryptor"/>
+        /// </summary>
+        public MessageEncryptor(ILoggerProvider logger, IKeyProvider keyProvider, IIdentityService identityService)
+        {
+            this.logger = logger;
+            this.keyProvider = keyProvider;
+            this.identityService = identityService;
+        }
 
         bool IMessageEncryptor.IsSessionInitialized(Guid partnerId)
             => sharedSecrets.ContainsKey(partnerId);
@@ -36,13 +49,13 @@ namespace MIN.Cryptography
             throw new InvalidOperationException($"Session not initialized for partner: {partnerId}");
         }
 
-        async Task<HandshakeMessage> IMessageEncryptor.CreateSelfHandshakeMessageAsync(ParticipantInfo selfParticipant)
+        async Task<HandshakeMessage> IMessageEncryptor.CreateSelfHandshakeMessageAsync()
         {
             var keys = await keyProvider.GetLocalKeysAsync();
 
             return new HandshakeMessage
             {
-                Participant = selfParticipant,
+                Participant = new ParticipantInfo(identityService.SelfPartcipant),
                 PublicKey = keys.EcdhPublicKeyBytes
             };
         }

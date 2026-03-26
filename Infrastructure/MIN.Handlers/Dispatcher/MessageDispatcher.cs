@@ -1,4 +1,6 @@
-﻿using MIN.Handlers.Contracts;
+﻿using MIN.Events.Contracts;
+using MIN.Events.Events;
+using MIN.Handlers.Contracts;
 using MIN.Handlers.Contracts.Dispatcher;
 using MIN.Handlers.Contracts.Models;
 using MIN.Messaging.Contracts.Interfaces;
@@ -6,20 +8,25 @@ using MIN.Services.Contracts.Interfaces;
 
 namespace MIN.Handlers.Dispatcher
 {
-    /// <summary>
-    /// Реализация диспетчера сообщений
-    /// </summary>
+    /// <inheritdoc cref="IMessageDispatcher"/>
     public sealed class MessageDispatcher : IMessageDispatcher
     {
         private readonly IEnumerable<IMessageHandler> handlers;
+        private readonly IMessageService messageService;
+        private readonly IEventBus eventBus;
         private readonly ILoggerProvider logger;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="MessageDispatcher"/>
         /// </summary>
-        public MessageDispatcher(IEnumerable<IMessageHandler> handlers, ILoggerProvider logger)
+        public MessageDispatcher(IEnumerable<IMessageHandler> handlers,
+            IMessageService messageService,
+            IEventBus eventBus,
+            ILoggerProvider logger)
         {
             this.handlers = handlers;
+            this.messageService = messageService;
+            this.eventBus = eventBus;
             this.logger = logger;
         }
 
@@ -50,19 +57,28 @@ namespace MIN.Handlers.Dispatcher
                     if (!result.IsSuccess)
                     {
                         logger.Log($"Handler {handler.GetType().Name} failed: {result.ErrorMessage}");
+                        await PublishErrorEvent(result.ErrorMessage!, context);
                     }
-                    else if (result.Response != null && context.Transport != null)
+                    else if (result.Response != null)
                     {
-                        // Отправляем ответное сообщение отправителю
-                        var responseData = context.Transport.Serialize(result.Response);
-                        await context.Transport.SendAsync(responseData, context.Sender, context.CancellationToken);
+                        await messageService.SendAsync(result.Response, context.RoomId, context.ConnectionId, context.CancellationToken);
                     }
                 }
                 catch (Exception ex)
                 {
                     logger.Log($"Handler {handler.GetType().Name} threw exception: {ex.Message}");
+                    await PublishErrorEvent(ex.Message, context);
                 }
             }
+        }
+
+        private async Task PublishErrorEvent(string message, MessageContext context)
+        {
+            await eventBus.PublishAsync(new ErrorOccurredEvent()
+            {
+                ErrorMessage = message,
+                RoomId = context.RoomId
+            }, context.CancellationToken);
         }
     }
 }

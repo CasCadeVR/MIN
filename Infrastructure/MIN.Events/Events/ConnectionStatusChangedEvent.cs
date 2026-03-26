@@ -13,11 +13,6 @@ public sealed class ConnectionStatusChangedEvent : BaseEvent
     public Guid RoomId { get; init; }
 
     /// <summary>
-    /// Идентификатор участника
-    /// </summary>
-    public Guid ParticipantId { get; init; }
-
-    /// <summary>
     /// Флаг подключения
     /// </summary>
     public bool IsConnected { get; init; }

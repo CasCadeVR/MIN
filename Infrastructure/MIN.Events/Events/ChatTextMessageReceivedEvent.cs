@@ -7,7 +7,7 @@ namespace MIN.Events.Events;
 /// <summary>
 /// Получено новое сообщение в комнате
 /// </summary>
-public sealed class MessageReceivedEvent : BaseEvent
+public sealed class ChatTextMessageReceivedEvent : BaseEvent
 {
     /// <summary>
     /// Идентификатор комнаты

@@ -78,6 +78,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Services.Updates.Contra
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cryptography", "Cryptography", "{31039423-2842-4893-8986-E030AA002F29}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Common.Core", "MIN.Common.Core\MIN.Common.Core.csproj", "{3F93AEEF-4BA7-439C-8145-CD44ADFB8FFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -176,6 +178,10 @@ Global
 		{4F627BD8-0652-4C3E-8184-7002C13930BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F627BD8-0652-4C3E-8184-7002C13930BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F627BD8-0652-4C3E-8184-7002C13930BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F93AEEF-4BA7-439C-8145-CD44ADFB8FFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F93AEEF-4BA7-439C-8145-CD44ADFB8FFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F93AEEF-4BA7-439C-8145-CD44ADFB8FFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F93AEEF-4BA7-439C-8145-CD44ADFB8FFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -208,6 +214,7 @@ Global
 		{3CB0EE1C-1856-4B5B-800E-E022B7344AFC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{4F627BD8-0652-4C3E-8184-7002C13930BF} = {D72B862D-3610-4828-8D18-B5F3DD051239}
 		{31039423-2842-4893-8986-E030AA002F29} = {14359A71-2B4E-49C5-A6D4-7962E0D2131E}
+		{3F93AEEF-4BA7-439C-8145-CD44ADFB8FFD} = {DF928243-9876-418D-BD29-7A9A399B4758}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57E9A443-C4F6-4D77-AEA8-F7D953811002}

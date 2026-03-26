@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MIN.Messaging.Contracts;
 using MIN.Messaging.Contracts.Interfaces;
 using MIN.Serialization.Contracts;
@@ -47,6 +48,27 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IMessageSerializer>(_ => new JsonMessageSerializer(deserializers));
         return services;
+    }
+
+    /// <summary>
+    /// Регистрирует списком реализации с удалением уже зарегистрированных
+    /// </summary>
+    /// <typeparam name="TService">Тип, для которого осуществляется регистрация</typeparam>
+    /// <typeparam name="TAnchor">Якорь для определения сборки</typeparam>
+    /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
+    /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
+    public static void RegisterMultipleInterfacesAssignableTo<TService, TAnchor>(this IServiceCollection services, ServiceLifetime lifetime)
+    {
+        var serviceType = typeof(TService);
+        var types = typeof(TAnchor).Assembly.GetTypes()
+            .Where(t => serviceType.IsAssignableFrom(t) &&
+                        !(t.IsAbstract ||
+                          t.IsInterface));
+
+        foreach (var type in types)
+        {
+            services.TryAddEnumerable(new ServiceDescriptor(serviceType, type, lifetime));
+        }
     }
 
     private static Func<byte[], IMessage> CreateDeserializer(Type messageType)

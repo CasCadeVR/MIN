@@ -1,6 +1,5 @@
-﻿using MIN.Messaging.Contracts;
-using MIN.Messaging.Contracts.Entities;
-using MIN.Messaging.RoomRelated.ParticipantRelated;
+﻿using MIN.Entities;
+using MIN.Messaging.Contracts;
 
 namespace MIN.Messaging.Stateless.RoomRelated;
 
@@ -18,15 +17,5 @@ public class RoomInfoResponseMessage : BaseMessage
     /// <summary>
     /// Информация о комнате
     /// </summary>
-    public RoomInfo Room { get; set; } = null!;
-
-    /// <summary>
-    /// Подключённые участники
-    /// </summary>
-    public List<ParticipantInfo> Participants { get; set; } = [];
-
-    /// <summary>
-    /// Последние сообщения
-    /// </summary>
-    public List<ChatTextMessage> RecentMessages { get; set; } = [];
+    public Room Room { get; set; } = null!;
 }

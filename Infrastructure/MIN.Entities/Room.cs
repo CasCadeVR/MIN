@@ -53,43 +53,6 @@ public class Room : IRoomData
     public bool IsFull => CurrentParticipants.Count >= MaximumParticipants;
 
     /// <summary>
-    /// Добавить участника в комнату
-    /// </summary>
-    public void AddParticipant(IParticipantData participant)
-    {
-        if (IsFull)
-        {
-            throw new InvalidOperationException("Достигнуто максимальное количество участников.");
-        }
-
-        CurrentParticipants.Add(participant);
-    }
-
-    /// <summary>
-    /// Убрать участника из комнаты
-    /// </summary>
-    public bool RemoveParticipantById(Guid id)
-    {
-        var foundParticipant = CurrentParticipants.Where(x => x.Id == id).FirstOrDefault();
-        return CurrentParticipants.Remove(foundParticipant!);
-    }
-
-    /// <summary>
-    /// Добавить сообщение
-    /// </summary>
-    public void AddMessage(IMessage message)
-        => ChatHistory.Add(message);
-
-    /// <summary>
-    /// Обновить информацию о комнате
-    /// </summary>
-    public void UpdateInfo(IRoomData room)
-    {
-        Name = room.Name;
-        MaximumParticipants = room.MaximumParticipants;
-    }
-
-    /// <summary>
     /// Деактивировать комнату
     /// </summary>
     public void Deactivate() => IsActive = false;

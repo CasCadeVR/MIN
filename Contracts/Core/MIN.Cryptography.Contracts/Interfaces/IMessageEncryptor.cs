@@ -1,5 +1,4 @@
-﻿using MIN.Messaging.Contracts.Entities;
-using MIN.Messaging.Stateless;
+﻿using MIN.Messaging.Stateless;
 
 namespace MIN.Cryptography.Contracts.Interfaces
 {
@@ -21,7 +20,7 @@ namespace MIN.Cryptography.Contracts.Interfaces
         /// <summary>
         /// Создать сообщения рукопожатия
         /// </summary>
-        Task<HandshakeMessage> CreateSelfHandshakeMessageAsync(ParticipantInfo selfParticipant);
+        Task<HandshakeMessage> CreateSelfHandshakeMessageAsync();
 
         /// <summary>
         /// Закодировать сообщение

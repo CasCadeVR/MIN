@@ -16,9 +16,4 @@ public class Participant : IParticipantData
     /// Имя участника
     /// </summary>
     public string Name { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Имя компьютера участника
-    /// </summary>
-    public string PCName { get; set; } = string.Empty;
 }

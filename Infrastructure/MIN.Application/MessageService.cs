@@ -1,7 +1,9 @@
 ﻿using System.Collections.Concurrent;
+using MIN.Handlers.Contracts.Models;
+using MIN.Application.Contracts.Interfaces;
 using MIN.Cryptography.Contracts.Interfaces;
+using MIN.Handlers.Contracts.Dispatcher;
 using MIN.Messaging.Contracts.Entities;
-using MIN.Messaging.Contracts.Events;
 using MIN.Messaging.Contracts.Interfaces;
 using MIN.Serialization.Contracts;
 using MIN.Services.Contracts.Interfaces;
@@ -10,10 +12,11 @@ using MIN.Transport.Contracts.Interfaces;
 
 namespace MIN.Application
 {
-    /// <inheritdoc cref="MessageService"/>
+    /// <inheritdoc cref="IMessageService"/>
     public sealed class MessageService : IMessageService, IAsyncDisposable
     {
         private readonly ITransport transport;
+        private readonly IMessageDispatcher dispatcher;
         private readonly IMessageSerializer serializer;
         private readonly IMessageEncryptor encryptor;
         private readonly ILoggerProvider logger;
@@ -21,15 +24,17 @@ namespace MIN.Application
         private CancellationTokenSource? cts;
         private bool disposed;
 
-        /// <inheritdoc />
-        public event EventHandler<MessageReceivedEventArgs>? MessageReceived;
-
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="MessageService"/>
         /// </summary>
-        public MessageService(ITransport transport, IMessageSerializer serializer, IMessageEncryptor encryptor, ILoggerProvider logger)
+        public MessageService(ITransport transport,
+            IMessageDispatcher dispatcher,
+            IMessageSerializer serializer,
+            IMessageEncryptor encryptor,
+            ILoggerProvider logger)
         {
             this.transport = transport;
+            this.dispatcher = dispatcher;
             this.serializer = serializer;
             this.encryptor = encryptor;
             this.logger = logger;
@@ -40,10 +45,68 @@ namespace MIN.Application
             participants[connectionId] = participant;
         }
 
-        async Task IMessageService.SendAsync(IMessage message, Guid roomId, Guid connectionId, CancellationToken cancellationToken = default)
+        async Task IMessageService.SendAsync(IMessage message, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
+        {
+            var dataToSend = SerializeAndEncryptMessage(message, connectionId);
+            await transport.SendAsync(dataToSend, roomId, connectionId, cancellationToken);
+        }
+
+        async Task IMessageService.BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
+        {
+            var tasks = participants.Keys
+                .Where(c => excludeConnections == null || !excludeConnections.Contains(c))
+                .Select(connectionId => transport.SendAsync(SerializeAndEncryptMessage(message, connectionId),
+                    roomId, connectionId, cancellationToken));
+
+            await Task.WhenAll(tasks);
+        }
+
+        public async Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            transport.RawMessageReceived += async (sender, e)
+                => await OnRawMessageReceived(sender, e);
+            await Task.CompletedTask;
+        }
+
+        private async Task OnRawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
+        {
+            try
+            {
+                participants.TryGetValue(e.ConnectionId, out var participantInfo);
+
+                byte[] plainData;
+                var body = encryptor.RemoveEncryptionHeader(e.Data);
+
+                if (encryptor.IsEncrypted(e.Data))
+                {
+                    if (participantInfo == null)
+                    {
+                        logger.Log($"Получили зашифрованное сообщение от неизвестного соединения с id {e.ConnectionId}, игнорю");
+                        return;
+                    }
+                    plainData = encryptor.DecryptMessage(body, participantInfo.Id);
+                }
+                else
+                {
+                    plainData = body;
+                }
+
+                var message = serializer.Deserialize(plainData);
+                var participant = participants[e.ConnectionId];
+
+                await dispatcher.DispatchAsync(message, new MessageContext(participantInfo!, e.RoomId, e.ConnectionId, cts!.Token));
+            }
+            catch (Exception ex)
+            {
+                logger.Log($"Произошла ошибка во время обработки raw message: {ex.Message}");
+            }
+        }
+
+        private byte[] SerializeAndEncryptMessage(IMessage message, Guid connectionId)
         {
             var plainData = serializer.Serialize(message);
-            byte[] dataToSend;
+            byte[] resultBytes;
 
             if (message.RequiresEncryption)
             {
@@ -52,53 +115,14 @@ namespace MIN.Application
                     throw new InvalidOperationException($"No participant info for connection {connectionId}");
                 }
                 var encrypted = encryptor.EncryptMessage(plainData, recipient.Id);
-                dataToSend = encryptor.AddEncryptionHeader(encrypted);
+                resultBytes = encryptor.AddEncryptionHeader(encrypted);
             }
             else
             {
-                dataToSend = encryptor.AddPlainHeader(plainData);
+                resultBytes = encryptor.AddPlainHeader(plainData);
             }
 
-            await transport.SendAsync(dataToSend, roomId, connectionId, cancellationToken);
-        }
-
-        public async Task StartAsync(CancellationToken cancellationToken = default)
-        {
-            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            transport.RawMessageReceived += OnRawMessageReceived;
-            await Task.CompletedTask;
-        }
-
-        private void OnRawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
-        {
-            try
-            {
-                byte[] plainData;
-                var body = encryptor.RemoveEncryptionHeader(e.Data);
-
-                if (encryptor.IsEncrypted(e.Data))
-                {
-                    if (!participants.TryGetValue(e.ConnectionId, out var senderParticipant))
-                    {
-                        // Если участник ещё не известен, возможно, это handshake – не шифруется
-                        // Но для зашифрованных сообщений участник должен быть известен
-                        logger.Log($"Received encrypted message from unknown connection {e.ConnectionId}, ignoring");
-                        return;
-                    }
-                    plainData = encryptor.DecryptMessage(body, senderParticipant.Id);
-                }
-                else
-                {
-                    plainData = body;
-                }
-
-                var message = serializer.Deserialize(plainData);
-                MessageReceived?.Invoke(this, new MessageReceivedEventArgs(e.RoomId, e.ConnectionId, message));
-            }
-            catch (Exception ex)
-            {
-                logger.Log($"Error processing raw message: {ex.Message}");
-            }
+            return resultBytes;
         }
 
         public async ValueTask DisposeAsync()
@@ -110,7 +134,8 @@ namespace MIN.Application
 
             disposed = true;
             cts?.Cancel();
-            transport.RawMessageReceived -= OnRawMessageReceived;
+            transport.RawMessageReceived -= async (sender, e)
+                => await OnRawMessageReceived(sender, e);
             cts?.Dispose();
             await Task.CompletedTask;
         }
