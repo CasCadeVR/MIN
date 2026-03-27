@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Application.Contracts.Interfaces;
+using MIN.Application.Contracts.Interfaces.Messaging;
 using MIN.Cryptography.Contracts.Interfaces;
 using MIN.Entities;
 using MIN.Events.Contracts;

@@ -1,4 +1,4 @@
-﻿using MIN.Application.Contracts.Interfaces;
+﻿using MIN.Application.Contracts.Interfaces.Messaging;
 using MIN.Cryptography.Contracts.Interfaces;
 using MIN.Events.Events;
 using MIN.Handlers.Contracts;

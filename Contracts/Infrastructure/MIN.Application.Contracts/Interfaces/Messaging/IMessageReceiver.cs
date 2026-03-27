@@ -1,0 +1,19 @@
+﻿using MIN.Messaging.Contracts.Events;
+
+namespace MIN.Application.Contracts.Interfaces.Messaging;
+
+/// <summary>
+/// Сервис по получению и приёму сообщений
+/// </summary>
+public interface IMessageReceiver
+{
+    /// <summary>
+    /// Собыите прихода сообщения
+    /// </summary>
+    event EventHandler<MessageReceivedEventArgs> MessageReceived;
+
+    /// <summary>
+    /// Начать прослушку сообщений
+    /// </summary>
+    Task StartListeningAsync(CancellationToken cancellationToken = default);
+}
