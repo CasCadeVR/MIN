@@ -11,10 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Contracts\Core\MIN.Cryptography.Contracts\MIN.Cryptography.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\Infrastructure\MIN.Messaging.Contracts\MIN.Messaging.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Contracts\Services\MIN.Services.Contracts\MIN.Helpers.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Infrastructure\MIN.Messaging\MIN.Messaging.csproj" />
+    <ProjectReference Include="..\..\..\Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Cryptography.Contracts\MIN.Cryptography.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,10 +2,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using MIN.Cryptography.Contracts.Interfaces;
-using MIN.Messaging.Contracts.Entities;
+using MIN.Entities.Contracts.Models;
 using MIN.Messaging.Stateless;
-using MIN.Services.Contracts.Interfaces;
-using MIN.Services.Contracts.Models.Enums;
+using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Cryptography
 {

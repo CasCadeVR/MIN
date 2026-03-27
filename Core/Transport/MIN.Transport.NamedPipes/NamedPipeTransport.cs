@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using MIN.Services.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
 using MIN.Transport.Contracts.Interfaces;
 using MIN.Transport.Contracts.Constants;
 using MIN.Transport.Contracts.Events;

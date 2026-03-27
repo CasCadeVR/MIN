@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj" />
+    <ProjectReference Include="..\..\Cryptography\MIN.Cryptography.Contracts\MIN.Cryptography.Contracts.csproj" />
+    <ProjectReference Include="..\..\Events\MIN.Events\MIN.Events.csproj" />
+    <ProjectReference Include="..\..\Messaging\MIN.Messaging\MIN.Messaging.csproj" />
+    <ProjectReference Include="..\..\Services\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Handlers.Contracts\MIN.Handlers.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

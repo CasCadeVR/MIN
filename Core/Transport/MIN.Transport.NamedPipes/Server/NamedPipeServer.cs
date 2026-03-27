@@ -2,7 +2,7 @@
 using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using MIN.Services.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
 using MIN.Transport.Contracts.Constants;
 using MIN.Transport.NamedPipes.Models;
 

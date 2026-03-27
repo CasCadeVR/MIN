@@ -1,5 +1,5 @@
 ﻿using System.IO.Pipes;
-using MIN.Services.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
 using MIN.Transport.NamedPipes.Models;
 
 namespace MIN.Transport.NamedPipes.Client;

@@ -5,9 +5,9 @@ VisualStudioVersion = 17.14.36811.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Desktop", "Desktop\MIN.Desktop\MIN.Desktop.csproj", "{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Helpers.Contracts", "Contracts\Services\MIN.Services.Contracts\MIN.Helpers.Contracts.csproj", "{C0BDD3E5-6D7A-449B-99A1-4B303DA283E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Helpers.Contracts", "Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj", "{C0BDD3E5-6D7A-449B-99A1-4B303DA283E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Helpers", "Services\MIN.Services\MIN.Helpers.csproj", "{BB7F2BB5-55B6-43E4-909B-B643EF6B6964}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Helpers", "Helpers\MIN.Helpers\MIN.Helpers.csproj", "{BB7F2BB5-55B6-43E4-909B-B643EF6B6964}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Services.Connection", "MIN.Services.Connection\MIN.Services.Connection.csproj", "{EFC11A3D-6D0D-45C7-AC1C-B2FF0B20A562}"
 EndProject
@@ -18,43 +18,43 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Messaging.Contracts", "Contracts\Infrastructure\MIN.Messaging.Contracts\MIN.Messaging.Contracts.csproj", "{82A02C52-0D30-48F6-A19A-F03B78C6DE3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Messaging.Contracts", "Core\Messaging\MIN.Messaging.Contracts\MIN.Messaging.Contracts.csproj", "{82A02C52-0D30-48F6-A19A-F03B78C6DE3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Transport.Contracts", "Contracts\Core\MIN.Transport.Contracts\MIN.Transport.Contracts.csproj", "{1AE1CD30-FE27-4ACF-B00F-7446A40D0623}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Transport.Contracts", "Core\Transport\MIN.Transport.Contracts\MIN.Transport.Contracts.csproj", "{1AE1CD30-FE27-4ACF-B00F-7446A40D0623}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Cryptography.Contracts", "Contracts\Core\MIN.Cryptography.Contracts\MIN.Cryptography.Contracts.csproj", "{64856AF2-8495-4B8B-9CF4-5BBE1074B14D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Cryptography.Contracts", "Core\Cryptography\MIN.Cryptography.Contracts\MIN.Cryptography.Contracts.csproj", "{64856AF2-8495-4B8B-9CF4-5BBE1074B14D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Events.Contracts", "Contracts\Infrastructure\MIN.Events.Contracts\MIN.Events.Contracts.csproj", "{856D0B0D-8593-4BB5-A5C7-B1A6EF1A037D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Events.Contracts", "Core\Events\MIN.Events.Contracts\MIN.Events.Contracts.csproj", "{856D0B0D-8593-4BB5-A5C7-B1A6EF1A037D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{14359A71-2B4E-49C5-A6D4-7962E0D2131E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Messaging", "Infrastructure\MIN.Messaging\MIN.Messaging.csproj", "{C9A46B2B-C627-4ADD-9554-29AF02D990AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Messaging", "Core\Messaging\MIN.Messaging\MIN.Messaging.csproj", "{C9A46B2B-C627-4ADD-9554-29AF02D990AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Events", "Infrastructure\MIN.Events\MIN.Events.csproj", "{35BCD902-C265-40AC-8093-1B4E2506348C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Events", "Core\Events\MIN.Events\MIN.Events.csproj", "{35BCD902-C265-40AC-8093-1B4E2506348C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Cryptography", "Core\Cryptography\MIN.Cryptography\MIN.Cryptography.csproj", "{4FA41C38-7B82-47A1-B327-FF6A2B2BB95A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Cryptography", "Core\Cryptography\MIN.Cryptography\MIN.Cryptography.csproj", "{4FA41C38-7B82-47A1-B327-FF6A2B2BB95A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Transport.NamedPipes", "Core\Transport\MIN.Transport.NamedPipes\MIN.Transport.NamedPipes.csproj", "{561AE4CA-D445-4C9F-AE72-128A059217D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Transport.NamedPipes", "Core\Transport\MIN.Transport.NamedPipes\MIN.Transport.NamedPipes.csproj", "{561AE4CA-D445-4C9F-AE72-128A059217D3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Desktop", "Desktop", "{9CABB0E8-57A8-45C2-91CA-9682DE86BBC0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{EB06CFFA-D1EC-4B74-9D96-5B9B197E9B0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Entities.Contracts", "Contracts\Infrastructure\MIN.Entities.Contracts\MIN.Entities.Contracts.csproj", "{587EBA99-8237-4A63-95D6-6C6BC3F6E764}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Entities.Contracts", "Core\Entities\MIN.Entities.Contracts\MIN.Entities.Contracts.csproj", "{587EBA99-8237-4A63-95D6-6C6BC3F6E764}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Entities", "Infrastructure\MIN.Entities\MIN.Entities.csproj", "{8FE4E2F2-4677-46EA-89A2-6BCC4F57D94D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Entities", "Core\Entities\MIN.Entities\MIN.Entities.csproj", "{8FE4E2F2-4677-46EA-89A2-6BCC4F57D94D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Handlers.Contracts", "Contracts\Infrastructure\MIN.Handlers.Contracts\MIN.Handlers.Contracts.csproj", "{AC5A3716-A714-4DD9-959C-734A9BB9D370}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Handlers.Contracts", "Core\Handlers\MIN.Handlers.Contracts\MIN.Handlers.Contracts.csproj", "{AC5A3716-A714-4DD9-959C-734A9BB9D370}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Services.Contracts", "Contracts\Infrastructure\MIN.Application.Contracts\MIN.Services.Contracts.csproj", "{EF7F5642-F72B-4B41-887E-A01A9E29491E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Services.Contracts", "Core\Services\MIN.Services.Contracts\MIN.Services.Contracts.csproj", "{EF7F5642-F72B-4B41-887E-A01A9E29491E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Services", "Infrastructure\MIN.Application\MIN.Services.csproj", "{8EECE03B-BEFB-4E0A-8DF6-F00E37523FD5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Services", "Core\Services\MIN.Services\MIN.Services.csproj", "{8EECE03B-BEFB-4E0A-8DF6-F00E37523FD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Handlers", "Infrastructure\MIN.Handlers\MIN.Handlers.csproj", "{31E49A73-0DE5-4A84-872A-45E5F5888B0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Handlers", "Core\Handlers\MIN.Handlers\MIN.Handlers.csproj", "{31E49A73-0DE5-4A84-872A-45E5F5888B0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Serialization.Contracts", "Contracts\Core\MIN.Serialization.Contracts\MIN.Serialization.Contracts.csproj", "{A8D7A00E-3222-4A5D-A4F4-5B94ACD4653D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Serialization.Contracts", "Core\Serialization\MIN.Serialization.Contracts\MIN.Serialization.Contracts.csproj", "{A8D7A00E-3222-4A5D-A4F4-5B94ACD4653D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Serialization.Json", "Core\Serialization\MIN.Serialization\MIN.Serialization.Json.csproj", "{486B2DBC-720C-499F-8998-FE6B9A497731}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Serialization.Json", "Core\Serialization\MIN.Serialization\MIN.Serialization.Json.csproj", "{486B2DBC-720C-499F-8998-FE6B9A497731}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Serialization", "Serialization", "{447729C9-E92B-46C6-9083-93F8FC12379D}"
 EndProject
@@ -62,29 +62,29 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transport", "Transport", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{DF928243-9876-418D-BD29-7A9A399B4758}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Common.Mvc", "Common\MIN.Common.Mvc\MIN.Common.Mvc.csproj", "{63479CE6-C339-488E-A9EC-1C4F80B2F84E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Common.Mvc", "Common\MIN.Common.Mvc\MIN.Common.Mvc.csproj", "{63479CE6-C339-488E-A9EC-1C4F80B2F84E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Helpers", "Helpers", "{644C238B-C0D0-43E3-9C80-2E63DD35ED53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Helpers.Updates.Contracts", "Contracts\Services\MIN.Services.Updates.Contracts\MIN.Helpers.Updates.Contracts.csproj", "{4F627BD8-0652-4C3E-8184-7002C13930BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Helpers.Updates.Contracts", "Helpers\Updates\MIN.Helpers.Updates.Contracts\MIN.Helpers.Updates.Contracts.csproj", "{4F627BD8-0652-4C3E-8184-7002C13930BF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cryptography", "Cryptography", "{31039423-2842-4893-8986-E030AA002F29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Common.Core", "MIN.Common.Core\MIN.Common.Core.csproj", "{3F93AEEF-4BA7-439C-8145-CD44ADFB8FFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Common.Core", "Common\MIN.Common.Core\MIN.Common.Core.csproj", "{3F93AEEF-4BA7-439C-8145-CD44ADFB8FFD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chat", "Chat", "{A4630A3E-4127-4885-85F5-E30F8D669DD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Chat.Events", "MIN.Chat.Events\MIN.Chat.Events.csproj", "{9A6F16FC-6997-4252-B880-B31DC478DAFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Chat.Events", "Infrastructure\Chat\MIN.Chat.Events\MIN.Chat.Events.csproj", "{9A6F16FC-6997-4252-B880-B31DC478DAFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Chat.Messaging", "MIN.Chat.Messaging\MIN.Chat.Messaging.csproj", "{E2585396-8FD6-4A28-8601-8AAF4C4D18A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Chat.Messaging", "Infrastructure\Chat\MIN.Chat.Messaging\MIN.Chat.Messaging.csproj", "{E2585396-8FD6-4A28-8601-8AAF4C4D18A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Chat.Services.Contracts", "MIN.Chat.Services.Contracts\MIN.Chat.Services.Contracts.csproj", "{823FE5C0-7C63-4DDC-AEED-902B6A8AEF92}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Chat.Services.Contracts", "Infrastructure\Chat\MIN.Chat.Services.Contracts\MIN.Chat.Services.Contracts.csproj", "{823FE5C0-7C63-4DDC-AEED-902B6A8AEF92}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Chat.Services", "MIN.Chat.Services\MIN.Chat.Services.csproj", "{4C8D0376-6F71-4B2C-A09F-0F1FF6AD72C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Chat.Services", "Infrastructure\Chat\MIN.Chat.Services\MIN.Chat.Services.csproj", "{4C8D0376-6F71-4B2C-A09F-0F1FF6AD72C7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{2FEC6FDB-9FA7-4A94-905E-5A4ADA738536}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Helpers.Updates.GitHub", "MIN.Helpers.Updates.GitHub\MIN.Helpers.Updates.GitHub.csproj", "{9B406794-1FBC-40C8-9C96-53AEF269C914}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Helpers.Updates.GitHub", "Helpers\Updates\MIN.Helpers.Updates.GitHub\MIN.Helpers.Updates.GitHub.csproj", "{9B406794-1FBC-40C8-9C96-53AEF269C914}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Updates", "Updates", "{30200F3C-AE8C-423A-89A5-57CA9F21C2A6}"
 EndProject
@@ -95,6 +95,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Handlers", "Handlers", "{CF0E51C4-5FE7-47A4-8A44-11F2EB76527A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Messaging", "Messaging", "{CD03853D-299C-4AE4-BD3B-7AF72C559180}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Chat.Handlers", "Infrastructure\Chat\MIN.Chat.Handlers\MIN.Chat.Handlers.csproj", "{2AAA0BD4-2C43-488D-A088-A7E0473F7B7A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -218,6 +220,10 @@ Global
 		{9B406794-1FBC-40C8-9C96-53AEF269C914}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B406794-1FBC-40C8-9C96-53AEF269C914}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B406794-1FBC-40C8-9C96-53AEF269C914}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AAA0BD4-2C43-488D-A088-A7E0473F7B7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AAA0BD4-2C43-488D-A088-A7E0473F7B7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AAA0BD4-2C43-488D-A088-A7E0473F7B7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AAA0BD4-2C43-488D-A088-A7E0473F7B7A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -260,6 +266,7 @@ Global
 		{5D02923D-C5F6-4E9C-BA51-F39D0BEAADB9} = {14359A71-2B4E-49C5-A6D4-7962E0D2131E}
 		{CF0E51C4-5FE7-47A4-8A44-11F2EB76527A} = {14359A71-2B4E-49C5-A6D4-7962E0D2131E}
 		{CD03853D-299C-4AE4-BD3B-7AF72C559180} = {14359A71-2B4E-49C5-A6D4-7962E0D2131E}
+		{2AAA0BD4-2C43-488D-A088-A7E0473F7B7A} = {A4630A3E-4127-4885-85F5-E30F8D669DD9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57E9A443-C4F6-4D77-AEA8-F7D953811002}
