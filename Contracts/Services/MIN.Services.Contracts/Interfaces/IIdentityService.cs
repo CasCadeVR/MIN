@@ -1,25 +1,24 @@
-﻿using MIN.Entities.Contracts;
+﻿using MIN.Entities.Contracts.Interfaces;
 
-namespace MIN.Services.Contracts.Interfaces
+namespace MIN.Helpers.Contracts.Interfaces;
+
+/// <summary>
+/// Сервис по предоставлению данных о текущем пользователе
+/// </summary>
+public interface IIdentityService
 {
     /// <summary>
-    /// Сервис по предоставлению данных о текущем пользователе
+    /// Текущий пользователь приложения
     /// </summary>
-    public interface IIdentityService
-    {
-        /// <summary>
-        /// Текущий пользователь приложения
-        /// </summary>
-        IParticipantData SelfPartcipant { get; }
+    IParticipantData SelfPartcipant { get; }
 
-        /// <summary>
-        /// Установить данные пользователя
-        /// </summary>
-        void SetParticipant(IParticipantData participantData);
+    /// <summary>
+    /// Установить данные пользователя
+    /// </summary>
+    void SetParticipant(IParticipantData participantData);
 
-        /// <summary>
-        /// Сбросить данные пользователя
-        /// </summary>
-        void ResetParticipant(IParticipantData participantData);
-    }
+    /// <summary>
+    /// Сбросить данные пользователя
+    /// </summary>
+    void ResetParticipant(IParticipantData participantData);
 }

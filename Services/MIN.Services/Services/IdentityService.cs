@@ -1,25 +1,24 @@
-﻿using MIN.Entities.Contracts;
-using MIN.Services.Contracts.Interfaces;
+﻿using MIN.Entities.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
 
-namespace MIN.Services.Services
+namespace MIN.Helpers.Services;
+
+/// <inheritdoc />
+public sealed class IdentityService : IIdentityService
 {
+    private IParticipantData currentParticipant = null!;
+
+    IParticipantData IIdentityService.SelfPartcipant => currentParticipant;
+
     /// <inheritdoc />
-    public sealed class IdentityService : IIdentityService
+    void IIdentityService.SetParticipant(IParticipantData participantData)
     {
-        private IParticipantData currentParticipant = null!;
+        currentParticipant = participantData;
+    }
 
-        IParticipantData IIdentityService.SelfPartcipant => currentParticipant;
-
-        /// <inheritdoc />
-        void IIdentityService.SetParticipant(IParticipantData participantData)
-        {
-            currentParticipant = participantData;
-        }
-
-        /// <inheritdoc />
-        void IIdentityService.ResetParticipant(IParticipantData participantData)
-        {
-            currentParticipant = null!;
-        }
+    /// <inheritdoc />
+    void IIdentityService.ResetParticipant(IParticipantData participantData)
+    {
+        currentParticipant = null!;
     }
 }

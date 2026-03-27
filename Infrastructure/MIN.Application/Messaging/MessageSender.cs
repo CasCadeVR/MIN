@@ -1,13 +1,13 @@
 ﻿using System.Collections.Concurrent;
-using MIN.Application.Contracts.Interfaces.Messaging;
+using MIN.Services.Contracts.Interfaces.Messaging;
 using MIN.Cryptography.Contracts.Interfaces;
-using MIN.Messaging.Contracts.Entities;
+using MIN.Entities.Contracts.Entities;
 using MIN.Messaging.Contracts.Interfaces;
 using MIN.Serialization.Contracts;
-using MIN.Services.Contracts.Interfaces;
+using MIN.Services.Helpers.Contracts.Interfaces;
 using MIN.Transport.Contracts.Interfaces;
 
-namespace MIN.Application.Messaging
+namespace MIN.Services.Messaging
 {
     /// <inheritdoc cref="IMessageSender"/>
     internal sealed class MessageSender : IMessageSender, IAsyncDisposable

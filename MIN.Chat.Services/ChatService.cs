@@ -1,23 +1,11 @@
-﻿using MIN.Services.Connection.Contracts.Interfaces.Discovering;
-using MIN.Services.Connection.Contracts.Interfaces.Pipes;
-using MIN.Services.Connection.Contracts.Interfaces.Serialize;
-using MIN.Services.Connection.Contracts.Models.Exceptions;
-using MIN.Services.Connection.Pipes.Discovering;
-using MIN.Services.Contracts.Interfaces;
-using MIN.Services.Contracts.Models;
-using MIN.Services.Contracts.Models.Enums;
-using MIN.Services.Contracts.Models.Events;
-using MIN.Services.Contracts.Models.Messages;
-using MIN.Services.Contracts.Models.Participants;
-using MIN.Services.Contracts.Models.Rooms;
-using MIN.Services.Extensions;
+﻿using MIN.Services.ChatText.Contracts.Interfaces;
 
 namespace MIN.Application
 {
     /// <summary>
     /// Сервис по работе с чатом
     /// </summary>
-    public class ChatService : IChatRoomService, IAsyncDisposable
+    public class ChatService : IChatService, IAsyncDisposable
     {
         private readonly IPipeRoomServer server;
         private readonly IPipeParticipantClient client;

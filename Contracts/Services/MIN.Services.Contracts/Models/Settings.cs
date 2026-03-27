@@ -1,6 +1,6 @@
-﻿using MIN.Services.Contracts.Models.Enums;
+﻿using MIN.Helpers.Contracts.Models.Enums;
 
-namespace MIN.Services.Contracts.Models
+namespace MIN.Helpers.Contracts.Models
 {
     /// <summary>
     /// Настройки

@@ -1,20 +1,19 @@
-﻿using MIN.Services.Contracts.Models;
+﻿using MIN.Helpers.Contracts.Models;
 
-namespace MIN.Services.Contracts.Interfaces
+namespace MIN.Helpers.Contracts.Interfaces;
+
+/// <summary>
+/// Сервис по работе с настройками
+/// </summary>
+public interface ISettingsProvider
 {
     /// <summary>
-    /// Сервис по работе с настройками
+    /// Получить настройки
     /// </summary>
-    public interface ISettingsProvider
-    {
-        /// <summary>
-        /// Получить настройки
-        /// </summary>
-        Settings GetSettings();
+    Settings GetSettings();
 
-        /// <summary>
-        /// Сохранить настройки
-        /// </summary>
-        void SaveSettings(Settings settings);
-    }
+    /// <summary>
+    /// Сохранить настройки
+    /// </summary>
+    void SaveSettings(Settings settings);
 }

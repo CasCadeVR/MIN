@@ -1,8 +1,8 @@
-﻿using MIN.Events.Base;
+﻿using MIN.Events.Contracts;
 using MIN.Messaging.Contracts.Entities;
 using MIN.Messaging.RoomRelated.ParticipantRelated;
 
-namespace MIN.Events.Events;
+namespace MIN.Chat.Events;
 
 /// <summary>
 /// Получено новое сообщение в комнате

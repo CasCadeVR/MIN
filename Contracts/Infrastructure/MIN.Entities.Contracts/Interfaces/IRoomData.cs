@@ -1,4 +1,4 @@
-﻿namespace MIN.Entities.Contracts;
+﻿namespace MIN.Entities.Contracts.Interfaces;
 
 /// <summary>
 /// Данные комнаты

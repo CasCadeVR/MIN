@@ -8,9 +8,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Contracts\Core\MIN.Cryptography.Contracts\MIN.Cryptography.Contracts.csproj" />
-    <ProjectReference Include="..\..\Contracts\Infrastructure\MIN.Application.Contracts\MIN.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\Contracts\Infrastructure\MIN.Application.Contracts\MIN.Services.Contracts.csproj" />
     <ProjectReference Include="..\..\Contracts\Infrastructure\MIN.Handlers.Contracts\MIN.Handlers.Contracts.csproj" />
-    <ProjectReference Include="..\..\Contracts\Services\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
+    <ProjectReference Include="..\..\Contracts\Services\MIN.Services.Contracts\MIN.Helpers.Contracts.csproj" />
     <ProjectReference Include="..\MIN.Events\MIN.Events.csproj" />
     <ProjectReference Include="..\MIN.Messaging\MIN.Messaging.csproj" />
   </ItemGroup>

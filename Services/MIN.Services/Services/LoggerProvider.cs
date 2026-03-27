@@ -1,8 +1,8 @@
-﻿using MIN.Services.Contracts.Interfaces;
-using MIN.Services.Contracts.Models.Enums;
+﻿using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 using System.Text;
 
-namespace MIN.Services.Services
+namespace MIN.Helpers.Services
 {
     /// <summary>
     /// <inheritdoc cref="ILoggerProvider"/>

@@ -1,6 +1,6 @@
 ﻿using MIN.Messaging.Contracts.Interfaces;
 
-namespace MIN.Application.Contracts.Interfaces.Messaging;
+namespace MIN.Services.Contracts.Interfaces.Messaging;
 
 /// <summary>
 /// Сервис по отправке сообщений

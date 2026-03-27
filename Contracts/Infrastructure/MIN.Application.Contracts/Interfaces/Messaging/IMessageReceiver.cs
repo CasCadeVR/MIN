@@ -1,6 +1,6 @@
 ﻿using MIN.Messaging.Contracts.Events;
 
-namespace MIN.Application.Contracts.Interfaces.Messaging;
+namespace MIN.Services.Contracts.Interfaces.Messaging;
 
 /// <summary>
 /// Сервис по получению и приёму сообщений

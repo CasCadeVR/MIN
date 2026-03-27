@@ -1,6 +1,6 @@
-﻿using MIN.Entities.Contracts;
+﻿using MIN.Entities.Contracts.Interfaces;
 
-namespace MIN.Messaging.Contracts.Entities;
+namespace MIN.Entities.Contracts.Entities;
 
 /// <summary>
 /// Данные участника для передачи по сети

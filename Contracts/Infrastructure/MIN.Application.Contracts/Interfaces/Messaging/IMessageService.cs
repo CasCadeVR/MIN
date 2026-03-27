@@ -1,8 +1,6 @@
-﻿using MIN.Messaging.Contracts.Entities;
-using MIN.Messaging.Contracts.Events;
-using MIN.Messaging.Contracts.Interfaces;
+﻿using MIN.Entities.Contracts.Entities;
 
-namespace MIN.Application.Contracts.Interfaces.Messaging;
+namespace MIN.Services.Contracts.Interfaces.Messaging;
 
 /// <summary>
 /// Сервис для отправки и получения сообщений, объединяющий транспорт, сериализацию и шифрование

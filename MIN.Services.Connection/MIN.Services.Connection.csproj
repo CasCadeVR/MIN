@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MIN.Services.Connection.Contracts\MIN.Services.Connection.Contracts.csproj" />
-    <ProjectReference Include="..\Services\MIN.Services\MIN.Services.csproj" />
   </ItemGroup>
 
 <ItemGroup>

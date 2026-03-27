@@ -1,9 +1,8 @@
 ﻿using MIN.Entities;
-using MIN.Messaging.Contracts.Entities;
-using MIN.Transport.Contracts.Events;
+using MIN.Entities.Contracts.Entities;
 using MIN.Transport.Contracts.Interfaces;
 
-namespace MIN.Application.Contracts.Interfaces;
+namespace MIN.Services.Contracts.Interfaces;
 
 /// <summary>
 /// Сервис для обработок подключения и создания комнат

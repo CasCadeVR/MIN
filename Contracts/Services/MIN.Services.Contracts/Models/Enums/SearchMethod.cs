@@ -1,4 +1,4 @@
-﻿namespace MIN.Services.Contracts.Models.Enums
+﻿namespace MIN.Helpers.Contracts.Models.Enums
 {
     /// <summary>
     /// Метод поиска комнаты

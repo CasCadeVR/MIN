@@ -2,15 +2,15 @@
 using MIN.Handlers.Contracts.Models;
 using MIN.Cryptography.Contracts.Interfaces;
 using MIN.Handlers.Contracts.Dispatcher;
-using MIN.Messaging.Contracts.Entities;
+using MIN.Entities.Contracts.Entities;
 using MIN.Serialization.Contracts;
-using MIN.Services.Contracts.Interfaces;
+using MIN.Services.Helpers.Contracts.Interfaces;
 using MIN.Transport.Contracts.Interfaces;
-using MIN.Application.Contracts.Interfaces.Messaging;
+using MIN.Services.Contracts.Interfaces.Messaging;
 using MIN.Messaging.Contracts.Events;
 using MIN.Messaging.Contracts.Interfaces;
 
-namespace MIN.Application.Messaging
+namespace MIN.Services.Messaging
 {
     /// <inheritdoc cref="IMessageService"/>
     public sealed class MessageService : IMessageService, IAsyncDisposable
@@ -21,7 +21,7 @@ namespace MIN.Application.Messaging
         private readonly IMessageReceiver receiver;
         private readonly IMessageSender sender;
 
-        private readonly ConcurrentDictionary<Guid, ParticipantInfo> participants = new();
+        private readonly ConcurrentDictionary<Guid, ParticipantInfo> participantsByConnectionId = new();
         private CancellationTokenSource? cts;
         private bool disposed;
 
@@ -39,13 +39,13 @@ namespace MIN.Application.Messaging
             this.dispatcher = dispatcher;
             this.logger = logger;
 
-            receiver = new MessageReceiver(transport, serializer, encryptor, logger, participants);
-            sender = new MessageSender(transport, serializer, encryptor, logger, participants);
+            receiver = new MessageReceiver(transport, serializer, encryptor, logger, participantsByConnectionId);
+            sender = new MessageSender(transport, serializer, encryptor, logger, participantsByConnectionId);
         }
 
         void IMessageService.SetParticipantInfo(Guid connectionId, ParticipantInfo participant)
         {
-            participants[connectionId] = participant;
+            participantsByConnectionId[connectionId] = participant;
         }
 
         async Task IMessageSender.SendAsync(IMessage message, Guid roomId, Guid connectionId, CancellationToken cancellationToken)

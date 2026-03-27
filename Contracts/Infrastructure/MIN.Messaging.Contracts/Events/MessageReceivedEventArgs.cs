@@ -1,4 +1,4 @@
-﻿using MIN.Messaging.Contracts.Entities;
+﻿using MIN.Entities.Contracts.Entities;
 using MIN.Messaging.Contracts.Interfaces;
 
 namespace MIN.Messaging.Contracts.Events;

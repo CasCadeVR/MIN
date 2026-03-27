@@ -1,4 +1,4 @@
-﻿namespace MIN.Services.Contracts.Constants;
+﻿namespace MIN.Helpers.Contracts.Constants;
 
 /// <summary>
 /// Константы для сообщений

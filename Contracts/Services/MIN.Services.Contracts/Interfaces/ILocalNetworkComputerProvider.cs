@@ -1,13 +1,12 @@
-﻿namespace MIN.Services.Contracts.Interfaces
+﻿namespace MIN.Helpers.Contracts.Interfaces;
+
+/// <summary>
+/// Сервис по работе с компьютерами в локальной сети
+/// </summary>
+public interface ILocalNetworkComputerProvider
 {
     /// <summary>
-    /// Сервис по работе с компьютерами в локальной сети
+    /// Получить список имён компьютеров
     /// </summary>
-    public interface ILocalNetworkComputerProvider
-    {
-        /// <summary>
-        /// Получить список имён компьютеров
-        /// </summary>
-        IEnumerable<string> GetLocalNetworkComputerNames(string searchZone);
-    }
+    IEnumerable<string> GetLocalNetworkComputerNames(string searchZone);
 }

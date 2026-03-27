@@ -1,4 +1,4 @@
-﻿using MIN.Events.Base;
+﻿using MIN.Events.Contracts;
 
 namespace MIN.Events.Events;
 
@@ -11,6 +11,11 @@ public sealed class ConnectionStatusChangedEvent : BaseEvent
     /// Идентификатор комнаты
     /// </summary>
     public Guid RoomId { get; init; }
+
+    /// <summary>
+    /// Идентификатор подключения
+    /// </summary>
+    public Guid ConnectionId { get; init; }
 
     /// <summary>
     /// Флаг подключения

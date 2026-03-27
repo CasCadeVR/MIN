@@ -1,6 +1,6 @@
-﻿using MIN.Services.Updates.Contracts.Models;
+﻿using MIN.Helpers.Updates.Contracts.Models;
 
-namespace MIN.Services.Updates.Contracts.Interfaces;
+namespace MIN.Helpers.Updates.Contracts.Interfaces;
 
 /// <summary>
 /// Сервис по обновлениям

@@ -1,6 +1,4 @@
-﻿using MIN.Events.Contracts;
-
-namespace MIN.Events.Base;
+﻿namespace MIN.Events.Contracts;
 
 /// <summary>
 /// Базовый класс для событий, реализующий IEvent

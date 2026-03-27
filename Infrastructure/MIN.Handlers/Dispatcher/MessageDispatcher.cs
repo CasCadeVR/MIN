@@ -1,10 +1,11 @@
-﻿using MIN.Events.Contracts;
+﻿using MIN.Application.Contracts.Interfaces.Messaging;
+using MIN.Events.Contracts;
 using MIN.Events.Events;
 using MIN.Handlers.Contracts;
 using MIN.Handlers.Contracts.Dispatcher;
 using MIN.Handlers.Contracts.Models;
 using MIN.Messaging.Contracts.Interfaces;
-using MIN.Services.Contracts.Interfaces;
+using MIN.Services.Helpers.Contracts.Interfaces;
 
 namespace MIN.Handlers.Dispatcher
 {
@@ -40,8 +41,7 @@ namespace MIN.Handlers.Dispatcher
 
             if (applicableHandlers.Count == 0)
             {
-                logger.Log($"No handler registered for message type {message.TypeTag}");
-                return;
+                throw new NotImplementedException($"Не зарегистрирован обработчик для {message.TypeTag}");
             }
 
             foreach (var handler in applicableHandlers)

@@ -11,18 +11,18 @@ using MIN.Services.Helpers.Contracts.Interfaces;
 namespace MIN.Handlers.Handlers;
 
 /// <summary>
-/// Обработчик для сообщений <see cref="ParticipantJoinedMessage"/>
+/// Обработчик для сообщений <see cref="ParticipantLeftMessage"/>
 /// </summary>
-internal sealed class ParticipantJoinHandler : IMessageHandler, IHandlerAnchor
+internal sealed class ParticipantLeftHandler : IMessageHandler, IHandlerAnchor
 {
     private readonly IRoomService roomService;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
     /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="ParticipantJoinHandler"/>
+    /// Инициализирует новый экземлпяр <see cref="ParticipantLeftHandler"/>
     /// </summary>
-    public ParticipantJoinHandler(IRoomService roomService, IEventBus eventBus, ILoggerProvider logger)
+    public ParticipantLeftHandler(IRoomService roomService, IEventBus eventBus, ILoggerProvider logger)
     {
         this.roomService = roomService;
         this.eventBus = eventBus;
@@ -36,21 +36,21 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, IHandlerAnchor
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is ParticipantJoinedMessage participantJoinedMessage)
+        if (message is ParticipantLeftMessage participantLeftMessage)
         {
-            roomService.AddParticipant(context.RoomId, participantJoinedMessage.Participant);
+            roomService.RemoveParticipant(context.RoomId, participantLeftMessage.Participant.Id);
 
-            logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату");
+            logger.Log($"Участник {participantLeftMessage.Participant.Name} вышел из комнаты");
 
-            await eventBus.PublishAsync(new ParticipantJoinedEvent()
+            await eventBus.PublishAsync(new ParticipantLeftEvent()
             {
-                Participant = participantJoinedMessage.Participant,
-                RoomId = participantJoinedMessage.RoomId,
+                Participant = participantLeftMessage.Participant,
+                RoomId = participantLeftMessage.RoomId,
             }, context.CancellationToken);
 
             return HandlerResult.Success();
         }
 
-        return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ParticipantJoinHandler)} - {message.GetType()}");
+        return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ParticipantLeftHandler)} - {message.GetType()}");
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace MIN.Services.Contracts.Models;
+﻿namespace MIN.Helpers.Contracts.Models;
 
 /// <summary>
 /// Модель задачи поиска комнаты

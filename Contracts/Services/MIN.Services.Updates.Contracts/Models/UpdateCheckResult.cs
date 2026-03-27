@@ -1,4 +1,4 @@
-﻿namespace MIN.Services.Updates.Contracts.Models;
+﻿namespace MIN.Helpers.Updates.Contracts.Models;
 
 /// <summary>
 /// Модель для получения данных обновления

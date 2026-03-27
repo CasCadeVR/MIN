@@ -1,28 +1,27 @@
-﻿using MIN.Services.Contracts.Interfaces;
+﻿using MIN.Helpers.Contracts.Interfaces;
 
-namespace MIN.Services.Services
+namespace MIN.Helpers.Services;
+
+public class CollegeNetworkComputerProvider : ILocalNetworkComputerProvider
 {
-    public class CollegeNetworkComputerProvider : ILocalNetworkComputerProvider
+    private readonly int maxComputers = 20;
+
+    IEnumerable<string> ILocalNetworkComputerProvider.GetLocalNetworkComputerNames(string searchZone)
     {
-        private readonly int maxComputers = 20;
+        var result = new List<string>();
 
-        IEnumerable<string> ILocalNetworkComputerProvider.GetLocalNetworkComputerNames(string searchZone)
+        for (var i = 1; i <= maxComputers; i++)
         {
-            var result = new List<string>();
+            var pcName = CollegePCNameParser.CreateComputerName(Convert.ToInt32(searchZone), i);
 
-            for (var i = 1; i <= maxComputers; i++)
+            if (pcName == null)
             {
-                var pcName = CollegePCNameParser.CreateComputerName(Convert.ToInt32(searchZone), i);
-
-                if (pcName == null)
-                {
-                    continue;
-                }
-
-                result.Add(pcName);
+                continue;
             }
 
-            return result;
+            result.Add(pcName);
         }
+
+        return result;
     }
 }
