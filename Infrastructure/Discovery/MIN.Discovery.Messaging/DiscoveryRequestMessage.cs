@@ -1,6 +1,6 @@
 ﻿using MIN.Messaging.Contracts;
 
-namespace MIN.Messaging.Stateless.RoomRelated;
+namespace MIN.Discovery.Messaging;
 
 /// <summary>
 /// Запрос на обнаружение активных комнат в локальной сети

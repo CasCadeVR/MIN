@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Services\MIN.Services.Contracts\MIN.Services.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj" />
+    <ProjectReference Include="..\..\MIN.Discovery.Messaging\MIN.Discovery.Messaging.csproj" />
+    <ProjectReference Include="..\..\MIN.Discovery.Services.Contracts\MIN.Discovery.Services.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Discovery.Transport.Contracts\MIN.Discovery.Transport.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

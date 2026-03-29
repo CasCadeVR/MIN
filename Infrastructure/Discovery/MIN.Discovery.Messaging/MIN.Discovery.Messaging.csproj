@@ -7,11 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MIN.Services.Connection.Contracts\MIN.Services.Connection.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Messaging\MIN.Messaging.Contracts\MIN.Messaging.Contracts.csproj" />
   </ItemGroup>
-
-<ItemGroup>
-	<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
-</ItemGroup>
 
 </Project>

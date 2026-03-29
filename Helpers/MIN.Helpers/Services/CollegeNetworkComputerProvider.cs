@@ -6,7 +6,10 @@ public class CollegeNetworkComputerProvider : ILocalNetworkComputerProvider
 {
     private readonly int maxComputers = 20;
 
-    IEnumerable<string> ILocalNetworkComputerProvider.GetLocalNetworkComputerNames(string searchZone)
+    string ILocalNetworkComputerProvider.GetLocalMachineName()
+        => Environment.MachineName;
+
+    IEnumerable<string> ILocalNetworkComputerProvider.GetLocalNetworkMachineNames(string searchZone)
     {
         var result = new List<string>();
 

@@ -1,7 +1,7 @@
 ﻿using MIN.Messaging.Contracts;
 using MIN.Entities.Contracts.Models;
 
-namespace MIN.Messaging.Stateless.RoomRelated;
+namespace MIN.Discovery.Messaging;
 
 /// <summary>
 /// Ответ на запрос обнаружения, содержащий информацию о комнате

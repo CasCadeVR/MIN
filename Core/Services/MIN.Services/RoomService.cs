@@ -21,7 +21,7 @@ namespace MIN.Services
         private readonly IMessageEncryptor encryptor;
         private readonly ILoggerProvider logger;
 
-        private readonly ConcurrentDictionary<Guid, Room> roomById = new(); // could be list, but dictionary just faster
+        private readonly ConcurrentDictionary<Guid, Room> roomById = new();
         private readonly ConcurrentDictionary<Guid, Guid> roomIdByConnectionId = new();
 
         private CancellationTokenSource? cts;
