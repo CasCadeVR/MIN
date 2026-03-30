@@ -1,13 +1,13 @@
-﻿using MIN.Discovery.Events;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
+using MIN.Core.Serialization.Contracts;
+using MIN.Discovery.Events;
 using MIN.Discovery.Messaging;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Discovery.Transport.Contracts;
 using MIN.Discovery.Transport.Contracts.Events;
-using MIN.Entities.Contracts.Models;
-using MIN.Events.Contracts;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
-using MIN.Serialization.Contracts;
 
 namespace MIN.Discovery.Services
 {

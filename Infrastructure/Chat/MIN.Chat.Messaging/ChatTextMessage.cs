@@ -1,5 +1,5 @@
-﻿using MIN.Messaging.Contracts;
-using MIN.Entities.Contracts.Models;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Messaging.Contracts;
 
 namespace MIN.Chat.Messaging;
 

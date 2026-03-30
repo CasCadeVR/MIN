@@ -1,5 +1,5 @@
-﻿using MIN.Entities.Contracts.Models;
-using MIN.Events.Contracts;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
 
 namespace MIN.Discovery.Events;
 

@@ -1,4 +1,4 @@
-﻿using MIN.Entities.Contracts.Interfaces;
+﻿using MIN.Core.Entities.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Helpers.Services;

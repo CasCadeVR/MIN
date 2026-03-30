@@ -1,6 +1,6 @@
-﻿using MIN.Events.Contracts;
-using MIN.Entities.Contracts.Models;
-using MIN.Chat.Messaging;
+﻿using MIN.Chat.Messaging;
+using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
 
 namespace MIN.Chat.Events;
 

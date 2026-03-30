@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\Handlers\MIN.Handlers.Contracts\MIN.Handlers.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Handlers\MIN.Handlers.Contracts\MIN.Core.Handlers.Contracts.csproj" />
     <ProjectReference Include="..\MIN.Chat.Events\MIN.Chat.Events.csproj" />
   </ItemGroup>
 

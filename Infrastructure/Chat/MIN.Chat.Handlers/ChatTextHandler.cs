@@ -1,13 +1,12 @@
-﻿using MIN.Events.Contracts;
-using MIN.Handlers.Contracts;
+﻿using MIN.Handlers.Contracts;
 using MIN.Handlers.Contracts.Models;
-using MIN.Messaging.Contracts;
-using MIN.Messaging.Contracts.Interfaces;
 using MIN.Chat.Messaging;
 using MIN.Chat.Events;
-using MIN.Chat.Handlers;
+using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Messaging.Contracts;
+using MIN.Core.Events.Contracts;
 
-namespace MIN.Handlers.Handlers;
+namespace MIN.Chat.Handlers;
 
 /// <summary>
 /// Обработчик для сообщений <see cref="ChatTextMessage"/>

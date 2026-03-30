@@ -1,4 +1,4 @@
-﻿using MIN.Messaging.Contracts;
+﻿using MIN.Core.Messaging.Contracts;
 
 namespace MIN.Discovery.Messaging;
 

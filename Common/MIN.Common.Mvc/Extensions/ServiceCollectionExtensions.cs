@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MIN.Messaging.Contracts;
-using MIN.Messaging.Contracts.Interfaces;
-using MIN.Serialization.Contracts;
-using MIN.Serialization.Json;
+using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Serialization.Contracts;
+using MIN.Core.Serialization.Json;
 
 namespace MIN.Common.Mvc.Extensions;
 

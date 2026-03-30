@@ -1,4 +1,4 @@
-﻿using MIN.Entities.Contracts.Models;
+﻿using MIN.Core.Entities.Contracts.Models;
 
 namespace MIN.Discovery.Services.Contracts.Interfaces;
 
