@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 
-namespace MIN.Handlers.Contracts.Models;
+namespace MIN.Core.Handlers.Contracts.Models;
 
 /// <summary>
 /// Контекст обработки сообщения

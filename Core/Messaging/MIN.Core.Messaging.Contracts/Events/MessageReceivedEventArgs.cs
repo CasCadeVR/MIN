@@ -1,5 +1,5 @@
-﻿using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Entities.Contracts.Entities;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Messaging.Contracts.Events;
 

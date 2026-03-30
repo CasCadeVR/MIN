@@ -1,12 +1,12 @@
-﻿using MIN.Services.Contracts.Interfaces;
-using MIN.Events.Contracts;
-using MIN.Events.Events;
-using MIN.Handlers.Contracts;
-using MIN.Handlers.Contracts.Models;
+﻿using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
+using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Stateless.RoomRelated;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -15,16 +15,16 @@ namespace MIN.Core.Handlers.Handlers;
 /// </summary>
 internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
 {
-    private readonly IRoomService roomService;
+    private readonly IRoomRegistry roomRegistry;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
-    public RoomInfoHandler(IRoomService roomService, IEventBus eventBus, ILoggerProvider logger)
+    public RoomInfoHandler(IRoomRegistry roomRegistry, IEventBus eventBus, ILoggerProvider logger)
     {
-        this.roomService = roomService;
+        this.roomRegistry = roomRegistry;
         this.eventBus = eventBus;
         this.logger = logger;
     }
@@ -38,7 +38,7 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
     {
         if (message is RoomInfoRequestMessage roomInfoRequest)
         {
-            var room = roomService.GetRoom(roomInfoRequest.RoomId);
+            var room = roomRegistry.GetRoom(roomInfoRequest.RoomId);
             var response = new RoomInfoResponseMessage()
             {
                 Room = room
@@ -50,7 +50,7 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
         }
         else if (message is RoomInfoResponseMessage roomInfoResponse)
         {
-            roomService.SetRoom(context.ConnectionId, roomInfoResponse.Room);
+            roomRegistry.RegisterRoom(context.ConnectionId, roomInfoResponse.Room);
             logger.Log($"Получил информацию о комнате с id {roomInfoResponse.Room.Id}");
 
             await eventBus.PublishAsync(new RoomStateChangedEvent()

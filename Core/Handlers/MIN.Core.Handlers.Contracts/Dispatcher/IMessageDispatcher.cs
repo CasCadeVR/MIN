@@ -1,7 +1,7 @@
 ﻿using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Handlers.Contracts.Models;
+using MIN.Core.Handlers.Contracts.Models;
 
-namespace MIN.Handlers.Contracts.Dispatcher;
+namespace MIN.Core.Handlers.Contracts.Dispatcher;
 
 /// <summary>
 /// Диспетчер сообщений, отвечающий за маршрутизацию входящих сообщений к обработчикам

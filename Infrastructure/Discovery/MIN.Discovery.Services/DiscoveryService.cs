@@ -12,7 +12,7 @@ using MIN.Helpers.Contracts.Models.Enums;
 namespace MIN.Discovery.Services
 {
     /// <inheritdoc cref="IDiscoveryService"/>
-    public sealed class NamedPipeDiscoveryService : IDiscoveryService
+    public sealed class DiscoveryService : IDiscoveryService
     {
         private readonly IDiscoveryTransport discoveryTransport;
         private readonly IMessageSerializer serializer;
@@ -25,9 +25,9 @@ namespace MIN.Discovery.Services
         private string? searchZone;
 
         /// <summary>
-        /// Инициализирует новый экземпляр <see cref="NamedPipeDiscoveryService"/>
+        /// Инициализирует новый экземпляр <see cref="DiscoveryService"/>
         /// </summary>
-        public NamedPipeDiscoveryService(
+        public DiscoveryService(
             IDiscoveryTransport discoveryTransport,
             IMessageSerializer serializer,
             IEventBus eventBus,

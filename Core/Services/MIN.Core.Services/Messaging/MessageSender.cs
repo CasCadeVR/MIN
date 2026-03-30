@@ -1,22 +1,23 @@
-﻿using System.Collections.Concurrent;
-using MIN.Services.Contracts.Interfaces.Messaging;
+﻿using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Transport.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts;
+using MIN.Core.Services.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 
 namespace MIN.Core.Services.Messaging
 {
     /// <inheritdoc cref="IMessageSender"/>
-    internal sealed class MessageSender : IMessageSender, IAsyncDisposable
+    public sealed class MessageSender : IMessageSender, IAsyncDisposable
     {
         private readonly ITransport transport;
         private readonly IMessageEncryptor encryptor;
         private readonly IMessageSerializer serializer;
         private readonly ILoggerProvider logger;
-        private readonly ConcurrentDictionary<Guid, ParticipantInfo> participants = new();
+        private readonly IRoomService roomService;
+        private readonly IParticipantRegistry participantService;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="MessageSender"/>
@@ -25,13 +26,15 @@ namespace MIN.Core.Services.Messaging
             IMessageSerializer serializer,
             IMessageEncryptor encryptor,
             ILoggerProvider logger,
-            ConcurrentDictionary<Guid, ParticipantInfo> participants)
+            IRoomService roomService,
+            IParticipantRegistry participantService)
         {
             this.transport = transport;
             this.serializer = serializer;
             this.encryptor = encryptor;
             this.logger = logger;
-            this.participants = participants;
+            this.roomService = roomService;
+            this.participantService = participantService;
         }
 
         async Task IMessageSender.SendAsync(IMessage message, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
@@ -45,7 +48,10 @@ namespace MIN.Core.Services.Messaging
         {
             var serialized = serializer.Serialize(message);
 
-            var tasks = participants.Keys
+            var participants = roomService.GetCurrentParticipants(roomId);
+
+            var tasks = participants
+                .Select(x => participantService.GetConnectionIdFromParticipantId(x.Id))
                 .Where(c => excludeConnections == null || !excludeConnections.Contains(c))
                 .Select(connectionId => transport.SendAsync(EncryptData(message, serialized, connectionId),
                     roomId, connectionId, cancellationToken));
@@ -59,7 +65,7 @@ namespace MIN.Core.Services.Messaging
 
             if (message.RequiresEncryption)
             {
-                if (!participants.TryGetValue(connectionId, out var recipient))
+                if (!participantService.TryGetParticipantInfo(connectionId, out var recipient))
                 {
                     throw new InvalidOperationException($"No participant info for connection {connectionId}");
                 }

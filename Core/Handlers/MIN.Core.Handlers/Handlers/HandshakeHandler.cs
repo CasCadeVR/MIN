@@ -1,13 +1,14 @@
-﻿using MIN.Services.Contracts.Interfaces.Messaging;
-using MIN.Handlers.Contracts;
-using MIN.Handlers.Contracts.Models;
-using MIN.Messaging.RoomRelated.ParticipantRelated;
-using MIN.Messaging.Stateless.RoomRelated;
+﻿using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
+using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -17,16 +18,21 @@ namespace MIN.Core.Handlers.Handlers;
 internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 {
     private readonly IMessageEncryptor messageEncryptor;
-    private readonly IMessageService messageService;
+    private readonly IParticipantRegistry participantRegistry;
+    private readonly IMessageSender messageSender;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
-    public HandshakeHandler(IMessageEncryptor messageEncryptor, IMessageService messageService, ILoggerProvider logger)
+    public HandshakeHandler(IMessageEncryptor messageEncryptor,
+        IParticipantRegistry participantRegistry,
+        IMessageSender messageSender,
+        ILoggerProvider logger)
     {
         this.messageEncryptor = messageEncryptor;
-        this.messageService = messageService;
+        this.participantRegistry = participantRegistry;
+        this.messageSender = messageSender;
         this.logger = logger;
     }
 
@@ -40,13 +46,13 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
         if (message is HandshakeMessage handshakeMessage)
         {
             await messageEncryptor.InitializeSessionWithPartnerAsync(handshakeMessage.Participant.Id, handshakeMessage.PublicKey);
-            messageService.SetParticipantInfo(context.ConnectionId, handshakeMessage.Participant);
+            participantRegistry.SetParticipantInfo(context.ConnectionId, handshakeMessage.Participant);
             logger.Log($"Сессия с отправителем {handshakeMessage.Participant.Name} инициализирована");
 
             var responseHandshake = await messageEncryptor.CreateSelfHandshakeMessageAsync();
             var ackMessage = new HandshakeAckMessage(responseHandshake);
 
-            await messageService.SendAsync(ackMessage, context.RoomId, context.ConnectionId, context.CancellationToken);
+            await messageSender.SendAsync(ackMessage, context.RoomId, context.ConnectionId, context.CancellationToken);
 
             var participantJoinedMessage = new ParticipantJoinedMessage()
             {
@@ -54,14 +60,14 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
                 RoomId = context.RoomId
             };
 
-            await messageService.BroadcastAsync(participantJoinedMessage, context.RoomId, null, context.CancellationToken);
+            await messageSender.BroadcastAsync(participantJoinedMessage, context.RoomId, null, context.CancellationToken);
 
             return HandlerResult.Success();
         }
         else if (message is HandshakeAckMessage handshakeAckMessage)
         {
             await messageEncryptor.InitializeSessionWithPartnerAsync(handshakeAckMessage.Participant.Id, handshakeAckMessage.PublicKey);
-            messageService.SetParticipantInfo(context.ConnectionId, handshakeAckMessage.Participant);
+            participantRegistry.SetParticipantInfo(context.ConnectionId, handshakeAckMessage.Participant);
 
             logger.Log($"Сессия с получателем {handshakeAckMessage.Participant.Name} инициализирована");
 

@@ -1,8 +1,8 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Handlers.Contracts.Models;
+using MIN.Core.Handlers.Contracts.Models;
 
-namespace MIN.Handlers.Contracts
+namespace MIN.Core.Handlers.Contracts
 {
     /// <summary>
     /// Обработчик сообщений определённого типа

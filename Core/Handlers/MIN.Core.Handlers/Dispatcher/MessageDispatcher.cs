@@ -1,11 +1,11 @@
-﻿using MIN.Services.Contracts.Interfaces.Messaging;
-using MIN.Events.Contracts;
-using MIN.Events.Events;
+﻿using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
 using MIN.Handlers.Contracts;
 using MIN.Handlers.Contracts.Dispatcher;
 using MIN.Handlers.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
 
 namespace MIN.Core.Handlers.Dispatcher
 {
@@ -13,7 +13,7 @@ namespace MIN.Core.Handlers.Dispatcher
     public sealed class MessageDispatcher : IMessageDispatcher
     {
         private readonly IEnumerable<IMessageHandler> handlers;
-        private readonly IMessageService messageService;
+        private readonly IMessageSender messageSender;
         private readonly IEventBus eventBus;
         private readonly ILoggerProvider logger;
 
@@ -21,12 +21,12 @@ namespace MIN.Core.Handlers.Dispatcher
         /// Инициализирует новый экземпляр <see cref="MessageDispatcher"/>
         /// </summary>
         public MessageDispatcher(IEnumerable<IMessageHandler> handlers,
-            IMessageService messageService,
+            IMessageSender messageSender,
             IEventBus eventBus,
             ILoggerProvider logger)
         {
             this.handlers = handlers;
-            this.messageService = messageService;
+            this.messageSender = messageSender;
             this.eventBus = eventBus;
             this.logger = logger;
         }
@@ -61,7 +61,7 @@ namespace MIN.Core.Handlers.Dispatcher
                     }
                     else if (result.Response != null)
                     {
-                        await messageService.SendAsync(result.Response, context.RoomId, context.ConnectionId, context.CancellationToken);
+                        await messageSender.SendAsync(result.Response, context.RoomId, context.ConnectionId, context.CancellationToken);
                     }
                 }
                 catch (Exception ex)

@@ -1,5 +1,5 @@
-﻿using MIN.Handlers.Contracts;
-using MIN.Handlers.Contracts.Models;
+﻿using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Models;
 using MIN.Chat.Messaging;
 using MIN.Chat.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -25,7 +25,7 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
 
     IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.ChatTextMessage];
 
-    int IMessageHandler.Priority => 0;
+    int IMessageHandler.Priority => 10;
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {

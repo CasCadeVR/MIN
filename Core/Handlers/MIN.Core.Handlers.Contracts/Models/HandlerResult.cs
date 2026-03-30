@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Messaging.Contracts.Interfaces;
 
-namespace MIN.Handlers.Contracts.Models;
+namespace MIN.Core.Handlers.Contracts.Models;
 
 /// <summary>
 /// Результат обработки сообщения

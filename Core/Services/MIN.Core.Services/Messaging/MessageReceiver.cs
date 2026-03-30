@@ -1,23 +1,25 @@
-﻿using System.Collections.Concurrent;
-using MIN.Services.Contracts.Interfaces.Messaging;
-using MIN.Helpers.Contracts.Interfaces;
-using MIN.Transport.Contracts.Events;
-using MIN.Transport.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Events;
-using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts;
+using MIN.Core.Services.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Transport.Contracts.Events;
+using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Handlers.Contracts.Dispatcher;
+using MIN.Handlers.Contracts.Models;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Messaging
 {
     /// <inheritdoc cref="IMessageReceiver"/>
-    internal sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
+    public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
     {
         private readonly ITransport transport;
         private readonly IMessageSerializer serializer;
+        private readonly IMessageDispatcher dispatcher;
         private readonly IMessageEncryptor encryptor;
         private readonly ILoggerProvider logger;
-        private readonly ConcurrentDictionary<Guid, ParticipantInfo> participants = new();
+        private readonly IParticipantRegistry participantService;
         private CancellationTokenSource? cts;
 
         /// <summary>
@@ -25,20 +27,22 @@ namespace MIN.Core.Services.Messaging
         /// </summary>
         public MessageReceiver(ITransport transport,
             IMessageSerializer serializer,
+            IMessageDispatcher dispatcher,
             IMessageEncryptor encryptor,
             ILoggerProvider logger,
-            ConcurrentDictionary<Guid, ParticipantInfo> participants)
+            IParticipantRegistry participantService)
         {
             this.transport = transport;
             this.serializer = serializer;
+            this.dispatcher = dispatcher;
             this.encryptor = encryptor;
             this.logger = logger;
-            this.participants = participants;
+            this.participantService = participantService;
         }
 
         public event EventHandler<MessageReceivedEventArgs>? MessageReceived;
 
-        async Task IMessageReceiver.StartListeningAsync(CancellationToken cancellationToken = default)
+        async Task IMessageReceiver.StartListeningAsync(CancellationToken cancellationToken)
         {
             cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             transport.RawMessageReceived += OnRawMessageReceived;
@@ -49,7 +53,7 @@ namespace MIN.Core.Services.Messaging
         {
             try
             {
-                participants.TryGetValue(e.ConnectionId, out var participantInfo);
+                participantService.TryGetParticipantInfo(e.ConnectionId, out var participantInfo);
 
                 byte[] plainData;
                 var body = encryptor.RemoveEncryptionHeader(e.Data);
@@ -69,6 +73,15 @@ namespace MIN.Core.Services.Messaging
                 }
 
                 var message = serializer.Deserialize(plainData);
+
+                try
+                {
+                    await dispatcher.DispatchAsync(message, new MessageContext(participantInfo, e.RoomId, e.ConnectionId, cts!.Token));
+                }
+                catch (Exception ex)
+                {
+                    logger.Log($"Произошла ошибка во время обработки raw message: {ex.Message}");
+                }
 
                 MessageReceived!.Invoke(this, new MessageReceivedEventArgs(e.RoomId, e.ConnectionId, message, participantInfo!));
             }

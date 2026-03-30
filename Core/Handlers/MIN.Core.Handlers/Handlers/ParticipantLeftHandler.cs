@@ -1,12 +1,12 @@
-﻿using MIN.Services.Contracts.Interfaces;
-using MIN.Events.Contracts;
-using MIN.Events.Events;
-using MIN.Handlers.Contracts;
-using MIN.Handlers.Contracts.Models;
+﻿using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
+using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -15,16 +15,16 @@ namespace MIN.Core.Handlers.Handlers;
 /// </summary>
 internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnchor
 {
-    private readonly IRoomService roomService;
+    private readonly IRoomRegistry roomRegistry;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ParticipantLeftHandler"/>
     /// </summary>
-    public ParticipantLeftHandler(IRoomService roomService, IEventBus eventBus, ILoggerProvider logger)
+    public ParticipantLeftHandler(IRoomRegistry roomRegistry, IEventBus eventBus, ILoggerProvider logger)
     {
-        this.roomService = roomService;
+        this.roomRegistry = roomRegistry;
         this.eventBus = eventBus;
         this.logger = logger;
     }
@@ -38,7 +38,7 @@ internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnch
     {
         if (message is ParticipantLeftMessage participantLeftMessage)
         {
-            roomService.RemoveParticipant(context.RoomId, participantLeftMessage.Participant.Id);
+            roomRegistry.RemoveParticipant(context.RoomId, participantLeftMessage.Participant.Id);
 
             logger.Log($"Участник {participantLeftMessage.Participant.Name} вышел из комнаты");
 

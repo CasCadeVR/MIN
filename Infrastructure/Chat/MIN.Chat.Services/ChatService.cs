@@ -1,6 +1,6 @@
 ﻿using MIN.Services.ChatText.Contracts.Interfaces;
 
-namespace MIN.Application
+namespace MIN.Chat.Services
 {
     /// <summary>
     /// Сервис по работе с чатом
