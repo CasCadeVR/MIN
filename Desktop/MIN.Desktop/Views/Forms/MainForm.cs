@@ -1,40 +1,91 @@
-﻿using MIN.Desktop.Components;
+﻿using MIN.Chat.Services.Contracts.Interfaces;
+using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Transport.NamedPipes.Models;
+using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Desktop.Infrastructure.Services;
-using MIN.Services.Contracts.Interfaces;
-using MIN.Services.Contracts.Models;
-using MIN.Services.Contracts.Models.Enums;
-using MIN.Services.Contracts.Models.Rooms;
-using MIN.Services.Services;
+using MIN.Discovery.Events;
+using MIN.Discovery.Services.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models;
+using MIN.Helpers.Services;
 
 namespace MIN.Desktop
 {
     public partial class MainForm : StyledForm
     {
-        private readonly IChatRoomService chatRoomService;
+        private readonly IRoomConnector roomConnector;
+        private readonly IRoomHoster roomHoster;
+        private readonly IRoomRegistry roomRegistry;
+        private readonly IChatService chatService;
+        private readonly IDiscoveryService discoveryService;
+        private readonly IEventBus eventBus;
+        private readonly IMessageSender messageSender;
+        private readonly IMessageEncryptor encryptor;
         private readonly ISettingsProvider settingsProvider;
         private readonly INotificationService notificationService;
-        private readonly ILoggerProvider loggerProvider;
+        private readonly ILoggerProvider logger;
         private readonly ILocalNetworkComputerProvider networkComputerProvider;
+        private readonly IIdentityService identityService;
+
         private readonly SynchronizationContext uiContext;
-        private readonly CancellationTokenSource cancellationTokenSource = new();
+        private readonly CancellationTokenSource cts;
 
         private Settings Settings => settingsProvider.GetSettings();
 
-        public MainForm(IChatRoomService chatRoomService, ISettingsProvider settingsProvider, INotificationService notificationService, ILoggerProvider loggerProvider)
+        /// <summary>
+        /// Инициализирует новый экземпляр <see cref="MainForm"/>
+        /// </summary>
+        public MainForm(
+            IRoomConnector roomConnector,
+            IRoomHoster roomHoster,
+            IRoomRegistry roomRegistry,
+            IChatService chatService,
+            IDiscoveryService discoveryService,
+            IEventBus eventBus,
+            IMessageSender messageSender,
+            IMessageEncryptor encryptor,
+            ISettingsProvider settingsProvider,
+            INotificationService notificationService,
+            IIdentityService identityService,
+            ILocalNetworkComputerProvider networkComputerProvider,
+            ILoggerProvider logger)
         {
             InitializeComponent();
 
-            this.chatRoomService = chatRoomService;
+            this.roomConnector = roomConnector;
+            this.roomHoster = roomHoster;
+            this.roomRegistry = roomRegistry;
+            this.chatService = chatService;
+            this.discoveryService = discoveryService;
+            this.eventBus = eventBus;
+            this.messageSender = messageSender;
+            this.encryptor = encryptor;
             this.settingsProvider = settingsProvider;
-            this.loggerProvider = loggerProvider;
             this.notificationService = notificationService;
+            this.identityService = identityService;
+            this.networkComputerProvider = networkComputerProvider;
+            this.logger = logger;
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
-            networkComputerProvider = new CollegeNetworkComputerProvider();
+
+            cts = new CancellationTokenSource();
+
+            SubscribeToEvents();
+        }
+
+        private void SubscribeToEvents()
+        {
+            eventBus.Subscribe<RoomDiscoveredEvent>(OnRoomDiscovered);
+            eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
         }
 
         protected override void ApplyStylings()
@@ -51,15 +102,14 @@ namespace MIN.Desktop
             var roomCreateForm = new RoomCreateForm();
             if (roomCreateForm.ShowDialog() == DialogResult.OK)
             {
+                roomCreateForm.Room.HostParticipant = new ParticipantInfo(identityService.SelfPartcipant);
                 var room = roomCreateForm.Room;
 
-                var createdRoom = await chatRoomService.CreateRoomAsync(room.Name, room.MaximumParticipants, AppUserProvider.Instance.CurrentUser, cancellationTokenSource.Token);
+                roomRegistry.RegisterRoom(Guid.NewGuid(), room);
 
-                //await PerfromSearch(CancellationToken.None);
-                if (!await OnRoomConnection(createdRoom, createdRoom.CurrentParticipants.Count))
-                {
-                    await chatRoomService.DisconnectAsync();
-                }
+                var endpoint = new NamedPipeEndpoint(Environment.MachineName, PipeNameProvider.GetRoomPipeName(room.Id));
+                await roomHoster.StartHostingAsync(room.Id, endpoint, cts.Token);
+                await discoveryService.StartDiscoveryAsync(new RoomInfo(room), cts.Token);
             }
         }
 
@@ -69,18 +119,10 @@ namespace MIN.Desktop
 
             try
             {
-                var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
-                    ? networkComputerProvider.GetLocalNetworkComputerNames(classNumber.Value.ToString())
-                    : Settings.PreferredPCNames;
-
                 flowLayoutPanel.Controls.Clear();
-                var roomsCount = 0;
-                await foreach (var room in chatRoomService.DiscoverAvailableRoomsAsync(availablePCs, Settings.DiscoveryTimeout, cancellationTokenSource.Token))
-                {
-                    roomsCount += 1;
-                    AddDiscoveredRoom(room);
-                    totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
-                }
+                totalRoomsCount.Text = "Поиск комнат...";
+
+                await discoveryService.DiscoverRoomsAsync(classNumber.Value.ToString(), TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), cts.Token);
             }
             catch (Exception ex)
             {
@@ -92,29 +134,71 @@ namespace MIN.Desktop
             }
         }
 
-        private void AddDiscoveredRoom(DiscoveredRoom room)
+        private Task OnRoomDiscovered(RoomDiscoveredEvent e, CancellationToken ct)
         {
-            var parsed = new Room(room.RoomName, room.MaximumParticipants)
+            uiContext.Post(_ =>
             {
-                Id = room.RoomId,
-                HostParticipant = new Participant()
+                var card = new RoomCard(e.Room)
                 {
-                    Id = room.HostId,
-                    Name = room.HostName,
-                    PCName = room.HostPCName,
-                }
-            };
+                    Parent = flowLayoutPanel
+                };
 
-            var card = new RoomCard(chatRoomService, room)
+                card.Clicked += () => OnRoomJoin(e.Room);
+                card.Disposed += (s, _) =>
+                {
+                    totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
+                };
+
+                var roomsCount = flowLayoutPanel.Controls.Count;
+                totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
+            }, null);
+
+            return Task.CompletedTask;
+        }
+
+        private async Task OnRoomJoin(RoomInfo roomInfo)
+        {
+            if (roomInfo == null)
             {
-                Parent = flowLayoutPanel
-            };
-            card.Clicked += () => OnRoomConnection(parsed, room.CurrentParticipants);
-            card.Disposed += (s, e) =>
+                MessageBox.Show("Невозможно подключиться: комната не найдена.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (roomInfo.ParticipantCount >= roomInfo.MaximumParticipants)
             {
-                card.UnsubscribeFromChatEvents();
-                totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
-            };
+                MessageBox.Show("Невозможно подключиться: комната заполнена.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var participantCreateForm = new ParticipantCreateForm(identityService);
+            if (participantCreateForm.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    var connectionId = await roomConnector.ConnectAsync(roomInfo.Id, roomInfo.HostParticipant.Endpoint!, Settings.DiscoveryTimeout, cts.Token);
+                    var chatForm = new ChatForm(
+                        chatService,
+                        roomRegistry,
+                        eventBus,
+                        notificationService,
+                        logger,
+                        identityService,
+                        roomInfo.Id,
+                        connectionId);
+
+                    chatForm.FormClosing += (_, _) =>
+                    {
+                        roomConnector.DisconnectAsync(roomInfo.Id, connectionId);
+                    };
+                    chatForm.Show();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Произошла ошибка: {ex.Message}");
+                }
+            }
         }
 
         private async void findRooms_Click(object sender, EventArgs e)
@@ -122,65 +206,13 @@ namespace MIN.Desktop
             await PerformSearch();
         }
 
-        private async Task<bool> OnRoomConnection(Room room, int currentParticipantCount)
-        {
-            if (room == null)
-            {
-                MessageBox.Show("Невозможно подключиться: комнаты больше нет.", "Ошибка",
-                   MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-
-            if (room.IsFull)
-            {
-                MessageBox.Show("Невозможно подключиться: комната заполнена.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-
-            if (room.HostParticipant.PCName == AppUserProvider.Instance.CurrentUser.PCName
-                && currentParticipantCount != 0)
-            {
-                MessageBox.Show("Вы уже подключены к этой комнате.", "Информация",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return false;
-            }
-
-            var participantCreateForm = new ParticipantCreateForm();
-            if (participantCreateForm.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    var chatForm = new ChatForm(chatRoomService, notificationService);
-                    await chatRoomService.JoinRoomAsync(room, AppUserProvider.Instance.CurrentUser, Settings.DiscoveryTimeout, cancellationTokenSource.Token);
-                    chatForm.FormClosing += (sender, e) =>
-                    {
-                        chatRoomService.DisconnectAsync(cancellationTokenSource.Token);
-                    };
-                    chatForm.Show();
-
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Произошла ошибка: {ex.Message}");
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
         private void MainForm_Load(object sender, EventArgs e)
         {
-            var selfParticipant = new Participant()
-            {
-                Name = Environment.MachineName,
-                PCName = Environment.MachineName,
-            };
-            AppUserProvider.Instance.InitializeUser(selfParticipant);
+            var selfName = Environment.MachineName;
 
-            if (CollegePCNameParser.TryParseComputerName(selfParticipant.PCName, out var roomNumber, out var _))
+            identityService.SetParticipant(new ParticipantInfo(selfName));
+
+            if (CollegePCNameParser.TryParseComputerName(selfName, out var roomNumber, out var _))
             {
                 classNumber.Value = roomNumber;
             }
@@ -188,7 +220,7 @@ namespace MIN.Desktop
 
         private void settingsButton_Click(object sender, EventArgs e)
         {
-            var settingsForm = new SettingsForm(settingsProvider.GetSettings(), loggerProvider);
+            var settingsForm = new SettingsForm(Settings, logger);
             if (settingsForm.ShowDialog() == DialogResult.OK)
             {
                 settingsProvider.SaveSettings(settingsForm.Settings);
@@ -197,7 +229,27 @@ namespace MIN.Desktop
 
         private async void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            await chatRoomService.DisconnectAsync(CancellationToken.None);
+            await discoveryService.StopDiscoveryAsync();
+            await roomHoster.StopHostingAsync(Guid.Empty);
+            await roomConnector.DisconnectAsync(Guid.Empty, Guid.Empty);
+            cts.Cancel();
+            cts.Dispose();
+        }
+
+        private Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken ct)
+        {
+            uiContext.Post(_ =>
+            {
+                if (!eventMessage.IsConnected)
+                {
+                    MessageBox.Show($"Соединение с комнатой {eventMessage.RoomId} было потеряно",
+                        "Соединение потеряно",
+                        MessageBoxButtons.OK,
+                        icon: MessageBoxIcon.Error
+                    );
+                }
+            }, null);
+            return Task.CompletedTask;
         }
     }
 }

@@ -5,8 +5,8 @@ using MIN.Core.Services.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Handlers.Contracts.Dispatcher;
-using MIN.Handlers.Contracts.Models;
+using MIN.Core.Handlers.Contracts.Dispatcher;
+using MIN.Core.Handlers.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Messaging

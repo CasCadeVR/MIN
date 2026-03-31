@@ -1,6 +1,6 @@
-﻿using MIN.Desktop.Contracts.Interfaces;
+﻿using MIN.Chat.Messaging;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Views.Forms.HelperForms;
-using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Desktop.Infrastructure.Services
 {
@@ -13,7 +13,7 @@ namespace MIN.Desktop.Infrastructure.Services
         public event Action? OnNotificationClick;
         public event Action? NotificationTurnOffClicked;
 
-        void INotificationService.Notify(ChatMessage message, string roomName)
+        void INotificationService.Notify(string message, string roomName, string? sender)
         {
             if (Application.OpenForms.Count == 0)
             {
@@ -24,19 +24,19 @@ namespace MIN.Desktop.Infrastructure.Services
 
             if (mainForm!.InvokeRequired)
             {
-                mainForm.Invoke(new Action(() => CreateAndShow(message, roomName)));
+                mainForm.Invoke(new Action(() => CreateAndShow(message, roomName, sender)));
             }
             else
             {
-                CreateAndShow(message, roomName);
+                CreateAndShow(message, roomName, sender);
             }
         }
 
-        private void CreateAndShow(ChatMessage message, string roomName)
+        private void CreateAndShow(string message, string roomName, string? sender)
         {
             lock (@lock)
             {
-                var notification = new NotificationForm(message, roomName);
+                var notification = new NotificationForm(message, roomName, sender);
                 notification.NotificationTurnOffClicked += NotificationTurnOffClicked;
                 notification.NotificationClicked += OnNotificationClick;
 

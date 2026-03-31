@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Entities.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Entities;
@@ -35,7 +36,7 @@ public class Room : IRoomData
     /// <summary>
     /// Хост комнаты
     /// </summary>
-    public IParticipantData HostParticipant { get; set; } = null!;
+    public ParticipantInfo HostParticipant { get; set; } = null!;
 
     /// <summary>
     /// Получить историю чата

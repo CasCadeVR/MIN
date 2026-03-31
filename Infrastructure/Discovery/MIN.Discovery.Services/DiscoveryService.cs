@@ -22,7 +22,6 @@ namespace MIN.Discovery.Services
         private readonly string localMachineName;
         private CancellationTokenSource? cts;
         private RoomInfo? hostingRoomInfo;
-        private string? searchZone;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="DiscoveryService"/>
@@ -39,6 +38,7 @@ namespace MIN.Discovery.Services
             this.eventBus = eventBus;
             this.computerProvider = computerProvider;
             this.logger = logger;
+
             localMachineName = Environment.MachineName;
         }
 

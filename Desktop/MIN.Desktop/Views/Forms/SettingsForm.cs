@@ -1,8 +1,8 @@
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Services.Contracts.Models.Enums;
-using MIN.Services.Contracts.Models;
-using MIN.Services.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Desktop
 {

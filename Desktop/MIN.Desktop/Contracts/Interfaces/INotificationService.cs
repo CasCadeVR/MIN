@@ -1,6 +1,4 @@
-﻿using MIN.Services.Contracts.Models.Messages;
-
-namespace MIN.Desktop.Contracts.Interfaces
+﻿namespace MIN.Desktop.Contracts.Interfaces
 {
     /// <summary>
     /// Сервис для уведомлений
@@ -20,6 +18,6 @@ namespace MIN.Desktop.Contracts.Interfaces
         /// <summary>
         /// Отправить уведомление
         /// </summary>
-        void Notify(ChatMessage message, string roomName);
+        void Notify(string message, string roomName, string? sender = null);
     }
 }

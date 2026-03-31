@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Services\MIN.Core.Services\MIN.Core.Services.csproj" />
+    <ProjectReference Include="..\MIN.Chat.Services.Contracts\MIN.Chat.Services.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

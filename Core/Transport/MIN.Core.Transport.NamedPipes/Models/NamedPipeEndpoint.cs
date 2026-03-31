@@ -6,7 +6,7 @@ namespace MIN.Core.Transport.NamedPipes.Models;
 /// <summary>
 /// Точка подключения для Named Pipes
 /// </summary>
-internal sealed record NamedPipeEndpoint : IEndpoint
+public sealed record NamedPipeEndpoint : IEndpoint
 {
     /// <inheritdoc />
     public TransportType Type => TransportType.NamedPipe;
@@ -20,4 +20,13 @@ internal sealed record NamedPipeEndpoint : IEndpoint
     /// Имя именованного канала
     /// </summary>
     public string PipeName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="NamedPipeEndpoint"/>
+    /// </summary>
+    public NamedPipeEndpoint(string machineName, string pipeName)
+    {
+        MachineName = machineName;
+        PipeName = pipeName;
+    }
 }

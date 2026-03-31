@@ -1,7 +1,6 @@
+using MIN.Core.Entities;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Desktop.Infrastructure.Services;
-using MIN.Services.Contracts.Models.Rooms;
 
 namespace MIN.Desktop
 {
@@ -52,7 +51,7 @@ namespace MIN.Desktop
                 throw new InvalidOperationException("Имя комнаты не может быть пустым");
             }
 
-            if (!isNew && roomMaximumCount.Value < Room.CurrentParticipants.Count)
+            if (!isNew && roomMaximumCount.Value < Room.ParticipantCount)
             {
                 throw new InvalidOperationException("Максимальное количество участников не может быть меньше текущего количества участников");
             }
@@ -78,7 +77,6 @@ namespace MIN.Desktop
 
             Room.Name = roomName.Text;
             Room.MaximumParticipants = Convert.ToInt32(roomMaximumCount.Value);
-            Room.HostParticipant = AppUserProvider.Instance.CurrentUser;
 
             DialogResult = DialogResult.OK;
         }

@@ -1,19 +1,23 @@
+using MIN.Chat.Events;
+using MIN.Chat.Messaging;
+using MIN.Chat.Services.Contracts.Interfaces;
+using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
+using MIN.Core.Messaging.Contracts;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Components;
-using MIN.Services.Contracts.Constants;
-using MIN.Services.Contracts.Interfaces;
-using MIN.Services.Contracts.Models.Enums;
-using MIN.Services.Contracts.Models.Events;
-using MIN.Services.Contracts.Models.Messages;
-using MIN.Services.Contracts.Models.Participants;
-using MIN.Services.Contracts.Models.Rooms;
-using MIN.Services.Services;
+using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Services;
 
 namespace MIN.Desktop
 {
@@ -22,22 +26,49 @@ namespace MIN.Desktop
     /// </summary>
     public partial class ChatForm : StyledForm
     {
-        private readonly IChatRoomService chatRoomService;
+        private readonly IChatService chatService;
+        private readonly IRoomRegistry roomRegistry;
+        private readonly IEventBus eventBus;
         private readonly INotificationService notificationService;
-        private readonly CancellationTokenSource formCancellationTokenSource = new();
+        private readonly ILoggerProvider logger;
+
+        private readonly CancellationTokenSource formCts = new();
         private readonly SynchronizationContext uiContext;
+
         private readonly int hideSideBarWidth;
         private readonly int messageMinPadding = 4;
+
         private readonly System.Windows.Forms.Timer resizeTimer = new() { Interval = 150 };
 
         private bool isResizing;
-        private Room room = null!;
-        private ChatMessage lastMessage = null!;
+        private Guid roomId;
+        private Guid connectionId;
+        private Room? room;
+        private ChatTextMessage? lastMessage;
+        private ParticipantInfo localParticipant;
 
-        public ChatForm(IChatRoomService chatRoomService, INotificationService notificationService)
+        public ChatForm(
+             IChatService chatService,
+             IRoomRegistry roomRegistry,
+             IEventBus eventBus,
+             INotificationService notificationService,
+             ILoggerProvider logger,
+             IIdentityService identitiyService,
+             Guid roomId,
+             Guid connectionId)
         {
             InitializeComponent();
             SendLoadingMessage();
+
+            this.roomRegistry = roomRegistry;
+            this.chatService = chatService;
+            this.eventBus = eventBus;
+            this.notificationService = notificationService;
+            this.logger = logger;
+            this.roomId = roomId;
+            this.connectionId = connectionId;
+
+            localParticipant = new ParticipantInfo(identitiyService.SelfPartcipant);
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -48,300 +79,88 @@ namespace MIN.Desktop
                 PerformResize();
             };
 
-            this.chatRoomService = chatRoomService;
-            this.notificationService = notificationService;
             hideSideBarWidth = MinimumSize.Width + splitContainerSideBar.Panel2.Width;
 
-            SubscribeToChatEvents();
-        }
+            SubscribeToEvents();
 
-        private void SubscribeToChatEvents()
-        {
-            chatRoomService.MessageReceived += OnMessageRecievedEvent;
-            chatRoomService.ParticipantJoined += OnParticipantJoinedEvent;
-            chatRoomService.ParticipantLeft += OnParticipantLeftEvent;
-            chatRoomService.RoomStateChanged += OnRoomStateChangedEvent;
-            chatRoomService.ConnectionLost += ConnectionLostEvent;
+            this.room = this.roomRegistry.TryGetRoom(this.roomId, out var room) ? room : null;
 
-            notificationService.OnNotificationClick += () =>
+            if (this.room != null)
             {
-                WindowState = FormWindowState.Normal;
-                Focus();
-            };
-            notificationService.NotificationTurnOffClicked += () => notificationComboBox.Checked = false;
-        }
-
-        private void UnsubscribeFromChatEvents()
-        {
-            chatRoomService.MessageReceived -= OnMessageRecievedEvent;
-            chatRoomService.ParticipantJoined -= OnParticipantJoinedEvent;
-            chatRoomService.ParticipantLeft -= OnParticipantLeftEvent;
-            chatRoomService.RoomStateChanged -= OnRoomStateChangedEvent;
-            chatRoomService.ConnectionLost -= ConnectionLostEvent;
-        }
-
-        private void OnMessageRecievedEvent(object? sender, MessageReceivedEventArgs e)
-        {
-            uiContext.Post(_ => OnMessageReceived(e.Message), null);
-        }
-
-        private void OnParticipantJoinedEvent(object? sender, ParticipantJoinedEventArgs e)
-        {
-            uiContext.Post(_ => OnParticipantJoined(e.Participant), null);
-        }
-
-        private void OnParticipantLeftEvent(object? sender, ParticipantLeftEventArgs e)
-        {
-            uiContext.Post(_ => OnParticipantLeft(e.Participant), null);
-        }
-
-        private void OnRoomStateChangedEvent(object? sender, RoomStateChangedEventArgs e)
-        {
-            uiContext.Post(_ => OnRoomStateChanged(e.Room!, e.State), null);
-        }
-
-        private void ConnectionLostEvent(object? sender, ConnectionLostEventArgs e)
-        {
-            uiContext.Post(_ => OnConnectionLost(e.Reason), null);
-        }
-
-        private void UpdateStatsAndInvoke()
-        {
-            if (InvokeRequired)
-            {
-                Invoke(UpdateStatsAndInvoke);
-                return;
-            }
-
-            UpdateStats();
-        }
-
-        private void OnRoomStateChanged(Room room, RoomState roomState)
-        {
-            if (roomState == RoomState.Disconnected)
-            {
-                Close();
-                return;
-            }
-
-            this.room = room;
-            if (roomState == RoomState.Joined)
-            {
+                UpdateStats();
                 UpdateChatFlow();
             }
-            UpdateStats();
         }
 
-        private void OnParticipantJoined(Participant participant)
+        private void SubscribeToEvents()
         {
-            SendParticipantJoinedMessage(participant);
-            UpdateStatsAndInvoke();
+            eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnMessageReceived);
+            eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
+            eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
+            eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
         }
 
-        private void OnParticipantLeft(Participant participant)
+        private async Task OnMessageReceived(ChatTextMessageReceivedEvent eventMessage, CancellationToken ct)
         {
-            SendParticipantLeftMessage(participant);
-            UpdateStatsAndInvoke();
-        }
-
-        private void OnConnectionLost(string reason)
-        {
-            MessageBox.Show(reason, "Подключение разорвано",
-                MessageBoxButtons.OK,
-                icon: MessageBoxIcon.Error);
-            Close();
-        }
-
-        private void OnMessageReceived(ChatMessage message)
-        {
-            if (InvokeRequired)
+            if (eventMessage.RoomId != roomId)
             {
-                Invoke(OnMessageReceived, message);
                 return;
             }
 
-            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
+            uiContext.Post(_ =>
             {
-                notificationService.Notify(message, room.Name);
-            }
-            AddMessageToChatFlow(message);
+                AddMessageToChatFlow(eventMessage.Message);
+            }, null);
+            await Task.CompletedTask;
         }
 
-        private void SendParticipantJoinedMessage(Participant participant)
+        private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken ct)
         {
-            var roomMessage = new ChatMessage()
+            if (eventMessage.RoomId != roomId)
             {
-                Content = $"Участник {participant.Name} зашёл в комнату",
-                MessageType = MessageType.System,
-            };
-
-            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
-            {
-                notificationService.Notify(roomMessage, room.Name);
-            }
-            AddMessageToChatFlow(roomMessage);
-        }
-
-        private void SendParticipantLeftMessage(Participant participant)
-        {
-            var roomMessage = new ChatMessage()
-            {
-                Content = $"Участник {participant.Name} покинул комнату",
-                MessageType = MessageType.System,
-            };
-
-            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
-            {
-                notificationService.Notify(roomMessage, room.Name);
-            }
-            AddMessageToChatFlow(roomMessage);
-        }
-
-        private void SendLoadingMessage()
-        {
-            var roomMessage = new ChatMessage()
-            {
-                Content = "Загрузка...",
-                MessageType = MessageType.System,
-            };
-
-            AddMessageToChatFlow(roomMessage);
-        }
-
-        private void UpdateStats()
-        {
-            Text = $"MIN - Комната {room.Name}";
-            Title.Text = $"Комната {room.Name}";
-            participantsInfo.Text = $"{room.CurrentParticipants.Count}/{room.MaximumParticipants}";
-            hostName.Text = AppUserProvider.Instance.CurrentUser.PCName == room.HostParticipant.PCName ? "Ты" : room.HostParticipant.Name;
-            editButton.Visible = AppUserProvider.Instance.CurrentUser.PCName == room.HostParticipant.PCName;
-
-            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.PCName, out var roomNumber, out var computerNumber))
-            {
-                computer.Text = computerNumber.ToString();
-                classroom.Text = roomNumber.ToString();
-            }
-            else
-            {
-                computer.Text = DesktopConstants.UndefinedPCName;
-                classroom.Text = DesktopConstants.UndefinedPCName;
+                return;
             }
 
-            UpdateParticipantFlow();
+            uiContext.Post(_ =>
+            {
+                SendParticipantJoinedMessage(eventMessage.Participant);
+                UpdateStats();
+            }, null);
+            await Task.CompletedTask;
         }
 
-        private void UpdateParticipantFlow()
+        private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken ct)
         {
-            participantsFlow.Controls.Clear();
-
-            foreach (var participant in room.CurrentParticipants)
+            if (eventMessage.RoomId != roomId)
             {
-                var card = new ParticipantCard(participant, room);
-                card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
-                participantsFlow.Controls.Add(card);
+                return;
             }
+
+            uiContext.Post(_ =>
+            {
+                SendParticipantLeftMessage(eventMessage.Participant);
+                UpdateStats();
+            }, null);
+            await Task.CompletedTask;
         }
 
-        private void UpdateChatFlow()
+        private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken ct)
         {
-            chatFlow.Controls.Clear();
-
-            foreach (var message in room.ChatHistory)
+            if (eventMessage.RoomId != roomId || eventMessage.ConnectionId != connectionId)
             {
-                if (message.MessageType == MessageType.System)
+                return;
+            }
+
+            if (!eventMessage.IsConnected)
+            {
+                uiContext.Post(_ =>
                 {
-                    if (message.Content.StartsWith("JOIN:"))
-                    {
-                        var participant = ParseParticipantFromMessage(message);
-                        SendParticipantJoinedMessage(participant);
-                        continue;
-                    }
-                    else if (message.Content.StartsWith("LEAVE:"))
-                    {
-                        var participant = ParseParticipantFromMessage(message);
-                        SendParticipantLeftMessage(participant);
-                        continue;
-                    }
-                }
-
-                AddMessageToChatFlow(message);
+                    MessageBox.Show(eventMessage.ErrorMessage ?? "Соединение разорвано", "Подключение разорвано",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Close();
+                }, null);
             }
-        }
-
-        private Participant ParseParticipantFromMessage(ChatMessage message)
-        {
-            var parts = message.Content.Split(':', 3);
-            var name = parts.Length > 1 ? parts[1] : "Unknown";
-            var id = parts.Length > 2 ? Guid.Parse(parts[2]) : Guid.NewGuid();
-
-            return new Participant
-            {
-                Id = id,
-                Name = name,
-                PCName = message.SenderPCName
-            };
-        }
-
-        private void AddMessageToChatFlow(ChatMessage message)
-        {
-            chatFlow.SuspendLayout();
-            try
-            {
-                var row = new ChatMessageRow();
-                Control rowControl = null!;
-
-                if (message.MessageType == MessageType.System)
-                {
-                    rowControl = new PrimaryLabel()
-                    {
-                        Text = message.Content,
-                        Anchor = AnchorStyles.None,
-                    };
-
-                    row.Height = rowControl.Height;
-                }
-                else if (message.MessageType == MessageType.Text)
-                {
-                    var isSelfMessage = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName;
-
-                    var minutesPassed = 0;
-
-                    if (lastMessage != null)
-                    {
-                        isSelfMessage |= lastMessage.SenderPCName == message.SenderPCName;
-
-                        minutesPassed = (message.Time - lastMessage.Time).Minutes;
-                        minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
-                    }
-
-                    rowControl = new ChatMessageCard(message, room.HostParticipant.PCName == message.SenderPCName, removeHeaders: isSelfMessage)
-                    {
-                        Anchor = message.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
-                            ? AnchorStyles.Right
-                            : AnchorStyles.Left,
-                        Margin = new Padding(20, 0, 20, 0)
-                    };
-
-                    row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
-
-                    lastMessage = message;
-                }
-
-                row.Width = chatFlow.Width;
-                row.container.Controls.Add(rowControl);
-                chatFlow.Controls.Add(row);
-                chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
-
-                if (rowControl is ChatMessageCard card)
-                {
-                    row.Height = card.ResizeOutOfPrefferedSize();
-                }
-            }
-            finally
-            {
-                chatFlow.ResumeLayout(true);
-                chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
-            }
+            await Task.CompletedTask;
         }
 
         protected override void ApplyStylings()
@@ -371,15 +190,170 @@ namespace MIN.Desktop
             tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
         }
 
-        private bool IsMessageValid()
+        private void UpdateStats()
         {
-            return !string.IsNullOrWhiteSpace(messageTextBox.Text);
+            if (room == null)
+            {
+                return;
+            }
+
+            Text = $"MIN - Комната {room.Name}";
+            Title.Text = $"Комната {room.Name}";
+            participantsInfo.Text = $"{room.CurrentParticipants.Count}/{room.MaximumParticipants}";
+
+            var isHost = room.HostParticipant?.Id == localParticipant.Id;
+            hostName.Text = isHost ? "Ты" : room.HostParticipant?.Name ?? "Неизвестно";
+            editButton.Visible = isHost;
+
+            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant?.Endpoint is NamedPipeEndpoint npEndpoint ? npEndpoint.MachineName : string.Empty, out var roomNumber, out var computerNumber))
+            {
+                computer.Text = computerNumber.ToString();
+                classroom.Text = roomNumber.ToString();
+            }
+            else
+            {
+                computer.Text = DesktopConstants.UndefinedPCName;
+                classroom.Text = DesktopConstants.UndefinedPCName;
+            }
+
+            UpdateParticipantFlow();
         }
 
-        private async void sendButton_Click(object sender, EventArgs e)
+        private void UpdateParticipantFlow()
         {
-            await SendMessage();
+            participantsFlow.Controls.Clear();
+
+            if (room == null)
+            {
+                return;
+            }
+
+            foreach (var participant in room.CurrentParticipants)
+            {
+                var card = new ParticipantCard(new ParticipantInfo(participant), room);
+                card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
+                participantsFlow.Controls.Add(card);
+            }
         }
+
+        private void UpdateChatFlow()
+        {
+            chatFlow.Controls.Clear();
+
+            if (room == null)
+            {
+                return;
+            }
+
+            foreach (var storedMessage in room.ChatHistory)
+            {
+                if (storedMessage is ChatTextMessage chatMessage)
+                {
+                    AddMessageToChatFlow(chatMessage);
+                }
+            }
+        }
+
+        private void SendLoadingMessage()
+        {
+            var loadingMessage = new ChatTextMessage
+            {
+                Content = "Загрузка...",
+            };
+            AddMessageToChatFlow(loadingMessage);
+        }
+
+        private void SendParticipantJoinedMessage(ParticipantInfo participant)
+        {
+            var systemMessage = new ChatTextMessage
+            {
+                Content = $"Участник {participant.Name} зашёл в комнату",
+            };
+            AddMessageToChatFlow(systemMessage);
+            NotifyIfNeeded(systemMessage);
+        }
+
+        private void SendParticipantLeftMessage(ParticipantInfo participant)
+        {
+            var systemMessage = new ChatTextMessage
+            {
+                Content = $"Участник {participant.Name} покинул комнату",
+            };
+            AddMessageToChatFlow(systemMessage);
+            NotifyIfNeeded(systemMessage);
+        }
+
+        private void NotifyIfNeeded(ChatTextMessage message)
+        {
+            if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
+            {
+                notificationService.Notify(message.Content, room?.Name ?? "Комната", message.Sender.Name);
+            }
+        }
+
+        private void AddMessageToChatFlow(ChatTextMessage message)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(() => AddMessageToChatFlow(message));
+                return;
+            }
+
+            chatFlow.SuspendLayout();
+            try
+            {
+                var row = new ChatMessageRow();
+                Control rowControl;
+
+                if (message.TypeTag == MessageTypeTag.ChatTextMessage)
+                {
+                    var isSelfMessage = message.Sender.Id == localParticipant.Id;
+                    var isHostMessage = room?.HostParticipant?.Id == message.Sender.Id;
+
+                    var minutesPassed = 0;
+                    if (lastMessage != null && lastMessage.Sender.Id == message.Sender.Id)
+                    {
+                        minutesPassed = (int)(message.Timestamp - lastMessage.Timestamp).TotalMinutes;
+                        minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
+                    }
+
+                    rowControl = new ChatMessageCard(message, localParticipant, isHostMessage, removeHeaders: isSelfMessage)
+                    {
+                        Anchor = isSelfMessage ? AnchorStyles.Right : AnchorStyles.Left,
+                        Margin = new Padding(20, 0, 20, 0)
+                    };
+
+                    row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
+                    lastMessage = message;
+                }
+                else
+                {
+                    rowControl = new PrimaryLabel
+                    {
+                        Text = message.Content,
+                        Anchor = AnchorStyles.None,
+                        AutoSize = true
+                    };
+                }
+
+                row.Width = chatFlow.Width;
+                row.container.Controls.Add(rowControl);
+                chatFlow.Controls.Add(row);
+                chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
+
+                if (rowControl is ChatMessageCard card)
+                {
+                    row.Height = card.ResizeOutOfPrefferedSize();
+                }
+            }
+            finally
+            {
+                chatFlow.ResumeLayout(true);
+                chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
+            }
+        }
+
+        private bool IsMessageValid() => !string.IsNullOrWhiteSpace(messageTextBox.Text);
 
         private async Task SendMessage()
         {
@@ -390,18 +364,60 @@ namespace MIN.Desktop
 
             try
             {
-                await chatRoomService.SendMessageAsync(messageTextBox.Text.Trim(), MessageType.Text);
+                await chatService.SendMessageAsync(roomId, connectionId, messageTextBox.Text.Trim(), localParticipant);
+                messageTextBox.Text = string.Empty;
+                changeMessageBoxSize();
             }
-            catch (Exception ex) when (ex is ArgumentException)
+            catch (Exception ex)
             {
-                MessageBox.Show($"Что то ты слишком много кинул, скинь чуток, максимум пока только {ChatMessageConstants.MaximumMessageSize} кб");
+                logger.Log($"Failed to send message: {ex.Message}");
+                MessageBox.Show("Не удалось отправить сообщение", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            messageTextBox.Text = string.Empty;
         }
 
-        private void disconnectButton_Click(object sender, EventArgs e)
+        private async void editButton_Click(object sender, EventArgs e)
         {
-            Close();
+            if (room == null)
+            {
+                return;
+            }
+
+            var editForm = new RoomCreateForm(room);
+            var result = editForm.ShowDialog();
+
+            if (result == DialogResult.Abort)
+            {
+                Close();
+            }
+            else if (result == DialogResult.OK)
+            {
+                // TODO: Исправить
+
+                //var requestMessage = new RoomInfoRequestMessage
+                //{
+                //    RoomId = roomId,
+                //    RoomName = editForm.RoomData.Name,
+                //    MaxParticipants = editForm.RoomData.MaximumParticipants
+                //};
+                //await messageSender.SendAsync(requestMessage, roomId, connectionId, formCts.Token);
+            }
+        }
+
+        private async void sendButton_Click(object sender, EventArgs e) => await SendMessage();
+
+        private void disconnectButton_Click(object sender, EventArgs e) => Close();
+
+        private void closeButton_Click(object sender, EventArgs e)
+        {
+            splitContainerSideBar.Panel2Collapsed = true;
+            chatFlow_Resize(sender, e);
+        }
+
+        private void aboutButton_Click(object sender, EventArgs e)
+        {
+            splitContainerSideBar.Panel2Collapsed = !splitContainerSideBar.Panel2Collapsed;
+            chatFlow_Resize(sender, e);
         }
 
         private void chatFlow_Resize(object sender, EventArgs e)
@@ -448,51 +464,23 @@ namespace MIN.Desktop
             }
         }
 
-        private void closeButton_Click(object sender, EventArgs e)
+        private void participantsFlow_Resize(object sender, EventArgs e)
         {
-            splitContainerSideBar.Panel2Collapsed = true;
-            chatFlow_Resize(sender, e);
-        }
-
-        private void aboutButton_Click(object sender, EventArgs e)
-        {
-            splitContainerSideBar.Panel2Collapsed = !splitContainerSideBar.Panel2Collapsed;
-            chatFlow_Resize(sender, e);
-        }
-
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            UnsubscribeFromChatEvents();
-            formCancellationTokenSource.Cancel();
-            formCancellationTokenSource.Dispose();
-            base.OnFormClosing(e);
-        }
-
-        private async void editButton_Click(object sender, EventArgs e)
-        {
-            var editForm = new RoomCreateForm(room);
-            var result = editForm.ShowDialog();
-            if (result == DialogResult.Abort)
+            foreach (ParticipantCard card in participantsFlow.Controls.OfType<ParticipantCard>())
             {
-                Close();
-            }
-            else if (result == DialogResult.OK)
-            {
-                await chatRoomService.SendUpdateRoomRequestAsync(new RoomInfoRequestMessage()
-                {
-                    RoomName = editForm.Room.Name,
-                    MaxParticipants = editForm.Room.MaximumParticipants,
-                }, formCancellationTokenSource.Token);
+                card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
             }
         }
 
-        private async void messageTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        private void messageTextBox_TextChanged(object sender, EventArgs e) => changeMessageBoxSize();
+
+        private void messageTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == '\r') // Enter
             {
                 if ((ModifierKeys & Keys.Shift) == 0)
                 {
-                    await SendMessage();
+                    _ = SendMessage();
                     changeMessageBoxSize();
                     e.Handled = true;
                 }
@@ -504,17 +492,11 @@ namespace MIN.Desktop
             tableLayoutPanelButtons.Height = messageTextBox.UpdateHeight() + tableLayoutPanelButtons.Margin.Vertical;
         }
 
-        private void messageTextBox_TextChanged(object sender, EventArgs e)
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            changeMessageBoxSize();
-        }
-
-        private void participantsFlow_Resize(object sender, EventArgs e)
-        {
-            foreach (ParticipantCard card in participantsFlow.Controls.OfType<ParticipantCard>())
-            {
-                card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
-            }
+            formCts.Cancel();
+            formCts.Dispose();
+            base.OnFormClosing(e);
         }
     }
 }

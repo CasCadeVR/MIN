@@ -1,6 +1,7 @@
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Desktop.Infrastructure.Services;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Desktop
 {
@@ -9,12 +10,16 @@ namespace MIN.Desktop
     /// </summary>
     public partial class ParticipantCreateForm : StyledForm
     {
+        private readonly IIdentityService identityService;
+
         /// <summary>
         /// »нициализирует новый экземпл€р <see cref="ParticipantCreateForm"/>
         /// </summary>
-        public ParticipantCreateForm()
+        public ParticipantCreateForm(IIdentityService identityService)
         {
             InitializeComponent();
+
+            this.identityService = identityService;
 
             Shown += (_, _) => participantName.Focus();
         }
@@ -27,14 +32,10 @@ namespace MIN.Desktop
         }
 
         private bool IsParticipantValid()
-        {
-            return !(string.IsNullOrEmpty(AppUserProvider.Instance.CurrentUser.Name));
-        }
+            => !string.IsNullOrEmpty(participantName.Text);
 
         private void createButton_Click(object sender, EventArgs e)
         {
-            AppUserProvider.Instance.CurrentUser.Name = participantName.Text;
-
             if (!IsParticipantValid())
             {
                 MessageBox.Show(
@@ -46,6 +47,8 @@ namespace MIN.Desktop
 
                 return;
             }
+
+            identityService.SetParticipant(new ParticipantInfo(participantName.Text));
 
             DialogResult = DialogResult.OK;
         }

@@ -11,19 +11,19 @@ public record RoomInfo : IRoomData
     public Guid Id { get; init; }
 
     /// <inheritdoc />
-    public string Name { get; init; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     /// <inheritdoc />
-    public int ParticipantCount { get; init; }
+    public int ParticipantCount { get; set; }
 
     /// <inheritdoc />
-    public int MaximumParticipants { get; init; }
+    public int MaximumParticipants { get; set; }
 
     /// <inheritdoc />
-    public bool IsActive { get; init; }
+    public bool IsActive { get; set; }
 
     /// <inheritdoc />
-    public IParticipantData HostParticipant { get; }
+    public ParticipantInfo HostParticipant { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfo"/>
@@ -32,9 +32,17 @@ public record RoomInfo : IRoomData
     {
         Id = room.Id;
         Name = room.Name;
-        HostParticipant = room.HostParticipant;
+        HostParticipant = new ParticipantInfo(room.HostParticipant);
         ParticipantCount = room.ParticipantCount;
         MaximumParticipants = room.MaximumParticipants;
         IsActive = room.IsActive;
+    }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="RoomInfo"/>
+    /// </summary>
+    public RoomInfo()
+    {
+        Id = Guid.NewGuid();
     }
 }

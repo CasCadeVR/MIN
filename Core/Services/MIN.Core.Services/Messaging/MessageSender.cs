@@ -16,7 +16,7 @@ namespace MIN.Core.Services.Messaging
         private readonly IMessageEncryptor encryptor;
         private readonly IMessageSerializer serializer;
         private readonly ILoggerProvider logger;
-        private readonly IRoomService roomService;
+        private readonly IRoomRegistry roomRegistry;
         private readonly IParticipantRegistry participantService;
 
         /// <summary>
@@ -26,14 +26,14 @@ namespace MIN.Core.Services.Messaging
             IMessageSerializer serializer,
             IMessageEncryptor encryptor,
             ILoggerProvider logger,
-            IRoomService roomService,
+            IRoomRegistry roomRegistry,
             IParticipantRegistry participantService)
         {
             this.transport = transport;
             this.serializer = serializer;
             this.encryptor = encryptor;
             this.logger = logger;
-            this.roomService = roomService;
+            this.roomRegistry = roomRegistry;
             this.participantService = participantService;
         }
 
@@ -48,7 +48,7 @@ namespace MIN.Core.Services.Messaging
         {
             var serialized = serializer.Serialize(message);
 
-            var participants = roomService.GetCurrentParticipants(roomId);
+            var participants = roomRegistry.GetCurrentParticipants(roomId);
 
             var tasks = participants
                 .Select(x => participantService.GetConnectionIdFromParticipantId(x.Id))

@@ -2,7 +2,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Serialization.Json;
@@ -15,12 +14,12 @@ namespace MIN.Common.Mvc.Extensions;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Регистрирует JsonMessageSerializer и автоматически находит все типы сообщений в сборке маркера
+    /// Регистрирует все типы сообщений из указанной сборки в реестре десериализаторов
     /// </summary>
     /// <typeparam name="TMarker">Тип-маркер из сборки, содержащей сообщения</typeparam>
     /// <param name="services">Коллекция сервисов</param>
     /// <returns>Коллекция сервисов для цепочки вызовов</returns>
-    public static IServiceCollection AddJsonMessageSerializer<TMarker>(this IServiceCollection services)
+    public static IServiceCollection RegisterMessagesFromAnchor<TMarker>(this IServiceCollection services)
     {
         var assembly = typeof(TMarker).Assembly;
         var messageTypes = assembly.GetTypes()
@@ -29,25 +28,24 @@ public static class ServiceCollectionExtensions
 
         if (messageTypes.Count == 0)
         {
-            throw new InvalidOperationException("No message types found in the specified assembly");
+            return services;
         }
 
-        var deserializers = new Dictionary<MessageTypeTag, Func<byte[], IMessage>>();
-
-        foreach (var type in messageTypes)
+        services.AddSingleton(sp =>
         {
-            var instance = (IMessage)Activator.CreateInstance(type)!;
-            var tag = instance.TypeTag;
+            var registry = sp.GetRequiredService<IDeserializerRegistry>();
 
-            if (deserializers.ContainsKey(tag))
+            foreach (var type in messageTypes)
             {
-                throw new InvalidOperationException($"Duplicate message type tag {tag} for types {type.Name}");
+                var instance = (IMessage)Activator.CreateInstance(type)!;
+                var tag = instance.TypeTag;
+                var deserializer = CreateDeserializer(type);
+                registry.RegisterDeserializer(tag, deserializer);
             }
 
-            deserializers[tag] = CreateDeserializer(type);
-        }
+            return registry;
+        });
 
-        services.AddSingleton<IMessageSerializer>(_ => new JsonMessageSerializer(deserializers));
         return services;
     }
 
@@ -121,6 +119,17 @@ public static class ServiceCollectionExtensions
         foreach (var type in types)
         {
             services.TryAddEnumerable(new ServiceDescriptor(serviceType, type, lifetime));
+        }
+    }
+
+    /// <summary>
+    /// Регистрация модуля в <see cref="IServiceCollection"/>
+    /// </summary>
+    public static void RegisterModule<TModule>(this IServiceCollection services)
+    {
+        if (Activator.CreateInstance(typeof(TModule)) is Module module)
+        {
+            module.Configure(services);
         }
     }
 

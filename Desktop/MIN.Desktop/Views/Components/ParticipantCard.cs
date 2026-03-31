@@ -1,6 +1,6 @@
-﻿using MIN.Desktop.Contracts;
-using MIN.Services.Contracts.Models.Participants;
-using MIN.Services.Contracts.Models.Rooms;
+﻿using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Models;
+using MIN.Desktop.Contracts;
 
 namespace MIN.Desktop.Components
 {
@@ -9,13 +9,13 @@ namespace MIN.Desktop.Components
     /// </summary>
     public partial class ParticipantCard : UserControl
     {
-        private readonly Participant participant;
+        private readonly ParticipantInfo participant;
         private readonly Room room;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>
         /// </summary>
-        public ParticipantCard(Participant participant, Room room)
+        public ParticipantCard(ParticipantInfo participant, Room room)
         {
             InitializeComponent();
             ApplyStylings();
@@ -36,7 +36,7 @@ namespace MIN.Desktop.Components
         private void FillLabels()
         {
             participantName.Text = participant.Name;
-            if (participant.PCName == room.HostParticipant.PCName)
+            if (participant.Id == room.HostParticipant.Id)
             {
                 participantRole.Text = "Хост";
             }
@@ -46,12 +46,12 @@ namespace MIN.Desktop.Components
                 tableLayoutPanelLabels.ColumnStyles[1].Width = 0;
             }
 
-            var lastMessage = room.ChatHistory
-                .Where(x => x.SenderPCName == participant.PCName)
-                .OrderByDescending(x => x.Time)
-                .LastOrDefault();
+            //var lastMessage = room.ChatHistory
+            //    .Where(x => x. == participant.Id)
+            //    .OrderByDescending(x => x.Time)
+            //    .LastOrDefault();
 
-            lastOnline.Text = lastMessage == null ? "" : $"Последний раз в сети: {lastMessage.Time.ToShortTimeString()}";
+            //lastOnline.Text = lastMessage == null ? "" : $"Последний раз в сети: {lastMessage.Time.ToShortTimeString()}";
         }
     }
 }

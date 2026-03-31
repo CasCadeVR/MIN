@@ -1,12 +1,7 @@
-﻿using MIN.Desktop.Contracts;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
-using MIN.Services.Contracts.Interfaces;
-using MIN.Services.Contracts.Models;
-using MIN.Services.Contracts.Models.Enums;
-using MIN.Services.Contracts.Models.Events;
-using MIN.Services.Contracts.Models.Participants;
-using MIN.Services.Contracts.Models.Rooms;
-using MIN.Services.Services;
+using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Components
 {
@@ -20,93 +15,17 @@ namespace MIN.Desktop.Components
         /// </summary>
         public event Func<Task> Clicked;
 
-        private readonly IChatRoomService chatRoomService;
-        private readonly SynchronizationContext uiContext;
-        private DiscoveredRoom room;
+        private RoomInfo room;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>
         /// </summary>
-        public RoomCard(IChatRoomService chatRoomService, DiscoveredRoom room)
+        public RoomCard(RoomInfo room)
         {
             InitializeComponent();
-            this.chatRoomService = chatRoomService;
             this.room = room;
-            uiContext = SynchronizationContext.Current
-                ?? throw new InvalidOperationException("Must be created on UI thread");
 
             ApplyStylings();
-            SubscribeToChatEvents();
-            UpdateStats();
-        }
-
-        private void SubscribeToChatEvents()
-        {
-            chatRoomService.ParticipantJoined += OnParticipantJoinedEvent;
-            chatRoomService.ParticipantLeft += OnParticipantLeftEvent;
-            chatRoomService.RoomStateChanged += OnRoomInfoChangedEvent;
-        }
-
-        /// <summary>
-        /// Отключить события
-        /// </summary>
-        public void UnsubscribeFromChatEvents()
-        {
-            chatRoomService.ParticipantJoined -= OnParticipantJoinedEvent;
-            chatRoomService.ParticipantLeft -= OnParticipantLeftEvent;
-            chatRoomService.RoomStateChanged -= OnRoomInfoChangedEvent;
-        }
-
-        private void OnParticipantJoinedEvent(object? sender, ParticipantJoinedEventArgs e)
-        {
-            uiContext.Post(_ => OnParticipantJoined(e.Participant), null);
-        }
-
-        private void OnParticipantLeftEvent(object? sender, ParticipantLeftEventArgs e)
-        {
-            uiContext.Post(_ => OnParticipantLeft(e.Participant), null);
-        }
-
-        private void OnRoomInfoChangedEvent(object? sender, RoomStateChangedEventArgs e)
-        {
-            uiContext.Post(_ => OnRoomInfoChanged(e.Room!, e.State), null);
-        }
-
-        private void UpdateStatsAndInvoke<Entity>(Action<Entity> action, Entity entity)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(action, entity);
-                return;
-            }
-            UpdateStats();
-        }
-
-        private void OnParticipantJoined(Participant participant)
-        {
-            room.CurrentParticipants++;
-            UpdateStatsAndInvoke(OnParticipantJoined, participant);
-        }
-
-        private void OnParticipantLeft(Participant participant)
-        {
-            room.CurrentParticipants--;
-            UpdateStatsAndInvoke(OnParticipantJoined, participant);
-        }
-
-        private void OnRoomInfoChanged(Room room, RoomState roomState)
-        {
-            if (roomState == RoomState.Disconnected)
-            {
-                Dispose();
-                return;
-            }
-
-            this.room.RoomName = room.Name;
-            this.room.HostName = room.HostParticipant.Name;
-            this.room.HostPCName = room.HostParticipant.PCName;
-            this.room.CurrentParticipants = room.CurrentParticipants.Count;
-            room.MaximumParticipants = room.MaximumParticipants;
             UpdateStats();
         }
 
@@ -120,11 +39,11 @@ namespace MIN.Desktop.Components
 
         private void UpdateStats()
         {
-            Title.Text = $"Комната {room.RoomName}";
-            participantsInfo.Text = $"{room.CurrentParticipants}/{room.MaximumParticipants}";
-            hostName.Text = room.HostName;
+            Title.Text = $"Комната {room.Name}";
+            participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
+            hostName.Text = room.HostParticipant.Name;
 
-            if (CollegePCNameParser.TryParseComputerName(room.HostPCName, out int roomNumber, out int computerNumber))
+            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.Name, out int roomNumber, out int computerNumber))
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
@@ -140,7 +59,7 @@ namespace MIN.Desktop.Components
 
         private void setConnectButtonAccordingToRoomCount()
         {
-            var isFull = room.CurrentParticipants >= room.MaximumParticipants;
+            var isFull = room.ParticipantCount >= room.MaximumParticipants;
 
             connectButton.Enabled = !isFull;
             if (isFull)

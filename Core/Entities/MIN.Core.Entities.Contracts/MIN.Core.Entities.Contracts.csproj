@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Transport\MIN.Core.Transport.Contracts\MIN.Core.Transport.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

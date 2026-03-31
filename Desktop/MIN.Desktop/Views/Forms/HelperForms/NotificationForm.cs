@@ -1,14 +1,13 @@
 ﻿using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Services.Contracts.Models.Enums;
-using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Desktop.Views.Forms.HelperForms
 {
     public partial class NotificationForm : StyledForm
     {
-        private readonly ChatMessage message;
+        private readonly string message;
         private readonly string messageRoomName;
+        private readonly string? sender;
         private System.Windows.Forms.Timer appearTimer = null!;
         private System.Windows.Forms.Timer disappearTimer = null!;
         private System.Windows.Forms.Timer closeTimer = null!;
@@ -33,7 +32,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
 
         private bool isClosing;
 
-        public NotificationForm(ChatMessage message, string messageRoomName)
+        public NotificationForm(string message, string messageRoomName, string? sender)
         {
             InitializeComponent();
             this.message = message;
@@ -82,9 +81,13 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void FillFields()
         {
             roomName.Text = $"Комната {messageRoomName}";
-            senderAndContent.Text = message.MessageType == MessageType.Text
-                ? $"{message.SenderName}: {message.Content}"
-                : $"{message.Content}";
+
+            if (!string.IsNullOrEmpty(sender))
+            {
+                senderAndContent.Text = $"{sender}: ";
+            }
+
+            senderAndContent.Text += message;
         }
 
         protected override void ApplyStylings()

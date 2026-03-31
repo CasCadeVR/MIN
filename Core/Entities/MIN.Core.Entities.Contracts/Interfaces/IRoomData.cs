@@ -1,4 +1,6 @@
-﻿namespace MIN.Core.Entities.Contracts.Interfaces;
+﻿using MIN.Core.Entities.Contracts.Models;
+
+namespace MIN.Core.Entities.Contracts.Interfaces;
 
 /// <summary>
 /// Данные комнаты
@@ -18,7 +20,7 @@ public interface IRoomData
     /// <summary>
     /// Хост комнаты
     /// </summary>
-    IParticipantData HostParticipant { get; }
+    ParticipantInfo HostParticipant { get; }
 
     /// <summary>
     /// Максимальное количество участников

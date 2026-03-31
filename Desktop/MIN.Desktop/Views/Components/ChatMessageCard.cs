@@ -1,6 +1,7 @@
-﻿using MIN.Desktop.Contracts;
+﻿using MIN.Chat.Messaging;
+using MIN.Core.Entities.Contracts.Models;
+using MIN.Desktop.Contracts;
 using MIN.Desktop.Infrastructure.Services;
-using MIN.Services.Contracts.Models.Messages;
 
 namespace MIN.Desktop.Components
 {
@@ -9,17 +10,19 @@ namespace MIN.Desktop.Components
     /// </summary>
     public partial class ChatMessageCard : UserControl
     {
-        private readonly ChatMessage chatMessage;
+        private readonly ChatTextMessage chatMessage;
+        private readonly ParticipantInfo localParticipant;
         private readonly bool hostMessage;
         private readonly bool removeHeaders;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>
         /// </summary>
-        public ChatMessageCard(ChatMessage chatMessage, bool hostMessage, bool removeHeaders)
+        public ChatMessageCard(ChatTextMessage chatMessage, ParticipantInfo localParticipant, bool hostMessage, bool removeHeaders)
         {
             InitializeComponent();
             this.chatMessage = chatMessage;
+            this.localParticipant = localParticipant;
             this.hostMessage = hostMessage;
             this.removeHeaders = removeHeaders;
             FillLabels();
@@ -35,7 +38,7 @@ namespace MIN.Desktop.Components
                 sendRole.Visible = false;
             }
 
-            var senderColor = chatMessage.SenderPCName == AppUserProvider.Instance.CurrentUser.PCName
+            var senderColor = chatMessage.Sender.Id == localParticipant.Id
                 ? ColorScheme.OutgoingMessageBackground
                 : ColorScheme.IncomingMessageBackground;
 
@@ -87,9 +90,9 @@ namespace MIN.Desktop.Components
 
         private void FillLabels()
         {
-            senderName.Text = chatMessage.SenderName;
+            senderName.Text = chatMessage.Sender.Name;
             sendRole.Text = hostMessage ? "Хост" : string.Empty;
-            sendTime.Text = chatMessage.Time.ToShortTimeString();
+            sendTime.Text = chatMessage.Timestamp.ToShortTimeString();
             sendMessage.Text = chatMessage.Content;
         }
     }

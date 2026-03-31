@@ -1,11 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
-using MIN.Entities.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Models;
 
 namespace MIN.Core.Cryptography
 {

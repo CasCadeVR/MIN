@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
-using MIN.Services.Contracts.Interfaces;
-using MIN.Services.Contracts.Models;
+using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models;
 
 namespace MIN.Desktop.Infrastructure.Services
 {

@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Entities.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Entities.Contracts.Models;
 
@@ -8,10 +9,15 @@ namespace MIN.Core.Entities.Contracts.Models;
 public record ParticipantInfo : IParticipantData
 {
     /// <inheritdoc />
-    public Guid Id { get; }
+    public Guid Id { get; } = Guid.NewGuid();
 
     /// <inheritdoc />
-    public string Name { get; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Точка подключения к участнику
+    /// </summary>
+    public IEndpoint? Endpoint { get; init; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
@@ -26,9 +32,8 @@ public record ParticipantInfo : IParticipantData
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
     /// </summary>
-    public ParticipantInfo(Guid id, string name)
+    public ParticipantInfo(string name)
     {
-        Id = id;
         Name = name;
     }
 }

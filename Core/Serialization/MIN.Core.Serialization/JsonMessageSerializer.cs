@@ -17,14 +17,14 @@ public sealed class JsonMessageSerializer : IMessageSerializer
         WriteIndented = false,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
-    private readonly Dictionary<MessageTypeTag, Func<byte[], IMessage>> deserializers;
+    private readonly IDeserializerRegistry deserializerRegistry;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="JsonMessageSerializer"/>
     /// </summary>
-    public JsonMessageSerializer(Dictionary<MessageTypeTag, Func<byte[], IMessage>> deserializers)
+    public JsonMessageSerializer(IDeserializerRegistry deserializerRegistry)
     {
-        this.deserializers = deserializers;
+        this.deserializerRegistry = deserializerRegistry;
     }
 
     /// <summary>
@@ -49,7 +49,8 @@ public sealed class JsonMessageSerializer : IMessageSerializer
 
         var typeTag = (MessageTypeTag)typeTagElement.GetByte();
 
-        if (!deserializers.TryGetValue(typeTag, out var deserializer))
+        var deserializer = deserializerRegistry.GetDeserializer(typeTag);
+        if (deserializer == null)
         {
             throw new NotSupportedException($"No deserializer registered for message type {typeTag}");
         }

@@ -1,17 +1,13 @@
-using Microsoft.Extensions.DependencyInjection;
-using MIN.Desktop.Contracts.Interfaces;
-using MIN.Desktop.Infrastructure.Services;
-using MIN.Services.Connection.Contracts.Interfaces.Cryptographing;
-using MIN.Services.Connection.Contracts.Interfaces.Discovering;
-using MIN.Services.Connection.Contracts.Interfaces.Pipes;
-using MIN.Services.Connection.Contracts.Interfaces.Serialize;
-using MIN.Services.Connection.Cryptographing;
-using MIN.Services.Connection.Pipes;
-using MIN.Services.Connection.Pipes.Discovering;
-using MIN.Services.Connection.Serialize;
-using MIN.Services.Contracts.Interfaces;
-using MIN.Services.Services;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using MIN.Chat.DI;
+using MIN.Common.Mvc.Extensions;
+using MIN.Core.DI;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Desktop.Infrastructure.Services;
+using MIN.Discovery.DI;
+using MIN.Helpers.DI;
 
 namespace MIN.Desktop
 {
@@ -29,7 +25,16 @@ namespace MIN.Desktop
             ConfigureServices(services);
 
             var serviceProvider = services.BuildServiceProvider();
-            Application.Run(serviceProvider.GetRequiredService<MainForm>());
+
+            using var cts = new CancellationTokenSource();
+
+            var mainForm = serviceProvider.GetRequiredService<MainForm>();
+            mainForm.FormClosing += (sender, e) =>
+            {
+                cts.Cancel();
+            };
+
+            Application.Run(mainForm);
         }
 
         private static void ConfigureServices(IServiceCollection services)
@@ -37,21 +42,14 @@ namespace MIN.Desktop
             var appVersion = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0, 0);
             services.AddSingleton(appVersion);
 
-            services.AddSingleton<ILoggerProvider, LoggerProvider>();
+            services.RegisterAsImplementedInterfaces<NotificationService>(ServiceLifetime.Singleton);
+            services.RegisterAsImplementedInterfaces<SettingsProvider>(ServiceLifetime.Singleton);
 
-            services.AddSingleton<IKeyProvider, KeyProvider>();
-            services.AddSingleton<ICryptoProvider, CryptoProvider>();
-            services.AddSingleton<IUpdateService, GitHubUpdateService>();
-            services.AddSingleton<INotificationService, NotificationService>();
+            services.RegisterModule<HelpersModule>();
+            services.RegisterModule<CoreModule>();
 
-            services.AddSingleton<IPipeMessageSerializer, CryptoPipeMessageSerializer>();
-            services.AddSingleton<ISettingsProvider, SettingsProvider>();
-            services.AddSingleton<IChatRoomService, ChatRoomService>();
-
-            services.AddTransient<IPipeRoomServer, PipeRoomServer>();
-            services.AddTransient<IPipeParticipantClient, PipeParticipantClient>();
-
-            services.AddTransient<IDiscoveryClient, DiscoveryClient>();
+            services.RegisterModule<ChatModule>();
+            services.RegisterModule<DiscoveryModule>();
 
             services.AddScoped<MainForm>();
             services.AddScoped<RoomCreateForm>();

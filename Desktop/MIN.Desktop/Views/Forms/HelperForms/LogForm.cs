@@ -1,7 +1,6 @@
-using System.Windows.Forms;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Services.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Desktop
 {

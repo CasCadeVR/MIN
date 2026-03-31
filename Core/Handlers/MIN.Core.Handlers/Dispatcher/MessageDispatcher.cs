@@ -1,8 +1,8 @@
 ﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
-using MIN.Handlers.Contracts;
-using MIN.Handlers.Contracts.Dispatcher;
-using MIN.Handlers.Contracts.Models;
+using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Dispatcher;
+using MIN.Core.Handlers.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;

@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using System.Threading;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Transport.Contracts.Events;
@@ -25,13 +26,9 @@ namespace MIN.Core.Services.Rooms
             this.eventBus = eventBus;
             this.roomRegistry = roomRegistry;
             this.logger = logger;
-        }
-
-        async Task IConnectionMonitor.StartAsync(CancellationToken cancellationToken)
-        {
-            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts = new CancellationTokenSource();
             transport.ConnectionStateChanged += OnConnectionStateChanged;
-            await Task.CompletedTask;
+
         }
 
         private async void OnConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
