@@ -1,10 +1,7 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
-using MIN.Core.Cryptography.Contracts.Interfaces;
-using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
@@ -27,18 +24,16 @@ namespace MIN.Desktop
         private readonly IChatService chatService;
         private readonly IDiscoveryService discoveryService;
         private readonly IEventBus eventBus;
-        private readonly IMessageSender messageSender;
-        private readonly IMessageEncryptor encryptor;
         private readonly ISettingsProvider settingsProvider;
         private readonly INotificationService notificationService;
         private readonly ILoggerProvider logger;
-        private readonly ILocalNetworkComputerProvider networkComputerProvider;
         private readonly IIdentityService identityService;
 
         private readonly SynchronizationContext uiContext;
         private readonly CancellationTokenSource cts;
 
         private Settings Settings => settingsProvider.GetSettings();
+        private ParticipantInfo localParticipant;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="MainForm"/>
@@ -50,12 +45,9 @@ namespace MIN.Desktop
             IChatService chatService,
             IDiscoveryService discoveryService,
             IEventBus eventBus,
-            IMessageSender messageSender,
-            IMessageEncryptor encryptor,
             ISettingsProvider settingsProvider,
             INotificationService notificationService,
             IIdentityService identityService,
-            ILocalNetworkComputerProvider networkComputerProvider,
             ILoggerProvider logger)
         {
             InitializeComponent();
@@ -66,12 +58,9 @@ namespace MIN.Desktop
             this.chatService = chatService;
             this.discoveryService = discoveryService;
             this.eventBus = eventBus;
-            this.messageSender = messageSender;
-            this.encryptor = encryptor;
             this.settingsProvider = settingsProvider;
             this.notificationService = notificationService;
             this.identityService = identityService;
-            this.networkComputerProvider = networkComputerProvider;
             this.logger = logger;
 
             uiContext = SynchronizationContext.Current
@@ -102,14 +91,24 @@ namespace MIN.Desktop
             var roomCreateForm = new RoomCreateForm();
             if (roomCreateForm.ShowDialog() == DialogResult.OK)
             {
-                roomCreateForm.Room.HostParticipant = new ParticipantInfo(identityService.SelfPartcipant);
                 var room = roomCreateForm.Room;
+                localParticipant.Endpoint = new NamedPipeEndpoint(Environment.MachineName, PipeNameProvider.GetRoomPipeName(room.Id));
+                room.HostParticipant = localParticipant;
 
-                roomRegistry.RegisterRoom(Guid.NewGuid(), room);
+                try
+                {
+                    roomRegistry.RegisterRoom(Guid.NewGuid(), room);
+                    await roomHoster.StartHostingAsync(room.Id, room.HostParticipant.Endpoint, cts.Token);
 
-                var endpoint = new NamedPipeEndpoint(Environment.MachineName, PipeNameProvider.GetRoomPipeName(room.Id));
-                await roomHoster.StartHostingAsync(room.Id, endpoint, cts.Token);
-                await discoveryService.StartDiscoveryAsync(new RoomInfo(room), cts.Token);
+                    var roomInfo = new RoomInfo(room);
+
+                    await discoveryService.StartDiscoveryAsync(roomInfo, cts.Token);
+                    await OnRoomJoin(roomInfo);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}", "Error");
+                }
             }
         }
 
@@ -208,11 +207,13 @@ namespace MIN.Desktop
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            var selfName = Environment.MachineName;
+            var machineName = Environment.MachineName;
 
-            identityService.SetParticipant(new ParticipantInfo(selfName));
+            localParticipant = new ParticipantInfo(machineName);
 
-            if (CollegePCNameParser.TryParseComputerName(selfName, out var roomNumber, out var _))
+            identityService.SetParticipant(localParticipant);
+
+            if (CollegePCNameParser.TryParseComputerName(machineName, out var roomNumber, out var _))
             {
                 classNumber.Value = roomNumber;
             }

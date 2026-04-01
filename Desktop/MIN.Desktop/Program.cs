@@ -3,8 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using MIN.Chat.DI;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.DI;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Discovery.DI;
 using MIN.Helpers.DI;
@@ -17,7 +15,7 @@ namespace MIN.Desktop
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static async Task Main()
         {
             ApplicationConfiguration.Initialize();
 
@@ -47,12 +45,10 @@ namespace MIN.Desktop
 
             services.RegisterModule<HelpersModule>();
             services.RegisterModule<CoreModule>();
-
             services.RegisterModule<ChatModule>();
             services.RegisterModule<DiscoveryModule>();
 
             services.AddScoped<MainForm>();
-            services.AddScoped<RoomCreateForm>();
         }
     }
 }

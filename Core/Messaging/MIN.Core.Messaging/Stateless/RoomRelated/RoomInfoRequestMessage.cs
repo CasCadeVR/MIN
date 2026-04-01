@@ -21,6 +21,11 @@ public class RoomInfoRequestMessage : BaseMessage
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfoRequestMessage"/>
     /// </summary>
+    public RoomInfoRequestMessage() { }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="RoomInfoRequestMessage"/>
+    /// </summary>
     public RoomInfoRequestMessage(Guid roomId)
     {
         RoomId = roomId;

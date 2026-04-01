@@ -17,7 +17,7 @@ public record ParticipantInfo : IParticipantData
     /// <summary>
     /// Точка подключения к участнику
     /// </summary>
-    public IEndpoint? Endpoint { get; init; }
+    public IEndpoint? Endpoint { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>

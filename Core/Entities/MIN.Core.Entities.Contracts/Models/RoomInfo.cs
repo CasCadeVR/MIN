@@ -32,7 +32,7 @@ public record RoomInfo : IRoomData
     {
         Id = room.Id;
         Name = room.Name;
-        HostParticipant = new ParticipantInfo(room.HostParticipant);
+        HostParticipant = room.HostParticipant;
         ParticipantCount = room.ParticipantCount;
         MaximumParticipants = room.MaximumParticipants;
         IsActive = room.IsActive;

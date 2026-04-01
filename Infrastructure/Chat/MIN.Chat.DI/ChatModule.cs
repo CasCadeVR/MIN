@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using MIN.Common.Mvc;
-using MIN.Common.Mvc.Extensions;
-using MIN.Chat.Services;
 using MIN.Chat.Handlers;
 using MIN.Chat.Messaging;
+using MIN.Chat.Services;
+using MIN.Common.Mvc;
+using MIN.Common.Mvc.Extensions;
+using MIN.Core.Handlers.Contracts;
 
 namespace MIN.Chat.DI;
 
@@ -17,6 +18,6 @@ public class ChatModule : Module
     {
         services.RegisterMessagesFromAnchor<IChatMessagingAnchor>();
         services.RegisterAsImplementedInterfaces<ChatService>(ServiceLifetime.Singleton);
-        services.RegisterAssemblyInterfacesAssignableTo<IChatHandlerAnchor>(ServiceLifetime.Singleton);
+        services.RegisterMultipleInterfacesAssignableTo<IMessageHandler, IChatHandlerAnchor>(ServiceLifetime.Singleton);
     }
 }

@@ -76,8 +76,8 @@ internal sealed class NamedPipeClient : IAsyncDisposable
             connection.RawMessageReceived += (_, data) => RawMessageReceived?.Invoke(this, data);
             connection.Disconnected += OnDisconnected;
 
-            await connection.StartReadingAsync(cts.Token);
             isConnected = true;
+            _ = connection.StartReadingAsync(cancellationToken);
 
             return connection.Id;
         }

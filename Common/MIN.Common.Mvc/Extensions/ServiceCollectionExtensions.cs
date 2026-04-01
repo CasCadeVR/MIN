@@ -3,8 +3,8 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Serialization.Contracts;
 using MIN.Core.Serialization.Json;
+using MIN.Core.Serialization.Json.Services;
 
 namespace MIN.Common.Mvc.Extensions;
 
@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
     /// <typeparam name="TMarker">Тип-маркер из сборки, содержащей сообщения</typeparam>
     /// <param name="services">Коллекция сервисов</param>
     /// <returns>Коллекция сервисов для цепочки вызовов</returns>
-    public static IServiceCollection RegisterMessagesFromAnchor<TMarker>(this IServiceCollection services)
+    public static void RegisterMessagesFromAnchor<TMarker>(this IServiceCollection services)
     {
         var assembly = typeof(TMarker).Assembly;
         var messageTypes = assembly.GetTypes()
@@ -28,25 +28,11 @@ public static class ServiceCollectionExtensions
 
         if (messageTypes.Count == 0)
         {
-            return services;
+            return;
         }
 
-        services.AddSingleton(sp =>
-        {
-            var registry = sp.GetRequiredService<IDeserializerRegistry>();
-
-            foreach (var type in messageTypes)
-            {
-                var instance = (IMessage)Activator.CreateInstance(type)!;
-                var tag = instance.TypeTag;
-                var deserializer = CreateDeserializer(type);
-                registry.RegisterDeserializer(tag, deserializer);
-            }
-
-            return registry;
-        });
-
-        return services;
+        services.AddSingleton<IEnumerable<Type>>(messageTypes);
+        services.AddHostedService<JsonDeserializerInitializer>();
     }
 
     /// <summary>

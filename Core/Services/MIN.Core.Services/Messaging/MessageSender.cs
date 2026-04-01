@@ -17,7 +17,7 @@ namespace MIN.Core.Services.Messaging
         private readonly IMessageSerializer serializer;
         private readonly ILoggerProvider logger;
         private readonly IRoomRegistry roomRegistry;
-        private readonly IParticipantRegistry participantService;
+        private readonly IParticipantRegistry participantRegistry;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="MessageSender"/>
@@ -27,14 +27,14 @@ namespace MIN.Core.Services.Messaging
             IMessageEncryptor encryptor,
             ILoggerProvider logger,
             IRoomRegistry roomRegistry,
-            IParticipantRegistry participantService)
+            IParticipantRegistry participantRegistry)
         {
             this.transport = transport;
             this.serializer = serializer;
             this.encryptor = encryptor;
             this.logger = logger;
             this.roomRegistry = roomRegistry;
-            this.participantService = participantService;
+            this.participantRegistry = participantRegistry;
         }
 
         async Task IMessageSender.SendAsync(IMessage message, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ namespace MIN.Core.Services.Messaging
             var participants = roomRegistry.GetCurrentParticipants(roomId);
 
             var tasks = participants
-                .Select(x => participantService.GetConnectionIdFromParticipantId(x.Id))
+                .Select(x => participantRegistry.GetConnectionIdFromParticipantId(x.Id))
                 .Where(c => excludeConnections == null || !excludeConnections.Contains(c))
                 .Select(connectionId => transport.SendAsync(EncryptData(message, serialized, connectionId),
                     roomId, connectionId, cancellationToken));
@@ -65,7 +65,7 @@ namespace MIN.Core.Services.Messaging
 
             if (message.RequiresEncryption)
             {
-                if (!participantService.TryGetParticipantInfo(connectionId, out var recipient))
+                if (!participantRegistry.TryGetParticipantInfo(connectionId, out var recipient))
                 {
                     throw new InvalidOperationException($"No participant info for connection {connectionId}");
                 }

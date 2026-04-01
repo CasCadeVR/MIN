@@ -27,6 +27,11 @@ public sealed class HandshakeAckMessage : BaseMessage
     public byte[] PublicKey { get; set; } = null!;
 
     /// <summary>
+    /// Инициализирует новый экземляр <see cref=""HandshakeAckMessage/>
+    /// </summary>
+    public HandshakeAckMessage() { }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="HandshakeAckMessage"/>
     /// </summary>
     /// <param name="handshakeMessage">Запрос на Handshake</param>

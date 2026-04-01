@@ -41,7 +41,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
 
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         isListening = true;
-        await Task.Run(() => ListenAsync(cts.Token), cts.Token);
+        _ = ListenAsync(cts.Token);
     }
 
     private async Task ListenAsync(CancellationToken cancellationToken)

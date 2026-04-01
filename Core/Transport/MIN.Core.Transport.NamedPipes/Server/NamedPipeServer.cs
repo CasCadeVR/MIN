@@ -58,7 +58,9 @@ internal sealed class NamedPipeServer : IAsyncDisposable
 
         isRunning = true;
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        await Task.Run(() => AcceptClientsAsync(cts.Token), cts.Token);
+        _ = AcceptClientsAsync(cts.Token);
+
+        await Task.CompletedTask;
     }
 
     /// <summary>
@@ -154,7 +156,7 @@ internal sealed class NamedPipeServer : IAsyncDisposable
                     OnConnectionDisconnected(connection, reason);
                 };
 
-                await connection.StartReadingAsync(cancellationToken);
+                _ = connection.StartReadingAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {

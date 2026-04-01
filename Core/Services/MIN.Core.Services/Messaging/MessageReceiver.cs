@@ -19,7 +19,7 @@ namespace MIN.Core.Services.Messaging
         private readonly IMessageDispatcher dispatcher;
         private readonly IMessageEncryptor encryptor;
         private readonly ILoggerProvider logger;
-        private readonly IParticipantRegistry participantService;
+        private readonly IParticipantRegistry participantRegistry;
         private CancellationTokenSource? cts;
 
         /// <summary>
@@ -30,14 +30,14 @@ namespace MIN.Core.Services.Messaging
             IMessageDispatcher dispatcher,
             IMessageEncryptor encryptor,
             ILoggerProvider logger,
-            IParticipantRegistry participantService)
+            IParticipantRegistry participantRegistry)
         {
             this.transport = transport;
             this.serializer = serializer;
             this.dispatcher = dispatcher;
             this.encryptor = encryptor;
             this.logger = logger;
-            this.participantService = participantService;
+            this.participantRegistry = participantRegistry;
         }
 
         public event EventHandler<MessageReceivedEventArgs>? MessageReceived;
@@ -53,7 +53,7 @@ namespace MIN.Core.Services.Messaging
         {
             try
             {
-                participantService.TryGetParticipantInfo(e.ConnectionId, out var participantInfo);
+                participantRegistry.TryGetParticipantInfo(e.ConnectionId, out var participantInfo);
 
                 byte[] plainData;
                 var body = encryptor.RemoveEncryptionHeader(e.Data);
