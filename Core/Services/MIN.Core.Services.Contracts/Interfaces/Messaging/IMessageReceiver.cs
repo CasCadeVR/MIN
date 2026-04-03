@@ -8,7 +8,7 @@ namespace MIN.Core.Services.Contracts.Interfaces.Messaging;
 public interface IMessageReceiver
 {
     /// <summary>
-    /// Собыите прихода сообщения
+    /// Событие прихода сообщения
     /// </summary>
     event EventHandler<MessageReceivedEventArgs> MessageReceived;
 

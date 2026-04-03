@@ -11,9 +11,6 @@ public sealed class ParticipantJoinedMessage : BaseMessage
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.ParticipantJoined;
 
-    /// <inheritdoc />
-    public override bool RequiresEncryption => true;
-
     /// <summary>
     /// Идентификатор комнаты.
     /// </summary>

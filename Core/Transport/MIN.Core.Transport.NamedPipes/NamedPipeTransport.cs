@@ -14,9 +14,10 @@ namespace MIN.Core.Transport.NamedPipes;
 /// </summary>
 public sealed class NamedPipeTransport : ITransport
 {
+    private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, NamedPipeServer> servers = new();
     private readonly ConcurrentDictionary<Guid, NamedPipeClient> clients = new();
-    private readonly ILoggerProvider logger;
+    private readonly ConcurrentDictionary<Guid, Guid> serverHostingConnectionIds = new();
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NamedPipeTransport"/>
@@ -46,6 +47,8 @@ public sealed class NamedPipeTransport : ITransport
 
         // TODO: максимальное количество участников нужно получить из конфигурации
         var server = new NamedPipeServer(namedPipeEndpoint, TransportConstants.TheoraticallyPossibleMaximumRoomSize, logger);
+        servers[roomId] = server;
+        serverHostingConnectionIds[roomId] = Guid.NewGuid();
 
         server.RawMessageReceived += (_, args) =>
             RawMessageReceived?.Invoke(this, new RawMessageReceivedEventArgs(args.Data, roomId, args.ConnectionId));
@@ -53,7 +56,6 @@ public sealed class NamedPipeTransport : ITransport
         server.ConnectionDisconnected += (_, args) =>
             ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, args.ConnectionId, false, args.Reason));
 
-        servers[roomId] = server;
         await server.StartAsync(cancellationToken);
         logger.Log($"Сервер стартанул комнату с id {roomId} на pipe {namedPipeEndpoint.PipeName}");
     }
@@ -74,21 +76,27 @@ public sealed class NamedPipeTransport : ITransport
             throw new ArgumentException("Endpoint должен быть NamedPipeEndpoint", nameof(endpoint));
         }
 
+        if (namedPipeEndpoint.MachineName == Environment.MachineName)
+        {
+            var serverConnectionId = GetServerHostingConnectionId(roomId);
+            ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, serverConnectionId, true));
+            return serverConnectionId;
+        }
+
         if (clients.TryGetValue(roomId, out var existingClient) && existingClient.IsConnected)
         {
             return existingClient.ConnectionId;
         }
 
         var client = new NamedPipeClient(namedPipeEndpoint, logger);
+        var connectionId = await client.ConnectAsync(timeoutMs, cancellationToken);
+        clients[roomId] = client;
 
         client.RawMessageReceived += (_, data) =>
-            RawMessageReceived?.Invoke(this, new RawMessageReceivedEventArgs(data, client.ConnectionId, roomId));
+            RawMessageReceived?.Invoke(this, new RawMessageReceivedEventArgs(data, roomId, client.ConnectionId));
 
         client.Disconnected += (_, reason) =>
             ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, client.ConnectionId, false, reason));
-
-        clients[roomId] = client;
-        var connectionId = await client.ConnectAsync(timeoutMs, cancellationToken);
 
         ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, connectionId, true));
         return connectionId;
@@ -103,25 +111,36 @@ public sealed class NamedPipeTransport : ITransport
         }
         else
         {
-            logger.Log($"Попытка остоединиться от соеднинения {connectionId} для комнаты {roomId}, которой не нашлось");
+            logger.Log($"Попытка отсоединиться от соеднинения {connectionId} для комнаты {roomId}, которой не нашлось");
         }
     }
 
     async Task ITransport.SendAsync(byte[] data, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
     {
-        if (servers.TryGetValue(roomId, out var server))
+        if (IsServerHostingConnectionId(roomId, connectionId))
         {
-            await server.SendToConnectionAsync(data, connectionId, cancellationToken);
-            return;
-        }
+            if (!servers.TryGetValue(roomId, out var server))
+            {
+                throw new InvalidOperationException($"Нет сервера для комнаты {roomId} с идентификатором {connectionId}");
+            }
 
-        if (clients.TryGetValue(roomId, out var client) && client.ConnectionId == connectionId)
+            if (IsServerHostingConnectionId(roomId, connectionId))
+            {
+                RawMessageReceived?.Invoke(this, new RawMessageReceivedEventArgs(data, roomId, connectionId));
+            }
+            else
+            {
+                await server.SendToConnectionAsync(data, connectionId, cancellationToken);
+            }
+        }
+        else if (clients.TryGetValue(roomId, out var client) && client.ConnectionId == connectionId)
         {
             await client.SendAsync(data, cancellationToken);
-            return;
         }
-
-        throw new InvalidOperationException($"Нет соединений для комнаты {roomId} с идентификатором {connectionId}");
+        else
+        {
+            throw new InvalidOperationException($"Нет соединений для комнаты {roomId} с идентификатором {connectionId}");
+        }
     }
 
     async Task ITransport.BroadcastAsync(byte[] data, Guid roomId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
@@ -140,4 +159,19 @@ public sealed class NamedPipeTransport : ITransport
 
         throw new InvalidOperationException($"Нет соединений для комнаты {roomId}");
     }
+
+    /// <inheritdoc />
+    public Guid GetServerHostingConnectionId(Guid roomId)
+    {
+        if (serverHostingConnectionIds.TryGetValue(roomId, out var connectionId))
+        {
+            return connectionId;
+        }
+        throw new InvalidOperationException($"No server connection found for roomId {roomId}");
+    }
+
+    /// <inheritdoc />
+    public bool IsServerHostingConnectionId(Guid roomId, Guid connectionId)
+        => serverHostingConnectionIds.TryGetValue(roomId, out var serverConnectionId)
+            && serverConnectionId == connectionId;
 }

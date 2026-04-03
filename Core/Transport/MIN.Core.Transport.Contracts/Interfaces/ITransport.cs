@@ -28,7 +28,7 @@ public interface ITransport
     Task BroadcastAsync(byte[] data, Guid roomId, IEnumerable<Guid>? excludeConnections = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Запустить сервер подключений для указанной комнаты (режим сервера)
+    /// Запустить сервер подключений для указанной комнаты
     /// </summary>
     Task StartHostingAsync(Guid roomId, IEndpoint endpoint, CancellationToken cancellationToken = default);
 
@@ -38,7 +38,7 @@ public interface ITransport
     Task StopHostingAsync(Guid roomId);
 
     /// <summary>
-    /// Подключиться к удалённой комнате (режим клиента)
+    /// Подключиться к удалённой комнате
     /// </summary>
     Task<Guid> ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
 
@@ -46,4 +46,14 @@ public interface ITransport
     /// Отключиться от указанной комнаты
     /// </summary>
     Task DisconnectAsync(Guid roomId, Guid connectionId);
+
+    /// <summary>
+    /// Получить идентификатор соединения к своему серверу
+    /// </summary>
+    Guid GetServerHostingConnectionId(Guid roomId);
+
+    /// <summary>
+    /// Является ли идентификатор соединения серверным у указанной комнаты
+    /// </summary>
+    bool IsServerHostingConnectionId(Guid roomId, Guid connectionId);
 }

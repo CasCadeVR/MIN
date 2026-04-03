@@ -115,23 +115,15 @@ namespace MIN.Core.Cryptography.Storage
         {
             ArgumentNullException.ThrowIfNull(publicKey);
 
-            await partnersLock.WaitAsync(cancellationToken);
-            try
-            {
-                var partners = await LoadPartnerPublicKeysAsync(cancellationToken);
-                partners[partnerId] = publicKey;
+            var partners = await LoadPartnerPublicKeysAsync(cancellationToken);
+            partners[partnerId] = publicKey;
 
-                var stringDict = partners.ToDictionary(
-                    kvp => kvp.Key.ToString(),
-                    kvp => Convert.ToBase64String(kvp.Value));
+            var stringDict = partners.ToDictionary(
+                kvp => kvp.Key.ToString(),
+                kvp => Convert.ToBase64String(kvp.Value));
 
-                var json = JsonSerializer.Serialize(stringDict, jsonOptions);
-                await File.WriteAllTextAsync(partnersPath, json, cancellationToken);
-            }
-            finally
-            {
-                partnersLock.Release();
-            }
+            var json = JsonSerializer.Serialize(stringDict, jsonOptions);
+            await File.WriteAllTextAsync(partnersPath, json, cancellationToken);
         }
 
         async Task<byte[]?> IKeyStorage.LoadPartnerPublicKeyAsync(Guid partnerId, CancellationToken cancellationToken)

@@ -64,7 +64,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
                 pipe = NamedPipeServerStreamAcl.Create(
                     pipeName,
                     PipeDirection.InOut,
-                    1,
+                    2,
                     PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous,
                     0, 0,

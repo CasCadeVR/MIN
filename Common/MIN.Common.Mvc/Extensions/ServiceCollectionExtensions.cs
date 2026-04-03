@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Serialization.Json;
-using MIN.Core.Serialization.Json.Services;
 
 namespace MIN.Common.Mvc.Extensions;
 
@@ -19,7 +18,7 @@ public static class ServiceCollectionExtensions
     /// <typeparam name="TMarker">Тип-маркер из сборки, содержащей сообщения</typeparam>
     /// <param name="services">Коллекция сервисов</param>
     /// <returns>Коллекция сервисов для цепочки вызовов</returns>
-    public static void RegisterMessagesFromAnchor<TMarker>(this IServiceCollection services)
+    public static void RegisterMultipleMessagesFromAnchor<TMarker>(this IServiceCollection services, ServiceLifetime lifetime)
     {
         var assembly = typeof(TMarker).Assembly;
         var messageTypes = assembly.GetTypes()
@@ -31,8 +30,10 @@ public static class ServiceCollectionExtensions
             return;
         }
 
-        services.AddSingleton<IEnumerable<Type>>(messageTypes);
-        services.AddHostedService<JsonDeserializerInitializer>();
+        foreach (var type in messageTypes)
+        {
+            services.TryAddEnumerable(new ServiceDescriptor(typeof(IMessage), type, lifetime));
+        }
     }
 
     /// <summary>

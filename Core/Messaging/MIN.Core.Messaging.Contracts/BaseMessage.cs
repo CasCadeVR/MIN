@@ -18,5 +18,8 @@ public abstract class BaseMessage : IMessage
     public abstract MessageTypeTag TypeTag { get; }
 
     /// <inheritdoc />
-    public abstract bool RequiresEncryption { get; }
+    public virtual bool IsPublic { get; } = true;
+
+    /// <inheritdoc />
+    public virtual bool RequiresEncryption { get; } = true;
 }

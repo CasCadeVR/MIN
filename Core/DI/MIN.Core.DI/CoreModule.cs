@@ -10,9 +10,11 @@ using MIN.Core.Handlers.Dispatcher;
 using MIN.Core.Handlers.Handlers;
 using MIN.Core.Messaging;
 using MIN.Core.Serialization.Json;
-using MIN.Core.Services;
+using MIN.Core.Serialization.Json.Services;
+using MIN.Core.Services.ConnectionRegistries;
 using MIN.Core.Services.Messaging;
 using MIN.Core.Services.Rooms;
+using MIN.Core.Services.Stores;
 using MIN.Core.Transport.NamedPipes;
 
 namespace MIN.Core.DI;
@@ -31,19 +33,25 @@ public class CoreModule : Module
 
         services.RegisterAsImplementedInterfaces<JsonDeserializerRegistry>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<JsonMessageSerializer>(ServiceLifetime.Singleton);
+        services.AddHostedService<JsonDeserializerInitializer>();
 
         services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<KeyProvider>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<NamedPipeTransport>(ServiceLifetime.Singleton);
 
-        services.RegisterAsImplementedInterfaces<ParticipantRegistry>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<RoomConnectionRegistry>(ServiceLifetime.Singleton);
+
+        services.RegisterAsImplementedInterfaces<MessageStore>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<ParticipantStore>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<RoomStore>(ServiceLifetime.Singleton);
+
         services.RegisterAsImplementedInterfaces<MessageReceiver>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageSender>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<RoomConnector>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ConnectionMonitor>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<RoomRegistry>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<RoomHoster>(ServiceLifetime.Singleton);
 
         services.RegisterMultipleInterfacesAssignableTo<IMessageHandler, ICoreHandlerAnchor>(ServiceLifetime.Singleton);
@@ -51,6 +59,6 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<InMemoryEventBus>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageDispatcher>(ServiceLifetime.Singleton);
 
-        services.RegisterMessagesFromAnchor<ICoreMessagingAnchor>();
+        services.RegisterMultipleMessagesFromAnchor<ICoreMessagingAnchor>(ServiceLifetime.Singleton);
     }
 }

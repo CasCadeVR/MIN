@@ -1,6 +1,5 @@
 ﻿using MIN.Core.Entities.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Entities;
 
@@ -39,14 +38,9 @@ public class Room : IRoomData
     public ParticipantInfo HostParticipant { get; set; } = null!;
 
     /// <summary>
-    /// Получить историю чата
-    /// </summary>
-    public List<IMessage> ChatHistory { get; private set; } = new();
-
-    /// <summary>
     /// Получить текущих участников комнаты
     /// </summary>
-    public List<IParticipantData> CurrentParticipants { get; private set; } = new();
+    public List<ParticipantInfo> CurrentParticipants { get; set; } = new();
 
     /// <summary>
     /// Заполнена ли комната

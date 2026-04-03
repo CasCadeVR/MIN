@@ -1,5 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Serialization.Contracts;
 using MIN.Discovery.Events;
 using MIN.Discovery.Messaging;
@@ -8,6 +7,8 @@ using MIN.Discovery.Transport.Contracts;
 using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
+using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 
 namespace MIN.Discovery.Services
 {
@@ -16,12 +17,11 @@ namespace MIN.Discovery.Services
     {
         private readonly IDiscoveryTransport discoveryTransport;
         private readonly IMessageSerializer serializer;
+        private readonly IRoomStore roomStore;
         private readonly IEventBus eventBus;
-        private readonly ILocalNetworkComputerProvider computerProvider;
         private readonly ILoggerProvider logger;
-        private readonly string localMachineName;
         private CancellationTokenSource? cts;
-        private RoomInfo? hostingRoomInfo;
+        private Guid roomId;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="DiscoveryService"/>
@@ -29,29 +29,27 @@ namespace MIN.Discovery.Services
         public DiscoveryService(
             IDiscoveryTransport discoveryTransport,
             IMessageSerializer serializer,
+            IRoomStore roomStore,
             IEventBus eventBus,
-            ILocalNetworkComputerProvider computerProvider,
             ILoggerProvider logger)
         {
             this.discoveryTransport = discoveryTransport;
             this.serializer = serializer;
+            this.roomStore = roomStore;
             this.eventBus = eventBus;
-            this.computerProvider = computerProvider;
             this.logger = logger;
-
-            localMachineName = Environment.MachineName;
         }
 
-        async Task IDiscoveryService.StartDiscoveryAsync(RoomInfo roomInfo, CancellationToken cancellationToken)
+        async Task IDiscoveryService.StartDiscoveryAsync(Guid roomId, CancellationToken cancellationToken)
         {
             if (cts != null)
             {
                 return;
             }
 
-            hostingRoomInfo = roomInfo;
+            this.roomId = roomId;
             cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            discoveryTransport.MessageReceived += OnMessageReceived;
+            discoveryTransport.MessageReceived += OnRequestReceived;
             await discoveryTransport.StartListeningAsync(cts.Token);
         }
 
@@ -62,33 +60,57 @@ namespace MIN.Discovery.Services
                 return;
             }
             cts.Cancel();
-            discoveryTransport.MessageReceived -= OnMessageReceived;
+            discoveryTransport.MessageReceived -= OnRequestReceived;
             await discoveryTransport.StopListeningAsync();
             cts.Dispose();
             cts = null;
         }
 
-        async Task IDiscoveryService.DiscoverRoomsAsync(string? searchZone, TimeSpan timeout, CancellationToken cancellationToken)
+        async Task IDiscoveryService.DiscoverRoomsAsync(IEnumerable<string>? computers, TimeSpan timeout, CancellationToken cancellationToken)
         {
+            ArgumentNullException.ThrowIfNull(computers);
+
             var request = new DiscoveryRequestMessage();
             var requestData = serializer.Serialize(request);
 
-            discoveryTransport.MessageReceived += OnMessageReceived;
+            var localMachineName = Environment.MachineName;
+
+            if (!computers.Any())
+            {
+                logger.Log("No remote computers to discover");
+                return;
+            }
+
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(timeout);
+
+            var completionSource = new TaskCompletionSource<bool>();
+
+            void OnResponseReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e)
+            {
+                try
+                {
+                    var message = serializer.Deserialize(e.Data);
+                    if (message is DiscoveryResponseMessage response)
+                    {
+                        eventBus.PublishAsync(new RoomDiscoveredEvent(response.Room), cts.Token);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Log($"Error parsing discovery response: {ex.Message}");
+                }
+            }
+
+            discoveryTransport.MessageReceived += OnResponseReceived;
 
             try
             {
-                var computers = computerProvider.GetLocalNetworkMachineNames(searchZone
-                    ?? throw new ArgumentNullException("Для discovery нужен список имён компьютеров"));
-
                 foreach (var computer in computers)
                 {
-                    if (string.Equals(computer, localMachineName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
                     try
                     {
-                        await discoveryTransport.SendAsync(requestData, computer, timeout, cancellationToken);
+                        await discoveryTransport.SendAsync(requestData, computer, timeout, cts.Token);
                     }
                     catch (Exception ex)
                     {
@@ -96,35 +118,46 @@ namespace MIN.Discovery.Services
                     }
                 }
             }
-            catch (Exception ex)
+            catch (OperationCanceledException) { }
+            finally
             {
-                logger.Log($"Ошибка в пробеге по комьютерам в обнаружении: {ex.Message}");
+                discoveryTransport.MessageReceived -= OnResponseReceived;
             }
         }
 
-        private void OnMessageReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e)
+        private void OnRequestReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e)
         {
             try
             {
                 var message = serializer.Deserialize(e.Data);
-                if (message is DiscoveryResponseMessage response)
-                {
-                    eventBus.PublishAsync(new RoomDiscoveredEvent(response.Room), cts!.Token);
-                    discoveryTransport.MessageReceived -= OnMessageReceived;
-                }
-                else if (message is DiscoveryRequestMessage _)
-                {
-                    if (hostingRoomInfo == null)
-                    {
-                        logger.Log($"Получил запрос на обнаружение, но комната не была установлена", LogLevel.Warning);
-                        return;
-                    }
 
-                    var discoveryResponse = new DiscoveryResponseMessage { Room = hostingRoomInfo };
-                    var data = serializer.Serialize(discoveryResponse);
-
-                    discoveryTransport.ResponseWithData(data, timeout: null, cts!.Token);
+                if (message is not DiscoveryRequestMessage _)
+                {
+                    return;
                 }
+
+                var room = roomStore.GetRoom(roomId);
+
+                if (room == null)
+                {
+                    logger.Log($"Получил запрос на обнаружение, но комната не была установлена", LogLevel.Warning);
+                    return;
+                }
+
+                var hostingRoomInfo = new RoomInfo()
+                {
+                    Id = room.Id,
+                    Name = room.Name,
+                    HostParticipant = room.HostParticipant,
+                    ParticipantCount = room.ParticipantCount,
+                    IsActive = room.IsActive,
+                    MaximumParticipants = room.MaximumParticipants,
+                };
+
+                var discoveryResponse = new DiscoveryResponseMessage { Room = hostingRoomInfo };
+                var data = serializer.Serialize(discoveryResponse);
+
+                discoveryTransport.ResponseWithData(data, timeout: null, cts!.Token);
             }
             catch (Exception ex)
             {

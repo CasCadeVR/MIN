@@ -6,7 +6,8 @@ using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Stateless.RoomRelated;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -15,16 +16,27 @@ namespace MIN.Core.Handlers.Handlers;
 /// </summary>
 internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
 {
-    private readonly IRoomRegistry roomRegistry;
+    private readonly IRoomStore roomStore;
+    private readonly IParticipantStore participantStore;
+    private readonly IMessageStore messageStore;
+    private readonly IRoomConnectionRegistry roomConnectionRegistry;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
-    public RoomInfoHandler(IRoomRegistry roomRegistry, IEventBus eventBus, ILoggerProvider logger)
+    public RoomInfoHandler(IRoomStore roomStore,
+        IParticipantStore participantStore,
+        IMessageStore messageStore,
+        IRoomConnectionRegistry roomConnectionRegistry,
+        IEventBus eventBus,
+        ILoggerProvider logger)
     {
-        this.roomRegistry = roomRegistry;
+        this.roomStore = roomStore;
+        this.participantStore = participantStore;
+        this.messageStore = messageStore;
+        this.roomConnectionRegistry = roomConnectionRegistry;
         this.eventBus = eventBus;
         this.logger = logger;
     }
@@ -38,10 +50,15 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
     {
         if (message is RoomInfoRequestMessage roomInfoRequest)
         {
-            var room = roomRegistry.GetRoom(roomInfoRequest.RoomId);
+            var room = roomStore.GetRoom(roomInfoRequest.RoomId);
+            var participants = participantStore.GetParticipants(roomInfoRequest.RoomId).ToList();
+            var lastMessages = messageStore.GetHistory(roomInfoRequest.RoomId).ToList();
+
             var response = new RoomInfoResponseMessage()
             {
-                Room = room
+                Room = room,
+                Participants = participants,
+                RecentMessages = lastMessages
             };
 
             logger.Log($"Отправил информацию о комнате с id {roomInfoRequest.RoomId}");
@@ -50,7 +67,14 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
         }
         else if (message is RoomInfoResponseMessage roomInfoResponse)
         {
-            roomRegistry.RegisterRoom(context.ConnectionId, roomInfoResponse.Room);
+            roomConnectionRegistry.Associate(context.ConnectionId, roomInfoResponse.Room.Id);
+            roomStore.Add(roomInfoResponse.Room);
+
+            foreach (var roomMessage in roomInfoResponse.RecentMessages)
+            {
+                messageStore.AddMessage(context.RoomId, roomMessage);
+            }
+
             logger.Log($"Получил информацию о комнате с id {roomInfoResponse.Room.Id}");
 
             await eventBus.PublishAsync(new RoomStateChangedEvent()

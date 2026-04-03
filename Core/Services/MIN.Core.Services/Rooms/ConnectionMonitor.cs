@@ -1,7 +1,8 @@
-﻿using System.Threading;
-using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -13,22 +14,25 @@ namespace MIN.Core.Services.Rooms
     {
         private readonly ITransport transport;
         private readonly IEventBus eventBus;
-        private readonly IRoomRegistry roomRegistry;
+        private readonly IRoomConnectionRegistry roomConnectionRegistry;
         private readonly ILoggerProvider logger;
         private CancellationTokenSource? cts;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="ConnectionMonitor"/>
         /// </summary>
-        public ConnectionMonitor(ITransport transport, IEventBus eventBus, IRoomRegistry roomRegistry, ILoggerProvider logger)
+        public ConnectionMonitor(ITransport transport,
+            IEventBus eventBus,
+            IRoomConnectionRegistry roomConnectionRegistry,
+            ILoggerProvider logger)
         {
             this.transport = transport;
             this.eventBus = eventBus;
-            this.roomRegistry = roomRegistry;
+            this.roomConnectionRegistry = roomConnectionRegistry;
             this.logger = logger;
+
             cts = new CancellationTokenSource();
             transport.ConnectionStateChanged += OnConnectionStateChanged;
-
         }
 
         private async void OnConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
@@ -39,7 +43,7 @@ namespace MIN.Core.Services.Rooms
 
                 try
                 {
-                    roomId = roomRegistry.GetRoomIdByConnectionId(e.ConnectionId);
+                    roomId = roomConnectionRegistry.GetRoomIdByConnectionId(e.ConnectionId);
                 }
                 catch
                 {

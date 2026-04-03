@@ -5,9 +5,9 @@ using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
-using MIN.Core.Messaging.Contracts;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Messaging.RoomRelated;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
@@ -27,7 +27,9 @@ namespace MIN.Desktop
     public partial class ChatForm : StyledForm
     {
         private readonly IChatService chatService;
-        private readonly IRoomRegistry roomRegistry;
+        private readonly IMessageStore messageStore;
+        private readonly IParticipantStore participantStore;
+        private readonly IRoomStore roomStore;
         private readonly IEventBus eventBus;
         private readonly INotificationService notificationService;
         private readonly ILoggerProvider logger;
@@ -49,7 +51,9 @@ namespace MIN.Desktop
 
         public ChatForm(
              IChatService chatService,
-             IRoomRegistry roomRegistry,
+             IMessageStore messageStore,
+             IParticipantStore participantStore,
+             IRoomStore roomStore,
              IEventBus eventBus,
              INotificationService notificationService,
              ILoggerProvider logger,
@@ -60,8 +64,10 @@ namespace MIN.Desktop
             InitializeComponent();
             SendLoadingMessage();
 
-            this.roomRegistry = roomRegistry;
+            this.roomStore = roomStore;
             this.chatService = chatService;
+            this.messageStore = messageStore;
+            this.participantStore = participantStore;
             this.eventBus = eventBus;
             this.notificationService = notificationService;
             this.logger = logger;
@@ -83,24 +89,19 @@ namespace MIN.Desktop
 
             SubscribeToEvents();
 
-            this.room = this.roomRegistry.TryGetRoom(this.roomId, out var room) ? room : null;
-
-            if (this.room != null)
-            {
-                UpdateStats();
-                UpdateChatFlow();
-            }
+            this.room = this.roomStore.TryGetRoom(this.roomId, out var room) ? room : null;
         }
 
         private void SubscribeToEvents()
         {
-            eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnMessageReceived);
+            eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived);
+            eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived);
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
             eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
         }
 
-        private async Task OnMessageReceived(ChatTextMessageReceivedEvent eventMessage, CancellationToken ct)
+        private async Task OnChatTextMessageReceived(ChatTextMessageReceivedEvent eventMessage, CancellationToken ct)
         {
             if (eventMessage.RoomId != roomId)
             {
@@ -110,6 +111,23 @@ namespace MIN.Desktop
             uiContext.Post(_ =>
             {
                 AddMessageToChatFlow(eventMessage.Message);
+                NotifyIfNeeded(eventMessage.Message.Content, eventMessage.Sender.Name);
+            }, null);
+            await Task.CompletedTask;
+        }
+
+        private async Task OnRoomStateChangedEventReceived(RoomStateChangedEvent eventMessage, CancellationToken ct)
+        {
+            if (eventMessage.Room.Id != roomId)
+            {
+                return;
+            }
+
+            uiContext.Post(_ =>
+            {
+                room = eventMessage.Room;
+                UpdateStats();
+                UpdateChatFlow();
             }, null);
             await Task.CompletedTask;
         }
@@ -199,7 +217,6 @@ namespace MIN.Desktop
 
             Text = $"MIN - Комната {room.Name}";
             Title.Text = $"Комната {room.Name}";
-            participantsInfo.Text = $"{room.CurrentParticipants.Count}/{room.MaximumParticipants}";
 
             var isHost = room.HostParticipant?.Id == localParticipant.Id;
             hostName.Text = isHost ? "Ты" : room.HostParticipant?.Name ?? "Неизвестно";
@@ -228,12 +245,16 @@ namespace MIN.Desktop
                 return;
             }
 
-            foreach (var participant in room.CurrentParticipants)
+            var currentParticipants = participantStore.GetParticipants(roomId);
+
+            foreach (var participant in currentParticipants)
             {
                 var card = new ParticipantCard(new ParticipantInfo(participant), room);
                 card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
                 participantsFlow.Controls.Add(card);
             }
+
+            participantsInfo.Text = $"{currentParticipants.Count()}/{room.MaximumParticipants}";
         }
 
         private void UpdateChatFlow()
@@ -245,18 +266,17 @@ namespace MIN.Desktop
                 return;
             }
 
-            foreach (var storedMessage in room.ChatHistory)
+            var chatHistory = messageStore.GetHistory(roomId);
+
+            foreach (var storedMessage in chatHistory)
             {
-                if (storedMessage is ChatTextMessage chatMessage)
-                {
-                    AddMessageToChatFlow(chatMessage);
-                }
+                AddMessageToChatFlow(storedMessage);
             }
         }
 
         private void SendLoadingMessage()
         {
-            var loadingMessage = new ChatTextMessage
+            var loadingMessage = new SystemTextMessage
             {
                 Content = "Загрузка...",
             };
@@ -265,33 +285,33 @@ namespace MIN.Desktop
 
         private void SendParticipantJoinedMessage(ParticipantInfo participant)
         {
-            var systemMessage = new ChatTextMessage
+            var systemMessage = new SystemTextMessage
             {
                 Content = $"Участник {participant.Name} зашёл в комнату",
             };
             AddMessageToChatFlow(systemMessage);
-            NotifyIfNeeded(systemMessage);
+            NotifyIfNeeded(systemMessage.Content);
         }
 
         private void SendParticipantLeftMessage(ParticipantInfo participant)
         {
-            var systemMessage = new ChatTextMessage
+            var systemMessage = new SystemTextMessage
             {
                 Content = $"Участник {participant.Name} покинул комнату",
             };
             AddMessageToChatFlow(systemMessage);
-            NotifyIfNeeded(systemMessage);
+            NotifyIfNeeded(systemMessage.Content);
         }
 
-        private void NotifyIfNeeded(ChatTextMessage message)
+        private void NotifyIfNeeded(string content, string? senderName = null)
         {
             if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
             {
-                notificationService.Notify(message.Content, room?.Name ?? "Комната", message.Sender.Name);
+                notificationService.Notify(content, room?.Name ?? "Комната", senderName);
             }
         }
 
-        private void AddMessageToChatFlow(ChatTextMessage message)
+        private void AddMessageToChatFlow(IMessage message)
         {
             if (InvokeRequired)
             {
@@ -305,35 +325,42 @@ namespace MIN.Desktop
                 var row = new ChatMessageRow();
                 Control rowControl;
 
-                if (message.TypeTag == MessageTypeTag.ChatTextMessage)
+                switch (message)
                 {
-                    var isSelfMessage = message.Sender.Id == localParticipant.Id;
-                    var isHostMessage = room?.HostParticipant?.Id == message.Sender.Id;
+                    case ChatTextMessage chatTextMessage:
+                        var isSelfMessage = chatTextMessage.Sender.Id == localParticipant.Id;
+                        var isHostMessage = room?.HostParticipant?.Id == chatTextMessage.Sender.Id;
 
-                    var minutesPassed = 0;
-                    if (lastMessage != null && lastMessage.Sender.Id == message.Sender.Id)
-                    {
-                        minutesPassed = (int)(message.Timestamp - lastMessage.Timestamp).TotalMinutes;
-                        minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
-                    }
+                        var minutesPassed = 0;
+                        if (lastMessage != null && lastMessage.Sender.Id == chatTextMessage.Sender.Id)
+                        {
+                            minutesPassed = (int)(chatTextMessage.Timestamp - lastMessage.Timestamp).TotalMinutes;
+                            minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
+                        }
 
-                    rowControl = new ChatMessageCard(message, localParticipant, isHostMessage, removeHeaders: isSelfMessage)
-                    {
-                        Anchor = isSelfMessage ? AnchorStyles.Right : AnchorStyles.Left,
-                        Margin = new Padding(20, 0, 20, 0)
-                    };
+                        rowControl = new ChatMessageCard(chatTextMessage, localParticipant, isHostMessage, removeHeaders: isSelfMessage)
+                        {
+                            Anchor = isSelfMessage ? AnchorStyles.Right : AnchorStyles.Left,
+                            Margin = new Padding(20, 0, 20, 0)
+                        };
 
-                    row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
-                    lastMessage = message;
-                }
-                else
-                {
-                    rowControl = new PrimaryLabel
-                    {
-                        Text = message.Content,
-                        Anchor = AnchorStyles.None,
-                        AutoSize = true
-                    };
+                        row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
+                        lastMessage = chatTextMessage;
+                        break;
+
+                    case SystemTextMessage systemTextMessage:
+                        rowControl = new PrimaryLabel
+                        {
+                            Text = systemTextMessage.Content,
+                            Anchor = AnchorStyles.None,
+                            AutoSize = true
+                        };
+
+                        row.Height = rowControl.Height;
+                        break;
+
+                    default:
+                        return;
                 }
 
                 row.Width = chatFlow.Width;

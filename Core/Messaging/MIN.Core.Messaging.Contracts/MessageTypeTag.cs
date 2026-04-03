@@ -117,6 +117,11 @@ public enum MessageTypeTag : byte
     /// </summary>
     MessageReaction = 70,
 
+    /// <summary>
+    /// Системные сообщения (участник зашёл, загрузка)
+    /// </summary>
+    SystemMessage = 71,
+
     // ===== Сообщения управления комнатой (96-127) =====
 
     /// <summary>

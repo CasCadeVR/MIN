@@ -2,7 +2,10 @@
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
+using MIN.Core.Messaging.RoomRelated;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
@@ -12,6 +15,7 @@ using MIN.Discovery.Events;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models;
+using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Helpers.Services;
 
 namespace MIN.Desktop
@@ -20,12 +24,16 @@ namespace MIN.Desktop
     {
         private readonly IRoomConnector roomConnector;
         private readonly IRoomHoster roomHoster;
-        private readonly IRoomRegistry roomRegistry;
+        private readonly IRoomStore roomStore;
+        private readonly IMessageStore messageStore;
+        private readonly IParticipantStore participantStore;
+        private readonly IRoomConnectionRegistry roomConnectionRegistry;
         private readonly IChatService chatService;
         private readonly IDiscoveryService discoveryService;
         private readonly IEventBus eventBus;
         private readonly ISettingsProvider settingsProvider;
         private readonly INotificationService notificationService;
+        private readonly ILocalNetworkComputerProvider computerProvider;
         private readonly ILoggerProvider logger;
         private readonly IIdentityService identityService;
 
@@ -41,12 +49,16 @@ namespace MIN.Desktop
         public MainForm(
             IRoomConnector roomConnector,
             IRoomHoster roomHoster,
-            IRoomRegistry roomRegistry,
+            IRoomStore roomStore,
+            IMessageStore messageStore,
+            IParticipantStore participantStore,
+            IRoomConnectionRegistry roomConnectionRegistry,
             IChatService chatService,
             IDiscoveryService discoveryService,
             IEventBus eventBus,
             ISettingsProvider settingsProvider,
             INotificationService notificationService,
+            ILocalNetworkComputerProvider computerProvider,
             IIdentityService identityService,
             ILoggerProvider logger)
         {
@@ -54,12 +66,16 @@ namespace MIN.Desktop
 
             this.roomConnector = roomConnector;
             this.roomHoster = roomHoster;
-            this.roomRegistry = roomRegistry;
+            this.roomStore = roomStore;
+            this.messageStore = messageStore;
+            this.participantStore = participantStore;
+            this.roomConnectionRegistry = roomConnectionRegistry;
             this.chatService = chatService;
             this.discoveryService = discoveryService;
             this.eventBus = eventBus;
             this.settingsProvider = settingsProvider;
             this.notificationService = notificationService;
+            this.computerProvider = computerProvider;
             this.identityService = identityService;
             this.logger = logger;
 
@@ -97,12 +113,17 @@ namespace MIN.Desktop
 
                 try
                 {
-                    roomRegistry.RegisterRoom(Guid.NewGuid(), room);
+                    roomStore.Add(room);
+                    messageStore.AddMessage(room.Id, new SystemTextMessage()
+                    {
+                        Content = $"Комната {room.Name} была создана в {DateTime.Now.ToShortTimeString()}"
+                    });
+                    roomConnectionRegistry.Associate(Guid.NewGuid(), room.Id);
                     await roomHoster.StartHostingAsync(room.Id, room.HostParticipant.Endpoint, cts.Token);
 
                     var roomInfo = new RoomInfo(room);
 
-                    await discoveryService.StartDiscoveryAsync(roomInfo, cts.Token);
+                    await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
                     await OnRoomJoin(roomInfo);
                 }
                 catch (Exception ex)
@@ -118,10 +139,14 @@ namespace MIN.Desktop
 
             try
             {
+                var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
+                    ? computerProvider.GetLocalNetworkMachineNames(classNumber.Value.ToString())
+                    : Settings.PreferredPCNames;
+
                 flowLayoutPanel.Controls.Clear();
                 totalRoomsCount.Text = "Поиск комнат...";
 
-                await discoveryService.DiscoverRoomsAsync(classNumber.Value.ToString(), TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), cts.Token);
+                await discoveryService.DiscoverRoomsAsync(availablePCs, TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), cts.Token);
             }
             catch (Exception ex)
             {
@@ -177,15 +202,18 @@ namespace MIN.Desktop
                 try
                 {
                     var connectionId = await roomConnector.ConnectAsync(roomInfo.Id, roomInfo.HostParticipant.Endpoint!, Settings.DiscoveryTimeout, cts.Token);
+
                     var chatForm = new ChatForm(
-                        chatService,
-                        roomRegistry,
-                        eventBus,
-                        notificationService,
-                        logger,
-                        identityService,
-                        roomInfo.Id,
-                        connectionId);
+                       chatService,
+                       messageStore,
+                       participantStore,
+                       roomStore,
+                       eventBus,
+                       notificationService,
+                       logger,
+                       identityService,
+                       roomInfo.Id,
+                       connectionId);
 
                     chatForm.FormClosing += (_, _) =>
                     {

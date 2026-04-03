@@ -16,7 +16,7 @@ public class ChatModule : Module
     /// <inheritdoc />
     protected override void Load(IServiceCollection services)
     {
-        services.RegisterMessagesFromAnchor<IChatMessagingAnchor>();
+        services.RegisterMultipleMessagesFromAnchor<IChatMessagingAnchor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatService>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableTo<IMessageHandler, IChatHandlerAnchor>(ServiceLifetime.Singleton);
     }

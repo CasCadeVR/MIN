@@ -8,7 +8,8 @@ using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -17,21 +18,24 @@ namespace MIN.Core.Handlers.Handlers;
 /// </summary>
 internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 {
-    private readonly IMessageEncryptor messageEncryptor;
-    private readonly IParticipantRegistry participantRegistry;
+    private readonly IMessageEncryptor encryptor;
+    private readonly IParticipantConnectionRegistry participantConnectionRegistry;
+    private readonly IParticipantStore participantStore;
     private readonly IMessageSender messageSender;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
-    public HandshakeHandler(IMessageEncryptor messageEncryptor,
-        IParticipantRegistry participantRegistry,
+    public HandshakeHandler(IMessageEncryptor encryptor,
+        IParticipantStore participantStore,
+        IParticipantConnectionRegistry participantConnectionRegistry,
         IMessageSender messageSender,
         ILoggerProvider logger)
     {
-        this.messageEncryptor = messageEncryptor;
-        this.participantRegistry = participantRegistry;
+        this.encryptor = encryptor;
+        this.participantStore = participantStore;
+        this.participantConnectionRegistry = participantConnectionRegistry;
         this.messageSender = messageSender;
         this.logger = logger;
     }
@@ -45,14 +49,14 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
     {
         if (message is HandshakeMessage handshakeMessage)
         {
-            await messageEncryptor.InitializeSessionWithPartnerAsync(handshakeMessage.Participant.Id, handshakeMessage.PublicKey);
-            participantRegistry.SetParticipantInfo(context.ConnectionId, handshakeMessage.Participant);
+            await encryptor.InitializeSessionWithPartnerAsync(handshakeMessage.Participant.Id, handshakeMessage.PublicKey);
+            participantConnectionRegistry.Register(context.ConnectionId, handshakeMessage.Participant);
             logger.Log($"Сессия с отправителем {handshakeMessage.Participant.Name} инициализирована");
 
-            var responseHandshake = await messageEncryptor.CreateSelfHandshakeMessageAsync();
+            var responseHandshake = await encryptor.CreateSelfHandshakeMessageAsync();
             var ackMessage = new HandshakeAckMessage(responseHandshake);
 
-            await messageSender.SendAsync(ackMessage, context.RoomId, context.ConnectionId, context.CancellationToken);
+            await messageSender.SendAsync(ackMessage, context.RoomId, responseHandshake.Participant.Id, context.ConnectionId, context.CancellationToken);
 
             var participantJoinedMessage = new ParticipantJoinedMessage()
             {
@@ -60,14 +64,17 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
                 RoomId = context.RoomId
             };
 
+            participantStore.AddParticipant(context.RoomId, participantJoinedMessage.Participant);
+            logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomId}");
+
             await messageSender.BroadcastAsync(participantJoinedMessage, context.RoomId, null, context.CancellationToken);
 
             return HandlerResult.Success();
         }
         else if (message is HandshakeAckMessage handshakeAckMessage)
         {
-            await messageEncryptor.InitializeSessionWithPartnerAsync(handshakeAckMessage.Participant.Id, handshakeAckMessage.PublicKey);
-            participantRegistry.SetParticipantInfo(context.ConnectionId, handshakeAckMessage.Participant);
+            await encryptor.InitializeSessionWithPartnerAsync(handshakeAckMessage.Participant.Id, handshakeAckMessage.PublicKey);
+            participantConnectionRegistry.Register(context.ConnectionId, handshakeAckMessage.Participant);
 
             logger.Log($"Сессия с получателем {handshakeAckMessage.Participant.Name} инициализирована");
 

@@ -1,21 +1,21 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 
-namespace MIN.Core.Services.Contracts.Interfaces;
+namespace MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 
 /// <summary>
 /// Сервис по ассоциации участников и соеднинений
 /// </summary>
-public interface IParticipantRegistry
+public interface IParticipantConnectionRegistry
 {
     /// <summary>
     /// Установить ассоциацию соеднинения с участником
     /// </summary>
-    void SetParticipantInfo(Guid connectionId, ParticipantInfo participant);
+    void Register(Guid connectionId, ParticipantInfo participant);
 
     /// <summary>
     /// Получить данные участника от его соединения
     /// </summary>
-    ParticipantInfo? GetParticipantInfo(Guid connectionId);
+    ParticipantInfo? GetParticipant(Guid connectionId);
 
     /// <summary>
     /// Получить идентификтор соеднинения от идентификатора участника
@@ -25,10 +25,10 @@ public interface IParticipantRegistry
     /// <summary>
     /// Попытаться получить данные участника от его соединения
     /// </summary>
-    bool TryGetParticipantInfo(Guid connectionId, out ParticipantInfo participant);
+    bool TryGetConnectionIdFromParticipantId(Guid connectionId, out ParticipantInfo participant);
 
     /// <summary>
     /// Разорвать ассоциацию соеднинения с участником
     /// </summary>
-    void RemoveParticipantInfo(Guid connectionId);
+    void Unregister(Guid connectionId);
 }

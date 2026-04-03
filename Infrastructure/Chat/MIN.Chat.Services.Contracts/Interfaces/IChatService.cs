@@ -11,12 +11,12 @@ namespace MIN.Chat.Services.Contracts.Interfaces
         /// <summary>
         /// Отправить текстовое сообщение
         /// </summary>
-        Task SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender);
+        Task SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender, Guid? recipientId = null);
 
         /// <summary>
         /// Получить историю сообщений из кэша
         /// </summary>
-        IReadOnlyList<ChatTextMessage> GetMessageHistory(Guid roomId);
+        IReadOnlyList<ChatTextMessage> GetChatTextMessageHistory(Guid roomId, int? page, int? pageSize);
 
         /// <summary>
         /// Получить список участников комнаты из кэша

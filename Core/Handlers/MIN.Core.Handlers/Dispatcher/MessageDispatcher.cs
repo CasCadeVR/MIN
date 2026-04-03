@@ -61,7 +61,7 @@ namespace MIN.Core.Handlers.Dispatcher
                     }
                     else if (result.Response != null)
                     {
-                        await messageSender.SendAsync(result.Response, context.RoomId, context.ConnectionId, context.CancellationToken);
+                        await messageSender.SendAsync(result.Response, context.RoomId, context.Sender.Id, context.ConnectionId, context.CancellationToken);
                     }
                 }
                 catch (Exception ex)

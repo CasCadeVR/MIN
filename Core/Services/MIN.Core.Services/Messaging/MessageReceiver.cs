@@ -1,13 +1,13 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Events;
 using MIN.Core.Serialization.Contracts;
-using MIN.Core.Services.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 
 namespace MIN.Core.Services.Messaging
 {
@@ -19,7 +19,7 @@ namespace MIN.Core.Services.Messaging
         private readonly IMessageDispatcher dispatcher;
         private readonly IMessageEncryptor encryptor;
         private readonly ILoggerProvider logger;
-        private readonly IParticipantRegistry participantRegistry;
+        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private CancellationTokenSource? cts;
 
         /// <summary>
@@ -30,14 +30,14 @@ namespace MIN.Core.Services.Messaging
             IMessageDispatcher dispatcher,
             IMessageEncryptor encryptor,
             ILoggerProvider logger,
-            IParticipantRegistry participantRegistry)
+            IParticipantConnectionRegistry participantConnectionRegistry)
         {
             this.transport = transport;
             this.serializer = serializer;
             this.dispatcher = dispatcher;
             this.encryptor = encryptor;
             this.logger = logger;
-            this.participantRegistry = participantRegistry;
+            this.participantConnectionRegistry = participantConnectionRegistry;
         }
 
         public event EventHandler<MessageReceivedEventArgs>? MessageReceived;
@@ -53,7 +53,7 @@ namespace MIN.Core.Services.Messaging
         {
             try
             {
-                participantRegistry.TryGetParticipantInfo(e.ConnectionId, out var participantInfo);
+                participantConnectionRegistry.TryGetConnectionIdFromParticipantId(e.ConnectionId, out var participantInfo);
 
                 byte[] plainData;
                 var body = encryptor.RemoveEncryptionHeader(e.Data);
@@ -83,7 +83,7 @@ namespace MIN.Core.Services.Messaging
                     logger.Log($"Произошла ошибка во время обработки raw message: {ex.Message}");
                 }
 
-                MessageReceived!.Invoke(this, new MessageReceivedEventArgs(e.RoomId, e.ConnectionId, message, participantInfo!));
+                //MessageReceived!.Invoke(this, new MessageReceivedEventArgs(e.RoomId, e.ConnectionId, message, participantInfo!));
             }
             catch (Exception ex)
             {

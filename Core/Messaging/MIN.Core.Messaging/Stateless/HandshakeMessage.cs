@@ -11,6 +11,9 @@ public sealed class HandshakeMessage : BaseMessage
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.Handshake;
 
+    /// <inheritdoc />
+    public override bool IsPublic => false;
+
     /// <summary>
     /// Рукопожатие не шифруется (ключ ещё не установлен)
     /// </summary>

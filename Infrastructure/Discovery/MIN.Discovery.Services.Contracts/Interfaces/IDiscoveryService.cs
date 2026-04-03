@@ -1,6 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-
-namespace MIN.Discovery.Services.Contracts.Interfaces;
+﻿namespace MIN.Discovery.Services.Contracts.Interfaces;
 
 /// <summary>
 /// Сервис обнаружения комнат в сети
@@ -10,7 +8,7 @@ public interface IDiscoveryService
     /// <summary>
     /// Запустить процесс обнаружения своей комнаты в сети
     /// </summary>
-    Task StartDiscoveryAsync(RoomInfo room, CancellationToken cancellationToken = default);
+    Task StartDiscoveryAsync(Guid roomId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Остановить процесс обнаружения своей комнаты в сети
@@ -20,5 +18,5 @@ public interface IDiscoveryService
     /// <summary>
     /// Обнаружить комнаты
     /// </summary>
-    Task DiscoverRoomsAsync(string? searchZone, TimeSpan timeout, CancellationToken cancellationToken = default);
+    Task DiscoverRoomsAsync(IEnumerable<string>? computers, TimeSpan timeout, CancellationToken cancellationToken = default);
 }

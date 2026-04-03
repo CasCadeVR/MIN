@@ -11,12 +11,12 @@ namespace MIN.Core.Serialization.Json.Services;
 public sealed class JsonDeserializerInitializer : IHostedService
 {
     private readonly IDeserializerRegistry registry;
-    private readonly IEnumerable<Type> messageTypes;
+    private readonly IEnumerable<IMessage> messageTypes;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="JsonDeserializerInitializer"/>
     /// </summary>
-    public JsonDeserializerInitializer(IDeserializerRegistry registry, IEnumerable<Type> messageTypes)
+    public JsonDeserializerInitializer(IDeserializerRegistry registry, IEnumerable<IMessage> messageTypes)
     {
         this.registry = registry;
         this.messageTypes = messageTypes;
@@ -26,9 +26,10 @@ public sealed class JsonDeserializerInitializer : IHostedService
     {
         foreach (var type in messageTypes)
         {
-            var instance = (IMessage)Activator.CreateInstance(type)!;
+            var messageType = type.GetType();
+            var instance = (IMessage)Activator.CreateInstance(messageType)!;
             var tag = instance.TypeTag;
-            var deserializer = CreateDeserializer(type);
+            var deserializer = CreateDeserializer(messageType);
             registry.RegisterDeserializer(tag, deserializer);
         }
 

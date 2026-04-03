@@ -12,7 +12,15 @@ public sealed class ChatTextMessage : BaseMessage
     public override MessageTypeTag TypeTag => MessageTypeTag.ChatTextMessage;
 
     /// <inheritdoc />
-    public override bool RequiresEncryption => true;
+    public override bool IsPublic => RecipientId == null;
+
+    /// <summary>
+    /// Получатель сообщения
+    /// </summary>
+    /// <remarks>
+    /// если null – публичное, иначе приватное
+    /// </remarks>
+    public Guid? RecipientId { get; set; }
 
     /// <summary>
     /// Отправитель сообщения

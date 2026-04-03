@@ -11,7 +11,7 @@ public class RoomInfoRequestMessage : BaseMessage
     public override MessageTypeTag TypeTag => MessageTypeTag.RoomInfoRequest;
 
     /// <inheritdoc />
-    public override bool RequiresEncryption => true;
+    public override bool IsPublic => false;
 
     /// <summary>
     /// Идентификтор комнаты

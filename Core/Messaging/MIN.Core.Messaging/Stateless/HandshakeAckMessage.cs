@@ -11,6 +11,9 @@ public sealed class HandshakeAckMessage : BaseMessage
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.HandshakeAck;
 
+    /// <inheritdoc />
+    public override bool IsPublic => false;
+
     /// <summary>
     /// Подтверждение рукопожатия не шифруется
     /// </summary>

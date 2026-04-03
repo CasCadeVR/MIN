@@ -2,11 +2,10 @@
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -15,18 +14,16 @@ namespace MIN.Core.Handlers.Handlers;
 /// </summary>
 internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnchor
 {
-    private readonly IRoomRegistry roomRegistry;
+    private readonly IMessageStore messageStore;
     private readonly IEventBus eventBus;
-    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ParticipantJoinHandler"/>
     /// </summary>
-    public ParticipantJoinHandler(IRoomRegistry roomRegistry, IEventBus eventBus, ILoggerProvider logger)
+    public ParticipantJoinHandler(IMessageStore messageStore, IEventBus eventBus)
     {
-        this.roomRegistry = roomRegistry;
+        this.messageStore = messageStore;
         this.eventBus = eventBus;
-        this.logger = logger;
     }
 
     IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
@@ -38,10 +35,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
     {
         if (message is ParticipantJoinedMessage participantJoinedMessage)
         {
-            roomRegistry.AddParticipant(context.RoomId, participantJoinedMessage.Participant);
-
-            logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату");
-
+            messageStore.AddMessage(context.RoomId, message);
             await eventBus.PublishAsync(new ParticipantJoinedEvent()
             {
                 Participant = participantJoinedMessage.Participant,

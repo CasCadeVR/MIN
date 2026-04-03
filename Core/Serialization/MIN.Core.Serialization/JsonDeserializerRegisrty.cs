@@ -11,11 +11,6 @@ namespace MIN.Core.Serialization.Json
     {
         private readonly ConcurrentDictionary<MessageTypeTag, Func<byte[], IMessage>> deserializers = new();
 
-        public JsonDeserializerRegistry()
-        {
-            Debug.WriteLine("JsonDeserializerRegistry constructor START");
-        }
-
         void IDeserializerRegistry.RegisterDeserializer(MessageTypeTag tag, Func<byte[], IMessage> deserializer)
         {
             if (!deserializers.TryAdd(tag, deserializer))

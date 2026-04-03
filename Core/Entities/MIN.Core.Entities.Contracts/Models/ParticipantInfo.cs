@@ -9,10 +9,10 @@ namespace MIN.Core.Entities.Contracts.Models;
 public record ParticipantInfo : IParticipantData
 {
     /// <inheritdoc />
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <inheritdoc />
-    public string Name { get; init; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Точка подключения к участнику
@@ -22,7 +22,7 @@ public record ParticipantInfo : IParticipantData
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
     /// </summary>
-    /// <param name="participant"></param>
+    /// <param name="participant">Данные участника</param>
     public ParticipantInfo(IParticipantData participant)
     {
         Id = participant.Id;
@@ -32,8 +32,14 @@ public record ParticipantInfo : IParticipantData
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
     /// </summary>
+    /// <param name="name">Имя участника</param>
     public ParticipantInfo(string name)
     {
         Name = name;
     }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
+    /// </summary>
+    public ParticipantInfo() { }
 }

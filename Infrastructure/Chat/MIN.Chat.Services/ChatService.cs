@@ -2,7 +2,7 @@
 using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 
 namespace MIN.Chat.Services
 {
@@ -10,20 +10,22 @@ namespace MIN.Chat.Services
     public sealed class ChatService : IChatService
     {
         private readonly IMessageSender messageSender;
-        private readonly IRoomRegistry roomRegistry;
+        private readonly IParticipantStore participantStore;
+        private readonly IMessageStore messageStore;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="ChatService"/>
         /// </summary>
-        public ChatService(
-            IMessageSender messageSender,
-            IRoomRegistry roomRegistry)
+        public ChatService(IMessageSender messageSender,
+            IParticipantStore participantStore,
+            IMessageStore messageStore)
         {
             this.messageSender = messageSender;
-            this.roomRegistry = roomRegistry;
+            this.participantStore = participantStore;
+            this.messageStore = messageStore;
         }
 
-        async Task IChatService.SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender)
+        async Task IChatService.SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender, Guid? recipientId)
         {
             if (string.IsNullOrWhiteSpace(content))
             {
@@ -35,29 +37,16 @@ namespace MIN.Chat.Services
                 RoomId = roomId,
                 Sender = sender,
                 Content = content,
+                RecipientId = recipientId,
             };
 
-            await messageSender.SendAsync(message, roomId, connectionId, CancellationToken.None);
+            await messageSender.SendAsync(message, roomId, sender.Id, connectionId, CancellationToken.None);
         }
 
-        IReadOnlyList<ChatTextMessage> IChatService.GetMessageHistory(Guid roomId)
-        {
-            if (!roomRegistry.TryGetRoom(roomId, out var room))
-            {
-                return new List<ChatTextMessage>();
-            }
-
-            return room.ChatHistory.OfType<ChatTextMessage>().ToList().AsReadOnly();
-        }
+        IReadOnlyList<ChatTextMessage> IChatService.GetChatTextMessageHistory(Guid roomId, int? page, int? pageSize)
+            => messageStore.GetHistory(roomId, page, pageSize).OfType<ChatTextMessage>().ToList().AsReadOnly();
 
         IReadOnlyList<ParticipantInfo> IChatService.GetParticipants(Guid roomId)
-        {
-            if (!roomRegistry.TryGetRoom(roomId, out var room))
-            {
-                return new List<ParticipantInfo>();
-            }
-
-            return room.CurrentParticipants.Select(x => new ParticipantInfo(x)).ToList().AsReadOnly();
-        }
+            => participantStore.GetParticipants(roomId).ToList().AsReadOnly();
     }
 }

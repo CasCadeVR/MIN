@@ -15,12 +15,15 @@ namespace MIN.Core.Services.Rooms
         private readonly IMessageSender messageSender;
         private readonly IMessageEncryptor encryptor;
         private readonly ILoggerProvider logger;
-        private readonly HashSet<Guid> activeConnections = new();
+        private readonly HashSet<Guid> activeConnections = [];
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomConnector"/>
         /// </summary>
-        public RoomConnector(ITransport transport, IMessageSender messageSender, IMessageEncryptor encryptor, ILoggerProvider logger)
+        public RoomConnector(ITransport transport,
+            IMessageSender messageSender,
+            IMessageEncryptor encryptor,
+            ILoggerProvider logger)
         {
             this.transport = transport;
             this.messageSender = messageSender;
@@ -28,19 +31,27 @@ namespace MIN.Core.Services.Rooms
             this.logger = logger;
         }
 
-        public async Task<Guid> ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken = default)
+        async Task<Guid> IRoomConnector.ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
         {
             var connectionId = await transport.ConnectAsync(roomId, endpoint, timeoutMs, cancellationToken);
             logger.Log($"Подключились к комнате с id {roomId}, соединение с id {connectionId}");
 
-            var handshakeMessage = await encryptor.CreateSelfHandshakeMessageAsync();
-            await messageSender.SendAsync(handshakeMessage, roomId, connectionId, cancellationToken);
+            if (transport.IsServerHostingConnectionId(roomId, connectionId))
+            {
+                var selfHandshake = await encryptor.CreateSelfHandshakeMessageAsync();
+                await messageSender.SendAsync(selfHandshake, roomId, selfHandshake.Participant.Id, connectionId, cancellationToken);
+            }
+            else
+            {
+                var handshakeMessage = await encryptor.CreateSelfHandshakeMessageAsync();
+                await messageSender.SendAsync(handshakeMessage, roomId, handshakeMessage.Participant.Id, connectionId, cancellationToken);
+            }
 
             activeConnections.Add(connectionId);
             return connectionId;
         }
 
-        public async Task DisconnectAsync(Guid roomId, Guid connectionId)
+        async Task IRoomConnector.DisconnectAsync(Guid roomId, Guid connectionId)
         {
             if (!activeConnections.Contains(connectionId))
             {
@@ -52,6 +63,6 @@ namespace MIN.Core.Services.Rooms
             logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {connectionId}");
         }
 
-        public bool IsConnected(Guid roomId) => activeConnections.Any();
+        bool IRoomConnector.IsConnected(Guid roomId) => activeConnections.Where(x => x == roomId).Count() != 0;
     }
 }

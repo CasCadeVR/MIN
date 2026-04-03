@@ -15,7 +15,7 @@ public class DiscoveryModule : Module
     /// <inheritdoc />
     protected override void Load(IServiceCollection services)
     {
-        services.RegisterMessagesFromAnchor<IDiscoveryMessagingAnchor>();
+        services.RegisterMultipleMessagesFromAnchor<IDiscoveryMessagingAnchor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NamedPipeDiscoveryTransport>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<DiscoveryService>(ServiceLifetime.Singleton);
     }

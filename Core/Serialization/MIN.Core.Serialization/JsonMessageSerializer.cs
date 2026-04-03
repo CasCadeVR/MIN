@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts;
+using MIN.Core.Serialization.Json.Services;
 
 namespace MIN.Core.Serialization.Json;
 
@@ -11,12 +12,7 @@ namespace MIN.Core.Serialization.Json;
 /// </summary>
 public sealed class JsonMessageSerializer : IMessageSerializer
 {
-    private static readonly JsonSerializerOptions serializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
+    private readonly JsonSerializerOptions serializerOptions;
     private readonly IDeserializerRegistry deserializerRegistry;
 
     /// <summary>
@@ -25,12 +21,24 @@ public sealed class JsonMessageSerializer : IMessageSerializer
     public JsonMessageSerializer(IDeserializerRegistry deserializerRegistry)
     {
         this.deserializerRegistry = deserializerRegistry;
+
+        serializerOptions = GetSerializerOptions();
     }
 
     /// <summary>
     /// Получить <see cref="JsonSerializerOptions"/>
     /// </summary>
-    public static JsonSerializerOptions GetSerializerOptions() => serializerOptions;
+    public static JsonSerializerOptions GetSerializerOptions()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = false,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        options.Converters.Add(new IEndpointConverter());
+        return options;
+    }
 
     byte[] IMessageSerializer.Serialize(IMessage message)
     {

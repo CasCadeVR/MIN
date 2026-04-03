@@ -1,4 +1,5 @@
-﻿using MIN.Core.Transport.Contracts.Enum;
+﻿using System.Text.Json.Serialization;
+using MIN.Core.Transport.Contracts.Enum;
 
 namespace MIN.Core.Transport.Contracts.Interfaces;
 

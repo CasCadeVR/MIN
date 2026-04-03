@@ -1,11 +1,10 @@
-﻿using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Helpers.Contracts.Interfaces;
-using MIN.Core.Transport.Contracts.Interfaces;
+﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts;
-using MIN.Core.Services.Contracts.Interfaces;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Messaging
 {
@@ -15,9 +14,8 @@ namespace MIN.Core.Services.Messaging
         private readonly ITransport transport;
         private readonly IMessageEncryptor encryptor;
         private readonly IMessageSerializer serializer;
-        private readonly ILoggerProvider logger;
-        private readonly IRoomRegistry roomRegistry;
-        private readonly IParticipantRegistry participantRegistry;
+        private readonly IParticipantStore participantStore;
+        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="MessageSender"/>
@@ -25,33 +23,44 @@ namespace MIN.Core.Services.Messaging
         public MessageSender(ITransport transport,
             IMessageSerializer serializer,
             IMessageEncryptor encryptor,
-            ILoggerProvider logger,
-            IRoomRegistry roomRegistry,
-            IParticipantRegistry participantRegistry)
+            IParticipantStore participantStore,
+            IParticipantConnectionRegistry participantConnectionRegistry)
         {
             this.transport = transport;
             this.serializer = serializer;
             this.encryptor = encryptor;
-            this.logger = logger;
-            this.roomRegistry = roomRegistry;
-            this.participantRegistry = participantRegistry;
+            this.participantStore = participantStore;
+            this.participantConnectionRegistry = participantConnectionRegistry;
         }
 
-        async Task IMessageSender.SendAsync(IMessage message, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
+        async Task IMessageSender.SendAsync(IMessage message, Guid roomId, Guid? senderId, Guid? recipientConnectionId, CancellationToken cancellationToken)
         {
-            var serialized = serializer.Serialize(message);
-            var dataToSend = EncryptData(message, serialized, connectionId);
-            await transport.SendAsync(dataToSend, roomId, connectionId, cancellationToken);
+            if (message.IsPublic)
+            {
+                await BroadcastAsync(message, roomId, null, cancellationToken);
+            }
+            else
+            {
+                if (!recipientConnectionId.HasValue)
+                {
+                    throw new InvalidOperationException("RecipientConnectionId required for private message");
+                }
+
+                var serialized = serializer.Serialize(message);
+                var dataToSend = EncryptData(message, serialized, (Guid)recipientConnectionId);
+
+                await transport.SendAsync(dataToSend, roomId, (Guid)recipientConnectionId, cancellationToken);
+            }
         }
 
-        async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
+        public async Task BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
         {
             var serialized = serializer.Serialize(message);
 
-            var participants = roomRegistry.GetCurrentParticipants(roomId);
+            var participants = participantStore.GetParticipants(roomId);
 
             var tasks = participants
-                .Select(x => participantRegistry.GetConnectionIdFromParticipantId(x.Id))
+                .Select(x => participantConnectionRegistry.GetConnectionIdFromParticipantId(x.Id))
                 .Where(c => excludeConnections == null || !excludeConnections.Contains(c))
                 .Select(connectionId => transport.SendAsync(EncryptData(message, serialized, connectionId),
                     roomId, connectionId, cancellationToken));
@@ -65,7 +74,7 @@ namespace MIN.Core.Services.Messaging
 
             if (message.RequiresEncryption)
             {
-                if (!participantRegistry.TryGetParticipantInfo(connectionId, out var recipient))
+                if (!participantConnectionRegistry.TryGetConnectionIdFromParticipantId(connectionId, out var recipient))
                 {
                     throw new InvalidOperationException($"No participant info for connection {connectionId}");
                 }
