@@ -10,20 +10,24 @@ namespace MIN.Core.Serialization.Json.Services;
 /// </summary>
 public sealed class JsonDeserializerInitializer : IHostedService
 {
+    private readonly IMessageSerializer serializer;
     private readonly IDeserializerRegistry registry;
     private readonly IEnumerable<IMessage> messageTypes;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="JsonDeserializerInitializer"/>
     /// </summary>
-    public JsonDeserializerInitializer(IDeserializerRegistry registry, IEnumerable<IMessage> messageTypes)
+    public JsonDeserializerInitializer(IMessageSerializer serializer, IDeserializerRegistry registry, IEnumerable<IMessage> messageTypes)
     {
+        this.serializer = serializer;
         this.registry = registry;
         this.messageTypes = messageTypes;
     }
 
     Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
+        JsonOptionsProvider.Initialize(serializer);
+
         foreach (var type in messageTypes)
         {
             var messageType = type.GetType();
@@ -33,14 +37,16 @@ public sealed class JsonDeserializerInitializer : IHostedService
             registry.RegisterDeserializer(tag, deserializer);
         }
 
+       if (serializer is JsonMessageSerializer jsonSerializer)
+        {
+            jsonSerializer.options = JsonOptionsProvider.Options;
+        }
+
         return Task.CompletedTask;
     }
 
     Task IHostedService.StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     private static Func<byte[], IMessage> CreateDeserializer(Type messageType)
-    {
-        var options = JsonMessageSerializer.GetSerializerOptions();
-        return data => (IMessage)JsonSerializer.Deserialize(data, messageType, options)!;
-    }
+        => data => (IMessage)JsonSerializer.Deserialize(data, messageType, JsonOptionsProvider.Options)!;
 }

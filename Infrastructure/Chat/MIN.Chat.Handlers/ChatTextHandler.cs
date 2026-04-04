@@ -5,6 +5,7 @@ using MIN.Chat.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Events.Contracts;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 
 namespace MIN.Chat.Handlers;
 
@@ -13,13 +14,15 @@ namespace MIN.Chat.Handlers;
 /// </summary>
 internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
 {
+    private readonly IMessageStore messageStore;
     private readonly IEventBus eventBus;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
-    public ChatTextHandler(IEventBus eventBus)
+    public ChatTextHandler(IMessageStore messageStore, IEventBus eventBus)
     {
+        this.messageStore = messageStore;
         this.eventBus = eventBus;
     }
 
@@ -31,6 +34,7 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
     {
         if (message is ChatTextMessage chatTextMessage)
         {
+            messageStore.AddMessage(context.RoomId, chatTextMessage);
             await eventBus.PublishAsync(new ChatTextMessageReceivedEvent()
             {
                 Message = chatTextMessage,

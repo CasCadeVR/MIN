@@ -1,4 +1,7 @@
-﻿using MIN.Core.Services.Contracts.Interfaces.Rooms;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Messaging.RoomRelated;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Rooms
@@ -6,26 +9,33 @@ namespace MIN.Core.Services.Rooms
     /// <inheritdoc cref="IRoomHoster"/>
     public sealed class RoomHoster : IRoomHoster
     {
+        private readonly IMessageStore messageStore;
         private readonly ITransport transport;
         private readonly HashSet<Guid> activeRooms = new();
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomHoster"/>
         /// </summary>
-        public RoomHoster(ITransport transport)
+        public RoomHoster(IMessageStore messageStore, ITransport transport)
         {
+            this.messageStore = messageStore;
             this.transport = transport;
         }
 
-        async Task IRoomHoster.StartHostingAsync(Guid roomId, IEndpoint endpoint, CancellationToken cancellationToken)
+        async Task IRoomHoster.StartHostingAsync(RoomInfo roomInfo, IEndpoint endpoint, CancellationToken cancellationToken)
         {
-            if (activeRooms.Contains(roomId))
+            if (activeRooms.Contains(roomInfo.Id))
             {
                 return;
             }
 
-            await transport.StartHostingAsync(roomId, endpoint, cancellationToken);
-            activeRooms.Add(roomId);
+            messageStore.AddMessage(roomInfo.Id, new SystemTextMessage()
+            {
+                Content = $"Комната {roomInfo.Name} была создана в {DateTime.Now.ToShortTimeString()}"
+            });
+
+            await transport.StartHostingAsync(roomInfo.Id, endpoint, cancellationToken);
+            activeRooms.Add(roomInfo.Id);
         }
 
         async Task IRoomHoster.StopHostingAsync(Guid roomId)

@@ -64,7 +64,7 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
                 RoomId = context.RoomId
             };
 
-            participantStore.AddParticipant(context.RoomId, participantJoinedMessage.Participant);
+            participantStore.AddParticipant(context.RoomId, handshakeMessage.Participant);
             logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomId}");
 
             await messageSender.BroadcastAsync(participantJoinedMessage, context.RoomId, null, context.CancellationToken);

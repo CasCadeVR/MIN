@@ -7,6 +7,7 @@ using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
+using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
@@ -46,7 +47,7 @@ namespace MIN.Desktop
         private Guid roomId;
         private Guid connectionId;
         private Room? room;
-        private ChatTextMessage? lastMessage;
+        private ChatTextMessage? lastTextMessage;
         private ParticipantInfo localParticipant;
 
         public ChatForm(
@@ -134,14 +135,15 @@ namespace MIN.Desktop
 
         private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken ct)
         {
-            if (eventMessage.RoomId != roomId)
+            if (eventMessage.Message.RoomId != roomId)
             {
                 return;
             }
 
             uiContext.Post(_ =>
             {
-                SendParticipantJoinedMessage(eventMessage.Participant);
+                AddMessageToChatFlow(eventMessage.Message);
+                NotifyIfNeeded($"Участник {eventMessage.Message.Participant.Name} зашёл в комнату");
                 UpdateStats();
             }, null);
             await Task.CompletedTask;
@@ -149,14 +151,15 @@ namespace MIN.Desktop
 
         private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken ct)
         {
-            if (eventMessage.RoomId != roomId)
+            if (eventMessage.Message.RoomId != roomId)
             {
                 return;
             }
 
             uiContext.Post(_ =>
             {
-                SendParticipantLeftMessage(eventMessage.Participant);
+                AddMessageToChatFlow(eventMessage.Message);
+                NotifyIfNeeded($"Участник {eventMessage.Message.Participant.Name} вышел из комнаты");
                 UpdateStats();
             }, null);
             await Task.CompletedTask;
@@ -283,26 +286,6 @@ namespace MIN.Desktop
             AddMessageToChatFlow(loadingMessage);
         }
 
-        private void SendParticipantJoinedMessage(ParticipantInfo participant)
-        {
-            var systemMessage = new SystemTextMessage
-            {
-                Content = $"Участник {participant.Name} зашёл в комнату",
-            };
-            AddMessageToChatFlow(systemMessage);
-            NotifyIfNeeded(systemMessage.Content);
-        }
-
-        private void SendParticipantLeftMessage(ParticipantInfo participant)
-        {
-            var systemMessage = new SystemTextMessage
-            {
-                Content = $"Участник {participant.Name} покинул комнату",
-            };
-            AddMessageToChatFlow(systemMessage);
-            NotifyIfNeeded(systemMessage.Content);
-        }
-
         private void NotifyIfNeeded(string content, string? senderName = null)
         {
             if (notificationComboBox.Checked && (WindowState == FormWindowState.Minimized || !ContainsFocus))
@@ -332,9 +315,9 @@ namespace MIN.Desktop
                         var isHostMessage = room?.HostParticipant?.Id == chatTextMessage.Sender.Id;
 
                         var minutesPassed = 0;
-                        if (lastMessage != null && lastMessage.Sender.Id == chatTextMessage.Sender.Id)
+                        if (lastTextMessage != null && lastTextMessage.Sender.Id == chatTextMessage.Sender.Id)
                         {
-                            minutesPassed = (int)(chatTextMessage.Timestamp - lastMessage.Timestamp).TotalMinutes;
+                            minutesPassed = (int)(chatTextMessage.Timestamp - lastTextMessage.Timestamp).TotalMinutes;
                             minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
                         }
 
@@ -345,7 +328,31 @@ namespace MIN.Desktop
                         };
 
                         row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
-                        lastMessage = chatTextMessage;
+                        lastTextMessage = chatTextMessage;
+                        break;
+
+                    case ParticipantJoinedMessage joined:
+                        var joinedText = $"Участник {joined.Participant.Name} зашёл в комнату";
+                        rowControl = new PrimaryLabel
+                        {
+                            Text = joinedText,
+                            Anchor = AnchorStyles.None,
+                            AutoSize = true
+                        };
+
+                        row.Height = rowControl.Height;
+                        break;
+
+                    case ParticipantLeftMessage left:
+                        var leftText = $"Участник {left.Participant.Name} покинул комнату";
+                        rowControl = new PrimaryLabel
+                        {
+                            Text = leftText,
+                            Anchor = AnchorStyles.None,
+                            AutoSize = true
+                        };
+
+                        row.Height = rowControl.Height;
                         break;
 
                     case SystemTextMessage systemTextMessage:

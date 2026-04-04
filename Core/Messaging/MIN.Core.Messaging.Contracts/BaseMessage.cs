@@ -9,7 +9,7 @@ namespace MIN.Core.Messaging.Contracts;
 public abstract class BaseMessage : IMessage
 {
     /// <inheritdoc />
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <inheritdoc />
     public DateTime Timestamp { get; } = DateTime.UtcNow;

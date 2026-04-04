@@ -1,5 +1,5 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts;
+using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 
 namespace MIN.Core.Events.Events;
 
@@ -9,12 +9,7 @@ namespace MIN.Core.Events.Events;
 public sealed class ParticipantLeftEvent : BaseEvent
 {
     /// <summary>
-    /// Идентификатор комнаты
+    /// Сообщение о вышедшем участнике
     /// </summary>
-    public Guid RoomId { get; init; }
-
-    /// <summary>
-    /// Информация о покинувшем участнике
-    /// </summary>
-    public ParticipantInfo Participant { get; init; } = null!;
+    public ParticipantLeftMessage Message { get; init; } = null!;
 }

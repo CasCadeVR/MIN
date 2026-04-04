@@ -4,6 +4,8 @@ using Microsoft.Extensions.Hosting;
 using MIN.Chat.DI;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.DI;
+using MIN.Core.Serialization.Contracts;
+using MIN.Core.Serialization.Json.Services;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Discovery.DI;

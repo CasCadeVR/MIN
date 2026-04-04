@@ -15,7 +15,10 @@ namespace MIN.Core.Services.Stores
             var messages = this.messages.GetOrAdd(roomId, _ => []);
             lock (messages)
             {
-                messages.Add(message);
+                if (!messages.Any(x => x.Id == message.Id))
+                {
+                    messages.Add(message);
+                }
             }
         }
 

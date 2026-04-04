@@ -114,15 +114,11 @@ namespace MIN.Desktop
                 try
                 {
                     roomStore.Add(room);
-                    messageStore.AddMessage(room.Id, new SystemTextMessage()
-                    {
-                        Content = $"Комната {room.Name} была создана в {DateTime.Now.ToShortTimeString()}"
-                    });
                     roomConnectionRegistry.Associate(Guid.NewGuid(), room.Id);
-                    await roomHoster.StartHostingAsync(room.Id, room.HostParticipant.Endpoint, cts.Token);
 
                     var roomInfo = new RoomInfo(room);
 
+                    await roomHoster.StartHostingAsync(roomInfo, room.HostParticipant.Endpoint, cts.Token);
                     await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
                     await OnRoomJoin(roomInfo);
                 }
@@ -182,13 +178,6 @@ namespace MIN.Desktop
 
         private async Task OnRoomJoin(RoomInfo roomInfo)
         {
-            if (roomInfo == null)
-            {
-                MessageBox.Show("Невозможно подключиться: комната не найдена.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             if (roomInfo.ParticipantCount >= roomInfo.MaximumParticipants)
             {
                 MessageBox.Show("Невозможно подключиться: комната заполнена.", "Ошибка",

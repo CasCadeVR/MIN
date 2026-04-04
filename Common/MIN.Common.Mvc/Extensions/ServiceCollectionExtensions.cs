@@ -119,10 +119,4 @@ public static class ServiceCollectionExtensions
             module.Configure(services);
         }
     }
-
-    private static Func<byte[], IMessage> CreateDeserializer(Type messageType)
-    {
-        var options = JsonMessageSerializer.GetSerializerOptions();
-        return data => (IMessage)JsonSerializer.Deserialize(data, messageType, options)!;
-    }
 }

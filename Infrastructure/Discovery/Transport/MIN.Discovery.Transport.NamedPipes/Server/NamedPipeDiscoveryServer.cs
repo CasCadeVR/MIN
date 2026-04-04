@@ -71,6 +71,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
                     security);
 
                 await pipe.WaitForConnectionAsync(cancellationToken);
+
                 await AcceptRequest(cancellationToken);
             }
             catch (OperationCanceledException) { break; }
@@ -86,7 +87,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
     /// </summary>
     public async Task ResponseWithData(byte[] responseData, TimeSpan? timeout, CancellationToken cancellationToken)
     {
-        if (pipe == null)
+        if (pipe == null || !pipe.IsConnected)
         {
             return;
         }

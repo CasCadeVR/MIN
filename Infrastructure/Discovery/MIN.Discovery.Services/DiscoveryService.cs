@@ -73,8 +73,6 @@ namespace MIN.Discovery.Services
             var request = new DiscoveryRequestMessage();
             var requestData = serializer.Serialize(request);
 
-            var localMachineName = Environment.MachineName;
-
             if (!computers.Any())
             {
                 logger.Log("No remote computers to discover");
@@ -84,25 +82,8 @@ namespace MIN.Discovery.Services
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(timeout);
 
-            var completionSource = new TaskCompletionSource<bool>();
-
-            void OnResponseReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e)
-            {
-                try
-                {
-                    var message = serializer.Deserialize(e.Data);
-                    if (message is DiscoveryResponseMessage response)
-                    {
-                        eventBus.PublishAsync(new RoomDiscoveredEvent(response.Room), cts.Token);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.Log($"Error parsing discovery response: {ex.Message}");
-                }
-            }
-
-            discoveryTransport.MessageReceived += OnResponseReceived;
+            discoveryTransport.MessageReceived += (sender, e)
+                => OnResponseReceived(sender, e, cts.Token);
 
             try
             {
@@ -121,7 +102,24 @@ namespace MIN.Discovery.Services
             catch (OperationCanceledException) { }
             finally
             {
-                discoveryTransport.MessageReceived -= OnResponseReceived;
+                discoveryTransport.MessageReceived -= (sender, e)
+                    => OnResponseReceived(sender, e, cts.Token);
+            }
+        }
+
+        private void OnResponseReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var message = serializer.Deserialize(e.Data);
+                if (message is DiscoveryResponseMessage response)
+                {
+                    eventBus.PublishAsync(new RoomDiscoveredEvent(response.Room), cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Log($"Error parsing discovery response: {ex.Message}");
             }
         }
 

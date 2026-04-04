@@ -1,9 +1,7 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts;
-using MIN.Core.Serialization.Json.Services;
 
 namespace MIN.Core.Serialization.Json;
 
@@ -12,7 +10,6 @@ namespace MIN.Core.Serialization.Json;
 /// </summary>
 public sealed class JsonMessageSerializer : IMessageSerializer
 {
-    private readonly JsonSerializerOptions serializerOptions;
     private readonly IDeserializerRegistry deserializerRegistry;
 
     /// <summary>
@@ -21,28 +18,16 @@ public sealed class JsonMessageSerializer : IMessageSerializer
     public JsonMessageSerializer(IDeserializerRegistry deserializerRegistry)
     {
         this.deserializerRegistry = deserializerRegistry;
-
-        serializerOptions = GetSerializerOptions();
     }
 
     /// <summary>
-    /// Получить <see cref="JsonSerializerOptions"/>
+    /// Настройки сериализации
     /// </summary>
-    public static JsonSerializerOptions GetSerializerOptions()
-    {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-        options.Converters.Add(new IEndpointConverter());
-        return options;
-    }
+    public JsonSerializerOptions options;
 
     byte[] IMessageSerializer.Serialize(IMessage message)
     {
-        return JsonSerializer.SerializeToUtf8Bytes(message, message.GetType(), serializerOptions);
+        return JsonSerializer.SerializeToUtf8Bytes(message, message.GetType(), options);
     }
 
     IMessage IMessageSerializer.Deserialize(byte[] data)
@@ -50,7 +35,7 @@ public sealed class JsonMessageSerializer : IMessageSerializer
         using var doc = JsonDocument.Parse(data);
         var root = doc.RootElement;
 
-        if (!root.TryGetProperty("typeTag", out var typeTagElement))
+        if (!root.TryGetProperty("typeTag", out var typeTagElement) && !root.TryGetProperty("TypeTag", out typeTagElement))
         {
             throw new InvalidOperationException("Missing TypeTag property in message JSON");
         }

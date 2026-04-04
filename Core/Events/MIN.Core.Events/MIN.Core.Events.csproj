@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj" />
-    <ProjectReference Include="..\..\Entities\MIN.Core.Entities\MIN.Core.Entities.csproj" />
+    <ProjectReference Include="..\..\Messaging\MIN.Core.Messaging\MIN.Core.Messaging.csproj" />
     <ProjectReference Include="..\MIN.Core.Events.Contracts\MIN.Core.Events.Contracts.csproj" />
   </ItemGroup>
 

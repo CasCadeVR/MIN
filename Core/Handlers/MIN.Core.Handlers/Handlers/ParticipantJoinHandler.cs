@@ -38,8 +38,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
             messageStore.AddMessage(context.RoomId, message);
             await eventBus.PublishAsync(new ParticipantJoinedEvent()
             {
-                Participant = participantJoinedMessage.Participant,
-                RoomId = participantJoinedMessage.RoomId,
+                Message = participantJoinedMessage,
             }, context.CancellationToken);
 
             return HandlerResult.Success();

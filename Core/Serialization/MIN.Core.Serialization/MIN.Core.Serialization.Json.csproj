@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Infrastructure\Chat\MIN.Chat.Messaging\MIN.Chat.Messaging.csproj" />
+    <ProjectReference Include="..\..\Messaging\MIN.Core.Messaging\MIN.Core.Messaging.csproj" />
     <ProjectReference Include="..\..\Transport\MIN.Core.Transport.NamedPipes\MIN.Core.Transport.NamedPipes.csproj" />
     <ProjectReference Include="..\MIN.Core.Serialization.Contracts\MIN.Core.Serialization.Contracts.csproj" />
   </ItemGroup>

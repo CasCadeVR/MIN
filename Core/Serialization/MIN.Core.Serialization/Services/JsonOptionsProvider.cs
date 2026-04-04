@@ -1,0 +1,34 @@
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using MIN.Core.Serialization.Contracts;
+
+namespace MIN.Core.Serialization.Json.Services
+{
+    /// <summary>
+    /// Предоставляет настройки JSON-сериализации для всего приложения
+    /// </summary>
+    public static class JsonOptionsProvider
+    {
+        private static JsonSerializerOptions options;
+
+        public static void Initialize(IMessageSerializer messageSerializer)
+        {
+            options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = false,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                Converters =
+                {
+                    new IEndpointConverter(), // кастомный конвертер для интерфейса
+                    new IMessageListConverter(messageSerializer),
+                }
+            };
+        }
+
+        /// <summary>
+        /// Возвращает экземпляр настроек JSON-сериализации
+        /// </summary>
+        public static JsonSerializerOptions Options => options;
+    }
+}
