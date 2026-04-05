@@ -48,7 +48,14 @@ namespace MIN.Desktop
                 return;
             }
 
-            identityService.SetParticipant(new ParticipantInfo(participantName.Text));
+            var coreParticipant = identityService.SelfPartcipant;
+
+            var newParticipant = new ParticipantInfo(coreParticipant)
+            {
+                Name = participantName.Text
+            };
+
+            identityService.SetParticipant(newParticipant);
 
             DialogResult = DialogResult.OK;
         }

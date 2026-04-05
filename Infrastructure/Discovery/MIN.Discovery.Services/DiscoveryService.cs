@@ -18,6 +18,7 @@ namespace MIN.Discovery.Services
         private readonly IDiscoveryTransport discoveryTransport;
         private readonly IMessageSerializer serializer;
         private readonly IRoomStore roomStore;
+        private readonly IParticipantStore participantStore;
         private readonly IEventBus eventBus;
         private readonly ILoggerProvider logger;
         private CancellationTokenSource? cts;
@@ -30,12 +31,14 @@ namespace MIN.Discovery.Services
             IDiscoveryTransport discoveryTransport,
             IMessageSerializer serializer,
             IRoomStore roomStore,
+            IParticipantStore participantStore,
             IEventBus eventBus,
             ILoggerProvider logger)
         {
             this.discoveryTransport = discoveryTransport;
             this.serializer = serializer;
             this.roomStore = roomStore;
+            this.participantStore = participantStore;
             this.eventBus = eventBus;
             this.logger = logger;
         }
@@ -142,17 +145,10 @@ namespace MIN.Discovery.Services
                     return;
                 }
 
-                var hostingRoomInfo = new RoomInfo()
-                {
-                    Id = room.Id,
-                    Name = room.Name,
-                    HostParticipant = room.HostParticipant,
-                    ParticipantCount = room.ParticipantCount,
-                    IsActive = room.IsActive,
-                    MaximumParticipants = room.MaximumParticipants,
-                };
+                var roomInfo = new RoomInfo(room);
+                roomInfo.ParticipantCount = participantStore.GetParticipants(roomId).Count();
 
-                var discoveryResponse = new DiscoveryResponseMessage { Room = hostingRoomInfo };
+                var discoveryResponse = new DiscoveryResponseMessage { Room = roomInfo };
                 var data = serializer.Serialize(discoveryResponse);
 
                 discoveryTransport.ResponseWithData(data, timeout: null, cts!.Token);

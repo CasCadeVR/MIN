@@ -252,7 +252,7 @@ namespace MIN.Desktop
 
             foreach (var participant in currentParticipants)
             {
-                var card = new ParticipantCard(new ParticipantInfo(participant), room);
+                var card = new ParticipantCard(participant, room);
                 card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
                 participantsFlow.Controls.Add(card);
             }
