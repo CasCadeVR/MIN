@@ -20,8 +20,8 @@ namespace MIN.Core.Serialization.Json.Services
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 Converters =
                 {
-                    new IEndpointConverter(), // кастомный конвертер для интерфейса
-                    new IMessageListConverter(messageSerializer),
+                    new IEndpointConverter(),
+                    new IMessageConverter(messageSerializer),
                 }
             };
         }

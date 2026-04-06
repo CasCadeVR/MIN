@@ -28,8 +28,6 @@ namespace MIN.Desktop
     public partial class ChatForm : StyledForm
     {
         private readonly IChatService chatService;
-        private readonly IMessageStore messageStore;
-        private readonly IParticipantStore participantStore;
         private readonly IRoomStore roomStore;
         private readonly IEventBus eventBus;
         private readonly INotificationService notificationService;
@@ -52,8 +50,6 @@ namespace MIN.Desktop
 
         public ChatForm(
              IChatService chatService,
-             IMessageStore messageStore,
-             IParticipantStore participantStore,
              IRoomStore roomStore,
              IEventBus eventBus,
              INotificationService notificationService,
@@ -67,8 +63,6 @@ namespace MIN.Desktop
 
             this.roomStore = roomStore;
             this.chatService = chatService;
-            this.messageStore = messageStore;
-            this.participantStore = participantStore;
             this.eventBus = eventBus;
             this.notificationService = notificationService;
             this.logger = logger;
@@ -248,16 +242,14 @@ namespace MIN.Desktop
                 return;
             }
 
-            var currentParticipants = participantStore.GetParticipants(roomId);
-
-            foreach (var participant in currentParticipants)
+            foreach (var participant in room.CurrentParticipants)
             {
                 var card = new ParticipantCard(participant, room);
                 card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
                 participantsFlow.Controls.Add(card);
             }
 
-            participantsInfo.Text = $"{currentParticipants.Count()}/{room.MaximumParticipants}";
+            participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
         }
 
         private void UpdateChatFlow()
@@ -269,9 +261,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            var chatHistory = messageStore.GetHistory(roomId);
-
-            foreach (var storedMessage in chatHistory)
+            foreach (var storedMessage in room.ChatHistory)
             {
                 AddMessageToChatFlow(storedMessage);
             }

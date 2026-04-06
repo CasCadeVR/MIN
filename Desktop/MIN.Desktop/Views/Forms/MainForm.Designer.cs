@@ -254,9 +254,10 @@
             // 
             // flowLayoutPanel
             // 
+            flowLayoutPanel.AutoScroll = true;
             flowLayoutPanel.Dock = DockStyle.Fill;
             flowLayoutPanel.Location = new Point(0, 0);
-            flowLayoutPanel.Margin = new Padding(20, 20, 20, 20);
+            flowLayoutPanel.Margin = new Padding(20);
             flowLayoutPanel.Name = "flowLayoutPanel";
             flowLayoutPanel.Size = new Size(800, 337);
             flowLayoutPanel.TabIndex = 0;

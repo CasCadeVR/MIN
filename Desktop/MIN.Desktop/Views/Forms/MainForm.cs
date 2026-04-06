@@ -2,7 +2,6 @@
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
-using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
@@ -25,8 +24,6 @@ namespace MIN.Desktop
         private readonly IRoomConnector roomConnector;
         private readonly IRoomHoster roomHoster;
         private readonly IRoomStore roomStore;
-        private readonly IMessageStore messageStore;
-        private readonly IParticipantStore participantStore;
         private readonly IRoomConnectionRegistry roomConnectionRegistry;
         private readonly IChatService chatService;
         private readonly IDiscoveryService discoveryService;
@@ -50,8 +47,6 @@ namespace MIN.Desktop
             IRoomConnector roomConnector,
             IRoomHoster roomHoster,
             IRoomStore roomStore,
-            IMessageStore messageStore,
-            IParticipantStore participantStore,
             IRoomConnectionRegistry roomConnectionRegistry,
             IChatService chatService,
             IDiscoveryService discoveryService,
@@ -67,8 +62,6 @@ namespace MIN.Desktop
             this.roomConnector = roomConnector;
             this.roomHoster = roomHoster;
             this.roomStore = roomStore;
-            this.messageStore = messageStore;
-            this.participantStore = participantStore;
             this.roomConnectionRegistry = roomConnectionRegistry;
             this.chatService = chatService;
             this.discoveryService = discoveryService;
@@ -131,7 +124,10 @@ namespace MIN.Desktop
 
         private async Task PerformSearch()
         {
-            uiContext.Post(_ => findRooms.Enabled = false, null);
+            uiContext.Post(_ =>
+            {
+                findRooms.Enabled = false;
+            }, null);
 
             try
             {
@@ -150,7 +146,13 @@ namespace MIN.Desktop
             }
             finally
             {
-                uiContext.Post(_ => findRooms.Enabled = true, null);
+                uiContext.Post(_ =>
+                {
+                    findRooms.Enabled = true;
+
+                    var roomsCount = flowLayoutPanel.Controls.Count;
+                    totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
+                }, null);
             }
         }
 
@@ -194,8 +196,6 @@ namespace MIN.Desktop
 
                     var chatForm = new ChatForm(
                        chatService,
-                       messageStore,
-                       participantStore,
                        roomStore,
                        eventBus,
                        notificationService,
@@ -204,9 +204,13 @@ namespace MIN.Desktop
                        roomInfo.Id,
                        connectionId);
 
-                    chatForm.FormClosing += (_, _) =>
+                    chatForm.FormClosing += async (_, _) =>
                     {
-                        roomConnector.DisconnectAsync(roomInfo.Id, connectionId);
+                        if (identityService.SelfPartcipant.Id == roomInfo.HostParticipant.Id)
+                        {
+                            await discoveryService.StopDiscoveryAsync();
+                        }
+                        await roomConnector.DisconnectAsync(roomInfo.Id, connectionId);
                     };
                     chatForm.Show();
                 }
@@ -247,7 +251,6 @@ namespace MIN.Desktop
 
         private async void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            await discoveryService.StopDiscoveryAsync();
             await roomHoster.StopHostingAsync(Guid.Empty);
             await roomConnector.DisconnectAsync(Guid.Empty, Guid.Empty);
             cts.Cancel();

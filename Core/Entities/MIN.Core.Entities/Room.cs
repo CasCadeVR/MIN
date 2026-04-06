@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Entities;
 
@@ -27,7 +28,7 @@ public class Room : IRoomData
     public int MaximumParticipants { get; set; }
 
     /// <inheritdoc />
-    public int ParticipantCount => CurrentParticipants.Count;
+    public int ParticipantCount => CurrentParticipants.Count();
 
     /// <inheritdoc />
     public bool IsActive { get; set; }
@@ -40,20 +41,15 @@ public class Room : IRoomData
     /// <summary>
     /// Получить текущих участников комнаты
     /// </summary>
-    public List<ParticipantInfo> CurrentParticipants { get; set; } = new();
+    public IEnumerable<ParticipantInfo> CurrentParticipants { get; set; } = [];
+
+    /// <summary>
+    /// Получить текущих участников комнаты
+    /// </summary>
+    public IEnumerable<IMessage> ChatHistory { get; set; } = [];
 
     /// <summary>
     /// Заполнена ли комната
     /// </summary>
-    public bool IsFull => CurrentParticipants.Count >= MaximumParticipants;
-
-    /// <summary>
-    /// Деактивировать комнату
-    /// </summary>
-    public void Deactivate() => IsActive = false;
-
-    /// <summary>
-    /// Активировать комнату
-    /// </summary>
-    public void Activate() => IsActive = true;
+    public bool IsFull => CurrentParticipants.Count() >= MaximumParticipants;
 }

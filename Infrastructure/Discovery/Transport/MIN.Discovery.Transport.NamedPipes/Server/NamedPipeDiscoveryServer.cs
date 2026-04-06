@@ -1,4 +1,5 @@
-﻿using System.IO.Pipes;
+using System.IO.Pipes;
+using System.Collections.Concurrent;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using MIN.Discovery.Transport.Contracts.Events;
@@ -13,8 +14,10 @@ namespace MIN.Discovery.Transport.NamedPipes.Server;
 internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
 {
     private readonly ILoggerProvider logger;
+    private readonly ConcurrentDictionary<Guid, NamedPipeServerStream> connections = new();
+
     private CancellationTokenSource? cts;
-    private NamedPipeServerStream? pipe;
+
     private string pipeName;
     private bool isListening;
 
@@ -61,7 +64,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
         {
             try
             {
-                pipe = NamedPipeServerStreamAcl.Create(
+                var newPipe = NamedPipeServerStreamAcl.Create(
                     pipeName,
                     PipeDirection.InOut,
                     2,
@@ -70,9 +73,11 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
                     0, 0,
                     security);
 
-                await pipe.WaitForConnectionAsync(cancellationToken);
+                var connectionId = Guid.NewGuid();
+                connections.TryAdd(connectionId, newPipe);
+                await newPipe.WaitForConnectionAsync(cancellationToken);
 
-                await AcceptRequest(cancellationToken);
+                await AcceptRequest(connectionId, cancellationToken);
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
@@ -85,16 +90,40 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
     /// <summary>
     /// Ответить клиенту на запрос
     /// </summary>
-    public async Task ResponseWithData(byte[] responseData, TimeSpan? timeout, CancellationToken cancellationToken)
+    public async Task ResponseWithData(byte[] responseData, Guid? connectionId, TimeSpan? timeout, CancellationToken cancellationToken)
     {
-        if (pipe == null || !pipe.IsConnected)
+        NamedPipeServerStream? targetPipe = null;
+        Guid? targetId = null;
+        if (connectionId.HasValue && connections.TryGetValue(connectionId.Value, out var p) && p.IsConnected)
+        {
+            targetPipe = p;
+            targetId = connectionId.Value;
+        }
+        else
+        {
+            foreach (var kvp in connections)
+            {
+                if (kvp.Value.IsConnected)
+                {
+                    targetPipe = kvp.Value;
+                    targetId = kvp.Key;
+                    break;
+                }
+            }
+        }
+
+        if (targetPipe == null || !targetPipe.IsConnected)
         {
             return;
         }
 
-        await pipe.WriteAsync(responseData.AsMemory(), cancellationToken);
-        await pipe.FlushAsync(cancellationToken);
-        await pipe.DisposeAsync();
+        await targetPipe.WriteAsync(responseData.AsMemory(), cancellationToken);
+        await targetPipe.FlushAsync(cancellationToken);
+        await targetPipe.DisposeAsync();
+        if (targetId.HasValue)
+        {
+            connections.TryRemove(targetId.Value, out _);
+        }
     }
 
     public async Task StopListeningAsync()
@@ -105,21 +134,29 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
         }
 
         cts?.Cancel();
-        pipe?.Dispose();
+        foreach (var connection in connections)
+        {
+            connection.Value?.Dispose();
+        }
+        connections.Clear();
 
         isListening = false;
         await Task.CompletedTask;
     }
 
-    private async Task AcceptRequest(CancellationToken cancellationToken)
+    private async Task AcceptRequest(Guid connectionId, CancellationToken cancellationToken)
     {
         var buffer = new byte[4096];
-        var bytesRead = await pipe!.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
+        if (!connections.TryGetValue(connectionId, out var currentPipe) || currentPipe == null)
+        {
+            return;
+        }
+        var bytesRead = await currentPipe.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
         if (bytesRead > 0)
         {
             var data = new byte[bytesRead];
             Array.Copy(buffer, data, bytesRead);
-            MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(data));
+            MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(data, connectionId));
         }
     }
 

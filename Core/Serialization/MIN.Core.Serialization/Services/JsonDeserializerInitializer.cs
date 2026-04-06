@@ -37,7 +37,7 @@ public sealed class JsonDeserializerInitializer : IHostedService
             registry.RegisterDeserializer(tag, deserializer);
         }
 
-       if (serializer is JsonMessageSerializer jsonSerializer)
+        if (serializer is JsonMessageSerializer jsonSerializer)
         {
             jsonSerializer.options = JsonOptionsProvider.Options;
         }

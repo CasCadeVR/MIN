@@ -16,6 +16,7 @@ using MIN.Core.Services.Messaging;
 using MIN.Core.Services.Rooms;
 using MIN.Core.Services.Stores;
 using MIN.Core.Transport.NamedPipes;
+using MIN.Core.Transport.NamedPipes.Factories;
 
 namespace MIN.Core.DI;
 
@@ -39,6 +40,7 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<KeyProvider>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<NamedPipeTransport>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<NamedPipeTransportFactory>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<RoomConnectionRegistry>(ServiceLifetime.Singleton);

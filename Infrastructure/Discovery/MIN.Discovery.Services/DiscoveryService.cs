@@ -21,7 +21,7 @@ namespace MIN.Discovery.Services
         private readonly IParticipantStore participantStore;
         private readonly IEventBus eventBus;
         private readonly ILoggerProvider logger;
-        private CancellationTokenSource? cts;
+        private CancellationTokenSource? serviceCts;
         private Guid roomId;
 
         /// <summary>
@@ -45,28 +45,28 @@ namespace MIN.Discovery.Services
 
         async Task IDiscoveryService.StartDiscoveryAsync(Guid roomId, CancellationToken cancellationToken)
         {
-            if (cts != null)
+            if (serviceCts != null)
             {
                 return;
             }
 
             this.roomId = roomId;
-            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            serviceCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             discoveryTransport.MessageReceived += OnRequestReceived;
-            await discoveryTransport.StartListeningAsync(cts.Token);
+            await discoveryTransport.StartListeningAsync(serviceCts.Token);
         }
 
         public async Task StopDiscoveryAsync()
         {
-            if (cts == null)
+            if (serviceCts == null)
             {
                 return;
             }
-            cts.Cancel();
+            serviceCts.Cancel();
             discoveryTransport.MessageReceived -= OnRequestReceived;
             await discoveryTransport.StopListeningAsync();
-            cts.Dispose();
-            cts = null;
+            serviceCts.Dispose();
+            serviceCts = null;
         }
 
         async Task IDiscoveryService.DiscoverRoomsAsync(IEnumerable<string>? computers, TimeSpan timeout, CancellationToken cancellationToken)
@@ -85,8 +85,7 @@ namespace MIN.Discovery.Services
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(timeout);
 
-            discoveryTransport.MessageReceived += (sender, e)
-                => OnResponseReceived(sender, e, cts.Token);
+            discoveryTransport.MessageReceived += OnResponseReceived;
 
             try
             {
@@ -105,19 +104,19 @@ namespace MIN.Discovery.Services
             catch (OperationCanceledException) { }
             finally
             {
-                discoveryTransport.MessageReceived -= (sender, e)
-                    => OnResponseReceived(sender, e, cts.Token);
+                discoveryTransport.MessageReceived -= OnResponseReceived;
             }
         }
 
-        private void OnResponseReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e, CancellationToken cancellationToken)
+        private void OnResponseReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e)
         {
             try
             {
+                logger.Log($"Found Room: {e.ConnectionId}");
                 var message = serializer.Deserialize(e.Data);
                 if (message is DiscoveryResponseMessage response)
                 {
-                    eventBus.PublishAsync(new RoomDiscoveredEvent(response.Room), cancellationToken);
+                    eventBus.PublishAsync(new RoomDiscoveredEvent(response.Room));
                 }
             }
             catch (Exception ex)
@@ -151,7 +150,7 @@ namespace MIN.Discovery.Services
                 var discoveryResponse = new DiscoveryResponseMessage { Room = roomInfo };
                 var data = serializer.Serialize(discoveryResponse);
 
-                discoveryTransport.ResponseWithData(data, timeout: null, cts!.Token);
+                discoveryTransport.ResponseWithData(data, e.ConnectionId, timeout: null, serviceCts!.Token);
             }
             catch (Exception ex)
             {

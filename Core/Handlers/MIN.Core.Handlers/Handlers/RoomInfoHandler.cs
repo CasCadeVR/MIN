@@ -51,14 +51,10 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
         if (message is RoomInfoRequestMessage roomInfoRequest)
         {
             var room = roomStore.GetRoom(roomInfoRequest.RoomId);
-            var participants = participantStore.GetParticipants(roomInfoRequest.RoomId).ToList();
-            var lastMessages = messageStore.GetHistory(roomInfoRequest.RoomId).ToList();
 
             var response = new RoomInfoResponseMessage()
             {
                 Room = room,
-                Participants = participants,
-                RecentMessages = lastMessages
             };
 
             logger.Log($"Отправил информацию о комнате с id {roomInfoRequest.RoomId}");
@@ -70,9 +66,14 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
             roomConnectionRegistry.Associate(context.ConnectionId, roomInfoResponse.Room.Id);
             roomStore.Add(roomInfoResponse.Room);
 
-            foreach (var roomMessage in roomInfoResponse.RecentMessages)
+            foreach (var roomMessage in roomInfoResponse.Room.ChatHistory)
             {
                 messageStore.AddMessage(context.RoomId, roomMessage);
+            }
+
+            foreach (var roomParticipant in roomInfoResponse.Room.CurrentParticipants)
+            {
+                participantStore.AddParticipant(context.RoomId, roomParticipant);
             }
 
             logger.Log($"Получил информацию о комнате с id {roomInfoResponse.Room.Id}");

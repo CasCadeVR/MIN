@@ -26,17 +26,22 @@ namespace MIN.Discovery.Transport.NamedPipes
 
             discoveryServer = new NamedPipeDiscoveryServer(pipeName, logger);
             discoveryClient = new NamedPipeDiscoveryClient(pipeName, logger);
+
+            discoveryServer.MessageReceived += (sender, e)
+                => MessageReceived?.Invoke(sender, e);
+
+            discoveryClient.MessageReceived += (sender, e)
+                => MessageReceived?.Invoke(sender, e);
         }
 
         async Task IDiscoveryTransport.StartListeningAsync(CancellationToken cancellationToken)
         {
-            discoveryServer.MessageReceived += MessageReceived;
             await discoveryServer.StartListeningAsync(cancellationToken);
         }
 
-        async Task IDiscoveryTransport.ResponseWithData(byte[] responseData, TimeSpan? timeout, CancellationToken cancellationToken)
+        async Task IDiscoveryTransport.ResponseWithData(byte[] responseData, Guid? connectionId, TimeSpan? timeout, CancellationToken cancellationToken)
         {
-            await discoveryServer.ResponseWithData(responseData, timeout, cancellationToken);
+            await discoveryServer.ResponseWithData(responseData, connectionId, timeout, cancellationToken);
         }
 
         async Task IDiscoveryTransport.StopListeningAsync()
@@ -46,7 +51,6 @@ namespace MIN.Discovery.Transport.NamedPipes
 
         public async Task SendAsync(byte[] data, string? destination, TimeSpan? timeout, CancellationToken cancellationToken)
         {
-            discoveryClient.MessageReceived += MessageReceived;
             await discoveryClient.SendAsync(data, destination, timeout, cancellationToken);
         }
     }

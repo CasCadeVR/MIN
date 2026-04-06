@@ -50,7 +50,7 @@ internal sealed class NamedPipeDiscoveryClient
 
         try
         {
-            await pipe.ConnectAsync(timeout ?? TimeSpan.FromSeconds(1), cancellationToken);
+            await pipe.ConnectAsync(timeout.Value.Seconds, cancellationToken);
 
             // Connected here
 
@@ -62,6 +62,25 @@ internal sealed class NamedPipeDiscoveryClient
         catch (Exception ex)
         {
             throw new DiscoveryException(ex.Message);
+        }
+    }
+
+    private async Task AcceptResponse(NamedPipeClientStream pipe, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var buffer = new byte[4096];
+            var bytesRead = await pipe!.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
+            if (bytesRead > 0)
+            {
+                var data = new byte[bytesRead];
+                Array.Copy(buffer, data, bytesRead);
+                MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(data));
+            }
+        }
+        finally
+        {
+            pipe?.Dispose();
         }
     }
 
@@ -86,18 +105,6 @@ internal sealed class NamedPipeDiscoveryClient
         catch (Exception ex) when (ex is not DiscoveryException)
         {
             throw new DiscoveryException(ex.Message);
-        }
-    }
-
-    private async Task AcceptResponse(NamedPipeClientStream pipe, CancellationToken cancellationToken)
-    {
-        var buffer = new byte[4096];
-        var bytesRead = await pipe!.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
-        if (bytesRead > 0)
-        {
-            var data = new byte[bytesRead];
-            Array.Copy(buffer, data, bytesRead);
-            MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(data));
         }
     }
 }

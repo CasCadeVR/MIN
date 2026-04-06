@@ -7,12 +7,22 @@ namespace MIN.Core.Services.Stores
     /// <inheritdoc cref="IRoomStore"/>
     public sealed class RoomStore : IRoomStore
     {
+        private readonly IParticipantStore participantStore;
+        private readonly IMessageStore messageStore;
         private readonly ConcurrentDictionary<Guid, Room> roomsById = new();
+
+        public RoomStore(IParticipantStore participantStore, IMessageStore messageStore)
+        {
+            this.participantStore = participantStore;
+            this.messageStore = messageStore;
+        }
 
         Room IRoomStore.GetRoom(Guid roomId)
         {
             if (roomsById.TryGetValue(roomId, out var room))
             {
+                room.CurrentParticipants = participantStore.GetParticipants(roomId);
+                room.ChatHistory = messageStore.GetHistory(roomId);
                 return room;
             }
 
@@ -20,7 +30,16 @@ namespace MIN.Core.Services.Stores
         }
 
         bool IRoomStore.TryGetRoom(Guid roomId, out Room room)
-            => roomsById.TryGetValue(roomId, out room);
+        {
+            if (roomsById.TryGetValue(roomId, out room))
+            {
+                room.CurrentParticipants = participantStore.GetParticipants(roomId);
+                room.ChatHistory = messageStore.GetHistory(roomId);
+                return true;
+            }
+
+            return false;
+        }
 
         void IRoomStore.Add(Room room)
         {
