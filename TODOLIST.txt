@@ -1,0 +1,4 @@
+1. Add IConfiguration with configuration model
+2. Fix 2 application connecting in 1 room (should work)
+3. Write tests on everything
+4. 

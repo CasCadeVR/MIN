@@ -76,7 +76,7 @@ public sealed class NamedPipeTransport : ITransport
             throw new ArgumentException("Endpoint должен быть NamedPipeEndpoint", nameof(endpoint));
         }
 
-        if (namedPipeEndpoint.MachineName == Environment.MachineName)
+        if (namedPipeEndpoint.MachineName == Environment.MachineName && servers.ContainsKey(roomId))
         {
             var serverConnectionId = GetServerHostingConnectionId(roomId);
             ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, serverConnectionId, true));
@@ -167,6 +167,7 @@ public sealed class NamedPipeTransport : ITransport
         {
             return connectionId;
         }
+
         throw new InvalidOperationException($"No server connection found for roomId {roomId}");
     }
 

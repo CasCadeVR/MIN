@@ -1,6 +1,7 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
+using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Components
@@ -16,13 +17,15 @@ namespace MIN.Desktop.Components
         public event Func<Task> Clicked;
 
         private RoomInfo room;
+        private ParticipantInfo localParticipant;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>
         /// </summary>
-        public RoomCard(RoomInfo room)
+        public RoomCard(ParticipantInfo localParticipant, RoomInfo room)
         {
             InitializeComponent();
+            this.localParticipant = localParticipant;
             this.room = room;
 
             ApplyStylings();
@@ -54,18 +57,21 @@ namespace MIN.Desktop.Components
                 classroom.Text = DesktopConstants.UndefinedPCName;
             }
 
-            setConnectButtonAccordingToRoomCount();
+            manageConnectButtonAccessability();
         }
 
-        private void setConnectButtonAccordingToRoomCount()
+        private void manageConnectButtonAccessability()
         {
             var isFull = room.ParticipantCount >= room.MaximumParticipants;
+            var isOwner = room.HostParticipant.Id == localParticipant.Id;
+            var isNotAccessible = isFull || isOwner;
 
-            connectButton.Enabled = !isFull;
-            if (isFull)
+            connectButton.Enabled = !isNotAccessible;
+
+            if (isNotAccessible)
             {
-                connectButton.Text = "Заполнено";
-                connectButton.BackColor = ColorScheme.RoomFilled;
+                connectButton.Text = isFull ? "Заполнено" : "Твоя комната";
+                connectButton.BackColor = ColorScheme.ConnectionDisabled;
             }
             else
             {

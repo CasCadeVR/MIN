@@ -19,8 +19,8 @@ namespace MIN.Desktop.Components.Controls.DGVs
 
         private void OneColumnDataGridView_EnabledChanged(object? sender, EventArgs e)
         {
-            BackgroundColor = Enabled ? ColorScheme.InputFieldBackground : ColorScheme.RoomFilled;
-            DefaultCellStyle.BackColor = Enabled ? ColorScheme.PrimaryAccent : ColorScheme.RoomFilled;
+            BackgroundColor = Enabled ? ColorScheme.InputFieldBackground : ColorScheme.ConnectionDisabled;
+            DefaultCellStyle.BackColor = Enabled ? ColorScheme.PrimaryAccent : ColorScheme.ConnectionDisabled;
         }
 
         protected virtual void ApplyBaseStyles()

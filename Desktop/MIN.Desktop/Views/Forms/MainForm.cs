@@ -10,6 +10,7 @@ using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Desktop.Infrastructure.Bootstrap;
 using MIN.Discovery.Events;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -36,7 +37,6 @@ namespace MIN.Desktop
 
         private readonly SynchronizationContext uiContext;
         private readonly CancellationTokenSource cts;
-
         private Settings Settings => settingsProvider.GetSettings();
         private ParticipantInfo localParticipant;
 
@@ -101,7 +101,7 @@ namespace MIN.Desktop
             if (roomCreateForm.ShowDialog() == DialogResult.OK)
             {
                 var room = roomCreateForm.Room;
-                localParticipant.Endpoint = new NamedPipeEndpoint(Environment.MachineName, PipeNameProvider.GetRoomPipeName(room.Id));
+                localParticipant.Endpoint = EndpointBootstrapper.CreateEndpointForRoom(room.Id);
                 room.HostParticipant = localParticipant;
 
                 try
@@ -160,7 +160,7 @@ namespace MIN.Desktop
         {
             uiContext.Post(_ =>
             {
-                var card = new RoomCard(e.Room)
+                var card = new RoomCard(localParticipant, e.Room)
                 {
                     Parent = flowLayoutPanel
                 };
@@ -228,13 +228,11 @@ namespace MIN.Desktop
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            var machineName = Environment.MachineName;
-
-            localParticipant = new ParticipantInfo(machineName);
+            localParticipant = new ParticipantInfo("Ты");
 
             identityService.SetParticipant(localParticipant);
 
-            if (CollegePCNameParser.TryParseComputerName(machineName, out var roomNumber, out var _))
+            if (CollegePCNameParser.TryParseComputerName(Environment.MachineName, out var roomNumber, out var _))
             {
                 classNumber.Value = roomNumber;
             }

@@ -71,7 +71,7 @@ public static class ColorScheme
     public readonly static Color ErrorColor = ColorTranslator.FromHtml("#FF6B6B");
 
     /// <summary>
-    /// Цвет заполненной комнаты
+    /// Цвет запрета присоединения к комнате
     /// </summary>
-    public readonly static Color RoomFilled = Color.Gray;
+    public readonly static Color ConnectionDisabled = Color.Gray;
 }

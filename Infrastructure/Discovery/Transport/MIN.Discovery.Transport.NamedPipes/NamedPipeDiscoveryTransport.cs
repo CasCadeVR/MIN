@@ -25,11 +25,10 @@ namespace MIN.Discovery.Transport.NamedPipes
             var pipeName = DiscoveryPipeNameProvider.GetDiscoveryPipeName(machineName);
 
             discoveryServer = new NamedPipeDiscoveryServer(pipeName, logger);
-            discoveryClient = new NamedPipeDiscoveryClient(pipeName, logger);
-
             discoveryServer.MessageReceived += (sender, e)
                 => MessageReceived?.Invoke(sender, e);
 
+            discoveryClient = new NamedPipeDiscoveryClient(pipeName, logger);
             discoveryClient.MessageReceived += (sender, e)
                 => MessageReceived?.Invoke(sender, e);
         }
