@@ -31,7 +31,7 @@ namespace MIN.Core.Services.Stores
 
         bool IRoomStore.TryGetRoom(Guid roomId, out Room room)
         {
-            if (roomsById.TryGetValue(roomId, out room))
+            if (roomsById.TryGetValue(roomId, out room!))
             {
                 room.CurrentParticipants = participantStore.GetParticipants(roomId);
                 room.ChatHistory = messageStore.GetHistory(roomId);

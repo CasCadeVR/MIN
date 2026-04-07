@@ -10,6 +10,7 @@ using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
+using MIN.Core.Entities.Contracts.Models;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -19,6 +20,7 @@ namespace MIN.Core.Handlers.Handlers;
 internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 {
     private readonly IMessageEncryptor encryptor;
+    private readonly IIdentityService identityService;
     private readonly IParticipantConnectionRegistry participantConnectionRegistry;
     private readonly IParticipantStore participantStore;
     private readonly IMessageSender messageSender;
@@ -28,12 +30,14 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
     public HandshakeHandler(IMessageEncryptor encryptor,
+        IIdentityService identityService,
         IParticipantStore participantStore,
         IParticipantConnectionRegistry participantConnectionRegistry,
         IMessageSender messageSender,
         ILoggerProvider logger)
     {
         this.encryptor = encryptor;
+        this.identityService = identityService;
         this.participantStore = participantStore;
         this.participantConnectionRegistry = participantConnectionRegistry;
         this.messageSender = messageSender;
@@ -53,10 +57,13 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
             participantConnectionRegistry.Register(context.ConnectionId, handshakeMessage.Participant);
             logger.Log($"Сессия с отправителем {handshakeMessage.Participant.Name} инициализирована");
 
-            var responseHandshake = await encryptor.CreateSelfHandshakeMessageAsync();
-            var ackMessage = new HandshakeAckMessage(responseHandshake);
+            var ackMessage = new HandshakeAckMessage()
+            {
+                Participant = new ParticipantInfo(identityService.SelfPartcipant),
+                PublicKey = await encryptor.GetLocalPublicKey(),
+            };
 
-            await messageSender.SendAsync(ackMessage, context.RoomId, responseHandshake.Participant.Id, context.ConnectionId, context.CancellationToken);
+            await messageSender.SendAsync(ackMessage, context.RoomId, handshakeMessage.Participant.Id, context.ConnectionId, context.CancellationToken);
 
             var participantJoinedMessage = new ParticipantJoinedMessage()
             {

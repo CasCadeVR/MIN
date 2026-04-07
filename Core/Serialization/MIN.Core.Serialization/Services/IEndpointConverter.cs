@@ -20,10 +20,11 @@ namespace MIN.Core.Serialization.Json.Services
 
             if (root.TryGetProperty("pipeName", out _))
             {
-                return JsonSerializer.Deserialize<NamedPipeEndpoint>(root.GetRawText(), options);
+                return JsonSerializer.Deserialize<NamedPipeEndpoint>(root.GetRawText(), options)
+                    ?? throw new InvalidCastException($"Не удалось распарсить Endpoint");
             }
 
-            throw new NotSupportedException("Unknown endpoint type");
+            throw new NotSupportedException("Неизвестный тип Endpoint");
         }
 
         /// <summary>

@@ -35,16 +35,17 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
     /// </summary>
     public event EventHandler<DiscoveryRawMessageReceivedEventArgs>? MessageReceived;
 
-    public async Task StartListeningAsync(CancellationToken cancellationToken = default)
+    public Task StartListeningAsync(CancellationToken cancellationToken = default)
     {
         if (isListening)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         isListening = true;
         _ = ListenAsync(cts.Token);
+        return Task.CompletedTask;
     }
 
     private async Task ListenAsync(CancellationToken cancellationToken)
@@ -75,14 +76,16 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
 
                 var connectionId = Guid.NewGuid();
                 connections.TryAdd(connectionId, newPipe);
-                await newPipe.WaitForConnectionAsync(cancellationToken);
 
+                await newPipe.WaitForConnectionAsync(cancellationToken);
                 await AcceptRequest(connectionId, cancellationToken);
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
             {
-                logger.Log($"Ошибка в ответе на обнаружение: {ex.Message}", LogLevel.Error);
+                var message = $"Ошибка в ответе на обнаружение: {ex.Message}";
+                logger.Log(message, LogLevel.Error);
+                throw new InvalidOperationException(message);
             }
         }
     }
@@ -90,7 +93,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
     /// <summary>
     /// Ответить клиенту на запрос
     /// </summary>
-    public async Task ResponseWithData(byte[] responseData, Guid? connectionId, TimeSpan? timeout, CancellationToken cancellationToken)
+    public async Task ResponseWithData(byte[] responseData, Guid? connectionId, CancellationToken cancellationToken)
     {
         NamedPipeServerStream? targetPipe = null;
         Guid? targetId = null;
@@ -160,5 +163,6 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
         }
     }
 
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
     public async ValueTask DisposeAsync() => await StopListeningAsync();
 }

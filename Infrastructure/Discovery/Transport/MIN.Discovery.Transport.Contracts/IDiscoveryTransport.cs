@@ -25,7 +25,7 @@ public interface IDiscoveryTransport
     /// <summary>
     /// Отправить ответные данные по идентификатору канала, или динамически определив отправителя (в случае для udp)
     /// </summary>
-    Task ResponseWithData(byte[] responseData, Guid? connectionId = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default);
+    Task ResponseWithData(byte[] responseData, Guid? connectionId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Остановить прослушивание

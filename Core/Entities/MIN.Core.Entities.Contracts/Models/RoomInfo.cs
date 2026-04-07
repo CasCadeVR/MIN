@@ -8,7 +8,7 @@ namespace MIN.Core.Entities.Contracts.Models;
 public record RoomInfo : IRoomData
 {
     /// <inheritdoc />
-    public Guid Id { get; init; }
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <inheritdoc />
     public string Name { get; set; } = string.Empty;
@@ -23,7 +23,7 @@ public record RoomInfo : IRoomData
     public bool IsActive { get; set; }
 
     /// <inheritdoc />
-    public ParticipantInfo HostParticipant { get; set; }
+    public ParticipantInfo HostParticipant { get; set; } = null!;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfo"/>
@@ -41,8 +41,5 @@ public record RoomInfo : IRoomData
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfo"/>
     /// </summary>
-    public RoomInfo()
-    {
-        Id = Guid.NewGuid();
-    }
+    public RoomInfo() { }
 }

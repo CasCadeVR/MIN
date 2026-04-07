@@ -6,8 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Messaging\MIN.Core.Messaging\MIN.Core.Messaging.csproj" />
-  </ItemGroup>
-
 </Project>

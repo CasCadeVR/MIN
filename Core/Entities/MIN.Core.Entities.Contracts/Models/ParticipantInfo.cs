@@ -32,14 +32,5 @@ public record ParticipantInfo : IParticipantData
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
     /// </summary>
-    /// <param name="name">Имя участника</param>
-    public ParticipantInfo(string name)
-    {
-        Name = name;
-    }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
-    /// </summary>
     public ParticipantInfo() { }
 }

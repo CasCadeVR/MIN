@@ -19,8 +19,8 @@ public sealed class ParticipantConnectionRegistry : IParticipantConnectionRegist
     ParticipantInfo IParticipantConnectionRegistry.GetParticipant(Guid connectionId)
         => participantsByConnectionId.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
 
-    bool IParticipantConnectionRegistry.TryGetConnectionIdFromParticipantId(Guid connectionId, out ParticipantInfo participant)
-        => participantsByConnectionId.TryGetValue(connectionId, out participant);
+    bool IParticipantConnectionRegistry.TryGetParticipantFromConnectionId(Guid connectionId, out ParticipantInfo participant)
+        => participantsByConnectionId.TryGetValue(connectionId, out participant!);
 
     void IParticipantConnectionRegistry.Unregister(Guid connectionId)
     {

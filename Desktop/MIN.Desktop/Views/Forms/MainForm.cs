@@ -38,7 +38,7 @@ namespace MIN.Desktop
         private readonly SynchronizationContext uiContext;
         private readonly CancellationTokenSource cts;
         private Settings Settings => settingsProvider.GetSettings();
-        private ParticipantInfo localParticipant;
+        private ParticipantInfo localParticipant = null!;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="MainForm"/>
@@ -228,7 +228,10 @@ namespace MIN.Desktop
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            localParticipant = new ParticipantInfo("Ты");
+            localParticipant = new ParticipantInfo()
+            {
+                Name = "Ты",
+            };
 
             identityService.SetParticipant(localParticipant);
 

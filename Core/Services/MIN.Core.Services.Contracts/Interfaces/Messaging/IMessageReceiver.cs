@@ -8,11 +8,6 @@ namespace MIN.Core.Services.Contracts.Interfaces.Messaging;
 public interface IMessageReceiver
 {
     /// <summary>
-    /// Событие прихода сообщения
-    /// </summary>
-    event EventHandler<MessageReceivedEventArgs> MessageReceived;
-
-    /// <summary>
     /// Начать прослушку сообщений
     /// </summary>
     Task StartListeningAsync(CancellationToken cancellationToken = default);

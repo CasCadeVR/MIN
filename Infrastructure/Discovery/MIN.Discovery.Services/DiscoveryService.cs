@@ -62,7 +62,7 @@ namespace MIN.Discovery.Services
             {
                 return;
             }
-            serviceCts.Cancel();
+            await serviceCts.CancelAsync();
             discoveryTransport.MessageReceived -= OnRequestReceived;
             await discoveryTransport.StopListeningAsync();
             serviceCts.Dispose();
@@ -112,11 +112,14 @@ namespace MIN.Discovery.Services
         {
             try
             {
-                logger.Log($"Found Room: {e.ConnectionId}");
                 var message = serializer.Deserialize(e.Data);
                 if (message is DiscoveryResponseMessage response)
                 {
-                    eventBus.PublishAsync(new RoomDiscoveredEvent(response.Room));
+                    logger.Log($"Нашёл комнату: {response.Room.Name}");
+                    eventBus.PublishAsync(new RoomDiscoveredEvent()
+                    {
+                        Room = response.Room,
+                    });
                 }
             }
             catch (Exception ex)
@@ -150,14 +153,15 @@ namespace MIN.Discovery.Services
                 var discoveryResponse = new DiscoveryResponseMessage { Room = roomInfo };
                 var data = serializer.Serialize(discoveryResponse);
 
-                discoveryTransport.ResponseWithData(data, e.ConnectionId, timeout: null, serviceCts!.Token);
+                discoveryTransport.ResponseWithData(data, e.ConnectionId, serviceCts!.Token);
             }
             catch (Exception ex)
             {
-                logger.Log($"Error processing discovery message: {ex.Message}");
+                logger.Log($"Ошибка во время обработки запроса на обнаружение: {ex.Message}");
             }
         }
 
+        /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
         public async ValueTask DisposeAsync() => await StopDiscoveryAsync();
     }
 }

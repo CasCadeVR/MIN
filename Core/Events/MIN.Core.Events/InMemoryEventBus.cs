@@ -2,6 +2,7 @@
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Events
 {
@@ -11,6 +12,7 @@ namespace MIN.Core.Events
         private readonly ConcurrentDictionary<Type, List<Func<object, CancellationToken, Task>>> handlers = new();
         private readonly ILoggerProvider logger;
         private readonly CancellationTokenSource cts = new();
+
         private bool disposed;
 
         /// <summary>
@@ -33,18 +35,6 @@ namespace MIN.Core.Events
             var tasks = handlers.Select(handler => SafeExecuteHandler(handler, eventMessage, linkedCts.Token));
 
             await Task.WhenAll(tasks);
-        }
-
-        private async Task SafeExecuteHandler(Func<object, CancellationToken, Task> handler, IEvent eventMessage, CancellationToken cancellationToken)
-        {
-            try
-            {
-                await handler(eventMessage, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                logger.Log($"Error executing handler for event {eventMessage.GetType().Name}: {ex.Message}");
-            }
         }
 
         IDisposable IEventBus.Subscribe<T>(Func<T, CancellationToken, Task> handler)
@@ -84,6 +74,18 @@ namespace MIN.Core.Events
             return new SubscriptionToken(() => Unsubscribe(eventType, wrappedHandler));
         }
 
+        private async Task SafeExecuteHandler(Func<object, CancellationToken, Task> handler, IEvent eventMessage, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await handler(eventMessage, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Log($"Произошла ошибка во время обработки события: {eventMessage.GetType().Name}: {ex.Message}", LogLevel.Error);
+            }
+        }
+
         private void Unsubscribe(Type eventType, Func<object, CancellationToken, Task> handler)
         {
             if (!this.handlers.TryGetValue(eventType, out var handlers))
@@ -101,9 +103,7 @@ namespace MIN.Core.Events
             }
         }
 
-        /// <summary>
-        /// Освобождает ресурсы
-        /// </summary>
+        /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
         public async ValueTask DisposeAsync()
         {
             if (disposed)

@@ -124,8 +124,6 @@ internal sealed class NamedPipeClient : IAsyncDisposable
         Disconnected?.Invoke(this, reason);
     }
 
-    /// <summary>
-    /// Освобождает ресурсы
-    /// </summary>
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
     public async ValueTask DisposeAsync() => await DisconnectAsync();
 }

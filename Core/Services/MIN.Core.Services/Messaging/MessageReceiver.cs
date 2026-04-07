@@ -40,8 +40,6 @@ namespace MIN.Core.Services.Messaging
             this.participantConnectionRegistry = participantConnectionRegistry;
         }
 
-        public event EventHandler<MessageReceivedEventArgs>? MessageReceived;
-
         async Task IMessageReceiver.StartListeningAsync(CancellationToken cancellationToken)
         {
             cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -53,7 +51,7 @@ namespace MIN.Core.Services.Messaging
         {
             try
             {
-                participantConnectionRegistry.TryGetConnectionIdFromParticipantId(e.ConnectionId, out var participantInfo);
+                participantConnectionRegistry.TryGetParticipantFromConnectionId(e.ConnectionId, out var participantInfo);
 
                 byte[] plainData;
                 var body = encryptor.RemoveEncryptionHeader(e.Data);
@@ -91,6 +89,7 @@ namespace MIN.Core.Services.Messaging
             }
         }
 
+        /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
         public async ValueTask DisposeAsync()
         {
             transport.RawMessageReceived -= OnRawMessageReceived;

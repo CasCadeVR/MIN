@@ -23,7 +23,7 @@ public sealed class JsonMessageSerializer : IMessageSerializer
     /// <summary>
     /// Настройки сериализации
     /// </summary>
-    public JsonSerializerOptions options;
+    public JsonSerializerOptions options = default!;
 
     byte[] IMessageSerializer.Serialize(IMessage message)
     {

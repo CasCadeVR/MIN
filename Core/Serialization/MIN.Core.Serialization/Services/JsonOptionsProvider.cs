@@ -9,7 +9,7 @@ namespace MIN.Core.Serialization.Json.Services
     /// </summary>
     public static class JsonOptionsProvider
     {
-        private static JsonSerializerOptions options;
+        private static JsonSerializerOptions options = default!;
 
         public static void Initialize(IMessageSerializer messageSerializer)
         {

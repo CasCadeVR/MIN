@@ -400,7 +400,7 @@ namespace MIN.Desktop
             }
         }
 
-        private async void editButton_Click(object sender, EventArgs e)
+        private void editButton_Click(object sender, EventArgs e)
         {
             if (room == null)
             {

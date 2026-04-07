@@ -1,7 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
-using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Components
@@ -11,13 +10,13 @@ namespace MIN.Desktop.Components
     /// </summary>
     public partial class RoomCard : UserControl
     {
+        private readonly RoomInfo room;
+        private readonly ParticipantInfo localParticipant;
+
         /// <summary>
         /// Событие по нажатию
         /// </summary>
-        public event Func<Task> Clicked;
-
-        private RoomInfo room;
-        private ParticipantInfo localParticipant;
+        public event Func<Task> Clicked = null!;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>

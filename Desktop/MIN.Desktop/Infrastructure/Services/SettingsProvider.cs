@@ -8,8 +8,7 @@ namespace MIN.Desktop.Infrastructure.Services
     public class SettingsProvider : ISettingsProvider
     {
         private readonly static string settingsFilePath = Path.Combine(Application.StartupPath, "appsettings.json");
-
-        private Settings settings;
+        private Settings settings = null!;
 
         Settings ISettingsProvider.GetSettings()
         {

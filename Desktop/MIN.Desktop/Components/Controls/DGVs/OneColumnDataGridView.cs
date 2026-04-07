@@ -23,7 +23,7 @@ namespace MIN.Desktop.Components.Controls.DGVs
             DefaultCellStyle.BackColor = Enabled ? ColorScheme.PrimaryAccent : ColorScheme.ConnectionDisabled;
         }
 
-        protected virtual void ApplyBaseStyles()
+        protected override void ApplyBaseStyles()
         {
             base.ApplyBaseStyles();
             DefaultCellStyle.ForeColor = ColorScheme.TextOnAccent;

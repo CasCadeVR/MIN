@@ -11,13 +11,5 @@ public class RoomDiscoveredEvent : BaseEvent
     /// <summary>
     /// Информация о найденной комнате
     /// </summary>
-    public RoomInfo Room { get; }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="RoomDiscoveredEvent"/>
-    /// </summary>
-    public RoomDiscoveredEvent(RoomInfo room)
-    {
-        Room = room;
-    }
+    public RoomInfo Room { get; init; } = null!;
 }

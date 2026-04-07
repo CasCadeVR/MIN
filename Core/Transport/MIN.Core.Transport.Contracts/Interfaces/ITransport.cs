@@ -46,14 +46,4 @@ public interface ITransport
     /// Отключиться от указанной комнаты
     /// </summary>
     Task DisconnectAsync(Guid roomId, Guid connectionId);
-
-    /// <summary>
-    /// Получить идентификатор соединения к своему серверу
-    /// </summary>
-    Guid GetServerHostingConnectionId(Guid roomId);
-
-    /// <summary>
-    /// Является ли идентификатор соединения серверным у указанной комнаты
-    /// </summary>
-    bool IsServerHostingConnectionId(Guid roomId, Guid connectionId);
 }

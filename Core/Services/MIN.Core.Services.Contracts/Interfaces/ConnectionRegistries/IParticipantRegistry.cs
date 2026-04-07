@@ -25,7 +25,7 @@ public interface IParticipantConnectionRegistry
     /// <summary>
     /// Попытаться получить данные участника от его соединения
     /// </summary>
-    bool TryGetConnectionIdFromParticipantId(Guid connectionId, out ParticipantInfo participant);
+    bool TryGetParticipantFromConnectionId(Guid connectionId, out ParticipantInfo participant);
 
     /// <summary>
     /// Разорвать ассоциацию соеднинения с участником

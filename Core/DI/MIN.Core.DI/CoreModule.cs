@@ -2,8 +2,7 @@
 using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.Cryptography;
-using MIN.Core.Cryptography.Contracts.Interfaces.Storage;
-using MIN.Core.Cryptography.Storage;
+using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Dispatcher;
@@ -30,7 +29,7 @@ public class CoreModule : Module
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var baseDirectory = Path.Combine(appData, "MIN-Messenger");
-        services.AddSingleton<IKeyStorage>(sp => new FileSystemKeyStorage(baseDirectory));
+        services.AddSingleton<IKeyStorage>(_ => new FileSystemKeyStorage(baseDirectory));
 
         services.RegisterAsImplementedInterfaces<JsonDeserializerRegistry>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<JsonMessageSerializer>(ServiceLifetime.Singleton);

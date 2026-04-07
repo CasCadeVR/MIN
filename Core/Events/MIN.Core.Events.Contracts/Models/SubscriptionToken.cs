@@ -16,6 +16,7 @@
             this.unsubscribe = unsubscribe;
         }
 
+        /// <inheritdoc cref="IDisposable.Dispose"/>
         public void Dispose()
         {
             if (disposed)

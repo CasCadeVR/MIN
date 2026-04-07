@@ -11,13 +11,16 @@ using MIN.Helpers.DI;
 
 namespace MIN.Desktop
 {
+    /// <summary>
+    /// ¬ходна€ точка программы
+    /// </summary>
     static internal class Program
     {
         /// <summary>
-        /// The main entry point for the application.
+        /// ¬ходной метод программы
         /// </summary>
         [STAThread]
-        static async Task Main()
+        private static async Task Main()
         {
             ApplicationConfiguration.Initialize();
 
@@ -26,18 +29,18 @@ namespace MIN.Desktop
 
             var serviceProvider = services.BuildServiceProvider();
 
-            using var cts = new CancellationTokenSource();
+            using var appLifeTimeCts = new CancellationTokenSource();
 
             var messageReceiver = serviceProvider.GetRequiredService<IMessageReceiver>();
-            await messageReceiver.StartListeningAsync(cts.Token);
+            await messageReceiver.StartListeningAsync(appLifeTimeCts.Token);
 
             var jsonDeserializerInitializer = serviceProvider.GetRequiredService<IHostedService>();
-            await jsonDeserializerInitializer.StartAsync(cts.Token);
+            await jsonDeserializerInitializer.StartAsync(appLifeTimeCts.Token);
 
             var mainForm = serviceProvider.GetRequiredService<MainForm>();
             mainForm.FormClosing += (sender, e) =>
             {
-                cts.Cancel();
+                appLifeTimeCts.Cancel();
             };
 
             Application.Run(mainForm);

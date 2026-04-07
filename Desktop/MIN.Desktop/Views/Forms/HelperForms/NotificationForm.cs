@@ -26,7 +26,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         public event Action? NotificationTurnOffClicked;
 
         /// <summary>
-        /// Нажато на уведомение
+        /// Нажато на уведомление
         /// </summary>
         public event Action? NotificationClicked;
 
@@ -37,6 +37,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             InitializeComponent();
             this.message = message;
             this.messageRoomName = messageRoomName;
+            this.sender = sender;
 
             SetupNotificationProperties();
             FillFields();

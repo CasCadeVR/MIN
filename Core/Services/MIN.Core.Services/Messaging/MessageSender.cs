@@ -74,7 +74,7 @@ namespace MIN.Core.Services.Messaging
 
             if (message.RequiresEncryption)
             {
-                if (!participantConnectionRegistry.TryGetConnectionIdFromParticipantId(connectionId, out var recipient))
+                if (!participantConnectionRegistry.TryGetParticipantFromConnectionId(connectionId, out var recipient))
                 {
                     throw new InvalidOperationException($"No participant info for connection {connectionId}");
                 }
@@ -89,6 +89,7 @@ namespace MIN.Core.Services.Messaging
             return resultBytes;
         }
 
+        /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }

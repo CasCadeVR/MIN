@@ -76,7 +76,7 @@ namespace MIN.Core.Services.Rooms
             transport.ConnectionStateChanged -= OnConnectionStateChanged;
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
         public async ValueTask DisposeAsync() => await StopAsync();
     }
 }
