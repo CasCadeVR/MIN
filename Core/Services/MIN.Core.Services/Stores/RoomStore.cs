@@ -21,8 +21,8 @@ namespace MIN.Core.Services.Stores
         {
             if (roomsById.TryGetValue(roomId, out var room))
             {
-                room.CurrentParticipants = participantStore.GetParticipants(roomId);
-                room.ChatHistory = messageStore.GetHistory(roomId);
+                room.CurrentParticipants = participantStore.GetParticipants(roomId).ToList();
+                room.ChatHistory = messageStore.GetHistory(roomId).ToList();
                 return room;
             }
 
@@ -33,8 +33,8 @@ namespace MIN.Core.Services.Stores
         {
             if (roomsById.TryGetValue(roomId, out room!))
             {
-                room.CurrentParticipants = participantStore.GetParticipants(roomId);
-                room.ChatHistory = messageStore.GetHistory(roomId);
+                room.CurrentParticipants = participantStore.GetParticipants(roomId).ToList();
+                room.ChatHistory = messageStore.GetHistory(roomId).ToList();
                 return true;
             }
 

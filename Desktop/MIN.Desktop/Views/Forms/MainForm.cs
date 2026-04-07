@@ -5,7 +5,6 @@ using MIN.Core.Events.Events;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
-using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Interfaces;
@@ -208,9 +207,13 @@ namespace MIN.Desktop
                     {
                         if (identityService.SelfPartcipant.Id == roomInfo.HostParticipant.Id)
                         {
+                            await roomHoster.StopHostingAsync(roomInfo.Id);
                             await discoveryService.StopDiscoveryAsync();
                         }
-                        await roomConnector.DisconnectAsync(roomInfo.Id, connectionId);
+                        else
+                        {
+                            await roomConnector.DisconnectAsync(roomInfo.Id, connectionId);
+                        }
                     };
                     chatForm.Show();
                 }

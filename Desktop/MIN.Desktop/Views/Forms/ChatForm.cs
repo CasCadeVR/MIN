@@ -134,6 +134,8 @@ namespace MIN.Desktop
                 return;
             }
 
+            room!.CurrentParticipants.Add(eventMessage.Message.Participant);
+
             uiContext.Post(_ =>
             {
                 AddMessageToChatFlow(eventMessage.Message);
@@ -149,6 +151,8 @@ namespace MIN.Desktop
             {
                 return;
             }
+
+            room!.CurrentParticipants.Remove(eventMessage.Message.Participant);
 
             uiContext.Post(_ =>
             {
@@ -311,7 +315,10 @@ namespace MIN.Desktop
                             minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
                         }
 
-                        rowControl = new ChatMessageCard(chatTextMessage, localParticipant, isHostMessage, removeHeaders: isSelfMessage)
+                        rowControl = new ChatMessageCard(chatTextMessage,
+                            localParticipant,
+                            isHostMessage,
+                            removeHeaders: isSelfMessage || lastTextMessage?.Id == message.Id)
                         {
                             Anchor = isSelfMessage ? AnchorStyles.Right : AnchorStyles.Left,
                             Margin = new Padding(20, 0, 20, 0)

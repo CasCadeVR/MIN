@@ -1,5 +1,4 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
-using MIN.Core.Messaging.Contracts.Events;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Transport.Contracts.Events;
@@ -8,6 +7,7 @@ using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
+using MIN.Core.Messaging.Stateless;
 
 namespace MIN.Core.Services.Messaging
 {
@@ -74,14 +74,18 @@ namespace MIN.Core.Services.Messaging
 
                 try
                 {
+                    if (message is HandshakeAckMessage handshakeAck)
+                    {
+                        await dispatcher.DispatchAsync(message, new MessageContext(handshakeAck.Participant, e.RoomId, e.ConnectionId, cts!.Token));
+                        return;
+                    }
+
                     await dispatcher.DispatchAsync(message, new MessageContext(participantInfo, e.RoomId, e.ConnectionId, cts!.Token));
                 }
                 catch (Exception ex)
                 {
                     logger.Log($"Произошла ошибка во время обработки raw message: {ex.Message}");
                 }
-
-                //MessageReceived!.Invoke(this, new MessageReceivedEventArgs(e.RoomId, e.ConnectionId, message, participantInfo!));
             }
             catch (Exception ex)
             {

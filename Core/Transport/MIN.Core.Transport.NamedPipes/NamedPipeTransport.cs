@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Constants;
@@ -111,7 +112,7 @@ public sealed class NamedPipeTransport : ITransport
         }
         else
         {
-            logger.Log($"Попытка отсоединиться от соеднинения {connectionId} для комнаты {roomId}, которой не нашлось");
+            logger.Log($"Попытка отсоединиться от соеднинения {connectionId} для комнаты {roomId}, которой не нашлось", LogLevel.Warning);
         }
     }
 
@@ -136,6 +137,10 @@ public sealed class NamedPipeTransport : ITransport
         else if (clients.TryGetValue(roomId, out var client) && client.ConnectionId == connectionId)
         {
             await client.SendAsync(data, cancellationToken);
+        }
+        else if (servers.TryGetValue(roomId, out var server))
+        {
+            await server.SendToConnectionAsync(data, connectionId, cancellationToken);
         }
         else
         {

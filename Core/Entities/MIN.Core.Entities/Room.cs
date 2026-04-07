@@ -41,15 +41,32 @@ public class Room : IRoomData
     /// <summary>
     /// Получить текущих участников комнаты
     /// </summary>
-    public IEnumerable<ParticipantInfo> CurrentParticipants { get; set; } = [];
+    public List<ParticipantInfo> CurrentParticipants { get; set; } = [];
 
     /// <summary>
     /// Получить текущих участников комнаты
     /// </summary>
-    public IEnumerable<IMessage> ChatHistory { get; set; } = [];
+    public List<IMessage> ChatHistory { get; set; } = [];
 
     /// <summary>
     /// Заполнена ли комната
     /// </summary>
     public bool IsFull => CurrentParticipants.Count() >= MaximumParticipants;
+
+    /// <summary>
+    /// Добавить участника в комнату
+    /// </summary>
+    public void AddParticipant(ParticipantInfo participantInfo)
+    {
+        CurrentParticipants.Add(participantInfo);
+    }
+
+    /// <summary>
+    /// Добавить участника в комнату
+    /// </summary>
+    public bool RemoveParticipant(Guid participantId)
+    {
+        var foundParticipant = CurrentParticipants.FirstOrDefault(x => x.Id == participantId);
+        return CurrentParticipants.Remove(foundParticipant!);
+    }
 }
