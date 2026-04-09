@@ -2,8 +2,8 @@
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
 
@@ -20,7 +20,8 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ParticipantJoinHandler"/>
     /// </summary>
-    public ParticipantJoinHandler(IMessageStore messageStore, IEventBus eventBus)
+    public ParticipantJoinHandler(IMessageStore messageStore,
+        IEventBus eventBus)
     {
         this.messageStore = messageStore;
         this.eventBus = eventBus;

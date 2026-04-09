@@ -11,7 +11,6 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Services.Contracts.Constants;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -52,13 +51,6 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
-        if (context.ConnectionId == CoreServicesConstants.LocalConnectionId)
-        {
-            // Себя то мы знаем
-            var roomInfoRequest = new RoomInfoRequestMessage(context.RoomId);
-            return HandlerResult.WithResponse(roomInfoRequest);
-        }
-
         if (message is HandshakeMessage handshakeMessage)
         {
             await encryptor.InitializeSessionWithPartnerAsync(handshakeMessage.Participant.Id, handshakeMessage.PublicKey);
@@ -73,17 +65,6 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 
             await messageSender.SendAsync(ackMessage, context.RoomId, handshakeMessage.Participant.Id, context.ConnectionId, context.CancellationToken);
 
-            var participantJoinedMessage = new ParticipantJoinedMessage()
-            {
-                Participant = handshakeMessage.Participant,
-                RoomId = context.RoomId
-            };
-
-            participantStore.AddParticipant(context.RoomId, handshakeMessage.Participant);
-            logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomId}");
-
-            await messageSender.SendAsync(participantJoinedMessage, context.RoomId, null, null, context.CancellationToken);
-
             return HandlerResult.Success();
         }
         else if (message is HandshakeAckMessage handshakeAckMessage)
@@ -92,6 +73,17 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
             participantConnectionRegistry.Register(context.ConnectionId, handshakeAckMessage.Participant);
 
             logger.Log($"Сессия с получателем {handshakeAckMessage.Participant.Name} инициализирована");
+
+            var participantJoinedMessage = new ParticipantJoinedMessage()
+            {
+                Participant = new ParticipantInfo(identityService.SelfPartcipant),
+                RoomId = context.RoomId
+            };
+
+            participantStore.AddParticipant(context.RoomId, participantJoinedMessage.Participant);
+            logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomId}");
+
+            await messageSender.SendAsync(participantJoinedMessage, context.RoomId, null, null, context.CancellationToken);
 
             var roomInfoRequest = new RoomInfoRequestMessage(context.RoomId);
             return HandlerResult.WithResponse(roomInfoRequest);

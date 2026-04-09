@@ -28,6 +28,11 @@ public interface IParticipantConnectionRegistry
     Guid GetConnectionIdFromParticipantId(Guid participantId);
 
     /// <summary>
+    /// Попытаться получить идентификатор соединения от идентификатора участника
+    /// </summary>
+    bool TryGetConnectionIdFromParticipantId(Guid participantId, out Guid connectionId);
+
+    /// <summary>
     /// Попытаться получить данные участника от его соединения
     /// </summary>
     bool TryGetParticipantFromConnectionId(Guid connectionId, out ParticipantInfo participant);

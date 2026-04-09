@@ -6,6 +6,7 @@ using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Transport.Contracts.Interfaces;
 
@@ -15,6 +16,7 @@ namespace MIN.Core.Services.Messaging
     public sealed class MessageSender : IMessageSender, IAsyncDisposable
     {
         private readonly ITransport transport;
+        private readonly IRoomHoster roomHoster;
         private readonly IMessageEncryptor encryptor;
         private readonly IMessageSerializer serializer;
         private readonly IEventBus eventBus;
@@ -25,6 +27,7 @@ namespace MIN.Core.Services.Messaging
         /// Инициализирует новый экземпляр <see cref="MessageSender"/>
         /// </summary>
         public MessageSender(ITransport transport,
+            IRoomHoster roomHoster,
             IMessageEncryptor encryptor,
             IMessageSerializer serializer,
             IEventBus eventBus,
@@ -32,6 +35,7 @@ namespace MIN.Core.Services.Messaging
             IParticipantConnectionRegistry participantConnectionRegistry)
         {
             this.transport = transport;
+            this.roomHoster = roomHoster;
             this.encryptor = encryptor;
             this.serializer = serializer;
             this.eventBus = eventBus;
@@ -39,38 +43,27 @@ namespace MIN.Core.Services.Messaging
             this.participantConnectionRegistry = participantConnectionRegistry;
         }
 
-        async Task IMessageSender.SendAsync(IMessage message, Guid roomId, Guid? senderId, Guid? recipientConnectionId, CancellationToken cancellationToken)
+        async Task IMessageSender.SendAsync(IMessage message, Guid roomId, Guid senderId, Guid recipientConnectionId, CancellationToken cancellationToken)
         {
-            if (message.IsPublic)
+            if (recipientConnectionId == CoreServicesConstants.LocalConnectionId)
             {
-                await BroadcastAsync(message, roomId, null, cancellationToken);
+                await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId), cancellationToken);
+                return;
             }
-            else
-            {
-                if (!recipientConnectionId.HasValue)
-                {
-                    throw new InvalidOperationException("RecipientConnectionId required for private message");
-                }
 
-                if (recipientConnectionId == CoreServicesConstants.LocalConnectionId)
-                {
-                    await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId), cancellationToken);
-                    return;
-                }
+            var serialized = serializer.Serialize(message);
+            var dataToSend = EncryptData(message, serialized, recipientConnectionId);
 
-                var serialized = serializer.Serialize(message);
-                var dataToSend = EncryptData(message, serialized, (Guid)recipientConnectionId);
-
-                await transport.SendAsync(dataToSend, roomId, (Guid)recipientConnectionId, cancellationToken);
-            }
+            await transport.SendAsync(dataToSend, roomId, recipientConnectionId, cancellationToken);
         }
 
-        public async Task BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
+        async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
         {
             var serialized = serializer.Serialize(message);
             var participants = participantStore.GetParticipants(roomId);
 
-            excludeConnections = [CoreServicesConstants.LocalConnectionId];
+            excludeConnections = (excludeConnections ?? [])
+                .Append(CoreServicesConstants.LocalConnectionId);
 
             var tasks = participants
                 .Select(x => participantConnectionRegistry.GetConnectionIdFromParticipantId(x.Id))
@@ -78,7 +71,6 @@ namespace MIN.Core.Services.Messaging
                 .Select(connectionId => transport.SendAsync(EncryptData(message, serialized, connectionId),
                     roomId, connectionId, cancellationToken));
 
-            await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId), cancellationToken);
             await Task.WhenAll(tasks);
         }
 

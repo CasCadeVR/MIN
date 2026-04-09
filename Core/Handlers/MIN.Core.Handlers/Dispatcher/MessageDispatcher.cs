@@ -14,6 +14,7 @@ namespace MIN.Core.Handlers.Dispatcher
     {
         private readonly IEnumerable<IMessageHandler> handlers;
         private readonly IMessageSender messageSender;
+        private readonly IMessageRouter messageRouter;
         private readonly IEventBus eventBus;
         private readonly ILoggerProvider logger;
 
@@ -22,11 +23,12 @@ namespace MIN.Core.Handlers.Dispatcher
         /// </summary>
         public MessageDispatcher(IEnumerable<IMessageHandler> handlers,
             IMessageSender messageSender,
+            IMessageRouter messageRouter,
             IEventBus eventBus,
             ILoggerProvider logger)
         {
             this.handlers = handlers;
-            this.messageSender = messageSender;
+            this.messageRouter = messageRouter;
             this.eventBus = eventBus;
             this.logger = logger;
         }
@@ -58,6 +60,10 @@ namespace MIN.Core.Handlers.Dispatcher
                     {
                         logger.Log($"Handler {handler.GetType().Name} failed: {result.ErrorMessage}");
                         await PublishErrorEvent(result.ErrorMessage!, context);
+                    }
+                    else if (message.IsPublic)
+                    {
+                        await messageRouter.RouteAsync(message, context.RoomId, context.Sender.Id, context.CancellationToken);
                     }
                     else if (result.Response != null)
                     {

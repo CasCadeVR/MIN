@@ -1,7 +1,6 @@
 ﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -19,7 +18,6 @@ namespace MIN.Core.Services.Rooms
         private readonly IEventBus eventBus;
         private readonly IMessageSender messageSender;
         private readonly IIdentityService identityService;
-        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly ILoggerProvider logger;
         private CancellationTokenSource cts = null!;
 
@@ -30,14 +28,12 @@ namespace MIN.Core.Services.Rooms
             IEventBus eventBus,
             IMessageSender messageSender,
             IIdentityService identityService,
-            IParticipantConnectionRegistry participantConnectionRegistry,
             ILoggerProvider logger)
         {
             this.transport = transport;
             this.eventBus = eventBus;
             this.messageSender = messageSender;
             this.identityService = identityService;
-            this.participantConnectionRegistry = participantConnectionRegistry;
             this.logger = logger;
         }
 
@@ -65,7 +61,7 @@ namespace MIN.Core.Services.Rooms
                         RoomId = e.RoomId,
                     };
 
-                    await messageSender.SendAsync(participantLeftMessage, e.RoomId, participantLeftMessage.Participant.Id, null, cts.Token);
+                    await messageSender.BroadcastAsync(participantLeftMessage, e.RoomId, null, cts.Token);
                 }
 
                 await eventBus.PublishAsync(new ConnectionStatusChangedEvent

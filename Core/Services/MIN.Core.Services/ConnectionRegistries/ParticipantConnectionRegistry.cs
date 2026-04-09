@@ -39,4 +39,7 @@ public sealed class ParticipantConnectionRegistry : IParticipantConnectionRegist
 
     Guid IParticipantConnectionRegistry.GetConnectionIdFromParticipantId(Guid participantId)
         => connectionIdByParticipantId.TryGetValue(participantId, out var connectionId) ? connectionId : throw new KeyNotFoundException();
+
+    bool IParticipantConnectionRegistry.TryGetConnectionIdFromParticipantId(Guid participantId, out Guid connectionId)
+        => connectionIdByParticipantId.TryGetValue(participantId, out connectionId);
 }

@@ -1,8 +1,8 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
+using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
-using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -129,7 +129,6 @@ namespace MIN.Desktop
                 await roomHoster.StartHostingAsync(roomInfo, localParticipant.Endpoint, cts.Token);
 
                 participantStore.AddParticipant(roomInfo.Id, localParticipant);
-                participantConnectionRegistry.RegisterLocalParticipant(localParticipant);
 
                 await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
 
@@ -163,6 +162,7 @@ namespace MIN.Desktop
                     Settings.DiscoveryTimeout,
                     cts.Token);
 
+                roomStore.Add(new Room(roomInfo));
                 OpenChatForm(roomInfo.Id, connectionId, isHost: false);
             }
             catch (Exception ex)
@@ -268,6 +268,7 @@ namespace MIN.Desktop
             };
 
             identityService.SetParticipant(localParticipant);
+            participantConnectionRegistry.RegisterLocalParticipant(localParticipant);
 
             if (CollegePCNameParser.TryParseComputerName(Environment.MachineName, out var roomNumber, out var _))
             {

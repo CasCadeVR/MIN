@@ -49,6 +49,7 @@ public class CoreModule : Module
 
         services.RegisterAsImplementedInterfaces<MessageReceiver>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageSender>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<MessageRouter>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<RoomConnector>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ConnectionMonitor>(ServiceLifetime.Singleton);

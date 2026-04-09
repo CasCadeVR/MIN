@@ -59,9 +59,13 @@ namespace MIN.Core.Services.Messaging
             await Task.CompletedTask;
         }
 
-        private async Task OnLocalMessageRecieved(LocalMessageRecievedEvent e, CancellationToken ct)
+        private async Task OnLocalMessageRecieved(LocalMessageRecievedEvent e, CancellationToken cancellationToken)
         {
-            await dispatcher.DispatchAsync(e.Message, new MessageContext(new ParticipantInfo(identityService.SelfPartcipant), e.RoomId, Guid.Empty, ct));
+            await dispatcher.DispatchAsync(e.Message,
+                new MessageContext(new ParticipantInfo(identityService.SelfPartcipant),
+                e.RoomId,
+                CoreServicesConstants.LocalConnectionId,
+                cancellationToken));
         }
 
         private async void OnRawMessageReceived(object? sender, RawMessageReceivedEventArgs e)

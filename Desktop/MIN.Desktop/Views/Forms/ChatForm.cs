@@ -41,12 +41,13 @@ namespace MIN.Desktop
 
         private readonly System.Windows.Forms.Timer resizeTimer = new() { Interval = 150 };
 
+        private readonly Guid roomId;
+        private readonly Guid connectionId;
+        private readonly ParticipantInfo localParticipant;
+
         private bool isResizing;
-        private Guid roomId;
-        private Guid connectionId;
         private Room? room;
         private ChatTextMessage? lastTextMessage;
-        private ParticipantInfo localParticipant;
 
         public ChatForm(
              IChatService chatService,
@@ -70,6 +71,7 @@ namespace MIN.Desktop
             this.connectionId = connectionId;
 
             localParticipant = new ParticipantInfo(identitiyService.SelfPartcipant);
+            this.room = this.roomStore.TryGetRoom(this.roomId, out var room) ? room : null;
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -83,8 +85,6 @@ namespace MIN.Desktop
             hideSideBarWidth = MinimumSize.Width + splitContainerSideBar.Panel2.Width;
 
             SubscribeToEvents();
-
-            this.room = this.roomStore.TryGetRoom(this.roomId, out var room) ? room : null;
             UpdateStats();
             UpdateChatFlow();
         }
@@ -225,7 +225,11 @@ namespace MIN.Desktop
             hostName.Text = isHost ? "Ты" : room.HostParticipant?.Name ?? "Неизвестно";
             editButton.Visible = isHost;
 
-            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant?.Endpoint is NamedPipeEndpoint npEndpoint ? npEndpoint.MachineName : string.Empty, out var roomNumber, out var computerNumber))
+            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant?.Endpoint is NamedPipeEndpoint npEndpoint
+                    ? npEndpoint.MachineName
+                    : string.Empty,
+                out var roomNumber,
+                out var computerNumber))
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
@@ -250,8 +254,10 @@ namespace MIN.Desktop
 
             foreach (var participant in room.CurrentParticipants)
             {
-                var card = new ParticipantCard(participant, room);
-                card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
+                var card = new ParticipantCard(participant, room)
+                {
+                    Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2,
+                };
                 participantsFlow.Controls.Add(card);
             }
 

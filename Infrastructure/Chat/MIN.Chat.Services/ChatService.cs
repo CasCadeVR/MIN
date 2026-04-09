@@ -9,18 +9,18 @@ namespace MIN.Chat.Services
     /// <inheritdoc />
     public sealed class ChatService : IChatService
     {
-        private readonly IMessageSender messageSender;
+        private readonly IMessageRouter messageRouter;
         private readonly IParticipantStore participantStore;
         private readonly IMessageStore messageStore;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="ChatService"/>
         /// </summary>
-        public ChatService(IMessageSender messageSender,
+        public ChatService(IMessageRouter messageRouter,
             IParticipantStore participantStore,
             IMessageStore messageStore)
         {
-            this.messageSender = messageSender;
+            this.messageRouter = messageRouter;
             this.participantStore = participantStore;
             this.messageStore = messageStore;
         }
@@ -40,7 +40,7 @@ namespace MIN.Chat.Services
                 RecipientId = recipientId,
             };
 
-            await messageSender.SendAsync(message, roomId, sender.Id, connectionId, CancellationToken.None);
+            await messageRouter.RouteAsync(message, roomId, sender.Id, recipientId, CancellationToken.None);
         }
 
         IReadOnlyList<ChatTextMessage> IChatService.GetChatTextMessageHistory(Guid roomId, int? page, int? pageSize)

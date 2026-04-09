@@ -12,23 +12,40 @@ public class Room : IRoomData
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="Room"/>
     /// </summary>
+    public Room() { }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="Room"/>
+    /// </summary>
     public Room(string name = "Неизвестная Комната", int maximumParticipants = 2)
     {
         Name = name;
         MaximumParticipants = maximumParticipants;
     }
 
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="Room"/>
+    /// </summary>
+    public Room(IRoomData roomData)
+    {
+        Id = roomData.Id;
+        Name = roomData.Name;
+        HostParticipant = roomData.HostParticipant;
+        IsActive = roomData.IsActive;
+        MaximumParticipants = roomData.MaximumParticipants;
+    }
+
     /// <inheritdoc />
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <inheritdoc />
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <inheritdoc />
     public int MaximumParticipants { get; set; }
 
     /// <inheritdoc />
-    public int ParticipantCount => CurrentParticipants.Count();
+    public int ParticipantCount => CurrentParticipants.Count;
 
     /// <inheritdoc />
     public bool IsActive { get; set; }
@@ -51,7 +68,7 @@ public class Room : IRoomData
     /// <summary>
     /// Заполнена ли комната
     /// </summary>
-    public bool IsFull => CurrentParticipants.Count() >= MaximumParticipants;
+    public bool IsFull => CurrentParticipants.Count >= MaximumParticipants;
 
     /// <summary>
     /// Добавить участника в комнату
