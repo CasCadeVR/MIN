@@ -18,7 +18,6 @@ public sealed class NamedPipeTransport : ITransport
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, NamedPipeServer> servers = new();
     private readonly ConcurrentDictionary<Guid, NamedPipeClient> clients = new();
-    private readonly ConcurrentDictionary<Guid, Guid> serverHostingConnectionIds = new();
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NamedPipeTransport"/>
@@ -49,7 +48,6 @@ public sealed class NamedPipeTransport : ITransport
         // TODO: максимальное количество участников нужно получить из конфигурации
         var server = new NamedPipeServer(namedPipeEndpoint, TransportConstants.TheoraticallyPossibleMaximumRoomSize, logger);
         servers[roomId] = server;
-        serverHostingConnectionIds[roomId] = Guid.NewGuid();
 
         server.RawMessageReceived += (_, args) =>
             RawMessageReceived?.Invoke(this, new RawMessageReceivedEventArgs(args.Data, roomId, args.ConnectionId));
@@ -77,13 +75,6 @@ public sealed class NamedPipeTransport : ITransport
             throw new ArgumentException("Endpoint должен быть NamedPipeEndpoint", nameof(endpoint));
         }
 
-        if (servers.ContainsKey(roomId))
-        {
-            var serverConnectionId = GetServerHostingConnectionId(roomId);
-            ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, serverConnectionId, true));
-            return serverConnectionId;
-        }
-
         if (clients.TryGetValue(roomId, out var existingClient) && existingClient.IsConnected)
         {
             return existingClient.ConnectionId;
@@ -94,10 +85,10 @@ public sealed class NamedPipeTransport : ITransport
         clients[roomId] = client;
 
         client.RawMessageReceived += (_, data) =>
-            RawMessageReceived?.Invoke(this, new RawMessageReceivedEventArgs(data, roomId, client.ConnectionId));
+            RawMessageReceived?.Invoke(this, new RawMessageReceivedEventArgs(data, roomId, connectionId));
 
         client.Disconnected += (_, reason) =>
-            ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, client.ConnectionId, false, reason));
+            ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, connectionId, false, reason));
 
         ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(roomId, connectionId, true));
         return connectionId;
@@ -118,23 +109,7 @@ public sealed class NamedPipeTransport : ITransport
 
     async Task ITransport.SendAsync(byte[] data, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
     {
-        if (IsServerHostingConnectionId(roomId, connectionId))
-        {
-            if (!servers.TryGetValue(roomId, out var server))
-            {
-                throw new InvalidOperationException($"Нет сервера для комнаты {roomId} с идентификатором {connectionId}");
-            }
-
-            if (IsServerHostingConnectionId(roomId, connectionId))
-            {
-                RawMessageReceived?.Invoke(this, new RawMessageReceivedEventArgs(data, roomId, connectionId));
-            }
-            else
-            {
-                await server.SendToConnectionAsync(data, connectionId, cancellationToken);
-            }
-        }
-        else if (clients.TryGetValue(roomId, out var client) && client.ConnectionId == connectionId)
+        if (clients.TryGetValue(roomId, out var client) && client.ConnectionId == connectionId)
         {
             await client.SendAsync(data, cancellationToken);
         }
@@ -164,18 +139,4 @@ public sealed class NamedPipeTransport : ITransport
 
         throw new InvalidOperationException($"Нет соединений для комнаты {roomId}");
     }
-
-    private Guid GetServerHostingConnectionId(Guid roomId)
-    {
-        if (serverHostingConnectionIds.TryGetValue(roomId, out var connectionId))
-        {
-            return connectionId;
-        }
-
-        throw new InvalidOperationException($"No server connection found for roomId {roomId}");
-    }
-
-    private bool IsServerHostingConnectionId(Guid roomId, Guid connectionId)
-        => serverHostingConnectionIds.TryGetValue(roomId, out var serverConnectionId)
-            && serverConnectionId == connectionId;
 }

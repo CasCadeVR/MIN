@@ -7,7 +7,6 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -19,7 +18,6 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
     private readonly IRoomStore roomStore;
     private readonly IParticipantStore participantStore;
     private readonly IMessageStore messageStore;
-    private readonly IRoomConnectionRegistry roomConnectionRegistry;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
@@ -29,14 +27,12 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
     public RoomInfoHandler(IRoomStore roomStore,
         IParticipantStore participantStore,
         IMessageStore messageStore,
-        IRoomConnectionRegistry roomConnectionRegistry,
         IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.roomStore = roomStore;
         this.participantStore = participantStore;
         this.messageStore = messageStore;
-        this.roomConnectionRegistry = roomConnectionRegistry;
         this.eventBus = eventBus;
         this.logger = logger;
     }
@@ -63,7 +59,6 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
         }
         else if (message is RoomInfoResponseMessage roomInfoResponse)
         {
-            roomConnectionRegistry.Associate(context.ConnectionId, roomInfoResponse.Room.Id);
             roomStore.Add(roomInfoResponse.Room);
 
             foreach (var roomMessage in roomInfoResponse.Room.ChatHistory)

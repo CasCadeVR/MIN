@@ -11,7 +11,7 @@ public sealed class ConnectionStateChangedEventArgs : EventArgs
     public Guid RoomId { get; }
 
     /// <summary>
-    /// Идентификатор соеднинения
+    /// Идентификатор соеднинения (к чему подключился)
     /// </summary>
     public Guid ConnectionId { get; }
 

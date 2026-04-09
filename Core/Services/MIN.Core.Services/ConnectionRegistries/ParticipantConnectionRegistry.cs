@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 
 namespace MIN.Core.Services.ConnectionRegistries;
@@ -14,6 +15,12 @@ public sealed class ParticipantConnectionRegistry : IParticipantConnectionRegist
     {
         participantsByConnectionId[connectionId] = participant;
         connectionIdByParticipantId[participant.Id] = connectionId;
+    }
+
+    void IParticipantConnectionRegistry.RegisterLocalParticipant(ParticipantInfo participant)
+    {
+        participantsByConnectionId[CoreServicesConstants.LocalConnectionId] = participant;
+        connectionIdByParticipantId[participant.Id] = CoreServicesConstants.LocalConnectionId;
     }
 
     ParticipantInfo IParticipantConnectionRegistry.GetParticipant(Guid connectionId)

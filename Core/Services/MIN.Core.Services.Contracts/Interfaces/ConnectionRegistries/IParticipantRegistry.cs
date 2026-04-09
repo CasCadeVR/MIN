@@ -13,6 +13,11 @@ public interface IParticipantConnectionRegistry
     void Register(Guid connectionId, ParticipantInfo participant);
 
     /// <summary>
+    /// Установить ассоциацию соеднинения с локальным участником
+    /// </summary>
+    void RegisterLocalParticipant(ParticipantInfo participant);
+
+    /// <summary>
     /// Получить данные участника от его соединения
     /// </summary>
     ParticipantInfo? GetParticipant(Guid connectionId);

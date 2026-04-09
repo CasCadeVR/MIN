@@ -42,7 +42,6 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<NamedPipeTransportFactory>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<RoomConnectionRegistry>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<MessageStore>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ParticipantStore>(ServiceLifetime.Singleton);

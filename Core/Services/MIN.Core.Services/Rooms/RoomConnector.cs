@@ -1,8 +1,6 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless;
-using MIN.Core.Services.ConnectionRegistries;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Transport.Contracts.Interfaces;
@@ -18,7 +16,6 @@ namespace MIN.Core.Services.Rooms
         private readonly ITransport transport;
         private readonly IMessageSender messageSender;
         private readonly IIdentityService identityService;
-        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly IMessageEncryptor encryptor;
         private readonly ILoggerProvider logger;
         private readonly HashSet<Guid> activeConnections = [];
@@ -29,14 +26,12 @@ namespace MIN.Core.Services.Rooms
         public RoomConnector(ITransport transport,
             IMessageSender messageSender,
             IIdentityService identityService,
-            IParticipantConnectionRegistry participantConnectionRegistry,
             IMessageEncryptor encryptor,
             ILoggerProvider logger)
         {
             this.transport = transport;
             this.messageSender = messageSender;
             this.identityService = identityService;
-            this.participantConnectionRegistry = participantConnectionRegistry;
             this.encryptor = encryptor;
             this.logger = logger;
         }

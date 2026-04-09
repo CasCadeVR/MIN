@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.RoomRelated;
+using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Transport.Contracts.Interfaces;
@@ -32,6 +33,12 @@ namespace MIN.Core.Services.Rooms
             messageStore.AddMessage(roomInfo.Id, new SystemTextMessage()
             {
                 Content = $"Комната {roomInfo.Name} была создана в {DateTime.Now.ToShortTimeString()}"
+            });
+
+            messageStore.AddMessage(roomInfo.Id, new ParticipantJoinedMessage()
+            {
+                Participant = roomInfo.HostParticipant,
+                RoomId = roomInfo.Id
             });
 
             await transport.StartHostingAsync(roomInfo.Id, endpoint, cancellationToken);

@@ -1,11 +1,14 @@
 ﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
+using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
+using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Constants;
 
 namespace MIN.Core.Services.Rooms
 {
@@ -14,49 +17,64 @@ namespace MIN.Core.Services.Rooms
     {
         private readonly ITransport transport;
         private readonly IEventBus eventBus;
-        private readonly IRoomConnectionRegistry roomConnectionRegistry;
+        private readonly IMessageSender messageSender;
+        private readonly IIdentityService identityService;
+        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly ILoggerProvider logger;
-        private CancellationTokenSource? cts;
+        private CancellationTokenSource cts = null!;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="ConnectionMonitor"/>
         /// </summary>
         public ConnectionMonitor(ITransport transport,
             IEventBus eventBus,
-            IRoomConnectionRegistry roomConnectionRegistry,
+            IMessageSender messageSender,
+            IIdentityService identityService,
+            IParticipantConnectionRegistry participantConnectionRegistry,
             ILoggerProvider logger)
         {
             this.transport = transport;
             this.eventBus = eventBus;
-            this.roomConnectionRegistry = roomConnectionRegistry;
+            this.messageSender = messageSender;
+            this.identityService = identityService;
+            this.participantConnectionRegistry = participantConnectionRegistry;
             this.logger = logger;
+        }
 
-            cts = new CancellationTokenSource();
+        async Task IConnectionMonitor.StartAsync(CancellationToken cancellationToken)
+        {
+            cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             transport.ConnectionStateChanged += OnConnectionStateChanged;
+            await Task.CompletedTask;
         }
 
         private async void OnConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
         {
             try
             {
-                Guid roomId;
+                if (!e.IsConnected)
+                {
+                    if (e.ConnectionId == CoreServicesConstants.LocalConnectionId)
+                    {
+                        return;
+                    }
 
-                try
-                {
-                    roomId = roomConnectionRegistry.GetRoomIdByConnectionId(e.ConnectionId);
-                }
-                catch
-                {
-                    return;
+                    var participantLeftMessage = new ParticipantLeftMessage()
+                    {
+                        Participant = new ParticipantInfo(identityService.SelfPartcipant),
+                        RoomId = e.RoomId,
+                    };
+
+                    await messageSender.SendAsync(participantLeftMessage, e.RoomId, participantLeftMessage.Participant.Id, null, cts.Token);
                 }
 
                 await eventBus.PublishAsync(new ConnectionStatusChangedEvent
                 {
-                    RoomId = roomId,
+                    RoomId = e.RoomId,
                     ConnectionId = e.ConnectionId,
                     ErrorMessage = e.Reason,
                     IsConnected = e.IsConnected
-                }, cts?.Token ?? CancellationToken.None);
+                }, cts.Token);
             }
             catch (Exception ex)
             {
@@ -71,7 +89,7 @@ namespace MIN.Core.Services.Rooms
             {
                 await cts.CancelAsync();
                 cts.Dispose();
-                cts = null;
+                cts = null!;
             }
             transport.ConnectionStateChanged -= OnConnectionStateChanged;
         }

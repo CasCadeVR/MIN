@@ -35,7 +35,7 @@ internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnch
     }
 
     IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
-        => [MessageTypeTag.ParticipantJoined];
+        => [MessageTypeTag.ParticipantLeft];
 
     int IMessageHandler.Priority => 3;
 
@@ -44,7 +44,6 @@ internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnch
         if (message is ParticipantLeftMessage participantLeftMessage)
         {
             messageStore.AddMessage(context.RoomId, message);
-
             participantStore.RemoveParticipant(context.RoomId, participantLeftMessage.Participant.Id);
 
             logger.Log($"Участник {participantLeftMessage.Participant.Name} вышел из комнаты");

@@ -6,6 +6,11 @@
 public interface IConnectionMonitor
 {
     /// <summary>
+    /// Начать отслеживание состояния соединения
+    /// </summary>
+    Task StartAsync(CancellationToken cancellationToken);
+
+    /// <summary>
     /// Остановить отслеживание состояния соединения
     /// </summary>
     Task StopAsync();

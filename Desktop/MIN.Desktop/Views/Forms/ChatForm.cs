@@ -85,6 +85,8 @@ namespace MIN.Desktop
             SubscribeToEvents();
 
             this.room = this.roomStore.TryGetRoom(this.roomId, out var room) ? room : null;
+            UpdateStats();
+            UpdateChatFlow();
         }
 
         private void SubscribeToEvents()

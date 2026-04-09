@@ -5,6 +5,7 @@ using MIN.Chat.DI;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.DI;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Discovery.DI;
 using MIN.Helpers.DI;
@@ -33,6 +34,9 @@ namespace MIN.Desktop
 
             var messageReceiver = serviceProvider.GetRequiredService<IMessageReceiver>();
             await messageReceiver.StartListeningAsync(appLifeTimeCts.Token);
+
+            var connectionMonitor = serviceProvider.GetRequiredService<IConnectionMonitor>();
+            await connectionMonitor.StartAsync(appLifeTimeCts.Token);
 
             var jsonDeserializerInitializer = serviceProvider.GetRequiredService<IHostedService>();
             await jsonDeserializerInitializer.StartAsync(appLifeTimeCts.Token);

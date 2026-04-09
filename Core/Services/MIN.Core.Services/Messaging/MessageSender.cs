@@ -1,6 +1,9 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts;
+using MIN.Core.Services.Contracts.Constants;
+using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
@@ -14,6 +17,7 @@ namespace MIN.Core.Services.Messaging
         private readonly ITransport transport;
         private readonly IMessageEncryptor encryptor;
         private readonly IMessageSerializer serializer;
+        private readonly IEventBus eventBus;
         private readonly IParticipantStore participantStore;
         private readonly IParticipantConnectionRegistry participantConnectionRegistry;
 
@@ -21,14 +25,16 @@ namespace MIN.Core.Services.Messaging
         /// Инициализирует новый экземпляр <see cref="MessageSender"/>
         /// </summary>
         public MessageSender(ITransport transport,
-            IMessageSerializer serializer,
             IMessageEncryptor encryptor,
+            IMessageSerializer serializer,
+            IEventBus eventBus,
             IParticipantStore participantStore,
             IParticipantConnectionRegistry participantConnectionRegistry)
         {
             this.transport = transport;
-            this.serializer = serializer;
             this.encryptor = encryptor;
+            this.serializer = serializer;
+            this.eventBus = eventBus;
             this.participantStore = participantStore;
             this.participantConnectionRegistry = participantConnectionRegistry;
         }
@@ -46,6 +52,12 @@ namespace MIN.Core.Services.Messaging
                     throw new InvalidOperationException("RecipientConnectionId required for private message");
                 }
 
+                if (recipientConnectionId == CoreServicesConstants.LocalConnectionId)
+                {
+                    await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId), cancellationToken);
+                    return;
+                }
+
                 var serialized = serializer.Serialize(message);
                 var dataToSend = EncryptData(message, serialized, (Guid)recipientConnectionId);
 
@@ -56,15 +68,17 @@ namespace MIN.Core.Services.Messaging
         public async Task BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
         {
             var serialized = serializer.Serialize(message);
-
             var participants = participantStore.GetParticipants(roomId);
+
+            excludeConnections = [CoreServicesConstants.LocalConnectionId];
 
             var tasks = participants
                 .Select(x => participantConnectionRegistry.GetConnectionIdFromParticipantId(x.Id))
-                .Where(c => excludeConnections == null || !excludeConnections.Contains(c))
+                .Where(c => !excludeConnections.Contains(c))
                 .Select(connectionId => transport.SendAsync(EncryptData(message, serialized, connectionId),
                     roomId, connectionId, cancellationToken));
 
+            await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId), cancellationToken);
             await Task.WhenAll(tasks);
         }
 

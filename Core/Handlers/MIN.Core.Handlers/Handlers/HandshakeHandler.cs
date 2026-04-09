@@ -11,6 +11,7 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Services.Contracts.Constants;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -51,6 +52,13 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
+        if (context.ConnectionId == CoreServicesConstants.LocalConnectionId)
+        {
+            // Себя то мы знаем
+            var roomInfoRequest = new RoomInfoRequestMessage(context.RoomId);
+            return HandlerResult.WithResponse(roomInfoRequest);
+        }
+
         if (message is HandshakeMessage handshakeMessage)
         {
             await encryptor.InitializeSessionWithPartnerAsync(handshakeMessage.Participant.Id, handshakeMessage.PublicKey);
@@ -74,7 +82,7 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
             participantStore.AddParticipant(context.RoomId, handshakeMessage.Participant);
             logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomId}");
 
-            await messageSender.BroadcastAsync(participantJoinedMessage, context.RoomId, null, context.CancellationToken);
+            await messageSender.SendAsync(participantJoinedMessage, context.RoomId, null, null, context.CancellationToken);
 
             return HandlerResult.Success();
         }

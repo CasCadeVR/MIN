@@ -2,6 +2,8 @@
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
+using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
+using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
@@ -24,7 +26,8 @@ namespace MIN.Desktop
         private readonly IRoomConnector roomConnector;
         private readonly IRoomHoster roomHoster;
         private readonly IRoomStore roomStore;
-        private readonly IRoomConnectionRegistry roomConnectionRegistry;
+        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
+        private readonly IParticipantStore participantStore;
         private readonly IChatService chatService;
         private readonly IDiscoveryService discoveryService;
         private readonly IEventBus eventBus;
@@ -36,6 +39,7 @@ namespace MIN.Desktop
 
         private readonly SynchronizationContext uiContext;
         private readonly CancellationTokenSource cts;
+
         private Settings Settings => settingsProvider.GetSettings();
         private ParticipantInfo localParticipant = null!;
 
@@ -46,7 +50,8 @@ namespace MIN.Desktop
             IRoomConnector roomConnector,
             IRoomHoster roomHoster,
             IRoomStore roomStore,
-            IRoomConnectionRegistry roomConnectionRegistry,
+            IParticipantConnectionRegistry participantConnectionRegistry,
+            IParticipantStore participantStore,
             IChatService chatService,
             IDiscoveryService discoveryService,
             IEventBus eventBus,
@@ -61,7 +66,8 @@ namespace MIN.Desktop
             this.roomConnector = roomConnector;
             this.roomHoster = roomHoster;
             this.roomStore = roomStore;
-            this.roomConnectionRegistry = roomConnectionRegistry;
+            this.participantConnectionRegistry = participantConnectionRegistry;
+            this.participantStore = participantStore;
             this.chatService = chatService;
             this.discoveryService = discoveryService;
             this.eventBus = eventBus;
@@ -97,28 +103,100 @@ namespace MIN.Desktop
         private async void createRoom_Click(object sender, EventArgs e)
         {
             var roomCreateForm = new RoomCreateForm();
-            if (roomCreateForm.ShowDialog() == DialogResult.OK)
+
+            if (roomCreateForm.ShowDialog() != DialogResult.OK)
             {
-                var room = roomCreateForm.Room;
-                localParticipant.Endpoint = EndpointBootstrapper.CreateEndpointForRoom(room.Id);
-                room.HostParticipant = localParticipant;
-
-                try
-                {
-                    roomStore.Add(room);
-                    roomConnectionRegistry.Associate(Guid.NewGuid(), room.Id);
-
-                    var roomInfo = new RoomInfo(room);
-
-                    await roomHoster.StartHostingAsync(roomInfo, room.HostParticipant.Endpoint, cts.Token);
-                    await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
-                    await OnRoomJoin(roomInfo);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}", "Error");
-                }
+                return;
             }
+
+            var room = roomCreateForm.Room;
+
+            var participantCreateForm = new ParticipantCreateForm(identityService);
+            if (participantCreateForm.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            localParticipant = new ParticipantInfo(identityService.SelfPartcipant);
+            localParticipant.Endpoint = EndpointBootstrapper.CreateEndpointForRoom(room.Id);
+            room.HostParticipant = localParticipant;
+
+            try
+            {
+                roomStore.Add(room);
+
+                var roomInfo = new RoomInfo(room);
+                await roomHoster.StartHostingAsync(roomInfo, localParticipant.Endpoint, cts.Token);
+
+                participantStore.AddParticipant(roomInfo.Id, localParticipant);
+                participantConnectionRegistry.RegisterLocalParticipant(localParticipant);
+
+                await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
+
+                OpenChatForm(roomInfo.Id, CoreServicesConstants.LocalConnectionId, isHost: true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}", "Error");
+            }
+        }
+
+        private async Task OnRoomJoin(RoomInfo roomInfo)
+        {
+            if (roomInfo.ParticipantCount >= roomInfo.MaximumParticipants)
+            {
+                MessageBox.Show("Невозможно подключиться: комната заполнена.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var participantCreateForm = new ParticipantCreateForm(identityService);
+            if (participantCreateForm.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            try
+            {
+                var connectionId = await roomConnector.ConnectAsync(roomInfo.Id,
+                    roomInfo.HostParticipant.Endpoint!,
+                    Settings.DiscoveryTimeout,
+                    cts.Token);
+
+                OpenChatForm(roomInfo.Id, connectionId, isHost: false);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Произошла ошибка: {ex.Message}");
+            }
+        }
+
+        private void OpenChatForm(Guid roomId, Guid connectionId, bool isHost)
+        {
+            var chatForm = new ChatForm(
+                      chatService,
+                      roomStore,
+                      eventBus,
+                      notificationService,
+                      logger,
+                      identityService,
+                      roomId,
+                      connectionId);
+
+            chatForm.FormClosing += async (_, _) =>
+            {
+                if (isHost)
+                {
+                    await roomHoster.StopHostingAsync(roomId);
+                    await discoveryService.StopDiscoveryAsync();
+                }
+                else
+                {
+                    await roomConnector.DisconnectAsync(roomId, connectionId);
+                }
+            };
+
+            chatForm.Show();
         }
 
         private async Task PerformSearch()
@@ -175,53 +253,6 @@ namespace MIN.Desktop
             }, null);
 
             return Task.CompletedTask;
-        }
-
-        private async Task OnRoomJoin(RoomInfo roomInfo)
-        {
-            if (roomInfo.ParticipantCount >= roomInfo.MaximumParticipants)
-            {
-                MessageBox.Show("Невозможно подключиться: комната заполнена.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var participantCreateForm = new ParticipantCreateForm(identityService);
-            if (participantCreateForm.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    var connectionId = await roomConnector.ConnectAsync(roomInfo.Id, roomInfo.HostParticipant.Endpoint!, Settings.DiscoveryTimeout, cts.Token);
-
-                    var chatForm = new ChatForm(
-                       chatService,
-                       roomStore,
-                       eventBus,
-                       notificationService,
-                       logger,
-                       identityService,
-                       roomInfo.Id,
-                       connectionId);
-
-                    chatForm.FormClosing += async (_, _) =>
-                    {
-                        if (identityService.SelfPartcipant.Id == roomInfo.HostParticipant.Id)
-                        {
-                            await roomHoster.StopHostingAsync(roomInfo.Id);
-                            await discoveryService.StopDiscoveryAsync();
-                        }
-                        else
-                        {
-                            await roomConnector.DisconnectAsync(roomInfo.Id, connectionId);
-                        }
-                    };
-                    chatForm.Show();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Произошла ошибка: {ex.Message}");
-                }
-            }
         }
 
         private async void findRooms_Click(object sender, EventArgs e)
