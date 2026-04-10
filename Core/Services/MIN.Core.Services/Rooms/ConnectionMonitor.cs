@@ -9,6 +9,7 @@ using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Models;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 
 namespace MIN.Core.Services.Rooms
 {
@@ -18,6 +19,7 @@ namespace MIN.Core.Services.Rooms
         private readonly ITransport transport;
         private readonly IEventBus eventBus;
         private readonly IMessageRouter messageRouter;
+        private readonly IRoomStore roomStore;
         private readonly IIdentityService identityService;
         private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly ILoggerProvider logger;
@@ -29,6 +31,7 @@ namespace MIN.Core.Services.Rooms
         public ConnectionMonitor(ITransport transport,
             IEventBus eventBus,
             IMessageRouter messageRouter,
+            IRoomStore roomStore,
             IIdentityService identityService,
             IParticipantConnectionRegistry participantConnectionRegistry,
             ILoggerProvider logger)
@@ -36,6 +39,7 @@ namespace MIN.Core.Services.Rooms
             this.transport = transport;
             this.eventBus = eventBus;
             this.messageRouter = messageRouter;
+            this.roomStore = roomStore;
             this.identityService = identityService;
             this.participantConnectionRegistry = participantConnectionRegistry;
             this.logger = logger;
@@ -52,6 +56,14 @@ namespace MIN.Core.Services.Rooms
         {
             try
             {
+                await eventBus.PublishAsync(new ConnectionStatusChangedEvent
+                {
+                    RoomId = e.RoomId,
+                    ConnectionId = e.ConnectionId,
+                    ErrorMessage = e.Reason,
+                    IsConnected = e.IsConnected
+                }, cts.Token);
+
                 if (!e.IsConnected)
                 {
                     if (e.ConnectionId == CoreServicesConstants.LocalConnectionId)
@@ -61,6 +73,11 @@ namespace MIN.Core.Services.Rooms
 
                     participantConnectionRegistry.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant);
 
+                    if (roomStore.GetRoomHostParticipantId(e.RoomId) == leavingParticipant.Id)
+                    {
+                        return;
+                    }
+
                     var participantLeftMessage = new ParticipantLeftMessage()
                     {
                         Participant = leavingParticipant,
@@ -69,14 +86,6 @@ namespace MIN.Core.Services.Rooms
 
                     await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, identityService.SelfPartcipant.Id, Recipient.FromEmpty(), cts.Token);
                 }
-
-                await eventBus.PublishAsync(new ConnectionStatusChangedEvent
-                {
-                    RoomId = e.RoomId,
-                    ConnectionId = e.ConnectionId,
-                    ErrorMessage = e.Reason,
-                    IsConnected = e.IsConnected
-                }, cts.Token);
             }
             catch (Exception ex)
             {

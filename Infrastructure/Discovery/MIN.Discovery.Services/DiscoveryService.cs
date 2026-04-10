@@ -1,14 +1,15 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Serialization.Contracts;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Discovery.Events;
 using MIN.Discovery.Messaging;
+using MIN.Discovery.Services.Contracts.Exceptions;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Discovery.Transport.Contracts;
 using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
-using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
 
 namespace MIN.Discovery.Services
 {
@@ -89,18 +90,24 @@ namespace MIN.Discovery.Services
 
             try
             {
-                foreach (var computer in computers)
-                {
-                    try
-                    {
-                        await discoveryTransport.SendAsync(requestData, computer, timeout, cts.Token);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Log($"Не удалось отправить запрос на обнаружение компу {computer}: {ex.Message}");
-                    }
-                }
+                var tasks = computers
+                   .Select(computer =>
+                   {
+                       try
+                       {
+                           return discoveryTransport.SendAsync(requestData, computer, timeout, cts.Token);
+                       }
+                       catch (Exception ex)
+                       {
+                           logger.Log($"Не удалось отправить запрос на обнаружение компу {computer}: {ex.Message}");
+                       }
+
+                       return Task.CompletedTask;
+                   });
+
+                await Task.WhenAll(tasks);
             }
+            catch (DiscoveryException) { }
             catch (OperationCanceledException) { }
             finally
             {

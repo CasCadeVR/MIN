@@ -21,7 +21,7 @@ namespace MIN.Desktop
         /// ¬ходной метод программы
         /// </summary>
         [STAThread]
-        private static async Task Main()
+        public static async Task Main()
         {
             ApplicationConfiguration.Initialize();
 

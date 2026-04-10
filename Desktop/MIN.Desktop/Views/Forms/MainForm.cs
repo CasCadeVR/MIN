@@ -1,4 +1,5 @@
-﻿using MIN.Chat.Services.Contracts.Interfaces;
+﻿using System.Collections.Concurrent;
+using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
