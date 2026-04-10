@@ -41,6 +41,9 @@ namespace MIN.Core.Services.Stores
             return false;
         }
 
+        Guid IRoomStore.GetRoomHostParticipantId(Guid roomId)
+            => roomsById.TryGetValue(roomId, out var room) ? room.HostParticipant.Id : throw new KeyNotFoundException();
+
         void IRoomStore.Add(Room room)
         {
             roomsById[room.Id] = room;

@@ -1,4 +1,5 @@
-﻿using MIN.Chat.Messaging;
+﻿using System.ComponentModel;
+using MIN.Chat.Messaging;
 using MIN.Core.Entities.Contracts.Models;
 
 namespace MIN.Chat.Services.Contracts.Interfaces
@@ -11,7 +12,7 @@ namespace MIN.Chat.Services.Contracts.Interfaces
         /// <summary>
         /// Отправить текстовое сообщение
         /// </summary>
-        Task SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender, Guid? recipientId = null);
+        Task SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender, Guid? recipientId = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Получить историю сообщений из кэша

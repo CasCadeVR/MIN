@@ -17,6 +17,14 @@ public sealed class ParticipantConnectionRegistry : IParticipantConnectionRegist
         connectionIdByParticipantId[participant.Id] = connectionId;
     }
 
+    void IParticipantConnectionRegistry.Unregister(Guid connectionId)
+    {
+        if (participantsByConnectionId.TryRemove(connectionId, out var participant))
+        {
+            connectionIdByParticipantId.TryRemove(participant.Id, out _);
+        }
+    }
+
     void IParticipantConnectionRegistry.RegisterLocalParticipant(ParticipantInfo participant)
     {
         participantsByConnectionId[CoreServicesConstants.LocalConnectionId] = participant;
@@ -29,13 +37,8 @@ public sealed class ParticipantConnectionRegistry : IParticipantConnectionRegist
     bool IParticipantConnectionRegistry.TryGetParticipantFromConnectionId(Guid connectionId, out ParticipantInfo participant)
         => participantsByConnectionId.TryGetValue(connectionId, out participant!);
 
-    void IParticipantConnectionRegistry.Unregister(Guid connectionId)
-    {
-        if (participantsByConnectionId.TryRemove(connectionId, out var participant))
-        {
-            connectionIdByParticipantId.TryRemove(participant.Id, out _);
-        }
-    }
+    Guid IParticipantConnectionRegistry.GetParticipantIdFromConnectionId(Guid connectionId)
+        => participantsByConnectionId.TryGetValue(connectionId, out var p) ? p.Id : throw new KeyNotFoundException();
 
     Guid IParticipantConnectionRegistry.GetConnectionIdFromParticipantId(Guid participantId)
         => connectionIdByParticipantId.TryGetValue(participantId, out var connectionId) ? connectionId : throw new KeyNotFoundException();

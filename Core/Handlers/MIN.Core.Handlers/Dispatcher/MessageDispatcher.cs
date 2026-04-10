@@ -3,9 +3,11 @@ using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Dispatcher
 {
@@ -14,8 +16,9 @@ namespace MIN.Core.Handlers.Dispatcher
     {
         private readonly IEnumerable<IMessageHandler> handlers;
         private readonly IMessageSender messageSender;
-        private readonly IMessageRouter messageRouter;
+        private readonly IRoomHoster roomHoster;
         private readonly IEventBus eventBus;
+        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly ILoggerProvider logger;
 
         /// <summary>
@@ -23,13 +26,16 @@ namespace MIN.Core.Handlers.Dispatcher
         /// </summary>
         public MessageDispatcher(IEnumerable<IMessageHandler> handlers,
             IMessageSender messageSender,
-            IMessageRouter messageRouter,
+            IRoomHoster roomHoster,
             IEventBus eventBus,
+            IParticipantConnectionRegistry participantConnectionRegistry,
             ILoggerProvider logger)
         {
             this.handlers = handlers;
-            this.messageRouter = messageRouter;
+            this.messageSender = messageSender;
+            this.roomHoster = roomHoster;
             this.eventBus = eventBus;
+            this.participantConnectionRegistry = participantConnectionRegistry;
             this.logger = logger;
         }
 
@@ -60,14 +66,18 @@ namespace MIN.Core.Handlers.Dispatcher
                     {
                         logger.Log($"Handler {handler.GetType().Name} failed: {result.ErrorMessage}");
                         await PublishErrorEvent(result.ErrorMessage!, context);
+                        continue;
                     }
-                    else if (message.IsPublic)
+
+                    if (message.IsPublic && roomHoster.IsHosting(context.RoomId))
                     {
-                        await messageRouter.RouteAsync(message, context.RoomId, context.Sender.Id, context.CancellationToken);
+                        var senderConnectionId = participantConnectionRegistry.GetConnectionIdFromParticipantId(context.SenderId);
+                        await messageSender.BroadcastAsync(message, context.RoomId, [senderConnectionId], context.CancellationToken);
                     }
-                    else if (result.Response != null)
+
+                    if (result.Response != null)
                     {
-                        await messageSender.SendAsync(result.Response, context.RoomId, context.Sender.Id, context.ConnectionId, context.CancellationToken);
+                        await messageSender.SendAsync(result.Response, context.RoomId, context.SenderId, context.ConnectionId, context.CancellationToken);
                     }
                 }
                 catch (Exception ex)

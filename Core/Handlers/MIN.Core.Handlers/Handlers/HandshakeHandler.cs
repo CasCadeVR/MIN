@@ -8,9 +8,9 @@ using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Services.Contracts.Models;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -22,8 +22,8 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
     private readonly IMessageEncryptor encryptor;
     private readonly IIdentityService identityService;
     private readonly IParticipantConnectionRegistry participantConnectionRegistry;
-    private readonly IParticipantStore participantStore;
     private readonly IMessageSender messageSender;
+    private readonly IMessageRouter messageRouter;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -31,16 +31,16 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
     /// </summary>
     public HandshakeHandler(IMessageEncryptor encryptor,
         IIdentityService identityService,
-        IParticipantStore participantStore,
         IParticipantConnectionRegistry participantConnectionRegistry,
         IMessageSender messageSender,
+        IMessageRouter messageRouter,
         ILoggerProvider logger)
     {
         this.encryptor = encryptor;
         this.identityService = identityService;
-        this.participantStore = participantStore;
         this.participantConnectionRegistry = participantConnectionRegistry;
         this.messageSender = messageSender;
+        this.messageRouter = messageRouter;
         this.logger = logger;
     }
 
@@ -80,10 +80,11 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
                 RoomId = context.RoomId
             };
 
-            participantStore.AddParticipant(context.RoomId, participantJoinedMessage.Participant);
-            logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomId}");
-
-            await messageSender.SendAsync(participantJoinedMessage, context.RoomId, null, null, context.CancellationToken);
+            await messageRouter.RouteAsync(participantJoinedMessage,
+                context.RoomId,
+                identityService.SelfPartcipant.Id,
+                Recipient.FromConnection(context.ConnectionId),
+                context.CancellationToken);
 
             var roomInfoRequest = new RoomInfoRequestMessage(context.RoomId);
             return HandlerResult.WithResponse(roomInfoRequest);

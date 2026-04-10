@@ -1,8 +1,10 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -14,9 +16,10 @@ namespace MIN.Core.Services.Rooms
     public sealed class RoomConnector : IRoomConnector
     {
         private readonly ITransport transport;
-        private readonly IMessageSender messageSender;
+        private readonly IMessageRouter messageRouter;
         private readonly IIdentityService identityService;
         private readonly IMessageEncryptor encryptor;
+        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly ILoggerProvider logger;
         private readonly HashSet<Guid> activeConnections = [];
 
@@ -24,21 +27,25 @@ namespace MIN.Core.Services.Rooms
         /// Инициализирует новый экземпляр <see cref="RoomConnector"/>
         /// </summary>
         public RoomConnector(ITransport transport,
-            IMessageSender messageSender,
+            IMessageRouter messageRouter,
             IIdentityService identityService,
             IMessageEncryptor encryptor,
+            IParticipantConnectionRegistry participantConnectionRegistry,
             ILoggerProvider logger)
         {
             this.transport = transport;
-            this.messageSender = messageSender;
+            this.messageRouter = messageRouter;
             this.identityService = identityService;
             this.encryptor = encryptor;
+            this.participantConnectionRegistry = participantConnectionRegistry;
             this.logger = logger;
         }
 
-        async Task<Guid> IRoomConnector.ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
+        async Task<Guid> IRoomConnector.ConnectAsync(RoomInfo room, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
         {
+            var roomId = room.Id;
             var connectionId = await transport.ConnectAsync(roomId, endpoint, timeoutMs, cancellationToken);
+            participantConnectionRegistry.Register(connectionId, room.HostParticipant);
             logger.Log($"Подключились к комнате с id {roomId}, соединение с id {connectionId}");
 
             var selfHandshake = new HandshakeMessage()
@@ -47,7 +54,7 @@ namespace MIN.Core.Services.Rooms
                 PublicKey = await encryptor.GetLocalPublicKey(),
             };
 
-            await messageSender.SendAsync(selfHandshake, roomId, selfHandshake.Participant.Id, connectionId, cancellationToken);
+            await messageRouter.RouteAsync(selfHandshake, roomId, selfHandshake.Participant.Id, Recipient.FromConnection(connectionId), cancellationToken);
 
             activeConnections.Add(connectionId);
             return connectionId;

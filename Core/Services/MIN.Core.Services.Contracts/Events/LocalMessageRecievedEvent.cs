@@ -1,5 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Contracts.Events;
@@ -20,11 +19,17 @@ public sealed class LocalMessageRecievedEvent : BaseEvent
     public Guid RoomId { get; }
 
     /// <summary>
+    /// Участник отправитель
+    /// </summary>
+    public Guid SenderId { get; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="LocalMessageRecievedEvent"/>
     /// </summary>
-    public LocalMessageRecievedEvent(IMessage message, Guid roomId)
+    public LocalMessageRecievedEvent(IMessage message, Guid roomId, Guid senderId)
     {
         Message = message;
         RoomId = roomId;
+        SenderId = senderId;
     }
 }

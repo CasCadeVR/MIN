@@ -326,7 +326,7 @@ namespace MIN.Desktop
                         rowControl = new ChatMessageCard(chatTextMessage,
                             localParticipant,
                             isHostMessage,
-                            removeHeaders: isSelfMessage || lastTextMessage?.Id == message.Id)
+                            removeHeaders: isSelfMessage || lastTextMessage?.Sender.Id == chatTextMessage.Sender.Id)
                         {
                             Anchor = isSelfMessage ? AnchorStyles.Right : AnchorStyles.Left,
                             Margin = new Padding(20, 0, 20, 0)
@@ -403,7 +403,8 @@ namespace MIN.Desktop
 
             try
             {
-                await chatService.SendMessageAsync(roomId, connectionId, messageTextBox.Text.Trim(), localParticipant);
+                await chatService.SendMessageAsync(roomId, connectionId,
+                    messageTextBox.Text.Trim(), localParticipant, cancellationToken: formCts.Token);
                 messageTextBox.Text = string.Empty;
                 changeMessageBoxSize();
             }

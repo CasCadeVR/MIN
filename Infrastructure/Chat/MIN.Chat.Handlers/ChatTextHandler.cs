@@ -15,14 +15,16 @@ namespace MIN.Chat.Handlers;
 internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
 {
     private readonly IMessageStore messageStore;
+    private readonly IParticipantStore participantStore;
     private readonly IEventBus eventBus;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
-    public ChatTextHandler(IMessageStore messageStore, IEventBus eventBus)
+    public ChatTextHandler(IMessageStore messageStore, IParticipantStore participantStore, IEventBus eventBus)
     {
         this.messageStore = messageStore;
+        this.participantStore = participantStore;
         this.eventBus = eventBus;
     }
 
@@ -34,12 +36,14 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
     {
         if (message is ChatTextMessage chatTextMessage)
         {
+            var sender = participantStore.GetParticipantById(context.RoomId, context.SenderId);
+
             messageStore.AddMessage(context.RoomId, chatTextMessage);
             await eventBus.PublishAsync(new ChatTextMessageReceivedEvent()
             {
                 Message = chatTextMessage,
                 RoomId = context.RoomId,
-                Sender = context.Sender,
+                Sender = sender,
             });
 
             return HandlerResult.Success();

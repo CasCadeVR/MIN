@@ -17,9 +17,4 @@ public interface IMessageReceiver
     /// Закончить прослушку сообщений
     /// </summary>
     Task StopListeningAsync();
-
-    /// <summary>
-    /// Обработать сообщение вручную
-    /// </summary>
-    Task ReceiveAsLocal(IMessage message, ParticipantInfo sender, Guid roomId, Guid connectionId, CancellationToken cancellationToken = default);
 }

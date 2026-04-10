@@ -1,4 +1,5 @@
-﻿using MIN.Core.Transport.Contracts.Interfaces;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
 
@@ -10,7 +11,7 @@ public interface IRoomConnector
     /// <summary>
     /// Подключиться к удалённой комнате
     /// </summary>
-    Task<Guid> ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
+    Task<Guid> ConnectAsync(RoomInfo room, IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Отключиться от удалённой комнаты

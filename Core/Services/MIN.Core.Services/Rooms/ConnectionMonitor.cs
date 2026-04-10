@@ -1,13 +1,14 @@
 ﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
-using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Constants;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
+using MIN.Core.Services.Contracts.Models;
 
 namespace MIN.Core.Services.Rooms
 {
@@ -16,8 +17,9 @@ namespace MIN.Core.Services.Rooms
     {
         private readonly ITransport transport;
         private readonly IEventBus eventBus;
-        private readonly IMessageSender messageSender;
+        private readonly IMessageRouter messageRouter;
         private readonly IIdentityService identityService;
+        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly ILoggerProvider logger;
         private CancellationTokenSource cts = null!;
 
@@ -26,14 +28,16 @@ namespace MIN.Core.Services.Rooms
         /// </summary>
         public ConnectionMonitor(ITransport transport,
             IEventBus eventBus,
-            IMessageSender messageSender,
+            IMessageRouter messageRouter,
             IIdentityService identityService,
+            IParticipantConnectionRegistry participantConnectionRegistry,
             ILoggerProvider logger)
         {
             this.transport = transport;
             this.eventBus = eventBus;
-            this.messageSender = messageSender;
+            this.messageRouter = messageRouter;
             this.identityService = identityService;
+            this.participantConnectionRegistry = participantConnectionRegistry;
             this.logger = logger;
         }
 
@@ -55,13 +59,15 @@ namespace MIN.Core.Services.Rooms
                         return;
                     }
 
+                    participantConnectionRegistry.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant);
+
                     var participantLeftMessage = new ParticipantLeftMessage()
                     {
-                        Participant = new ParticipantInfo(identityService.SelfPartcipant),
+                        Participant = leavingParticipant,
                         RoomId = e.RoomId,
                     };
 
-                    await messageSender.BroadcastAsync(participantLeftMessage, e.RoomId, null, cts.Token);
+                    await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, identityService.SelfPartcipant.Id, Recipient.FromEmpty(), cts.Token);
                 }
 
                 await eventBus.PublishAsync(new ConnectionStatusChangedEvent

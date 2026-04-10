@@ -3,6 +3,7 @@ using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Services.Contracts.Models;
 
 namespace MIN.Chat.Services
 {
@@ -25,7 +26,7 @@ namespace MIN.Chat.Services
             this.messageStore = messageStore;
         }
 
-        async Task IChatService.SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender, Guid? recipientId)
+        async Task IChatService.SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender, Guid? recipientId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(content))
             {
@@ -40,7 +41,7 @@ namespace MIN.Chat.Services
                 RecipientId = recipientId,
             };
 
-            await messageRouter.RouteAsync(message, roomId, sender.Id, recipientId, CancellationToken.None);
+            await messageRouter.RouteAsync(message, roomId, sender.Id, Recipient.FromParticipant(recipientId), cancellationToken);
         }
 
         IReadOnlyList<ChatTextMessage> IChatService.GetChatTextMessageHistory(Guid roomId, int? page, int? pageSize)

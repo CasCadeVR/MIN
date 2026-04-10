@@ -18,6 +18,11 @@ public interface IRoomStore
     bool TryGetRoom(Guid roomId, out Room room);
 
     /// <summary>
+    /// Получить идентификатор хоста комнаты по её идентификатору
+    /// </summary>
+    Guid GetRoomHostParticipantId(Guid roomId);
+
+    /// <summary>
     /// Получить все комнаты
     /// </summary>
     IEnumerable<Room> GetAllRooms();

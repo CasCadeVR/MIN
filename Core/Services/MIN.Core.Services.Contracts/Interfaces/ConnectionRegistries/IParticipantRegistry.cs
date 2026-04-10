@@ -23,6 +23,16 @@ public interface IParticipantConnectionRegistry
     ParticipantInfo? GetParticipant(Guid connectionId);
 
     /// <summary>
+    /// Попытаться получить данные участника от его соединения
+    /// </summary>
+    bool TryGetParticipantFromConnectionId(Guid connectionId, out ParticipantInfo participant);
+
+    /// <summary>
+    /// Получить идентификтор участника от идентификатора соеднинения
+    /// </summary>
+    Guid GetParticipantIdFromConnectionId(Guid connectionId);
+
+    /// <summary>
     /// Получить идентификтор соеднинения от идентификатора участника
     /// </summary>
     Guid GetConnectionIdFromParticipantId(Guid participantId);
@@ -31,11 +41,6 @@ public interface IParticipantConnectionRegistry
     /// Попытаться получить идентификатор соединения от идентификатора участника
     /// </summary>
     bool TryGetConnectionIdFromParticipantId(Guid participantId, out Guid connectionId);
-
-    /// <summary>
-    /// Попытаться получить данные участника от его соединения
-    /// </summary>
-    bool TryGetParticipantFromConnectionId(Guid connectionId, out ParticipantInfo participant);
 
     /// <summary>
     /// Разорвать ассоциацию соеднинения с участником

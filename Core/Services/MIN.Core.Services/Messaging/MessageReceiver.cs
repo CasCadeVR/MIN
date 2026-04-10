@@ -1,9 +1,7 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Constants;
@@ -23,7 +21,6 @@ namespace MIN.Core.Services.Messaging
         private readonly IMessageSerializer serializer;
         private readonly IEventBus eventBus;
         private readonly IMessageDispatcher dispatcher;
-        private readonly IIdentityService identityService;
         private readonly IMessageEncryptor encryptor;
         private readonly ILoggerProvider logger;
         private readonly IParticipantConnectionRegistry participantConnectionRegistry;
@@ -36,7 +33,6 @@ namespace MIN.Core.Services.Messaging
             IMessageSerializer serializer,
             IEventBus eventBus,
             IMessageDispatcher dispatcher,
-            IIdentityService identityService,
             IMessageEncryptor encryptor,
             ILoggerProvider logger,
             IParticipantConnectionRegistry participantConnectionRegistry)
@@ -45,7 +41,6 @@ namespace MIN.Core.Services.Messaging
             this.serializer = serializer;
             this.eventBus = eventBus;
             this.dispatcher = dispatcher;
-            this.identityService = identityService;
             this.encryptor = encryptor;
             this.logger = logger;
             this.participantConnectionRegistry = participantConnectionRegistry;
@@ -62,7 +57,7 @@ namespace MIN.Core.Services.Messaging
         private async Task OnLocalMessageRecieved(LocalMessageRecievedEvent e, CancellationToken cancellationToken)
         {
             await dispatcher.DispatchAsync(e.Message,
-                new MessageContext(new ParticipantInfo(identityService.SelfPartcipant),
+                new MessageContext(e.SenderId,
                 e.RoomId,
                 CoreServicesConstants.LocalConnectionId,
                 cancellationToken));
@@ -100,7 +95,7 @@ namespace MIN.Core.Services.Messaging
                         participantInfo = ackMessage.Participant;
                     }
 
-                    await dispatcher.DispatchAsync(message, new MessageContext(participantInfo, e.RoomId, e.ConnectionId, cts!.Token));
+                    await dispatcher.DispatchAsync(message, new MessageContext(participantInfo?.Id ?? Guid.Empty, e.RoomId, e.ConnectionId, cts!.Token));
                 }
                 catch (Exception ex)
                 {
@@ -122,14 +117,6 @@ namespace MIN.Core.Services.Messaging
             cts?.Cancel();
             cts?.Dispose();
             await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Обработать сообщение вручную
-        /// </summary>
-        async Task IMessageReceiver.ReceiveAsLocal(IMessage message, ParticipantInfo sender, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
-        {
-            await dispatcher.DispatchAsync(message, new MessageContext(sender, roomId, connectionId, cancellationToken));
         }
 
         /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>

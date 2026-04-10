@@ -157,12 +157,12 @@ namespace MIN.Desktop
 
             try
             {
-                var connectionId = await roomConnector.ConnectAsync(roomInfo.Id,
+                roomStore.Add(new Room(roomInfo));
+                var connectionId = await roomConnector.ConnectAsync(roomInfo,
                     roomInfo.HostParticipant.Endpoint!,
                     Settings.DiscoveryTimeout,
                     cts.Token);
 
-                roomStore.Add(new Room(roomInfo));
                 OpenChatForm(roomInfo.Id, connectionId, isHost: false);
             }
             catch (Exception ex)
@@ -297,9 +297,10 @@ namespace MIN.Desktop
         {
             uiContext.Post(_ =>
             {
-                if (!eventMessage.IsConnected)
+                if (!eventMessage.IsConnected && !string.IsNullOrEmpty(eventMessage.ErrorMessage))
                 {
-                    MessageBox.Show($"Соединение с комнатой {eventMessage.RoomId} было потеряно",
+                    var room = roomStore.GetRoom(eventMessage.RoomId);
+                    MessageBox.Show($"Соединение с комнатой {room.Name} было потеряно: {eventMessage.ErrorMessage}",
                         "Соединение потеряно",
                         MessageBoxButtons.OK,
                         icon: MessageBoxIcon.Error

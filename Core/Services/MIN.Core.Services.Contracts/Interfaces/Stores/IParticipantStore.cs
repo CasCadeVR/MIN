@@ -18,6 +18,11 @@ public interface IParticipantStore
     void RemoveParticipant(Guid roomId, Guid participantId);
 
     /// <summary>
+    /// Получить участника комнаты
+    /// </summary>
+    ParticipantInfo GetParticipantById(Guid roomId, Guid participantId);
+
+    /// <summary>
     /// Получить список всех участников комнаты
     /// </summary>
     IEnumerable<ParticipantInfo> GetParticipants(Guid roomId);
