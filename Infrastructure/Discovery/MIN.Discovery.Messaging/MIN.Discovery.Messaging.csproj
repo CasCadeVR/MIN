@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\Messaging\MIN.Core.Messaging.Contracts\MIN.Core.Messaging.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Transport\MIN.Core.Transport.Contracts\MIN.Core.Transport.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

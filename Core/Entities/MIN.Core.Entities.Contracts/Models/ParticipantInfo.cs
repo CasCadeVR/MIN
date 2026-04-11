@@ -1,5 +1,4 @@
 ﻿using MIN.Core.Entities.Contracts.Interfaces;
-using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Entities.Contracts.Models;
 
@@ -13,11 +12,6 @@ public record ParticipantInfo : IParticipantData
 
     /// <inheritdoc />
     public string Name { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Точка подключения к участнику
-    /// </summary>
-    public IEndpoint? Endpoint { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>

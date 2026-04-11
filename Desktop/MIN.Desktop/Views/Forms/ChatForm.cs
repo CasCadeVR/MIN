@@ -9,6 +9,7 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
@@ -47,6 +48,7 @@ namespace MIN.Desktop
 
         private bool isResizing;
         private Room? room;
+        private IEndpoint endpoint;
         private ChatTextMessage? lastTextMessage;
 
         /// <summary>
@@ -60,7 +62,8 @@ namespace MIN.Desktop
              ILoggerProvider logger,
              IIdentityService identitiyService,
              Guid roomId,
-             Guid connectionId)
+             Guid connectionId,
+             IEndpoint endpoint)
         {
             InitializeComponent();
             SendLoadingMessage();
@@ -72,6 +75,7 @@ namespace MIN.Desktop
             this.logger = logger;
             this.roomId = roomId;
             this.connectionId = connectionId;
+            this.endpoint = endpoint;
 
             localParticipant = new ParticipantInfo(identitiyService.SelfPartcipant);
             this.room = this.roomStore.TryGetRoom(this.roomId, out var room) ? room : null;
@@ -179,7 +183,10 @@ namespace MIN.Desktop
             {
                 uiContext.Post(_ =>
                 {
-                    MessageBox.Show(eventMessage.ErrorMessage ?? "Соединение разорвано", "Подключение разорвано",
+                    MessageBox.Show(string.IsNullOrEmpty(eventMessage.ErrorMessage)
+                        ? "Соединение разорвано, хост остановил комнату"
+                        : eventMessage.ErrorMessage,
+                        "Подключение разорвано",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Close();
                 }, null);
@@ -229,7 +236,7 @@ namespace MIN.Desktop
             hostName.Text = isHost ? "Ты" : room.HostParticipant?.Name ?? "Неизвестно";
             editButton.Visible = isHost;
 
-            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant?.Endpoint is NamedPipeEndpoint npEndpoint
+            if (CollegePCNameParser.TryParseComputerName(endpoint is NamedPipeEndpoint npEndpoint
                     ? npEndpoint.MachineName
                     : string.Empty,
                 out var roomNumber,
@@ -285,11 +292,10 @@ namespace MIN.Desktop
 
         private void SendLoadingMessage()
         {
-            var loadingMessage = new SystemTextMessage
+            AddMessageToChatFlow(new SystemTextMessage
             {
                 Content = "Загрузка...",
-            };
-            AddMessageToChatFlow(loadingMessage);
+            });
         }
 
         private void NotifyIfNeeded(string content, string? senderName = null)

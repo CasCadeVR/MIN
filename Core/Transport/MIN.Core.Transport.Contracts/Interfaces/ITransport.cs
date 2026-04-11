@@ -30,7 +30,12 @@ public interface ITransport
     /// <summary>
     /// Запустить сервер подключений для указанной комнаты
     /// </summary>
-    Task StartHostingAsync(Guid roomId, IEndpoint endpoint, CancellationToken cancellationToken = default);
+    Task StartHostingAsync(Guid roomId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получить точку подключения комнаты
+    /// </summary>
+    IEndpoint GetEndpoint(Guid roomId);
 
     /// <summary>
     /// Прекратить сервер для указанной комнаты

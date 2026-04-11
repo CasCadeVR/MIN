@@ -16,6 +16,7 @@ using MIN.Core.Services.Rooms;
 using MIN.Core.Services.Stores;
 using MIN.Core.Transport.NamedPipes;
 using MIN.Core.Transport.NamedPipes.Factories;
+using MIN.Core.Transport.NamedPipes.Services;
 
 namespace MIN.Core.DI;
 
@@ -38,6 +39,7 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<KeyProvider>(ServiceLifetime.Singleton);
 
+        services.RegisterAsImplementedInterfaces<NamedPipeEndpointProvider>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NamedPipeTransport>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NamedPipeTransportFactory>(ServiceLifetime.Singleton);
 

@@ -7,11 +7,12 @@ using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Desktop.Infrastructure.Bootstrap;
 using MIN.Discovery.Events;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -122,7 +123,6 @@ namespace MIN.Desktop
             }
 
             localParticipant = new ParticipantInfo(identityService.SelfPartcipant);
-            localParticipant.Endpoint = EndpointBootstrapper.CreateEndpointForRoom(room.Id);
             room.HostParticipant = localParticipant;
 
             try
@@ -130,13 +130,16 @@ namespace MIN.Desktop
                 roomStore.Add(room);
 
                 var roomInfo = new RoomInfo(room);
-                await roomHoster.StartHostingAsync(roomInfo, localParticipant.Endpoint, cts.Token);
+                await roomHoster.StartHostingAsync(roomInfo, cts.Token);
 
                 participantStore.AddParticipant(roomInfo.Id, localParticipant);
 
                 await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
 
-                OpenChatForm(roomInfo.Id, CoreServicesConstants.LocalConnectionId, isHost: true);
+                OpenChatForm(roomInfo.Id, CoreServicesConstants.LocalConnectionId, isHost: true, new NamedPipeEndpoint()
+                {
+                    MachineName = Environment.MachineName,
+                });
             }
             catch (Exception ex)
             {
@@ -144,7 +147,7 @@ namespace MIN.Desktop
             }
         }
 
-        private async Task OnRoomJoin(RoomInfo roomInfo)
+        private async Task OnRoomJoin(RoomInfo roomInfo, IEndpoint endpoint)
         {
             if (roomInfo.ParticipantCount >= roomInfo.MaximumParticipants)
             {
@@ -163,11 +166,11 @@ namespace MIN.Desktop
             {
                 roomStore.Add(new Room(roomInfo));
                 var connectionId = await roomConnector.ConnectAsync(roomInfo,
-                    roomInfo.HostParticipant.Endpoint!,
+                    endpoint,
                     Settings.DiscoveryTimeout,
                     cts.Token);
 
-                OpenChatForm(roomInfo.Id, connectionId, isHost: false);
+                OpenChatForm(roomInfo.Id, connectionId, isHost: false, endpoint);
             }
             catch (Exception ex)
             {
@@ -175,7 +178,7 @@ namespace MIN.Desktop
             }
         }
 
-        private void OpenChatForm(Guid roomId, Guid connectionId, bool isHost)
+        private void OpenChatForm(Guid roomId, Guid connectionId, bool isHost, IEndpoint endpoint)
         {
             var chatForm = new ChatForm(
                       chatService,
@@ -185,7 +188,8 @@ namespace MIN.Desktop
                       logger,
                       identityService,
                       roomId,
-                      connectionId);
+                      connectionId,
+                      endpoint);
 
             chatForm.FormClosing += async (_, _) =>
             {
@@ -246,7 +250,7 @@ namespace MIN.Desktop
                     Parent = flowLayoutPanel
                 };
 
-                card.Clicked += () => OnRoomJoin(e.Room);
+                card.Clicked += () => OnRoomJoin(e.Room, e.Endpoint);
                 card.Disposed += (s, _) =>
                 {
                     totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";

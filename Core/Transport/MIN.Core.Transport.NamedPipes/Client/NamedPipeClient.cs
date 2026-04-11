@@ -1,4 +1,5 @@
 ﻿using System.IO.Pipes;
+using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -37,6 +38,11 @@ internal sealed class NamedPipeClient : IAsyncDisposable
     /// Событие отключения
     /// </summary>
     public event EventHandler<string?>? Disconnected;
+
+    /// <summary>
+    /// Точка подключения клиента
+    /// </summary>
+    public IEndpoint Endpoint => endpoint;
 
     /// <summary>
     /// Идентификатор соеднинения

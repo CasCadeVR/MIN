@@ -23,7 +23,7 @@ namespace MIN.Core.Services.Rooms
             this.transport = transport;
         }
 
-        async Task IRoomHoster.StartHostingAsync(RoomInfo roomInfo, IEndpoint endpoint, CancellationToken cancellationToken)
+        async Task IRoomHoster.StartHostingAsync(RoomInfo roomInfo, CancellationToken cancellationToken)
         {
             if (activeRooms.Contains(roomInfo.Id))
             {
@@ -41,7 +41,7 @@ namespace MIN.Core.Services.Rooms
                 RoomId = roomInfo.Id
             });
 
-            await transport.StartHostingAsync(roomInfo.Id, endpoint, cancellationToken);
+            await transport.StartHostingAsync(roomInfo.Id, cancellationToken);
             activeRooms.Add(roomInfo.Id);
         }
 

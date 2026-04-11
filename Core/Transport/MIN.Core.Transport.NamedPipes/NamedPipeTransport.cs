@@ -1,12 +1,12 @@
 ﻿using System.Collections.Concurrent;
-using MIN.Helpers.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Models.Enums;
+using MIN.Core.Transport.Contracts.Constants;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Core.Transport.Contracts.Constants;
+using MIN.Core.Transport.NamedPipes.Client;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Core.Transport.NamedPipes.Server;
-using MIN.Core.Transport.NamedPipes.Client;
+using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Transport.NamedPipes;
 
@@ -16,14 +16,16 @@ namespace MIN.Core.Transport.NamedPipes;
 public sealed class NamedPipeTransport : ITransport
 {
     private readonly ILoggerProvider logger;
+    private readonly IEndPointProvider endPointProvider;
     private readonly ConcurrentDictionary<Guid, NamedPipeServer> servers = new();
     private readonly ConcurrentDictionary<Guid, NamedPipeClient> clients = new();
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NamedPipeTransport"/>
     /// </summary>
-    public NamedPipeTransport(ILoggerProvider logger)
+    public NamedPipeTransport(IEndPointProvider endPointProvider, ILoggerProvider logger)
     {
+        this.endPointProvider = endPointProvider;
         this.logger = logger;
     }
 
@@ -33,8 +35,10 @@ public sealed class NamedPipeTransport : ITransport
     /// <inheritdoc />
     public event EventHandler<ConnectionStateChangedEventArgs>? ConnectionStateChanged;
 
-    async Task ITransport.StartHostingAsync(Guid roomId, IEndpoint endpoint, CancellationToken cancellationToken)
+    async Task ITransport.StartHostingAsync(Guid roomId, CancellationToken cancellationToken)
     {
+        var endpoint = endPointProvider.CreateEndpointForRoom(roomId);
+
         if (endpoint is not NamedPipeEndpoint namedPipeEndpoint)
         {
             throw new ArgumentException("Endpoint must be NamedPipeEndpoint", nameof(endpoint));
@@ -57,6 +61,22 @@ public sealed class NamedPipeTransport : ITransport
 
         await server.StartAsync(cancellationToken);
         logger.Log($"Сервер стартанул комнату с id {roomId} на pipe {namedPipeEndpoint.PipeName}");
+    }
+
+    IEndpoint ITransport.GetEndpoint(Guid roomId)
+    {
+        if (clients.TryGetValue(roomId, out var client))
+        {
+            return client.Endpoint;
+        }
+        else if (servers.TryGetValue(roomId, out var server))
+        {
+            return server.Endpoint;
+        }
+        else
+        {
+            throw new InvalidOperationException($"Нет соединений для комнаты {roomId}");
+        }
     }
 
     async Task ITransport.StopHostingAsync(Guid roomId)

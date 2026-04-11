@@ -3,7 +3,7 @@
 namespace MIN.Helpers.Services;
 
 /// <summary>
-/// <see cref="ILocalNetworkComputerProvider"/> для коллеждной компьютерной сети
+/// <see cref="ILocalNetworkComputerProvider"/> для колледжной компьютерной сети
 /// </summary>
 public class CollegeNetworkComputerProvider : ILocalNetworkComputerProvider
 {

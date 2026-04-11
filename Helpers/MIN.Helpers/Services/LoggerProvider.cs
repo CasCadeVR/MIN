@@ -9,7 +9,7 @@ namespace MIN.Helpers.Services
     /// </summary>
     public class LoggerProvider : ILoggerProvider
     {
-        private List<string> messages = [];
+        private readonly List<string> messages = [];
 
         ///<inheritdoc cref="ILoggerProvider.OnLogReceived"/>
         public event EventHandler<string>? OnLogReceived;

@@ -2,6 +2,7 @@
 using MIN.Core.Events.Contracts;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Discovery.Events;
 using MIN.Discovery.Messaging;
 using MIN.Discovery.Services.Contracts.Exceptions;
@@ -16,6 +17,7 @@ namespace MIN.Discovery.Services
     /// <inheritdoc cref="IDiscoveryService"/>
     public sealed class DiscoveryService : IDiscoveryService
     {
+        private readonly ITransport transport;
         private readonly IDiscoveryTransport discoveryTransport;
         private readonly IMessageSerializer serializer;
         private readonly IRoomStore roomStore;
@@ -29,6 +31,7 @@ namespace MIN.Discovery.Services
         /// Инициализирует новый экземпляр <see cref="DiscoveryService"/>
         /// </summary>
         public DiscoveryService(
+            ITransport transport,
             IDiscoveryTransport discoveryTransport,
             IMessageSerializer serializer,
             IRoomStore roomStore,
@@ -36,6 +39,7 @@ namespace MIN.Discovery.Services
             IEventBus eventBus,
             ILoggerProvider logger)
         {
+            this.transport = transport;
             this.discoveryTransport = discoveryTransport;
             this.serializer = serializer;
             this.roomStore = roomStore;
@@ -127,6 +131,7 @@ namespace MIN.Discovery.Services
                     eventBus.PublishAsync(new RoomDiscoveredEvent()
                     {
                         Room = response.Room,
+                        Endpoint = response.Endpoint,
                     });
                 }
             }
@@ -158,7 +163,11 @@ namespace MIN.Discovery.Services
                 var roomInfo = new RoomInfo(room);
                 roomInfo.ParticipantCount = participantStore.GetParticipants(roomId).Count();
 
-                var discoveryResponse = new DiscoveryResponseMessage { Room = roomInfo };
+                var discoveryResponse = new DiscoveryResponseMessage
+                {
+                    Room = roomInfo,
+                    Endpoint = transport.GetEndpoint(roomId),
+                };
                 var data = serializer.Serialize(discoveryResponse);
 
                 discoveryTransport.ResponseWithData(data, e.ConnectionId, serviceCts!.Token);

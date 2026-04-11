@@ -29,4 +29,9 @@ public sealed record NamedPipeEndpoint : IEndpoint
         MachineName = machineName;
         PipeName = pipeName;
     }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="NamedPipeEndpoint"/>
+    /// </summary>
+    public NamedPipeEndpoint() { }
 }

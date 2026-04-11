@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
+using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Discovery.Messaging;
 
@@ -18,4 +19,9 @@ public sealed class DiscoveryResponseMessage : BaseMessage
     /// Информация об обнаруженной комнате
     /// </summary>
     public RoomInfo Room { get; set; } = null!;
+
+    /// <summary>
+    /// Точка подключения к комнате
+    /// </summary>
+    public IEndpoint Endpoint { get; set; } = null!;
 }

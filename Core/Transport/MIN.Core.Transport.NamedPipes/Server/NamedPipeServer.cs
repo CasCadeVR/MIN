@@ -3,6 +3,7 @@ using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using MIN.Core.Transport.Contracts.Constants;
+using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -35,6 +36,11 @@ internal sealed class NamedPipeServer : IAsyncDisposable
 
         connectionSlots = new SemaphoreSlim(maxParticipants, maxParticipants);
     }
+
+    /// <summary>
+    /// Точка подключения сервера
+    /// </summary>
+    public IEndpoint Endpoint => endpoint;
 
     /// <summary>
     /// Событие, возникающее при получении сообщения от участника
