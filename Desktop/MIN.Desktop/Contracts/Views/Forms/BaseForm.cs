@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace MIN.Desktop.Contracts.Views.Forms
+﻿namespace MIN.Desktop.Contracts.Views.Forms
 {
+    /// <summary>
+    /// Базовая форма
+    /// </summary>
     public partial class BaseForm : Form
     {
+        /// <summary>
+        /// Инициализирует новый экземпляр <see cref="BaseForm"/>
+        /// </summary>
         public BaseForm()
         {
             InitializeComponent();

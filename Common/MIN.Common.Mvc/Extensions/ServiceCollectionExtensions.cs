@@ -13,9 +13,9 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Регистрирует все типы сообщений из указанной сборки в реестре десериализаторов
     /// </summary>
+    /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
+    /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
     /// <typeparam name="TMarker">Тип-маркер из сборки, содержащей сообщения</typeparam>
-    /// <param name="services">Коллекция сервисов</param>
-    /// <returns>Коллекция сервисов для цепочки вызовов</returns>
     public static void RegisterMultipleMessagesFromAnchor<TMarker>(this IServiceCollection services, ServiceLifetime lifetime)
     {
         var assembly = typeof(TMarker).Assembly;

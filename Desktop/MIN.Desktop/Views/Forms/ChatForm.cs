@@ -49,6 +49,9 @@ namespace MIN.Desktop
         private Room? room;
         private ChatTextMessage? lastTextMessage;
 
+        /// <summary>
+        /// »нициализирует новый экземпл€р <see cref="ChatForm"/>
+        /// </summary>
         public ChatForm(
              IChatService chatService,
              IRoomStore roomStore,
@@ -184,6 +187,7 @@ namespace MIN.Desktop
             await Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         protected override void ApplyStylings()
         {
             splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
@@ -532,6 +536,9 @@ namespace MIN.Desktop
             tableLayoutPanelButtons.Height = messageTextBox.UpdateHeight() + tableLayoutPanelButtons.Margin.Vertical;
         }
 
+        /// <summary>
+        /// <see cref="Form.OnFormClosed(FormClosedEventArgs)"/>
+        /// </summary>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             formCts.Cancel();

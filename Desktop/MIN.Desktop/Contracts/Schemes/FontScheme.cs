@@ -11,10 +11,18 @@ public static class FontScheme
     public readonly static Font Default = new Font("Segoe UI", 9.75f, FontStyle.Regular);
 
     /// <summary>
-    /// Заголовки
+    /// Заголовок 1 уровня
     /// </summary>
     public readonly static Font Heading1 = new Font("Segoe UI", 16f, FontStyle.Bold);
+
+    /// <summary>
+    /// Заголовок 2 уровня
+    /// </summary>
     public readonly static Font Heading2 = new Font("Segoe UI", 14f, FontStyle.Bold);
+
+    /// <summary>
+    /// Заголовок 3 уровня
+    /// </summary>
     public readonly static Font Heading3 = new Font("Segoe UI", 12f, FontStyle.Bold);
 
     /// <summary>

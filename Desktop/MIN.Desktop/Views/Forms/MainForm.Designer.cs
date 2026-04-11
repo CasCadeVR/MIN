@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop
+﻿using MIN.Desktop.Components.Controls.Buttons;
+
+namespace MIN.Desktop
 {
     partial class MainForm
     {
@@ -33,12 +35,12 @@
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             splitContainerClass = new SplitContainer();
             tableLayoutPanelMainButtons = new TableLayoutPanel();
-            findRooms = new MIN.Desktop.Components.CommonButton();
-            createRoom = new MIN.Desktop.Components.CommonButton();
+            findRooms = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            createRoom = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             tableLayoutPanel1 = new TableLayoutPanel();
             ClassroomTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
             classNumber = new MIN.Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown();
-            settingsButton = new MIN.Desktop.Components.CommonButton();
+            settingsButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             statusStrip = new StatusStrip();
             totalRoomsCount = new ToolStripStatusLabel();
             flowLayoutPanel = new FlowLayoutPanel();
@@ -307,8 +309,8 @@
         private StatusStrip statusStrip;
         private ToolStripStatusLabel totalRoomsCount;
         private TableLayoutPanel tableLayoutPanelMainButtons;
-        private Components.CommonButton findRooms;
-        private Components.CommonButton createRoom;
-        private Components.CommonButton settingsButton;
+        private CommonButton findRooms;
+        private CommonButton createRoom;
+        private CommonButton settingsButton;
     }
 }

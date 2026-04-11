@@ -27,6 +27,7 @@ public interface IKeyProvider
     /// Сохранить публичный ключ собеседника (для TOFU)
     /// </summary>
     /// <param name="partnerId">Идентификатор партнёра (участника)</param>
+    /// <param name="partnerPublicKeyBytes">Идентификатор партнёра (участника)</param>
     Task SavePartnerPublicKeyAsync(Guid partnerId, byte[] partnerPublicKeyBytes);
 
     /// <summary>

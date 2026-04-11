@@ -24,6 +24,7 @@ namespace MIN.Desktop
             Shown += (_, _) => participantName.Focus();
         }
 
+        /// <inheritdoc />
         protected override void ApplyStylings()
         {
             splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;

@@ -3,6 +3,9 @@ using MIN.Desktop.Contracts.Views.Forms;
 
 namespace MIN.Desktop.Views.Forms.HelperForms
 {
+    /// <summary>
+    /// Форма уведомления
+    /// </summary>
     public partial class NotificationForm : StyledForm
     {
         private readonly string message;
@@ -32,6 +35,9 @@ namespace MIN.Desktop.Views.Forms.HelperForms
 
         private bool isClosing;
 
+        /// <summary>
+        /// Инициализирует новый экземпляр <see cref="NotificationForm"/>
+        /// </summary>
         public NotificationForm(string message, string messageRoomName, string? sender)
         {
             InitializeComponent();
@@ -91,6 +97,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             senderAndContent.Text += message;
         }
 
+        /// <inheritdoc />
         protected override void ApplyStylings()
         {
             tableLayoutPanel.BackColor = ColorScheme.IncomingMessageBackground;
@@ -185,6 +192,9 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             CloseNotification();
         }
 
+        /// <summary>
+        /// <inheritdoc cref="Form.OnFormClosed(FormClosedEventArgs)"/>
+        /// </summary>
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             appearTimer?.Stop();

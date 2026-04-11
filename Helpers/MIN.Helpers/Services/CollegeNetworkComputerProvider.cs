@@ -2,6 +2,9 @@
 
 namespace MIN.Helpers.Services;
 
+/// <summary>
+/// <see cref="ILocalNetworkComputerProvider"/> для коллеждной компьютерной сети
+/// </summary>
 public class CollegeNetworkComputerProvider : ILocalNetworkComputerProvider
 {
     private readonly int maxComputers = 20;

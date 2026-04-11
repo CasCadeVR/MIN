@@ -1,4 +1,5 @@
-﻿using MIN.Desktop.Components.Controls.FlowLayoutPanels;
+﻿using MIN.Desktop.Components.Controls.Buttons;
+using MIN.Desktop.Components.Controls.FlowLayoutPanels;
 
 namespace MIN.Desktop
 {
@@ -38,16 +39,16 @@ namespace MIN.Desktop
             tableLayoutPanel2 = new TableLayoutPanel();
             chatFlow = new NoHorizontalScrollListView();
             tableLayoutPanelButtons = new TableLayoutPanel();
-            fileButton = new MIN.Desktop.Components.CommonButton();
-            sendButton = new MIN.Desktop.Components.CommonButton();
+            fileButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            sendButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             messageTextBox = new MIN.Desktop.Components.Controls.TextBoxes.MessageTextBox();
             tableLayoutPanel1 = new TableLayoutPanel();
-            disconnectButton = new MIN.Desktop.Components.InvertedButton();
-            aboutButton = new MIN.Desktop.Components.CommonButton();
+            disconnectButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
+            aboutButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             participantsFlow = new NoHorizontalScrollListView();
             tableLayoutPanelStats = new TableLayoutPanel();
-            closeButton = new MIN.Desktop.Components.InvertedButton();
-            editButton = new MIN.Desktop.Components.CommonButton();
+            closeButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
+            editButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             heading3Label4 = new MIN.Desktop.Components.Labels.Heading3Label();
             captionLabel4 = new MIN.Desktop.Components.Labels.CaptionLabel();
             participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
@@ -540,19 +541,19 @@ namespace MIN.Desktop
         private Components.Labels.Heading1Label Title;
         private NoHorizontalScrollListView chatFlow;
         private TableLayoutPanel tableLayoutPanelButtons;
-        private Components.CommonButton fileButton;
-        private Components.CommonButton sendButton;
+        private CommonButton fileButton;
+        private CommonButton sendButton;
         private TableLayoutPanel tableLayoutPanel1;
-        private Components.InvertedButton disconnectButton;
-        private Components.CommonButton aboutButton;
+        private InvertedButton disconnectButton;
+        private CommonButton aboutButton;
         private TableLayoutPanel tableLayoutPanelStats;
         private Components.Labels.Heading3Label heading3Label4;
         private Components.Labels.Heading3Label classroom;
-        private Components.InvertedButton closeButton;
+        private InvertedButton closeButton;
         private Components.Labels.Heading3Label hostName;
         private Components.Labels.Heading3Label participantsInfo;
         private Components.Labels.Heading3Label computer;
-        private Components.CommonButton editButton;
+        private CommonButton editButton;
         private Components.Controls.TextBoxes.MessageTextBox messageTextBox;
         private TableLayoutPanel tableLayoutPanel2;
         private Components.Labels.CaptionLabel captionLabel3;

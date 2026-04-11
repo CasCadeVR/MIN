@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Components
+﻿using MIN.Desktop.Components.Controls.Buttons;
+
+namespace MIN.Desktop.Components
 {
     partial class RoomCard
     {

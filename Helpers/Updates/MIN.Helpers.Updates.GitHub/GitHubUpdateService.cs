@@ -13,13 +13,16 @@ public class GitHubUpdateService : IUpdateService
     private readonly string githubApiUrl = "https://api.github.com/repos/{owner}/{repo}/releases/latest";
     private readonly Version currentVersion;
 
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="GitHubUpdateService"/>
+    /// </summary>
     public GitHubUpdateService(ILoggerProvider logger, Version currentVersion)
     {
         this.logger = logger;
         this.currentVersion = currentVersion;
     }
 
-    public async Task<UpdateCheckResult> CheckForUpdatesAsync(string owner, string repo, CancellationToken ct = default)
+    async Task<UpdateCheckResult> IUpdateService.CheckForUpdatesAsync(string owner, string repo, CancellationToken cancellationToken)
     {
         try
         {
@@ -28,10 +31,10 @@ public class GitHubUpdateService : IUpdateService
             httpClient.DefaultRequestHeaders.Add("User-Agent", "MIN-Desktop-App");
 
             var url = githubApiUrl.Replace("{owner}", owner).Replace("{repo}", repo);
-            var response = await httpClient.GetAsync(url, ct);
+            var response = await httpClient.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            var json = await response.Content.ReadAsStringAsync(ct);
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
 

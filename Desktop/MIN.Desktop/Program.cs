@@ -1,14 +1,11 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MIN.Chat.DI;
 using MIN.Common.Mvc.Extensions;
-using MIN.Core.DI;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Desktop.Infrastructure.Services;
-using MIN.Discovery.DI;
-using MIN.Helpers.DI;
+using MIN.DI;
 
 namespace MIN.Desktop
 {
@@ -57,11 +54,7 @@ namespace MIN.Desktop
 
             services.RegisterAsImplementedInterfaces<NotificationService>(ServiceLifetime.Singleton);
             services.RegisterAsImplementedInterfaces<SettingsProvider>(ServiceLifetime.Singleton);
-
-            services.RegisterModule<HelpersModule>();
-            services.RegisterModule<CoreModule>();
-            services.RegisterModule<ChatModule>();
-            services.RegisterModule<DiscoveryModule>();
+            services.RegisterModule<MinModule>();
 
             services.AddScoped<MainForm>();
         }

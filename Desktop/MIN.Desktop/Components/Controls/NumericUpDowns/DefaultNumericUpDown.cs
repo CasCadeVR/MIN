@@ -3,10 +3,11 @@
 namespace MIN.Desktop.Components.Controls.NumericUpDowns
 {
     /// <summary>
-    /// Обычный <see cref="BaseNumericUpDown">
+    ///  Обычный <see cref="BaseNumericUpDown"/>
     /// </summary>
     public class DefaultNumericUpDown : BaseNumericUpDown
     {
+        /// <inheritdoc cref="BaseNumericUpDown.ApplyBaseStyles"/>
         protected override void ApplyBaseStyles()
         {
             base.ApplyBaseStyles();

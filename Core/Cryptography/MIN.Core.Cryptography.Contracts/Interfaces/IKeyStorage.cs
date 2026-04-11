@@ -26,11 +26,14 @@ public interface IKeyStorage
     /// Сохранить публичный ключ партнёра в хранилище
     /// </summary>
     /// <param name="partnerId">Идентификатор партнёра (участника)</param>
+    /// <param name="publicKey">Публичный ключ партнёра</param>
+    /// <param name="cancellationToken">Токен отмены</param>
     Task SavePartnerPublicKeyAsync(Guid partnerId, byte[] publicKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Загрузить публичный ключ партнёра по его идентификатору
     /// </summary>
     /// <param name="partnerId">Идентификатор партнёра (участника)</param>
+    /// <param name="cancellationToken">Токен отмены</param>
     Task<byte[]?> LoadPartnerPublicKeyAsync(Guid partnerId, CancellationToken cancellationToken = default);
 }

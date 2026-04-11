@@ -14,6 +14,7 @@ public interface IMessageEncryptor
     /// Вызывается при первом контакте с собеседником
     /// </summary>
     /// <param name="partnerId">Идентификатор партнёра (участника)</param>
+    /// <param name="partnerPublicKey">Публичный ключ партнёра</param>
     Task InitializeSessionWithPartnerAsync(Guid partnerId, byte[] partnerPublicKey);
 
     /// <summary>
@@ -24,12 +25,14 @@ public interface IMessageEncryptor
     /// <summary>
     /// Закодировать сообщение
     /// </summary>
+    /// <param name="data">Информация для зашифровки</param>
     /// <param name="partnerId">Идентификатор партнёра (участника)</param>
     byte[] EncryptMessage(byte[] data, Guid partnerId);
 
     /// <summary>
     /// Раскодировать сообщение
     /// </summary>
+    /// <param name="encryptedData">Информация для расшифровки</param>
     /// <param name="partnerId">Идентификатор партнёра (участника)</param>
     byte[] DecryptMessage(byte[] encryptedData, Guid partnerId);
 

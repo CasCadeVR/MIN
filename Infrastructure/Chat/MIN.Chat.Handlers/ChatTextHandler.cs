@@ -19,7 +19,7 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
     private readonly IEventBus eventBus;
 
     /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
+    /// Инициализирует новый экземлпяр <see cref="ChatTextHandler"/>
     /// </summary>
     public ChatTextHandler(IMessageStore messageStore, IParticipantStore participantStore, IEventBus eventBus)
     {

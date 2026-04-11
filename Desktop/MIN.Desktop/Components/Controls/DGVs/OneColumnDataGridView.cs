@@ -2,8 +2,14 @@
 
 namespace MIN.Desktop.Components.Controls.DGVs
 {
+    /// <summary>
+    /// Одноколонный <see cref="BaseDataGridView"/>
+    /// </summary>
     public class OneColumnDataGridView : BaseDataGridView
     {
+        /// <summary>
+        /// Инциализирует новый экземпляр <see cref="OneColumnDataGridView"/>
+        /// </summary>
         public OneColumnDataGridView()
         {
             AllowUserToAddRows = true;
@@ -23,6 +29,7 @@ namespace MIN.Desktop.Components.Controls.DGVs
             DefaultCellStyle.BackColor = Enabled ? ColorScheme.PrimaryAccent : ColorScheme.ConnectionDisabled;
         }
 
+        /// <inheritdoc cref="BaseDataGridView.ApplyBaseStyles"/>
         protected override void ApplyBaseStyles()
         {
             base.ApplyBaseStyles();

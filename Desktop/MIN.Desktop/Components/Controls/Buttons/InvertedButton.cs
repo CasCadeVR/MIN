@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using MIN.Desktop.Contracts;
 
-namespace MIN.Desktop.Components
+namespace MIN.Desktop.Components.Controls.Buttons
 {
     /// <summary>
     /// Обычная <see cref="Button"/>
@@ -24,10 +24,10 @@ namespace MIN.Desktop.Components
             base.BackColor = ColorScheme.InputFieldBackground;
             base.ForeColor = ColorScheme.SecondaryAccent;
 
-            base.FlatStyle = FlatStyle.Flat;
-            base.FlatAppearance.BorderColor = ColorScheme.SecondaryAccent;
-            base.FlatAppearance.BorderSize = 2;
-            base.Padding = new Padding(8, 4, 8, 4);
+            FlatStyle = FlatStyle.Flat;
+            FlatAppearance.BorderColor = ColorScheme.SecondaryAccent;
+            FlatAppearance.BorderSize = 2;
+            Padding = new Padding(8, 4, 8, 4);
         }
 
         /// <inheritdoc cref="Control.OnHandleCreated(EventArgs)"/>

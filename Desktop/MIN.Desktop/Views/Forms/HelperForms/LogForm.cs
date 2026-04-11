@@ -4,10 +4,16 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Desktop
 {
+    /// <summary>
+    /// ‘орма логировани€
+    /// </summary>
     public partial class LogForm : StyledForm
     {
         private readonly ILoggerProvider loggerProvider;
 
+        /// <summary>
+        /// »нициализирует новый экземпл€р <see cref="LogForm"/>
+        /// </summary>
         public LogForm(ILoggerProvider loggerProvider)
         {
             InitializeComponent();
@@ -27,6 +33,7 @@ namespace MIN.Desktop
             logListBox.TopIndex = Math.Max(logListBox.Items.Count - visibleItems + 1, 0);
         }
 
+        /// <inheritdoc />
         protected override void ApplyStylings()
         {
             splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;

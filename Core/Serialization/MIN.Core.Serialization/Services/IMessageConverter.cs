@@ -6,15 +6,22 @@ using MIN.Core.Serialization.Contracts;
 
 namespace MIN.Core.Serialization.Json.Services
 {
+    /// <summary>
+    /// <see cref="JsonConverter"/> для <see cref="IMessage"/>
+    /// </summary>
     public class IMessageConverter : JsonConverter<IMessage>
     {
         private readonly IMessageSerializer serializer;
 
+        /// <summary>
+        /// Инициализирует новый экземпляр <see cref="IMessageConverter"/>
+        /// </summary>
         public IMessageConverter(IMessageSerializer serializer)
         {
             this.serializer = serializer;
         }
 
+        /// <inheritdoc />
         public override IMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             using var doc = JsonDocument.ParseValue(ref reader);
@@ -23,6 +30,7 @@ namespace MIN.Core.Serialization.Json.Services
             return serializer.Deserialize(bytes);
         }
 
+        /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, IMessage value, JsonSerializerOptions options)
         {
             var bytes = serializer.Serialize(value);

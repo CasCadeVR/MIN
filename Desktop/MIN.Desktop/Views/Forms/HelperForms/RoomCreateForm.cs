@@ -16,6 +16,9 @@ namespace MIN.Desktop
 
         private bool isNew;
 
+        /// <summary>
+        /// »нициализирует новый экземпл€р <see cref="RoomCreateForm"/>
+        /// </summary>
         public RoomCreateForm(Room? room = null)
         {
             isNew = room == null;
@@ -26,6 +29,7 @@ namespace MIN.Desktop
             Shown += (_, _) => roomName.Focus();
         }
 
+        /// <inheritdoc />
         protected override void ApplyStylings()
         {
             splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;

@@ -29,30 +29,28 @@ namespace MIN.Desktop.Components.Textboxes
 
         private const int WM_MOUSEWHEEL = 0x020A;
 
+        /// <summary>
+        /// Событие по прокрутке мыши
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            // Пытаемся найти родительский контейнер, который умеет скроллиться
             Control parent = Parent!;
 
             while (parent != null)
             {
                 if (parent is ScrollableControl scrollableParent)
                 {
-                    // Если нашли родительский скролл-контроль (FlowLayoutPanel, Panel и т.д.),
-                    // отправляем событие колесика ему.
-
-                    // Координаты мыши должны быть экранными для SendMessage
-                    Point screenPoint = PointToScreen(new Point(e.X, e.Y));
-                    IntPtr wParam = new IntPtr((e.Delta << 16));
-                    IntPtr lParam = new IntPtr((screenPoint.Y << 16) | (screenPoint.X & 0xFFFF));
+                    var screenPoint = PointToScreen(new Point(e.X, e.Y));
+                    var wParam = new IntPtr(e.Delta << 16);
+                    var lParam = new IntPtr((screenPoint.Y << 16) | (screenPoint.X & 0xFFFF));
 
                     SendMessage(scrollableParent.Handle, WM_MOUSEWHEEL, wParam, lParam);
-                    return; // Выходим, чтобы TextBox не скроллил сам себя
+                    return;
                 }
                 parent = parent.Parent!;
             }
 
-            // Если родителя со скроллом не нашли, оставляем стандартное поведение
             base.OnMouseWheel(e);
         }
 

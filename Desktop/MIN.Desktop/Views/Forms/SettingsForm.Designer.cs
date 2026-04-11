@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop
+﻿using MIN.Desktop.Components.Controls.Buttons;
+
+namespace MIN.Desktop
 {
     partial class SettingsForm
     {
@@ -33,8 +35,8 @@
             tableLayoutPanelHeader = new TableLayoutPanel();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             tableLayoutPanelButtons = new TableLayoutPanel();
-            saveButton = new MIN.Desktop.Components.CommonButton();
-            cancelButton = new MIN.Desktop.Components.InvertedButton();
+            saveButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            cancelButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             tableLayoutPanel1 = new TableLayoutPanel();
             pcNameDescription = new MIN.Desktop.Components.Labels.CaptionLabel();
             preferredSearch = new MIN.Desktop.Components.Controls.RadioButtons.DefaultRadioButton();
@@ -48,7 +50,7 @@
             preferredPcNameList = new MIN.Desktop.Components.Controls.DGVs.OneColumnDataGridView();
             PCName = new DataGridViewTextBoxColumn();
             logDescriptionLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
-            logButton = new MIN.Desktop.Components.InvertedButton();
+            logButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -405,9 +407,9 @@
         private TableLayoutPanel tableLayoutPanel1;
         private Components.Labels.Heading3Label ClassTitleInput;
         private Components.Labels.Heading1Label Title;
-        private Components.CommonButton saveButton;
+        private CommonButton saveButton;
         private TableLayoutPanel tableLayoutPanelButtons;
-        private Components.InvertedButton cancelButton;
+        private InvertedButton cancelButton;
         private Components.Labels.Heading3Label heading3Label1;
         private Components.Controls.NumericUpDowns.DefaultNumericUpDown roomSearchTime;
         private Components.Controls.RadioButtons.DefaultRadioButton classRoomSearch;
@@ -419,6 +421,6 @@
         private Components.Controls.DGVs.OneColumnDataGridView preferredPcNameList;
         private DataGridViewTextBoxColumn PCName;
         private Components.Labels.CaptionLabel logDescriptionLabel;
-        private Components.InvertedButton logButton;
+        private InvertedButton logButton;
     }
 }

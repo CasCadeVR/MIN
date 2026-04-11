@@ -11,6 +11,9 @@ namespace MIN.Core.Services.Stores
         private readonly IMessageStore messageStore;
         private readonly ConcurrentDictionary<Guid, Room> roomsById = new();
 
+        /// <summary>
+        /// Инициализирует новый экземпляр <see cref="RoomStore"/>
+        /// </summary>
         public RoomStore(IParticipantStore participantStore, IMessageStore messageStore)
         {
             this.participantStore = participantStore;

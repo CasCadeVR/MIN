@@ -19,10 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\DI\MIN.Core.DI\MIN.Core.DI.csproj" />
-    <ProjectReference Include="..\..\Helpers\MIN.Helpers.DI\MIN.Helpers.DI.csproj" />
-    <ProjectReference Include="..\..\Infrastructure\Chat\MIN.Chat.DI\MIN.Chat.DI.csproj" />
-    <ProjectReference Include="..\..\Infrastructure\Discovery\MIN.Discovery.DI\MIN.Discovery.DI.csproj" />
+    <ProjectReference Include="..\..\DI\MIN.DI\MIN.DI.csproj" />
   </ItemGroup>
 	
   <ItemGroup>

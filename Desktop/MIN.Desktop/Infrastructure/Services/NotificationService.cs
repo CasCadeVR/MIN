@@ -1,5 +1,4 @@
-﻿using MIN.Chat.Messaging;
-using MIN.Desktop.Contracts.Interfaces;
+﻿using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Views.Forms.HelperForms;
 
 namespace MIN.Desktop.Infrastructure.Services
@@ -7,10 +6,17 @@ namespace MIN.Desktop.Infrastructure.Services
     /// <inheritdoc cref="INotificationService"/>
     public class NotificationService : INotificationService
     {
-        private readonly static List<NotificationForm> activeNotifications = new List<NotificationForm>();
-        private readonly static object @lock = new object();
+        private readonly static List<NotificationForm> activeNotifications = [];
+        private readonly static object @lock = new();
 
+        /// <summary>
+        /// Событие по нажатию на уведомление
+        /// </summary>
         public event Action? OnNotificationClick;
+
+        /// <summary>
+        /// Событие по нажатию на выключение уведомления
+        /// </summary>
         public event Action? NotificationTurnOffClicked;
 
         void INotificationService.Notify(string message, string roomName, string? sender)

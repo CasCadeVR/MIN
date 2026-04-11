@@ -48,7 +48,7 @@ namespace MIN.Discovery.Transport.NamedPipes
             await discoveryServer.StopListeningAsync();
         }
 
-        public async Task SendAsync(byte[] data, string? destination, TimeSpan? timeout, CancellationToken cancellationToken)
+        async Task IDiscoveryTransport.SendAsync(byte[] data, string? destination, TimeSpan? timeout, CancellationToken cancellationToken)
         {
             await discoveryClient.SendAsync(data, destination, timeout, cancellationToken);
         }

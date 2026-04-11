@@ -18,6 +18,9 @@ namespace MIN.Desktop
         /// </summary>
         public Settings Settings { get; set; }
 
+        /// <summary>
+        /// »нициализирует новый экземпл€р <see cref="SettingsForm"/>
+        /// </summary>
         public SettingsForm(Settings settings, ILoggerProvider loggerProvider)
         {
             Settings = settings;
@@ -56,6 +59,7 @@ namespace MIN.Desktop
             preferredPcNameList.AllowUserToAddRows = allowAdd;
         }
 
+        /// <inheritdoc />
         protected override void ApplyStylings()
         {
             splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;

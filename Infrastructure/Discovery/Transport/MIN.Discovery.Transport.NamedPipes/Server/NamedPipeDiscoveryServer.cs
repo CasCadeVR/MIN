@@ -22,7 +22,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
     private bool isListening;
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="DiscoveryServer"/>
+    /// Инициализирует новый экземпляр <see cref="NamedPipeDiscoveryServer"/>
     /// </summary>
     public NamedPipeDiscoveryServer(string pipeName, ILoggerProvider logger)
     {

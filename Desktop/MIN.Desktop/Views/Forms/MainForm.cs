@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using MIN.Chat.Services.Contracts.Interfaces;
+﻿using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
@@ -22,6 +21,9 @@ using MIN.Helpers.Services;
 
 namespace MIN.Desktop
 {
+    /// <summary>
+    /// Главная форма приложения
+    /// </summary>
     public partial class MainForm : StyledForm
     {
         private readonly IRoomConnector roomConnector;
@@ -92,6 +94,7 @@ namespace MIN.Desktop
             eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
         }
 
+        /// <inheritdoc />
         protected override void ApplyStylings()
         {
             splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;

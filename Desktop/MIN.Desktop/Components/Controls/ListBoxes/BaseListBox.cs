@@ -1,19 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MIN.Desktop.Contracts;
+﻿using MIN.Desktop.Contracts;
 
 namespace MIN.Desktop.Components.Controls.ListBoxes
 {
+    /// <summary>
+    /// Базовый <see cref="ListBox"/>
+    /// </summary>
     public class BaseListBox : ListBox
     {
+        /// <summary>
+        /// Инциализирует новый экземпляр <see cref="BaseListBox"/>
+        /// </summary>
         public BaseListBox()
         {
             ApplyBaseStyles();
         }
 
+        /// <summary>
+        /// Наложить базовые стили
+        /// </summary>
         protected virtual void ApplyBaseStyles()
         {
             Font = FontScheme.Default;

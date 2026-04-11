@@ -19,6 +19,7 @@
             UpdateHeight();
         }
 
+        /// <inheritdoc cref="DefaultTextBox.ApplyBaseStyles"/>
         protected override void ApplyBaseStyles()
         {
             base.ApplyBaseStyles();

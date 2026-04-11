@@ -59,6 +59,9 @@
 
         #endregion
 
+        /// <summary>
+        /// Контейнер
+        /// </summary>
         public TableLayoutPanel container;
     }
 }

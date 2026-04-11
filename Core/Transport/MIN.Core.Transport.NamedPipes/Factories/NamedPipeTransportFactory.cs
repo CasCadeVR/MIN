@@ -19,7 +19,7 @@ namespace MIN.Core.Transport.NamedPipes.Factories
             this.provider = provider;
         }
 
-        public ITransport CreateTransport(TransportType type)
+        ITransport ITransportFactory.CreateTransport(TransportType type)
         {
             return type switch
             {

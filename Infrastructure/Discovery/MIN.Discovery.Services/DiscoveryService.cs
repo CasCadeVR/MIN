@@ -57,6 +57,7 @@ namespace MIN.Discovery.Services
             await discoveryTransport.StartListeningAsync(serviceCts.Token);
         }
 
+        /// <inheritdoc />
         public async Task StopDiscoveryAsync()
         {
             if (serviceCts == null)

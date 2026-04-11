@@ -16,6 +16,9 @@ namespace MIN.Desktop.Components.Controls.FlowLayoutPanels
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
 
+        /// <summary>
+        /// Скрыть горизонтальный скролл процессорно
+        /// </summary>
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);

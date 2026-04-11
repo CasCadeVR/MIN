@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MIN.Desktop.Contracts;
-
-namespace MIN.Desktop.Components.Controls.ListBoxes
+﻿namespace MIN.Desktop.Components.Controls.ListBoxes
 {
+    /// <summary>
+    /// Обычный <see cref="BaseListBox"/>
+    /// </summary>
     public class DefaultListBox : BaseListBox
     {
+        /// <summary>
+        /// Инциализирует новый экземпляр <see cref="DefaultListBox"/>
+        /// </summary>
         public DefaultListBox()
         {
             base.ApplyBaseStyles();

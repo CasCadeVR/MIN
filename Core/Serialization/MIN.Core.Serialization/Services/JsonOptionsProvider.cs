@@ -11,6 +11,9 @@ namespace MIN.Core.Serialization.Json.Services
     {
         private static JsonSerializerOptions options = default!;
 
+        /// <summary>
+        /// Инициализировать настройки JSON-сериализации
+        /// </summary>
         public static void Initialize(IMessageSerializer messageSerializer)
         {
             options = new JsonSerializerOptions

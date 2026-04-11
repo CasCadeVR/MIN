@@ -2,13 +2,22 @@
 
 namespace MIN.Desktop.Components.Controls.DGVs
 {
+    /// <summary>
+    /// Базовый <see cref="DataGridView"/>
+    /// </summary>
     public class BaseDataGridView : DataGridView
     {
+        /// <summary>
+        /// Инциализирует новый экземпляр <see cref="BaseDataGridView"/>
+        /// </summary>
         public BaseDataGridView()
         {
             ApplyBaseStyles();
         }
 
+        /// <summary>
+        /// Наложить базовые стили
+        /// </summary>
         protected virtual void ApplyBaseStyles()
         {
             Font = FontScheme.Caption;

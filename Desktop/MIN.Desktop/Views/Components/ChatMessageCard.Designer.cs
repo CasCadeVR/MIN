@@ -139,6 +139,6 @@
         private Textboxes.ReadonlyTextbox sendTime;
         private Textboxes.ReadonlyTextbox sendRole;
         private Textboxes.ReadonlyTextbox sendMessage;
-        public Textboxes.ReadonlyTextbox senderName;
+        private Textboxes.ReadonlyTextbox senderName;
     }
 }
