@@ -145,34 +145,29 @@ public enum MessageTypeTag : byte
     RoomJoinResponse = 99,
 
     /// <summary>
-    /// Запрос на выход из комнаты.
-    /// </summary>
-    RoomLeaveRequest = 100,
-
-    /// <summary>
     /// Уведомление о присоединении нового участника.
     /// </summary>
-    ParticipantJoined = 101,
+    ParticipantJoined = 100,
 
     /// <summary>
     /// Уведомление о выходе участника.
     /// </summary>
-    ParticipantLeft = 102,
+    ParticipantLeft = 101,
 
     /// <summary>
     /// Обновление информации об участнике.
     /// </summary>
-    ParticipantUpdated = 103,
+    ParticipantUpdated = 102,
 
     /// <summary>
     /// Сообщение о миграции хоста.
     /// </summary>
-    HostMigration = 104,
+    HostMigration = 103,
 
     /// <summary>
     /// Изменение состояния комнаты.
     /// </summary>
-    RoomStateChanged = 105,
+    RoomStateChanged = 104,
 
     // ===== Сообщения для передачи файлов (128-159) =====
 

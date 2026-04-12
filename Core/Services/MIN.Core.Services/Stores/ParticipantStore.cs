@@ -52,6 +52,21 @@ namespace MIN.Core.Services.Stores
             }
         }
 
+        bool IParticipantStore.TryGetParticipantById(Guid roomId, Guid participantId, out ParticipantInfo participantInfo)
+        {
+            if (participants.TryGetValue(roomId, out var roomParticipants))
+            {
+                lock (roomParticipants)
+                {
+                    participantInfo = roomParticipants.First(x => x.Id == participantId);
+                    return participantInfo != null;
+                }
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(roomId));
+            }
+        }
 
         IEnumerable<ParticipantInfo> IParticipantStore.GetParticipants(Guid roomId)
         {

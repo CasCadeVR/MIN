@@ -2,6 +2,7 @@
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
 using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -141,7 +142,7 @@ namespace MIN.Desktop
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}", "Error");
+                MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}", "Ошибка");
             }
         }
 
@@ -179,15 +180,14 @@ namespace MIN.Desktop
         private void OpenChatForm(Guid roomId, Guid connectionId, bool isHost, IEndpoint endpoint)
         {
             var chatForm = new ChatForm(
-                      chatService,
-                      roomStore,
-                      eventBus,
-                      notificationService,
-                      logger,
-                      identityService,
-                      roomId,
-                      connectionId,
-                      endpoint);
+                chatService,
+                roomStore,
+                eventBus,
+                notificationService,
+                logger,
+                identityService,
+                roomId,
+                endpoint);
 
             chatForm.FormClosing += async (_, _) =>
             {
@@ -239,7 +239,7 @@ namespace MIN.Desktop
             }
         }
 
-        private Task OnRoomDiscovered(RoomDiscoveredEvent e, CancellationToken ct)
+        private Task OnRoomDiscovered(RoomDiscoveredEvent e, CancellationToken cancellationToken)
         {
             uiContext.Post(_ =>
             {

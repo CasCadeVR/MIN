@@ -43,13 +43,13 @@ namespace MIN.Desktop
         private readonly System.Windows.Forms.Timer resizeTimer = new() { Interval = 150 };
 
         private readonly Guid roomId;
-        private readonly Guid connectionId;
         private readonly IEndpoint endpoint;
         private readonly ParticipantInfo localParticipant;
 
         private bool isResizing;
         private Room? room;
         private ChatTextMessage? lastTextMessage;
+
         private IDisposable connectionStateToken = null!;
 
         /// <summary>
@@ -63,7 +63,6 @@ namespace MIN.Desktop
              ILoggerProvider logger,
              IIdentityService identitiyService,
              Guid roomId,
-             Guid connectionId,
              IEndpoint endpoint)
         {
             InitializeComponent();
@@ -75,14 +74,12 @@ namespace MIN.Desktop
             this.notificationService = notificationService;
             this.logger = logger;
             this.roomId = roomId;
-            this.connectionId = connectionId;
             this.endpoint = endpoint;
 
             localParticipant = new ParticipantInfo(identitiyService.SelfPartcipant);
             this.room = this.roomStore.TryGetRoom(this.roomId, out var room) ? room : null;
 
-            uiContext = SynchronizationContext.Current
-                ?? throw new InvalidOperationException("Must be created on UI thread");
+            uiContext = SynchronizationContext.Current ?? throw new InvalidOperationException("Must be created on UI thread");
             resizeTimer.Tick += (s, e) =>
             {
                 resizeTimer.Stop();
@@ -103,6 +100,7 @@ namespace MIN.Desktop
             eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived);
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
+            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
             connectionStateToken = eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
         }
 
@@ -190,6 +188,23 @@ namespace MIN.Desktop
                 }, null);
             }
             await Task.CompletedTask;
+        }
+
+        private Task OnErrorOccured(ErrorOccurredEvent e, CancellationToken cancellationToken)
+        {
+            uiContext.Post(_ =>
+            {
+                MessageBox.Show(e.ErrorMessage,
+                    "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                if (e.NeedToDisconnect)
+                {
+                    Close();
+                }
+            }, null);
+
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
@@ -411,8 +426,7 @@ namespace MIN.Desktop
 
             try
             {
-                await chatService.SendMessageAsync(roomId, connectionId,
-                    messageTextBox.Text.Trim(), localParticipant, cancellationToken: formCts.Token);
+                await chatService.SendMessageAsync(roomId, messageTextBox.Text.Trim(), localParticipant, cancellationToken: formCts.Token);
                 messageTextBox.Text = string.Empty;
                 changeMessageBoxSize();
             }
@@ -454,11 +468,7 @@ namespace MIN.Desktop
 
         private async void sendButton_Click(object sender, EventArgs e) => await SendMessage();
 
-        private void disconnectButton_Click(object sender, EventArgs e)
-        {
-            connectionStateToken.Dispose();
-            Close();
-        }
+        private void disconnectButton_Click(object sender, EventArgs e) => Close();
 
         private void closeButton_Click(object sender, EventArgs e)
         {
@@ -549,6 +559,7 @@ namespace MIN.Desktop
         /// </summary>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            connectionStateToken.Dispose();
             formCts.Cancel();
             formCts.Dispose();
             base.OnFormClosing(e);

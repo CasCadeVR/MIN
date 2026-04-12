@@ -23,6 +23,11 @@ public interface IParticipantStore
     ParticipantInfo GetParticipantById(Guid roomId, Guid participantId);
 
     /// <summary>
+    /// Попытаться получить участника комнаты
+    /// </summary>
+    bool TryGetParticipantById(Guid roomId, Guid participantId, out ParticipantInfo participantInfo);
+
+    /// <summary>
     /// Получить список всех участников комнаты
     /// </summary>
     IEnumerable<ParticipantInfo> GetParticipants(Guid roomId);

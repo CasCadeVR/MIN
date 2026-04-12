@@ -26,7 +26,7 @@ namespace MIN.Chat.Services
             this.messageStore = messageStore;
         }
 
-        async Task IChatService.SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender, Guid? recipientId, CancellationToken cancellationToken)
+        async Task IChatService.SendMessageAsync(Guid roomId, string content, ParticipantInfo sender, Guid? recipientId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(content))
             {

@@ -13,6 +13,11 @@ public sealed class ErrorOccurredEvent : BaseEvent
     public Guid? RoomId { get; init; }
 
     /// <summary>
+    /// Нужно ли отключиться от комнаты
+    /// </summary>
+    public bool NeedToDisconnect { get; init; }
+
+    /// <summary>
     /// Сообщение об ошибке
     /// </summary>
     public string ErrorMessage { get; init; } = string.Empty;

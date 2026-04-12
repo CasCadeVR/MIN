@@ -3,12 +3,12 @@
 namespace MIN.Core.Messaging.Stateless.RoomRelated;
 
 /// <summary>
-/// Запрос информации о комнате
+/// Запрос на присоединения к комнате
 /// </summary>
-public sealed class RoomInfoRequestMessage : BaseMessage
+public sealed class RoomJoinRequestMessage : BaseMessage
 {
     /// <inheritdoc />
-    public override MessageTypeTag TypeTag => MessageTypeTag.RoomInfoRequest;
+    public override MessageTypeTag TypeTag => MessageTypeTag.RoomJoinRequest;
 
     /// <inheritdoc />
     public override bool IsPublic => false;
@@ -21,5 +21,5 @@ public sealed class RoomInfoRequestMessage : BaseMessage
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfoRequestMessage"/>
     /// </summary>
-    public RoomInfoRequestMessage() { }
+    public RoomJoinRequestMessage() { }
 }

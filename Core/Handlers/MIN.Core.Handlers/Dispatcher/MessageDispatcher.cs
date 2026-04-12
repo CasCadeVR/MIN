@@ -57,16 +57,17 @@ namespace MIN.Core.Handlers.Dispatcher
                 try
                 {
                     var result = await handler.HandleAsync(message, context);
-                    if (result.StopPropagation)
-                    {
-                        break;
-                    }
 
                     if (!result.IsSuccess)
                     {
-                        logger.Log($"Handler {handler.GetType().Name} failed: {result.ErrorMessage}");
-                        await PublishErrorEvent(result.ErrorMessage!, context);
-                        continue;
+                        logger.Log($"Обработчик {handler.GetType().Name} провалился: {result.ErrorMessage}");
+                        await PublishErrorEvent(result.ErrorMessage!, result.StopPropagation, context);
+                        break;
+                    }
+
+                    if (result.StopPropagation)
+                    {
+                        break;
                     }
 
                     if (message.IsPublic && roomHoster.IsHosting(context.RoomId))
@@ -83,16 +84,17 @@ namespace MIN.Core.Handlers.Dispatcher
                 catch (Exception ex)
                 {
                     logger.Log($"Handler {handler.GetType().Name} threw exception: {ex.Message}");
-                    await PublishErrorEvent(ex.Message, context);
+                    await PublishErrorEvent(ex.Message, needToDisconnect: true, context);
                 }
             }
         }
 
-        private async Task PublishErrorEvent(string message, MessageContext context)
+        private async Task PublishErrorEvent(string message, bool needToDisconnect, MessageContext context)
         {
             await eventBus.PublishAsync(new ErrorOccurredEvent()
             {
                 ErrorMessage = message,
+                NeedToDisconnect = needToDisconnect,
                 RoomId = context.RoomId
             }, context.CancellationToken);
         }

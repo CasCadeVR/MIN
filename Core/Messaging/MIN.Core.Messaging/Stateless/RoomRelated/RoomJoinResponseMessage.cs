@@ -3,12 +3,12 @@
 namespace MIN.Core.Messaging.Stateless.RoomRelated;
 
 /// <summary>
-/// Запрос информации о комнате
+/// Ответ на запрос о присоединения к комнате
 /// </summary>
-public sealed class RoomInfoRequestMessage : BaseMessage
+public sealed class RoomJoinResponseMessage : BaseMessage
 {
     /// <inheritdoc />
-    public override MessageTypeTag TypeTag => MessageTypeTag.RoomInfoRequest;
+    public override MessageTypeTag TypeTag => MessageTypeTag.RoomJoinResponse;
 
     /// <inheritdoc />
     public override bool IsPublic => false;
@@ -19,7 +19,12 @@ public sealed class RoomInfoRequestMessage : BaseMessage
     public Guid RoomId { get; set; }
 
     /// <summary>
+    /// Разрешение на вход
+    /// </summary>
+    public bool Allow { get; set; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfoRequestMessage"/>
     /// </summary>
-    public RoomInfoRequestMessage() { }
+    public RoomJoinResponseMessage() { }
 }

@@ -1,14 +1,14 @@
 ﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
+using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
-using MIN.Core.Services.Contracts.Models;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
 
 namespace MIN.Core.Services.Rooms
 {
@@ -19,6 +19,7 @@ namespace MIN.Core.Services.Rooms
         private readonly IEventBus eventBus;
         private readonly IMessageRouter messageRouter;
         private readonly IRoomStore roomStore;
+        private readonly IParticipantStore participantStore;
         private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly ILoggerProvider logger;
 
@@ -31,6 +32,7 @@ namespace MIN.Core.Services.Rooms
             IEventBus eventBus,
             IMessageRouter messageRouter,
             IRoomStore roomStore,
+            IParticipantStore participantStore,
             IParticipantConnectionRegistry participantConnectionRegistry,
             ILoggerProvider logger)
         {
@@ -38,6 +40,7 @@ namespace MIN.Core.Services.Rooms
             this.eventBus = eventBus;
             this.messageRouter = messageRouter;
             this.roomStore = roomStore;
+            this.participantStore = participantStore;
             this.participantConnectionRegistry = participantConnectionRegistry;
             this.logger = logger;
         }
@@ -69,8 +72,9 @@ namespace MIN.Core.Services.Rooms
                     {
                         leavingMessage = !string.IsNullOrEmpty(e.LeavingMessage) ? leavingMessage : "Хост остановил комнату";
                     }
-                    else
+                    else if (participantStore.TryGetParticipantById(e.RoomId, leavingParticipant.Id, out _))
                     {
+                        participantConnectionRegistry.Unregister(e.ConnectionId);
                         var participantLeftMessage = new ParticipantLeftMessage()
                         {
                             Participant = leavingParticipant,

@@ -1,4 +1,8 @@
 1. Add IConfiguration with configuration model
-2. Fix 2 application connecting in 1 room (should work)
-3. Write tests on everything
-4. 
+2. Write tests on everything
+3. Fix maximum amount of people in room to be working
+4. message history is mixed up weirdly
+5. Make appdata versioning
+6. Make sure you removing and disposing every thing after room shutdown
+7. Make private messages (like add recipientId in IMessage or smth)
+8. Make something with lots of new PartcipantInfo creation for identity service, and with IParticipantData overall

@@ -88,13 +88,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void FillFields()
         {
             roomName.Text = $"Комната {messageRoomName}";
-
-            if (!string.IsNullOrEmpty(sender))
-            {
-                senderAndContent.Text = $"{sender}: ";
-            }
-
-            senderAndContent.Text += message;
+            senderAndContent.Text = (!string.IsNullOrEmpty(sender) ? $"{sender}: " : string.Empty) + message;
         }
 
         /// <inheritdoc />

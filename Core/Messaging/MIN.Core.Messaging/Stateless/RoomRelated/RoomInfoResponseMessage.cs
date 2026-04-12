@@ -6,7 +6,7 @@ namespace MIN.Core.Messaging.Stateless.RoomRelated;
 /// <summary>
 /// Ответ с детальной информацией о комнате
 /// </summary>
-public class RoomInfoResponseMessage : BaseMessage
+public sealed class RoomInfoResponseMessage : BaseMessage
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.RoomInfoResponse;

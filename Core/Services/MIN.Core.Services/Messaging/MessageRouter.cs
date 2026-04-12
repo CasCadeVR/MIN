@@ -14,7 +14,6 @@ public sealed class MessageRouter : IMessageRouter
 {
     private readonly IRoomHoster roomHoster;
     private readonly IRoomStore roomStore;
-    private readonly IParticipantStore participantStore;
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
     private readonly IParticipantConnectionRegistry participantConnectionRegistry;
@@ -24,14 +23,12 @@ public sealed class MessageRouter : IMessageRouter
     /// </summary>
     public MessageRouter(IRoomHoster roomHoster,
         IRoomStore roomStore,
-        IParticipantStore participantStore,
         IEventBus eventBus,
         IMessageSender messageSender,
         IParticipantConnectionRegistry participantConnectionRegistry)
     {
         this.roomHoster = roomHoster;
         this.roomStore = roomStore;
-        this.participantStore = participantStore;
         this.eventBus = eventBus;
         this.messageSender = messageSender;
         this.participantConnectionRegistry = participantConnectionRegistry;

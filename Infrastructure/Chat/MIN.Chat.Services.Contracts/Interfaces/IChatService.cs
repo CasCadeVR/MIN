@@ -1,27 +1,25 @@
-﻿using System.ComponentModel;
-using MIN.Chat.Messaging;
+﻿using MIN.Chat.Messaging;
 using MIN.Core.Entities.Contracts.Models;
 
-namespace MIN.Chat.Services.Contracts.Interfaces
+namespace MIN.Chat.Services.Contracts.Interfaces;
+
+/// <summary>
+/// Сервис для работы с чатом
+/// </summary>
+public interface IChatService
 {
     /// <summary>
-    /// Сервис для работы с чатом
+    /// Отправить текстовое сообщение
     /// </summary>
-    public interface IChatService
-    {
-        /// <summary>
-        /// Отправить текстовое сообщение
-        /// </summary>
-        Task SendMessageAsync(Guid roomId, Guid connectionId, string content, ParticipantInfo sender, Guid? recipientId = null, CancellationToken cancellationToken = default);
+    Task SendMessageAsync(Guid roomId, string content, ParticipantInfo sender, Guid? recipientId = null, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Получить историю сообщений из кэша
-        /// </summary>
-        IReadOnlyList<ChatTextMessage> GetChatTextMessageHistory(Guid roomId, int? page, int? pageSize);
+    /// <summary>
+    /// Получить историю сообщений из кэша
+    /// </summary>
+    IReadOnlyList<ChatTextMessage> GetChatTextMessageHistory(Guid roomId, int? page, int? pageSize);
 
-        /// <summary>
-        /// Получить список участников комнаты из кэша
-        /// </summary>
-        IReadOnlyList<ParticipantInfo> GetParticipants(Guid roomId);
-    }
+    /// <summary>
+    /// Получить список участников комнаты из кэша
+    /// </summary>
+    IReadOnlyList<ParticipantInfo> GetParticipants(Guid roomId);
 }
