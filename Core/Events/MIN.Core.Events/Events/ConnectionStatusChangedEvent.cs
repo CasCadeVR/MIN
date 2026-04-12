@@ -13,7 +13,7 @@ public sealed class ConnectionStatusChangedEvent : BaseEvent
     public Guid RoomId { get; init; }
 
     /// <summary>
-    /// Идентификатор подключения
+    /// Идентификатор подключения выходящего участника
     /// </summary>
     public Guid ConnectionId { get; init; }
 
@@ -23,7 +23,12 @@ public sealed class ConnectionStatusChangedEvent : BaseEvent
     public bool IsConnected { get; init; }
 
     /// <summary>
+    /// Флаг, указывающий, можно ли продолжать общение с комнатой
+    /// </summary>
+    public bool NeedToDisconnect { get; init; }
+
+    /// <summary>
     /// Сообщение об ошибке при отключении
     /// </summary>
-    public string? ErrorMessage { get; init; }
+    public string? LeavingMessage { get; init; }
 }

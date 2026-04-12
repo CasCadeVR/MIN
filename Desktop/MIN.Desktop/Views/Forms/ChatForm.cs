@@ -44,12 +44,13 @@ namespace MIN.Desktop
 
         private readonly Guid roomId;
         private readonly Guid connectionId;
+        private readonly IEndpoint endpoint;
         private readonly ParticipantInfo localParticipant;
 
         private bool isResizing;
         private Room? room;
-        private IEndpoint endpoint;
         private ChatTextMessage? lastTextMessage;
+        private IDisposable connectionStateToken = null!;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="ChatForm"/>
@@ -102,7 +103,7 @@ namespace MIN.Desktop
             eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived);
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
-            eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
+            connectionStateToken = eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
         }
 
         private async Task OnChatTextMessageReceived(ChatTextMessageReceivedEvent eventMessage, CancellationToken ct)
@@ -120,7 +121,7 @@ namespace MIN.Desktop
             await Task.CompletedTask;
         }
 
-        private async Task OnRoomStateChangedEventReceived(RoomStateChangedEvent eventMessage, CancellationToken ct)
+        private async Task OnRoomStateChangedEventReceived(RoomStateChangedEvent eventMessage, CancellationToken cancellationToken)
         {
             if (eventMessage.Room.Id != roomId)
             {
@@ -130,13 +131,14 @@ namespace MIN.Desktop
             uiContext.Post(_ =>
             {
                 room = eventMessage.Room;
+
                 UpdateStats();
                 UpdateChatFlow();
             }, null);
             await Task.CompletedTask;
         }
 
-        private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken ct)
+        private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
         {
             if (eventMessage.Message.RoomId != roomId)
             {
@@ -154,7 +156,7 @@ namespace MIN.Desktop
             await Task.CompletedTask;
         }
 
-        private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken ct)
+        private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
         {
             if (eventMessage.Message.RoomId != roomId)
             {
@@ -172,22 +174,18 @@ namespace MIN.Desktop
             await Task.CompletedTask;
         }
 
-        private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken ct)
+        private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
         {
-            if (eventMessage.RoomId != roomId || eventMessage.ConnectionId != connectionId)
-            {
-                return;
-            }
-
-            if (!eventMessage.IsConnected)
+            if (eventMessage.RoomId == roomId && eventMessage.NeedToDisconnect)
             {
                 uiContext.Post(_ =>
                 {
-                    MessageBox.Show(string.IsNullOrEmpty(eventMessage.ErrorMessage)
-                        ? "Соединение разорвано, хост остановил комнату"
-                        : eventMessage.ErrorMessage,
-                        "Подключение разорвано",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (!string.IsNullOrEmpty(eventMessage.LeavingMessage))
+                    {
+                        MessageBox.Show(eventMessage.LeavingMessage,
+                           "Подключение разорвано",
+                           MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                     Close();
                 }, null);
             }
@@ -327,7 +325,7 @@ namespace MIN.Desktop
                         var isHostMessage = room?.HostParticipant?.Id == chatTextMessage.Sender.Id;
 
                         var minutesPassed = 0;
-                        if (lastTextMessage != null && lastTextMessage.Sender.Id == chatTextMessage.Sender.Id)
+                        if (lastTextMessage != null)
                         {
                             minutesPassed = (int)(chatTextMessage.Timestamp - lastTextMessage.Timestamp).TotalMinutes;
                             minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
@@ -456,7 +454,11 @@ namespace MIN.Desktop
 
         private async void sendButton_Click(object sender, EventArgs e) => await SendMessage();
 
-        private void disconnectButton_Click(object sender, EventArgs e) => Close();
+        private void disconnectButton_Click(object sender, EventArgs e)
+        {
+            connectionStateToken.Dispose();
+            Close();
+        }
 
         private void closeButton_Click(object sender, EventArgs e)
         {

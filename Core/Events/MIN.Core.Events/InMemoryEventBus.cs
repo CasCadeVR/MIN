@@ -40,9 +40,9 @@ namespace MIN.Core.Events
         IDisposable IEventBus.Subscribe<T>(Func<T, CancellationToken, Task> handler)
         {
             var eventType = typeof(T);
-            var handlers = this.handlers.GetOrAdd(eventType, _ => new List<Func<object, CancellationToken, Task>>());
+            var handlers = this.handlers.GetOrAdd(eventType, _ => []);
 
-            Func<object, CancellationToken, Task> wrappedHandler = (eventObj, ct) => handler((T)eventObj, ct);
+            Task wrappedHandler(object eventObj, CancellationToken ct) => handler((T)eventObj, ct);
 
             lock (handlers)
             {

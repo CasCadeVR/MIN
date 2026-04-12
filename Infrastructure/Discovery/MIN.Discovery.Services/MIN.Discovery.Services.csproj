@@ -12,7 +12,6 @@
     <ProjectReference Include="..\..\..\Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj" />
     <ProjectReference Include="..\MIN.Discovery.Events\MIN.Discovery.Events.csproj" />
     <ProjectReference Include="..\MIN.Discovery.Messaging\MIN.Discovery.Messaging.csproj" />
-    <ProjectReference Include="..\MIN.Discovery.Services.Contracts\MIN.Discovery.Services.Contracts.csproj" />
     <ProjectReference Include="..\Transport\MIN.Discovery.Transport.Contracts\MIN.Discovery.Transport.Contracts.csproj" />
   </ItemGroup>
 

@@ -13,7 +13,7 @@ public interface IDiscoveryService
     /// <summary>
     /// Остановить процесс обнаружения своей комнаты в сети
     /// </summary>
-    Task StopDiscoveryAsync();
+    Task StopDiscoveryAsync(Guid roomId);
 
     /// <summary>
     /// Обнаружить комнаты

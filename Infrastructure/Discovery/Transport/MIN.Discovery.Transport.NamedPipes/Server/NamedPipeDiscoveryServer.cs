@@ -95,8 +95,9 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
     /// </summary>
     public async Task ResponseWithData(byte[] responseData, Guid? connectionId, CancellationToken cancellationToken)
     {
-        NamedPipeServerStream? targetPipe = null;
-        Guid? targetId = null;
+        Guid? targetId;
+        NamedPipeServerStream? targetPipe;
+
         if (connectionId.HasValue && connections.TryGetValue(connectionId.Value, out var p) && p.IsConnected)
         {
             targetPipe = p;
@@ -104,25 +105,14 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
         }
         else
         {
-            foreach (var kvp in connections)
-            {
-                if (kvp.Value.IsConnected)
-                {
-                    targetPipe = kvp.Value;
-                    targetId = kvp.Key;
-                    break;
-                }
-            }
-        }
-
-        if (targetPipe == null || !targetPipe.IsConnected)
-        {
+            logger.Log("Сервер обнаружение не был подключен при передаче данных", LogLevel.Error);
             return;
         }
 
         await targetPipe.WriteAsync(responseData.AsMemory(), cancellationToken);
         await targetPipe.FlushAsync(cancellationToken);
         await targetPipe.DisposeAsync();
+
         if (targetId.HasValue)
         {
             connections.TryRemove(targetId.Value, out _);

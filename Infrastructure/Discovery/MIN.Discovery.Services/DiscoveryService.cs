@@ -6,6 +6,7 @@ using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Discovery.Events;
 using MIN.Discovery.Messaging;
 using MIN.Discovery.Services.Contracts.Exceptions;
+using MIN.Discovery.Services.Contracts.Models;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Discovery.Transport.Contracts;
 using MIN.Discovery.Transport.Contracts.Events;
@@ -24,8 +25,9 @@ namespace MIN.Discovery.Services
         private readonly IParticipantStore participantStore;
         private readonly IEventBus eventBus;
         private readonly ILoggerProvider logger;
+        private readonly HashSet<Guid> activeRoomIds = [];
+
         private CancellationTokenSource? serviceCts;
-        private Guid roomId;
 
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="DiscoveryService"/>
@@ -50,19 +52,20 @@ namespace MIN.Discovery.Services
 
         async Task IDiscoveryService.StartDiscoveryAsync(Guid roomId, CancellationToken cancellationToken)
         {
+            activeRoomIds.Add(roomId);
+
             if (serviceCts != null)
             {
                 return;
             }
 
-            this.roomId = roomId;
             serviceCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             discoveryTransport.MessageReceived += OnRequestReceived;
             await discoveryTransport.StartListeningAsync(serviceCts.Token);
         }
 
         /// <inheritdoc />
-        public async Task StopDiscoveryAsync()
+        public async Task StopDiscoveryAsync(Guid roomId)
         {
             if (serviceCts == null)
             {
@@ -73,6 +76,7 @@ namespace MIN.Discovery.Services
             await discoveryTransport.StopListeningAsync();
             serviceCts.Dispose();
             serviceCts = null;
+            activeRoomIds.Remove(roomId);
         }
 
         async Task IDiscoveryService.DiscoverRoomsAsync(IEnumerable<string>? computers, TimeSpan timeout, CancellationToken cancellationToken)
@@ -127,11 +131,10 @@ namespace MIN.Discovery.Services
                 var message = serializer.Deserialize(e.Data);
                 if (message is DiscoveryResponseMessage response)
                 {
-                    logger.Log($"Нашёл комнату: {response.Room.Name}");
+                    logger.Log($"Нашёл +{response.RoomDiscoveryInfos.Count} комнат");
                     eventBus.PublishAsync(new RoomDiscoveredEvent()
                     {
-                        Room = response.Room,
-                        Endpoint = response.Endpoint,
+                        RoomDiscoveryInfos = response.RoomDiscoveryInfos,
                     });
                 }
             }
@@ -152,22 +155,30 @@ namespace MIN.Discovery.Services
                     return;
                 }
 
-                var room = roomStore.GetRoom(roomId);
+                var discoveryResponse = new DiscoveryResponseMessage();
 
-                if (room == null)
+                foreach (var roomId in activeRoomIds)
                 {
-                    logger.Log($"Получил запрос на обнаружение, но комната не была установлена", LogLevel.Warning);
-                    return;
+                    var room = roomStore.GetRoom(roomId);
+
+                    if (room == null)
+                    {
+                        logger.Log($"Получил запрос на обнаружение, но комната не была установлена", LogLevel.Warning);
+                        return;
+                    }
+
+                    var roomInfo = new RoomInfo(room)
+                    {
+                        ParticipantCount = participantStore.GetParticipants(roomId).Count()
+                    };
+
+                    discoveryResponse.RoomDiscoveryInfos.Add(new RoomDiscoveryInfo()
+                    {
+                        Room = roomInfo,
+                        Endpoint = transport.GetEndpoint(roomId),
+                    });
                 }
 
-                var roomInfo = new RoomInfo(room);
-                roomInfo.ParticipantCount = participantStore.GetParticipants(roomId).Count();
-
-                var discoveryResponse = new DiscoveryResponseMessage
-                {
-                    Room = roomInfo,
-                    Endpoint = transport.GetEndpoint(roomId),
-                };
                 var data = serializer.Serialize(discoveryResponse);
 
                 discoveryTransport.ResponseWithData(data, e.ConnectionId, serviceCts!.Token);
@@ -177,8 +188,5 @@ namespace MIN.Discovery.Services
                 logger.Log($"Ошибка во время обработки запроса на обнаружение: {ex.Message}");
             }
         }
-
-        /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
-        public async ValueTask DisposeAsync() => await StopDiscoveryAsync();
     }
 }

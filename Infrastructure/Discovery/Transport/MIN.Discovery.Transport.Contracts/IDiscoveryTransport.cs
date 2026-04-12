@@ -23,7 +23,7 @@ public interface IDiscoveryTransport
     Task StartListeningAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Отправить ответные данные по идентификатору канала, или динамически определив отправителя (в случае для udp)
+    /// Отправить ответные данные по идентификатору канала, или динамически определив отправителя
     /// </summary>
     Task ResponseWithData(byte[] responseData, Guid? connectionId = null, CancellationToken cancellationToken = default);
 

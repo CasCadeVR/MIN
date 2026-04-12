@@ -1,6 +1,5 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
-using MIN.Core.Transport.Contracts.Interfaces;
+﻿using MIN.Core.Events.Contracts;
+using MIN.Discovery.Services.Contracts.Models;
 
 namespace MIN.Discovery.Events;
 
@@ -10,12 +9,7 @@ namespace MIN.Discovery.Events;
 public class RoomDiscoveredEvent : BaseEvent
 {
     /// <summary>
-    /// Информация о найденной комнате
+    /// Информация о найденных комнатах
     /// </summary>
-    public RoomInfo Room { get; init; } = null!;
-
-    /// <summary>
-    /// Точка подключения к комнате
-    /// </summary>
-    public IEndpoint Endpoint { get; init; } = null!;
+    public List<RoomDiscoveryInfo> RoomDiscoveryInfos { get; init; } = null!;
 }

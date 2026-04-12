@@ -32,7 +32,7 @@ namespace MIN.Core.Services.Rooms
 
             messageStore.AddMessage(roomInfo.Id, new SystemTextMessage()
             {
-                Content = $"Комната {roomInfo.Name} была создана в {DateTime.Now.ToShortTimeString()}"
+                Content = $"Комната {roomInfo.Name} была создана в {DateTime.Now.ToShortTimeString()}",
             });
 
             messageStore.AddMessage(roomInfo.Id, new ParticipantJoinedMessage()

@@ -2,7 +2,6 @@
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
-using MIN.Core.Events.Events;
 using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -92,7 +91,6 @@ namespace MIN.Desktop
         private void SubscribeToEvents()
         {
             eventBus.Subscribe<RoomDiscoveredEvent>(OnRoomDiscovered);
-            eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
         }
 
         /// <inheritdoc />
@@ -195,8 +193,8 @@ namespace MIN.Desktop
             {
                 if (isHost)
                 {
+                    await discoveryService.StopDiscoveryAsync(roomId);
                     await roomHoster.StopHostingAsync(roomId);
-                    await discoveryService.StopDiscoveryAsync();
                 }
                 else
                 {
@@ -245,16 +243,19 @@ namespace MIN.Desktop
         {
             uiContext.Post(_ =>
             {
-                var card = new RoomCard(localParticipant, e.Room)
+                foreach (var discoveryInfo in e.RoomDiscoveryInfos)
                 {
-                    Parent = flowLayoutPanel
-                };
+                    var card = new RoomCard(localParticipant, discoveryInfo.Room)
+                    {
+                        Parent = flowLayoutPanel
+                    };
 
-                card.Clicked += () => OnRoomJoin(e.Room, e.Endpoint);
-                card.Disposed += (s, _) =>
-                {
-                    totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
-                };
+                    card.Clicked += () => OnRoomJoin(discoveryInfo.Room, discoveryInfo.Endpoint);
+                    card.Disposed += (s, _) =>
+                    {
+                        totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
+                    };
+                }
 
                 var roomsCount = flowLayoutPanel.Controls.Count;
                 totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
@@ -299,23 +300,6 @@ namespace MIN.Desktop
             await roomConnector.DisconnectAsync(Guid.Empty, Guid.Empty);
             cts.Cancel();
             cts.Dispose();
-        }
-
-        private Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken ct)
-        {
-            uiContext.Post(_ =>
-            {
-                if (!eventMessage.IsConnected && !string.IsNullOrEmpty(eventMessage.ErrorMessage))
-                {
-                    var room = roomStore.GetRoom(eventMessage.RoomId);
-                    MessageBox.Show($"Соединение с комнатой {room.Name} было потеряно: {eventMessage.ErrorMessage}",
-                        "Соединение потеряно",
-                        MessageBoxButtons.OK,
-                        icon: MessageBoxIcon.Error
-                    );
-                }
-            }, null);
-            return Task.CompletedTask;
         }
     }
 }

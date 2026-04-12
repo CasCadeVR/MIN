@@ -23,7 +23,7 @@ public sealed class ConnectionStateChangedEventArgs : EventArgs
     /// <summary>
     /// Сообщение об отключении
     /// </summary>
-    public string? Reason { get; }
+    public string? LeavingMessage { get; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ConnectionStateChangedEventArgs"/>
@@ -33,6 +33,6 @@ public sealed class ConnectionStateChangedEventArgs : EventArgs
         RoomId = roomId;
         ConnectionId = сonnectionId;
         IsConnected = isConnected;
-        Reason = reason;
+        LeavingMessage = reason;
     }
 }

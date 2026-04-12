@@ -6,7 +6,6 @@ using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Services.Contracts.Interfaces.Stores;
@@ -20,9 +19,9 @@ namespace MIN.Core.Services.Rooms
         private readonly IEventBus eventBus;
         private readonly IMessageRouter messageRouter;
         private readonly IRoomStore roomStore;
-        private readonly IIdentityService identityService;
         private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly ILoggerProvider logger;
+
         private CancellationTokenSource cts = null!;
 
         /// <summary>
@@ -32,7 +31,6 @@ namespace MIN.Core.Services.Rooms
             IEventBus eventBus,
             IMessageRouter messageRouter,
             IRoomStore roomStore,
-            IIdentityService identityService,
             IParticipantConnectionRegistry participantConnectionRegistry,
             ILoggerProvider logger)
         {
@@ -40,7 +38,6 @@ namespace MIN.Core.Services.Rooms
             this.eventBus = eventBus;
             this.messageRouter = messageRouter;
             this.roomStore = roomStore;
-            this.identityService = identityService;
             this.participantConnectionRegistry = participantConnectionRegistry;
             this.logger = logger;
         }
@@ -56,36 +53,42 @@ namespace MIN.Core.Services.Rooms
         {
             try
             {
+                var leavingMessage = e.LeavingMessage;
+                var needToDisconnect = false;
+
+                if (!e.IsConnected)
+                {
+                    participantConnectionRegistry.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant);
+
+                    var hostParticipantId = roomStore.GetRoomHostParticipantId(e.RoomId);
+                    var isHostLeaving = hostParticipantId == leavingParticipant.Id;
+
+                    needToDisconnect = isHostLeaving;
+
+                    if (isHostLeaving)
+                    {
+                        leavingMessage = !string.IsNullOrEmpty(e.LeavingMessage) ? leavingMessage : "Хост остановил комнату";
+                    }
+                    else
+                    {
+                        var participantLeftMessage = new ParticipantLeftMessage()
+                        {
+                            Participant = leavingParticipant,
+                            RoomId = e.RoomId,
+                        };
+
+                        await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, Recipient.FromEmpty(), cts.Token);
+                    }
+                }
+
                 await eventBus.PublishAsync(new ConnectionStatusChangedEvent
                 {
                     RoomId = e.RoomId,
                     ConnectionId = e.ConnectionId,
-                    ErrorMessage = e.Reason,
+                    LeavingMessage = leavingMessage,
+                    NeedToDisconnect = needToDisconnect,
                     IsConnected = e.IsConnected
                 }, cts.Token);
-
-                if (!e.IsConnected)
-                {
-                    if (e.ConnectionId == CoreServicesConstants.LocalConnectionId)
-                    {
-                        return;
-                    }
-
-                    participantConnectionRegistry.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant);
-
-                    if (roomStore.GetRoomHostParticipantId(e.RoomId) == leavingParticipant.Id)
-                    {
-                        return;
-                    }
-
-                    var participantLeftMessage = new ParticipantLeftMessage()
-                    {
-                        Participant = leavingParticipant,
-                        RoomId = e.RoomId,
-                    };
-
-                    await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, identityService.SelfPartcipant.Id, Recipient.FromEmpty(), cts.Token);
-                }
             }
             catch (Exception ex)
             {
