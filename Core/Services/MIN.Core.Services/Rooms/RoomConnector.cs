@@ -46,7 +46,7 @@ namespace MIN.Core.Services.Rooms
             var roomId = room.Id;
             var connectionId = await transport.ConnectAsync(roomId, endpoint, timeoutMs, cancellationToken);
             participantConnectionRegistry.Register(connectionId, room.HostParticipant);
-            logger.Log($"Подключились к комнате с id {roomId}, соединение с id {connectionId}");
+            logger.Log($"Подключились к комнате с {room.Name}, соединение с id {connectionId}");
 
             var selfHandshake = new HandshakeMessage()
             {

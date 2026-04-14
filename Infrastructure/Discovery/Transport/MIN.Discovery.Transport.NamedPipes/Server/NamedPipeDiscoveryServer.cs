@@ -5,6 +5,7 @@ using System.Security.Principal;
 using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
+using MIN.Discovery.Transport.NamedPipes.Services;
 
 namespace MIN.Discovery.Transport.NamedPipes.Server;
 
@@ -15,19 +16,18 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
 {
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, NamedPipeServerStream> connections = new();
+    private readonly string pipeName;
 
     private CancellationTokenSource? cts;
-
-    private string pipeName;
     private bool isListening;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NamedPipeDiscoveryServer"/>
     /// </summary>
-    public NamedPipeDiscoveryServer(string pipeName, ILoggerProvider logger)
+    public NamedPipeDiscoveryServer(ILocalNetworkComputerProvider localNetworkComputerProvider, ILoggerProvider logger)
     {
-        this.pipeName = pipeName;
         this.logger = logger;
+        pipeName = DiscoveryPipeNameProvider.GetDiscoveryPipeName(localNetworkComputerProvider.GetLocalMachineName());
     }
 
     /// <summary>

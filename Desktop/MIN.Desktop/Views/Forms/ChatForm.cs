@@ -50,7 +50,7 @@ namespace MIN.Desktop
         private Room? room;
         private ChatTextMessage? lastTextMessage;
 
-        private IDisposable connectionStateToken = null!;
+        private HashSet<IDisposable> eventTokens = null!;
 
         /// <summary>
         /// »нициализирует новый экземпл€р <see cref="ChatForm"/>
@@ -96,12 +96,15 @@ namespace MIN.Desktop
 
         private void SubscribeToEvents()
         {
-            eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived);
-            eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived);
-            eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
-            eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
-            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
-            connectionStateToken = eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
+            eventTokens =
+            [
+                eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived),
+                eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived),
+                eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
+                eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
+                eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
+                eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged),
+            ];
         }
 
         private async Task OnChatTextMessageReceived(ChatTextMessageReceivedEvent eventMessage, CancellationToken ct)
@@ -129,7 +132,6 @@ namespace MIN.Desktop
             uiContext.Post(_ =>
             {
                 room = eventMessage.Room;
-
                 UpdateStats();
                 UpdateChatFlow();
             }, null);
@@ -559,7 +561,10 @@ namespace MIN.Desktop
         /// </summary>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            connectionStateToken.Dispose();
+            foreach (var token in eventTokens)
+            {
+                token.Dispose();
+            }
             formCts.Cancel();
             formCts.Dispose();
             base.OnFormClosing(e);

@@ -11,7 +11,7 @@ public interface IMessage
     Guid Id { get; }
 
     /// <summary>
-    /// Тег типа сообщения для быстрой маршрутизации
+    /// Тег типа сообщения для маршрутизации сообщения
     /// </summary>
     MessageTypeTag TypeTag { get; }
 

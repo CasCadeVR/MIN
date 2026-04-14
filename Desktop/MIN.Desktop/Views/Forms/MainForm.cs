@@ -2,7 +2,6 @@
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
-using MIN.Core.Events.Events;
 using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -30,8 +29,9 @@ namespace MIN.Desktop
         private readonly IRoomConnector roomConnector;
         private readonly IRoomHoster roomHoster;
         private readonly IRoomStore roomStore;
-        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly IParticipantStore participantStore;
+        private readonly IMessageStore messageStore;
+        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
         private readonly IChatService chatService;
         private readonly IDiscoveryService discoveryService;
         private readonly IEventBus eventBus;
@@ -54,8 +54,9 @@ namespace MIN.Desktop
             IRoomConnector roomConnector,
             IRoomHoster roomHoster,
             IRoomStore roomStore,
-            IParticipantConnectionRegistry participantConnectionRegistry,
             IParticipantStore participantStore,
+            IMessageStore messageStore,
+            IParticipantConnectionRegistry participantConnectionRegistry,
             IChatService chatService,
             IDiscoveryService discoveryService,
             IEventBus eventBus,
@@ -70,8 +71,9 @@ namespace MIN.Desktop
             this.roomConnector = roomConnector;
             this.roomHoster = roomHoster;
             this.roomStore = roomStore;
-            this.participantConnectionRegistry = participantConnectionRegistry;
             this.participantStore = participantStore;
+            this.messageStore = messageStore;
+            this.participantConnectionRegistry = participantConnectionRegistry;
             this.chatService = chatService;
             this.discoveryService = discoveryService;
             this.eventBus = eventBus;
@@ -191,18 +193,29 @@ namespace MIN.Desktop
 
             chatForm.FormClosing += async (_, _) =>
             {
-                if (isHost)
-                {
-                    await discoveryService.StopDiscoveryAsync(roomId);
-                    await roomHoster.StopHostingAsync(roomId);
-                }
-                else
-                {
-                    await roomConnector.DisconnectAsync(roomId, connectionId);
-                }
+                await CleanUpAsync(roomId, connectionId, isHost);
             };
 
             chatForm.Show();
+        }
+
+        private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)
+        {
+            if (isHost)
+            {
+                await discoveryService.StopDiscoveryAsync(roomId);
+                await roomHoster.StopHostingAsync(roomId);
+            }
+            else
+            {
+                await roomConnector.DisconnectAsync(roomId, connectionId);
+            }
+
+            participantStore.ClearParticipants(roomId);
+            messageStore.ClearMessages(roomId);
+            roomStore.Remove(roomId);
+
+            participantConnectionRegistry.Unregister(connectionId);
         }
 
         private async Task PerformSearch()

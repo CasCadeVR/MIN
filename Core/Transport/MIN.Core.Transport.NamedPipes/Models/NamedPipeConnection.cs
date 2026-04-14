@@ -47,7 +47,6 @@ internal sealed class NamedPipeConnection : BaseConnection, IAsyncDisposable
     {
         return Task.Run(async () =>
         {
-            var disconnectMessage = string.Empty;
             var buffer = new byte[4096];
             var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token, cancellationToken);
 
@@ -69,11 +68,10 @@ internal sealed class NamedPipeConnection : BaseConnection, IAsyncDisposable
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                disconnectMessage = ex.Message;
+                OnDisconnected(ex.Message);
             }
             finally
             {
-                OnDisconnected(disconnectMessage);
                 await DisposeAsync();
             }
         }, cancellationToken);

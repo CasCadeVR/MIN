@@ -17,18 +17,19 @@ public sealed class ParticipantConnectionRegistry : IParticipantConnectionRegist
         connectionIdByParticipantId[participant.Id] = connectionId;
     }
 
+    void IParticipantConnectionRegistry.RegisterLocalParticipant(ParticipantInfo participant)
+    {
+        participantsByConnectionId[CoreServicesConstants.LocalConnectionId] = participant;
+        connectionIdByParticipantId[participant.Id] = CoreServicesConstants.LocalConnectionId;
+    }
+
+
     void IParticipantConnectionRegistry.Unregister(Guid connectionId)
     {
         if (participantsByConnectionId.TryRemove(connectionId, out var participant))
         {
             connectionIdByParticipantId.TryRemove(participant.Id, out _);
         }
-    }
-
-    void IParticipantConnectionRegistry.RegisterLocalParticipant(ParticipantInfo participant)
-    {
-        participantsByConnectionId[CoreServicesConstants.LocalConnectionId] = participant;
-        connectionIdByParticipantId[participant.Id] = CoreServicesConstants.LocalConnectionId;
     }
 
     ParticipantInfo IParticipantConnectionRegistry.GetParticipant(Guid connectionId)

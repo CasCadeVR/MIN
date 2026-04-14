@@ -83,7 +83,7 @@ internal sealed class NamedPipeClient : IAsyncDisposable
             connection.Disconnected += OnDisconnected;
 
             isConnected = true;
-            _ = connection.StartReadingAsync(cancellationToken);
+            _ = connection.StartReadingAsync(cts.Token);
 
             return connection.Id;
         }
@@ -120,6 +120,7 @@ internal sealed class NamedPipeClient : IAsyncDisposable
 
         isConnected = false;
         cts?.Cancel();
+        Disconnected?.Invoke(this, null);
         await (connection?.DisposeAsync() ?? ValueTask.CompletedTask);
         connection = null;
     }

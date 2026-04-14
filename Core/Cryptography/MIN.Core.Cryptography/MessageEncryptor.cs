@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
-using System.Text;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Core.Cryptography.Contracts.Interfaces;
@@ -79,12 +78,6 @@ public class MessageEncryptor : IMessageEncryptor, IDisposable
         try
         {
             aesGcm.Decrypt(iv, ciphertext, authTag, plaintext);
-
-            var plaintextUtf8 = Encoding.UTF8.GetString(plaintext);
-            var preview = plaintextUtf8.Length > 200
-                ? plaintextUtf8.Substring(0, 200) + "..."
-                : plaintextUtf8;
-
             return plaintext;
         }
         catch (CryptographicException ex) when (ex is AuthenticationTagMismatchException)

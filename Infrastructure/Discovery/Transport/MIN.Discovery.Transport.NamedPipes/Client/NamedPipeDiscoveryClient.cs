@@ -2,6 +2,7 @@
 using System.Net.NetworkInformation;
 using MIN.Discovery.Services.Contracts.Exceptions;
 using MIN.Discovery.Transport.Contracts.Events;
+using MIN.Discovery.Transport.NamedPipes.Services;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Discovery.Transport.NamedPipes.Client;
@@ -12,7 +13,6 @@ namespace MIN.Discovery.Transport.NamedPipes.Client;
 internal sealed class NamedPipeDiscoveryClient
 {
     private readonly ILoggerProvider logger;
-    private readonly string pipeName;
 
     /// <summary>
     /// Событие получения сырых данных от транспорта
@@ -22,9 +22,8 @@ internal sealed class NamedPipeDiscoveryClient
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NamedPipeDiscoveryClient"/>
     /// </summary>
-    public NamedPipeDiscoveryClient(string pipeName, ILoggerProvider logger)
+    public NamedPipeDiscoveryClient(ILoggerProvider logger)
     {
-        this.pipeName = pipeName;
         this.logger = logger;
     }
 
@@ -43,7 +42,7 @@ internal sealed class NamedPipeDiscoveryClient
 
         using var pipe = new NamedPipeClientStream(
             machineName,
-            pipeName,
+            DiscoveryPipeNameProvider.GetDiscoveryPipeName(machineName),
             PipeDirection.InOut,
             PipeOptions.Asynchronous | PipeOptions.WriteThrough
         );

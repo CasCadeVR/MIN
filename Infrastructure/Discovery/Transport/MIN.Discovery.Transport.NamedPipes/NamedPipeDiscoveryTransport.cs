@@ -2,7 +2,6 @@
 using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Discovery.Transport.NamedPipes.Client;
 using MIN.Discovery.Transport.NamedPipes.Server;
-using MIN.Discovery.Transport.NamedPipes.Services;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Discovery.Transport.NamedPipes
@@ -21,14 +20,11 @@ namespace MIN.Discovery.Transport.NamedPipes
         /// </summary>
         public NamedPipeDiscoveryTransport(ILocalNetworkComputerProvider localNetworkComputerProvider, ILoggerProvider logger)
         {
-            var machineName = localNetworkComputerProvider.GetLocalMachineName();
-            var pipeName = DiscoveryPipeNameProvider.GetDiscoveryPipeName(machineName);
-
-            discoveryServer = new NamedPipeDiscoveryServer(pipeName, logger);
+            discoveryServer = new NamedPipeDiscoveryServer(localNetworkComputerProvider, logger);
             discoveryServer.MessageReceived += (sender, e)
                 => MessageReceived?.Invoke(sender, e);
 
-            discoveryClient = new NamedPipeDiscoveryClient(pipeName, logger);
+            discoveryClient = new NamedPipeDiscoveryClient(logger);
             discoveryClient.MessageReceived += (sender, e)
                 => MessageReceived?.Invoke(sender, e);
         }
