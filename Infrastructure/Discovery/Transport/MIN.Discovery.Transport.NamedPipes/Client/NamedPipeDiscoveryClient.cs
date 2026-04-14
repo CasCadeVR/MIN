@@ -68,7 +68,7 @@ internal sealed class NamedPipeDiscoveryClient
     {
         try
         {
-            var buffer = new byte[4096];
+            var buffer = new byte[64 * 1024];
             var bytesRead = await pipe!.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
             if (bytesRead > 0)
             {

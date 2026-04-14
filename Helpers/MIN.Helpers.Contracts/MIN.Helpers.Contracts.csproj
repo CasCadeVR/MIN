@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Core\Entities\MIN.Core.Entities.Contracts\MIN.Core.Entities.Contracts.csproj" />
     <ProjectReference Include="..\..\Core\Transport\MIN.Core.Transport.Contracts\MIN.Core.Transport.Contracts.csproj" />
   </ItemGroup>

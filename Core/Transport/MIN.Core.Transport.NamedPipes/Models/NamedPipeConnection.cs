@@ -1,5 +1,7 @@
 ﻿using System.IO.Pipes;
+using Microsoft.Extensions.Configuration;
 using MIN.Core.Transport.Contracts.Models;
+using MIN.Core.Transport.Contracts.Models.Configuration;
 
 namespace MIN.Core.Transport.NamedPipes.Models;
 
@@ -9,15 +11,17 @@ namespace MIN.Core.Transport.NamedPipes.Models;
 internal sealed class NamedPipeConnection : BaseConnection, IAsyncDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
+    private readonly int bufferSize;
     private bool disposed;
 
     /// <summary>
     /// Инициализирует новый экзмепляр <see cref="NamedPipeConnection"/>
     /// </summary>
-    public NamedPipeConnection(PipeStream pipe, NamedPipeEndpoint endpoint)
+    public NamedPipeConnection(PipeStream pipe, NamedPipeEndpoint endpoint, IConfiguration configuration)
     {
         Pipe = pipe;
         Endpoint = endpoint;
+        bufferSize = configuration.GetSection(nameof(TransportConfiguration)).Get<TransportConfiguration>()!.MessageBufferSize;
     }
 
     /// <summary>
@@ -47,7 +51,8 @@ internal sealed class NamedPipeConnection : BaseConnection, IAsyncDisposable
     {
         return Task.Run(async () =>
         {
-            var buffer = new byte[4096];
+            var buffer = new byte[bufferSize];
+            var disconnectMessage = string.Empty;
             var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token, cancellationToken);
 
             try
@@ -68,10 +73,11 @@ internal sealed class NamedPipeConnection : BaseConnection, IAsyncDisposable
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
-                OnDisconnected(ex.Message);
+                disconnectMessage = ex.Message;
             }
             finally
             {
+                OnDisconnected(disconnectMessage);
                 await DisposeAsync();
             }
         }, cancellationToken);

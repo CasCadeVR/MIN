@@ -1,11 +1,14 @@
-using System.IO.Pipes;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.Extensions.Configuration;
+using MIN.Discovery.Services.Contracts.Models.Configuration;
 using MIN.Discovery.Transport.Contracts.Events;
+using MIN.Discovery.Transport.NamedPipes.Services;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
-using MIN.Discovery.Transport.NamedPipes.Services;
 
 namespace MIN.Discovery.Transport.NamedPipes.Server;
 
@@ -16,6 +19,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
 {
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, NamedPipeServerStream> connections = new();
+    private readonly int bufferSize;
     private readonly string pipeName;
 
     private CancellationTokenSource? cts;
@@ -24,9 +28,19 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NamedPipeDiscoveryServer"/>
     /// </summary>
-    public NamedPipeDiscoveryServer(ILocalNetworkComputerProvider localNetworkComputerProvider, ILoggerProvider logger)
+    public NamedPipeDiscoveryServer(ILocalNetworkComputerProvider localNetworkComputerProvider,
+        IConfiguration configuration,
+        ILoggerProvider logger)
     {
         this.logger = logger;
+        var section = configuration.GetSection(nameof(DiscoveryConfiguration));
+        Debug.WriteLine($"Section exists: {section.Exists()}");  // false = проблема
+        Debug.WriteLine($"Section value: {section.Value}");      // Пусто = секция пуста
+        foreach (var child in section.GetChildren())
+        {
+            Debug.WriteLine(child.Key + ": " + child.Value);
+        }
+        bufferSize = configuration.GetSection(nameof(DiscoveryConfiguration)).Get<DiscoveryConfiguration>()!.DiscoveryBufferSize;
         pipeName = DiscoveryPipeNameProvider.GetDiscoveryPipeName(localNetworkComputerProvider.GetLocalMachineName());
     }
 
@@ -139,7 +153,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
 
     private async Task AcceptRequest(Guid connectionId, CancellationToken cancellationToken)
     {
-        var buffer = new byte[4096];
+        var buffer = new byte[bufferSize];
         if (!connections.TryGetValue(connectionId, out var currentPipe) || currentPipe == null)
         {
             return;

@@ -18,6 +18,11 @@ public interface IRoomStore
     bool TryGetRoom(Guid roomId, out Room room);
 
     /// <summary>
+    /// Существует ли такая комната в списке?
+    /// </summary>
+    bool RoomExists(Guid roomId);
+
+    /// <summary>
     /// Получить идентификатор хоста комнаты по её идентификатору
     /// </summary>
     Guid GetRoomHostParticipantId(Guid roomId);

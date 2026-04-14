@@ -209,13 +209,12 @@ namespace MIN.Desktop
             else
             {
                 await roomConnector.DisconnectAsync(roomId, connectionId);
+                participantConnectionRegistry.Unregister(connectionId);
             }
 
             participantStore.ClearParticipants(roomId);
             messageStore.ClearMessages(roomId);
             roomStore.Remove(roomId);
-
-            participantConnectionRegistry.Unregister(connectionId);
         }
 
         private async Task PerformSearch()

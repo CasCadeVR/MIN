@@ -2,8 +2,9 @@
 using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using MIN.Core.Transport.Contracts.Constants;
+using Microsoft.Extensions.Configuration;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Models.Configuration;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -14,13 +15,14 @@ namespace MIN.Core.Transport.NamedPipes.Server;
 /// </summary>
 internal sealed class NamedPipeServer : IAsyncDisposable
 {
+    private readonly IConfiguration configuration;
+    private readonly ILoggerProvider logger;
     private readonly NamedPipeEndpoint endpoint;
     private readonly SemaphoreSlim connectionSlots;
     private readonly ConcurrentDictionary<Guid, NamedPipeConnection> connections = new();
 
-    private readonly ILoggerProvider logger;
-
     private CancellationTokenSource? cts;
+    private int maxParticipants;
     private bool isRunning;
 
     /// <summary>
@@ -28,12 +30,15 @@ internal sealed class NamedPipeServer : IAsyncDisposable
     /// </summary>
     public NamedPipeServer(
         NamedPipeEndpoint endpoint,
-        int maxParticipants,
+        IConfiguration configuration,
         ILoggerProvider logger)
     {
         this.endpoint = endpoint;
+        this.configuration = configuration;
         this.logger = logger;
 
+        maxParticipants = configuration.GetSection(nameof(TransportConfiguration))
+            .Get<TransportConfiguration>()!.RoomMaximumConnectionsAmount;
         connectionSlots = new SemaphoreSlim(maxParticipants, maxParticipants);
     }
 
@@ -140,7 +145,7 @@ internal sealed class NamedPipeServer : IAsyncDisposable
                 var pipe = NamedPipeServerStreamAcl.Create(
                     endpoint.PipeName,
                     PipeDirection.InOut,
-                    TransportConstants.TheoraticallyPossibleMaximumRoomSize,
+                    maxParticipants,
                     PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous | PipeOptions.WriteThrough,
                     0, 0,
@@ -150,7 +155,7 @@ internal sealed class NamedPipeServer : IAsyncDisposable
 
                 // Client connected here
 
-                var connection = new NamedPipeConnection(pipe, endpoint);
+                var connection = new NamedPipeConnection(pipe, endpoint, configuration);
                 connections[connection.Id] = connection;
 
                 connection.RawMessageReceived += (_, data) =>

@@ -7,7 +7,7 @@ namespace MIN.Desktop.Infrastructure.Services
     ///<inheritdoc cref="ISettingsProvider"/>
     public class SettingsProvider : ISettingsProvider
     {
-        private readonly static string settingsFilePath = Path.Combine(Application.StartupPath, "appsettings.json");
+        private readonly static string settingsFilePath = Path.Combine(Application.StartupPath, "settings.json");
         private Settings settings = null!;
 
         Settings ISettingsProvider.GetSettings()

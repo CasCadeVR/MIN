@@ -20,6 +20,9 @@ namespace MIN.Core.Services.Stores
             this.messageStore = messageStore;
         }
 
+        bool IRoomStore.RoomExists(Guid roomId)
+            => roomsById.ContainsKey(roomId);
+
         Room IRoomStore.GetRoom(Guid roomId)
         {
             if (roomsById.TryGetValue(roomId, out var room))

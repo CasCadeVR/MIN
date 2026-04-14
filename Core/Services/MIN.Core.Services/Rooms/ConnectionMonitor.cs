@@ -56,6 +56,11 @@ namespace MIN.Core.Services.Rooms
         {
             try
             {
+                if (!roomStore.RoomExists(e.RoomId))
+                {
+                    return;
+                }
+
                 var leavingMessage = e.LeavingMessage;
                 var needToDisconnect = false;
 

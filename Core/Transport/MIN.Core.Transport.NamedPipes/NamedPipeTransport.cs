@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using MIN.Core.Transport.Contracts.Constants;
+using Microsoft.Extensions.Configuration;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Client;
@@ -15,17 +15,21 @@ namespace MIN.Core.Transport.NamedPipes;
 /// </summary>
 public sealed class NamedPipeTransport : ITransport
 {
-    private readonly ILoggerProvider logger;
     private readonly IEndPointProvider endPointProvider;
+    private readonly IConfiguration configuration;
+    private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, NamedPipeServer> servers = new();
     private readonly ConcurrentDictionary<Guid, NamedPipeClient> clients = new();
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NamedPipeTransport"/>
     /// </summary>
-    public NamedPipeTransport(IEndPointProvider endPointProvider, ILoggerProvider logger)
+    public NamedPipeTransport(IEndPointProvider endPointProvider,
+        IConfiguration configuration,
+        ILoggerProvider logger)
     {
         this.endPointProvider = endPointProvider;
+        this.configuration = configuration;
         this.logger = logger;
     }
 
@@ -49,8 +53,7 @@ public sealed class NamedPipeTransport : ITransport
             return;
         }
 
-        // TODO: максимальное количество участников нужно получить из конфигурации
-        var server = new NamedPipeServer(namedPipeEndpoint, TransportConstants.TheoraticallyPossibleMaximumRoomSize, logger);
+        var server = new NamedPipeServer(namedPipeEndpoint, configuration, logger);
         servers[roomId] = server;
 
         server.RawMessageReceived += (_, args) =>
@@ -100,7 +103,7 @@ public sealed class NamedPipeTransport : ITransport
             return existingClient.ConnectionId;
         }
 
-        var client = new NamedPipeClient(namedPipeEndpoint, logger);
+        var client = new NamedPipeClient(namedPipeEndpoint, configuration, logger);
         var connectionId = await client.ConnectAsync(timeoutMs, cancellationToken);
         clients[roomId] = client;
 
@@ -120,11 +123,10 @@ public sealed class NamedPipeTransport : ITransport
         {
             await client.DisconnectAsync();
             clients.TryRemove(roomId, out _);
+            return;
         }
-        else
-        {
-            logger.Log($"Попытка отсоединиться от соеднинения {connectionId} для комнаты {roomId}, которой не нашлось", LogLevel.Warning);
-        }
+
+        logger.Log($"Попытка отсоединиться от соеднинения {connectionId} для комнаты {roomId}, которой не нашлось", LogLevel.Warning);
     }
 
     async Task ITransport.SendAsync(byte[] data, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
