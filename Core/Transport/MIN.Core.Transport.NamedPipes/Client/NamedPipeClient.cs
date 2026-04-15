@@ -1,5 +1,4 @@
 ﻿using System.IO.Pipes;
-using Microsoft.Extensions.Configuration;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Helpers.Contracts.Interfaces;
@@ -12,7 +11,6 @@ namespace MIN.Core.Transport.NamedPipes.Client;
 internal sealed class NamedPipeClient : IAsyncDisposable
 {
     private readonly NamedPipeEndpoint endpoint;
-    private readonly IConfiguration configuration;
     private readonly ILoggerProvider logger;
 
     private NamedPipeConnection? connection;
@@ -25,11 +23,9 @@ internal sealed class NamedPipeClient : IAsyncDisposable
     /// </summary>
     public NamedPipeClient(
         NamedPipeEndpoint endpoint,
-        IConfiguration configuration,
         ILoggerProvider logger)
     {
         this.endpoint = endpoint;
-        this.configuration = configuration;
         this.logger = logger;
     }
 
@@ -82,7 +78,7 @@ internal sealed class NamedPipeClient : IAsyncDisposable
 
             // Connected here
 
-            connection = new NamedPipeConnection(pipe, endpoint, configuration);
+            connection = new NamedPipeConnection(pipe, endpoint);
             connection.RawMessageReceived += (_, data) => RawMessageReceived?.Invoke(this, data);
             connection.Disconnected += OnDisconnected;
 

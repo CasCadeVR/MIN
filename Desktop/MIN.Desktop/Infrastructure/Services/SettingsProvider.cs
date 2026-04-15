@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using MIN.Helpers.Contracts.Interfaces;
+﻿using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models;
 
 namespace MIN.Desktop.Infrastructure.Services
@@ -7,50 +6,26 @@ namespace MIN.Desktop.Infrastructure.Services
     ///<inheritdoc cref="ISettingsProvider"/>
     public class SettingsProvider : ISettingsProvider
     {
-        private readonly static string settingsFilePath = Path.Combine(Application.StartupPath, "settings.json");
-        private Settings settings = null!;
+        private readonly ISettingsStorage storage;
+        private Settings? cachedSettings;
+
+        /// <summary>
+        /// Инициализирует новый экземпляр <see cref="SettingsProvider"/>
+        /// </summary>
+        public SettingsProvider(ISettingsStorage storage)
+        {
+            this.storage = storage;
+        }
 
         Settings ISettingsProvider.GetSettings()
         {
-            Load();
-            return settings;
+            return cachedSettings ??= storage.Load();
         }
 
         void ISettingsProvider.SaveSettings(Settings settings)
         {
-            this.settings = settings;
-            Save();
-        }
-
-        private void Load()
-        {
-            try
-            {
-                if (!File.Exists(settingsFilePath))
-                {
-                    settings = new Settings();
-                }
-
-                var json = File.ReadAllText(settingsFilePath);
-                settings = JsonSerializer.Deserialize<Settings>(json) ?? new Settings();
-            }
-            catch
-            {
-                settings = new Settings();
-            }
-        }
-
-        private void Save()
-        {
-            try
-            {
-                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(settingsFilePath, json);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при сохранении настроек:\n{ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            cachedSettings = settings;
+            storage.Save(settings);
         }
     }
 }

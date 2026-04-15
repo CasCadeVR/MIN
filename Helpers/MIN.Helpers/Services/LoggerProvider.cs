@@ -17,7 +17,7 @@ namespace MIN.Helpers.Services
         void ILoggerProvider.Log(string message, LogLevel level)
         {
             var formatted = new StringBuilder();
-            formatted.Append(TimeOnly.FromDateTime(DateTime.Now).ToShortTimeString());
+            formatted.Append(DateTime.Now.ToString("HH:mm:ss.fff"));
             formatted.Append(" - ");
             formatted.Append(Enum.GetName(level));
             formatted.Append(" - ");

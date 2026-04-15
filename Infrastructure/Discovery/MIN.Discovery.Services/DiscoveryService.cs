@@ -1,13 +1,13 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Serialization.Contracts;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Discovery.Events;
 using MIN.Discovery.Messaging;
 using MIN.Discovery.Services.Contracts.Exceptions;
-using MIN.Discovery.Services.Contracts.Models;
 using MIN.Discovery.Services.Contracts.Interfaces;
+using MIN.Discovery.Services.Contracts.Models;
 using MIN.Discovery.Transport.Contracts;
 using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Helpers.Contracts.Interfaces;

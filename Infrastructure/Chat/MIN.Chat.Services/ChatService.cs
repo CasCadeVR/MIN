@@ -2,8 +2,8 @@
 using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Services.Contracts.Models;
+using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Chat.Services
 {

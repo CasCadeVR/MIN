@@ -15,7 +15,8 @@ public class HelpersModule : Module
     {
         services.RegisterAsImplementedInterfaces<LoggerProvider>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<IdentityService>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<MinConfiguration>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<AppDataProvider>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<FileSystemSettingsStorage>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<CollegeNetworkComputerProvider>(ServiceLifetime.Singleton);
     }
 }

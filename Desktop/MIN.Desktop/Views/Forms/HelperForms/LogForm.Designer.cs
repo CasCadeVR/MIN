@@ -91,6 +91,8 @@
             logListBox.Font = new Font("Segoe UI", 9.75F);
             logListBox.ForeColor = Color.FromArgb(45, 43, 58);
             logListBox.FormattingEnabled = true;
+            logListBox.HorizontalScrollbar = true;
+            logListBox.IntegralHeight = false;
             logListBox.ItemHeight = 17;
             logListBox.Location = new Point(0, 0);
             logListBox.Name = "logListBox";

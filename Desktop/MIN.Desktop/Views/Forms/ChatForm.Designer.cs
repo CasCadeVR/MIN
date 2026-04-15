@@ -39,16 +39,21 @@ namespace MIN.Desktop
             tableLayoutPanel2 = new TableLayoutPanel();
             chatFlow = new NoHorizontalScrollListView();
             tableLayoutPanelButtons = new TableLayoutPanel();
-            fileButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
-            sendButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            fileButton = new CommonButton();
+            sendButton = new CommonButton();
             messageTextBox = new MIN.Desktop.Components.Controls.TextBoxes.MessageTextBox();
             tableLayoutPanel1 = new TableLayoutPanel();
-            disconnectButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
-            aboutButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            disconnectButton = new InvertedButton();
+            aboutButton = new CommonButton();
             participantsFlow = new NoHorizontalScrollListView();
             tableLayoutPanelStats = new TableLayoutPanel();
-            closeButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
-            editButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            createdAt = new MIN.Desktop.Components.Labels.Heading3Label();
+            labelCreatedAt = new MIN.Desktop.Components.Labels.CaptionLabel();
+            closeButton = new InvertedButton();
+            editButton = new CommonButton();
+            captionLabel1 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            hostName = new MIN.Desktop.Components.Labels.Heading3Label();
+            notificationComboBox = new MIN.Desktop.Components.Controls.CheckBoxes.DefaultCheckBox();
             heading3Label4 = new MIN.Desktop.Components.Labels.Heading3Label();
             captionLabel4 = new MIN.Desktop.Components.Labels.CaptionLabel();
             participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
@@ -56,9 +61,6 @@ namespace MIN.Desktop
             computer = new MIN.Desktop.Components.Labels.Heading3Label();
             captionLabel2 = new MIN.Desktop.Components.Labels.CaptionLabel();
             classroom = new MIN.Desktop.Components.Labels.Heading3Label();
-            captionLabel1 = new MIN.Desktop.Components.Labels.CaptionLabel();
-            hostName = new MIN.Desktop.Components.Labels.Heading3Label();
-            notificationComboBox = new MIN.Desktop.Components.Controls.CheckBoxes.DefaultCheckBox();
             notifyIcon = new NotifyIcon(components);
             ((System.ComponentModel.ISupportInitialize)splitContainerSideBar).BeginInit();
             splitContainerSideBar.Panel1.SuspendLayout();
@@ -314,32 +316,59 @@ namespace MIN.Desktop
             tableLayoutPanelStats.ColumnCount = 2;
             tableLayoutPanelStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelStats.Controls.Add(createdAt, 1, 3);
+            tableLayoutPanelStats.Controls.Add(labelCreatedAt, 0, 3);
             tableLayoutPanelStats.Controls.Add(closeButton, 0, 0);
             tableLayoutPanelStats.Controls.Add(editButton, 1, 0);
-            tableLayoutPanelStats.Controls.Add(heading3Label4, 0, 6);
-            tableLayoutPanelStats.Controls.Add(captionLabel4, 0, 5);
-            tableLayoutPanelStats.Controls.Add(participantsInfo, 1, 5);
-            tableLayoutPanelStats.Controls.Add(captionLabel3, 0, 4);
-            tableLayoutPanelStats.Controls.Add(computer, 1, 4);
-            tableLayoutPanelStats.Controls.Add(captionLabel2, 0, 3);
-            tableLayoutPanelStats.Controls.Add(classroom, 1, 3);
             tableLayoutPanelStats.Controls.Add(captionLabel1, 0, 2);
             tableLayoutPanelStats.Controls.Add(hostName, 1, 2);
             tableLayoutPanelStats.Controls.Add(notificationComboBox, 0, 1);
+            tableLayoutPanelStats.Controls.Add(heading3Label4, 0, 7);
+            tableLayoutPanelStats.Controls.Add(captionLabel4, 0, 6);
+            tableLayoutPanelStats.Controls.Add(participantsInfo, 1, 6);
+            tableLayoutPanelStats.Controls.Add(captionLabel3, 0, 5);
+            tableLayoutPanelStats.Controls.Add(computer, 1, 5);
+            tableLayoutPanelStats.Controls.Add(captionLabel2, 0, 4);
+            tableLayoutPanelStats.Controls.Add(classroom, 1, 4);
             tableLayoutPanelStats.Dock = DockStyle.Top;
             tableLayoutPanelStats.Location = new Point(0, 0);
             tableLayoutPanelStats.Margin = new Padding(0);
             tableLayoutPanelStats.Name = "tableLayoutPanelStats";
-            tableLayoutPanelStats.RowCount = 7;
-            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 15.7223635F));
-            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 15.7223606F));
-            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 15.7223606F));
-            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 15.7223606F));
-            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 15.7223606F));
-            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 15.7251291F));
-            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 5.663069F));
+            tableLayoutPanelStats.RowCount = 8;
+            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.58574F));
+            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.585741F));
+            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.585741F));
+            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.585741F));
+            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.585741F));
+            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.5881348F));
+            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.5923424F));
+            tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 4.890824F));
             tableLayoutPanelStats.Size = new Size(187, 276);
             tableLayoutPanelStats.TabIndex = 4;
+            // 
+            // createdAt
+            // 
+            createdAt.Anchor = AnchorStyles.Left;
+            createdAt.AutoSize = true;
+            createdAt.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            createdAt.ForeColor = Color.FromArgb(0, 0, 0);
+            createdAt.Location = new Point(96, 121);
+            createdAt.Name = "createdAt";
+            createdAt.Size = new Size(74, 17);
+            createdAt.TabIndex = 24;
+            createdAt.Text = "Загрузка...";
+            // 
+            // labelCreatedAt
+            // 
+            labelCreatedAt.Anchor = AnchorStyles.Right;
+            labelCreatedAt.AutoSize = true;
+            labelCreatedAt.Font = new Font("Segoe UI", 8.25F);
+            labelCreatedAt.ForeColor = Color.Black;
+            labelCreatedAt.Location = new Point(36, 123);
+            labelCreatedAt.Name = "labelCreatedAt";
+            labelCreatedAt.Size = new Size(54, 13);
+            labelCreatedAt.TabIndex = 23;
+            labelCreatedAt.Text = "Создана:";
             // 
             // closeButton
             // 
@@ -354,7 +383,7 @@ namespace MIN.Desktop
             closeButton.Location = new Point(3, 3);
             closeButton.Name = "closeButton";
             closeButton.Padding = new Padding(8, 4, 8, 4);
-            closeButton.Size = new Size(37, 37);
+            closeButton.Size = new Size(37, 31);
             closeButton.TabIndex = 3;
             closeButton.Text = "X";
             closeButton.UseVisualStyleBackColor = false;
@@ -371,11 +400,48 @@ namespace MIN.Desktop
             editButton.Location = new Point(127, 3);
             editButton.Name = "editButton";
             editButton.Padding = new Padding(8, 4, 8, 4);
-            editButton.Size = new Size(57, 37);
+            editButton.Size = new Size(57, 31);
             editButton.TabIndex = 17;
             editButton.Text = ". . .";
             editButton.UseVisualStyleBackColor = false;
             editButton.Click += editButton_Click;
+            // 
+            // captionLabel1
+            // 
+            captionLabel1.Anchor = AnchorStyles.Right;
+            captionLabel1.AutoSize = true;
+            captionLabel1.Font = new Font("Segoe UI", 8.25F);
+            captionLabel1.ForeColor = Color.Black;
+            captionLabel1.Location = new Point(57, 86);
+            captionLabel1.Name = "captionLabel1";
+            captionLabel1.Size = new Size(33, 13);
+            captionLabel1.TabIndex = 18;
+            captionLabel1.Text = "Хост:";
+            // 
+            // hostName
+            // 
+            hostName.Anchor = AnchorStyles.Left;
+            hostName.AutoSize = true;
+            hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            hostName.ForeColor = Color.FromArgb(0, 0, 0);
+            hostName.Location = new Point(96, 84);
+            hostName.Name = "hostName";
+            hostName.Size = new Size(74, 17);
+            hostName.TabIndex = 9;
+            hostName.Text = "Загрузка...";
+            // 
+            // notificationComboBox
+            // 
+            notificationComboBox.Anchor = AnchorStyles.None;
+            notificationComboBox.AutoSize = true;
+            notificationComboBox.BackColor = Color.FromArgb(106, 91, 255);
+            tableLayoutPanelStats.SetColumnSpan(notificationComboBox, 2);
+            notificationComboBox.Location = new Point(43, 46);
+            notificationComboBox.Name = "notificationComboBox";
+            notificationComboBox.Size = new Size(100, 19);
+            notificationComboBox.TabIndex = 22;
+            notificationComboBox.Text = "Уведомления";
+            notificationComboBox.UseVisualStyleBackColor = false;
             // 
             // heading3Label4
             // 
@@ -396,7 +462,7 @@ namespace MIN.Desktop
             captionLabel4.AutoSize = true;
             captionLabel4.Font = new Font("Segoe UI", 8.25F);
             captionLabel4.ForeColor = Color.Black;
-            captionLabel4.Location = new Point(48, 230);
+            captionLabel4.Location = new Point(48, 234);
             captionLabel4.Name = "captionLabel4";
             captionLabel4.Size = new Size(42, 13);
             captionLabel4.TabIndex = 21;
@@ -408,7 +474,7 @@ namespace MIN.Desktop
             participantsInfo.AutoSize = true;
             participantsInfo.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(96, 228);
+            participantsInfo.Location = new Point(96, 232);
             participantsInfo.Name = "participantsInfo";
             participantsInfo.Size = new Size(74, 17);
             participantsInfo.TabIndex = 15;
@@ -420,7 +486,7 @@ namespace MIN.Desktop
             captionLabel3.AutoSize = true;
             captionLabel3.Font = new Font("Segoe UI", 8.25F);
             captionLabel3.ForeColor = Color.Black;
-            captionLabel3.Location = new Point(31, 187);
+            captionLabel3.Location = new Point(31, 197);
             captionLabel3.Name = "captionLabel3";
             captionLabel3.Size = new Size(59, 13);
             captionLabel3.TabIndex = 20;
@@ -432,7 +498,7 @@ namespace MIN.Desktop
             computer.AutoSize = true;
             computer.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             computer.ForeColor = Color.FromArgb(0, 0, 0);
-            computer.Location = new Point(96, 185);
+            computer.Location = new Point(96, 195);
             computer.Name = "computer";
             computer.Size = new Size(74, 17);
             computer.TabIndex = 13;
@@ -444,7 +510,7 @@ namespace MIN.Desktop
             captionLabel2.AutoSize = true;
             captionLabel2.Font = new Font("Segoe UI", 8.25F);
             captionLabel2.ForeColor = Color.Black;
-            captionLabel2.Location = new Point(36, 144);
+            captionLabel2.Location = new Point(36, 160);
             captionLabel2.Name = "captionLabel2";
             captionLabel2.Size = new Size(54, 13);
             captionLabel2.TabIndex = 19;
@@ -456,48 +522,11 @@ namespace MIN.Desktop
             classroom.AutoSize = true;
             classroom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             classroom.ForeColor = Color.FromArgb(0, 0, 0);
-            classroom.Location = new Point(96, 142);
+            classroom.Location = new Point(96, 158);
             classroom.Name = "classroom";
             classroom.Size = new Size(74, 17);
             classroom.TabIndex = 12;
             classroom.Text = "Загрузка...";
-            // 
-            // captionLabel1
-            // 
-            captionLabel1.Anchor = AnchorStyles.Right;
-            captionLabel1.AutoSize = true;
-            captionLabel1.Font = new Font("Segoe UI", 8.25F);
-            captionLabel1.ForeColor = Color.Black;
-            captionLabel1.Location = new Point(57, 101);
-            captionLabel1.Name = "captionLabel1";
-            captionLabel1.Size = new Size(33, 13);
-            captionLabel1.TabIndex = 18;
-            captionLabel1.Text = "Хост:";
-            // 
-            // hostName
-            // 
-            hostName.Anchor = AnchorStyles.Left;
-            hostName.AutoSize = true;
-            hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            hostName.ForeColor = Color.FromArgb(0, 0, 0);
-            hostName.Location = new Point(96, 99);
-            hostName.Name = "hostName";
-            hostName.Size = new Size(74, 17);
-            hostName.TabIndex = 9;
-            hostName.Text = "Загрузка...";
-            // 
-            // notificationComboBox
-            // 
-            notificationComboBox.Anchor = AnchorStyles.None;
-            notificationComboBox.AutoSize = true;
-            notificationComboBox.BackColor = Color.FromArgb(106, 91, 255);
-            tableLayoutPanelStats.SetColumnSpan(notificationComboBox, 2);
-            notificationComboBox.Location = new Point(43, 55);
-            notificationComboBox.Name = "notificationComboBox";
-            notificationComboBox.Size = new Size(100, 19);
-            notificationComboBox.TabIndex = 22;
-            notificationComboBox.Text = "Уведомления";
-            notificationComboBox.UseVisualStyleBackColor = false;
             // 
             // notifyIcon
             // 
@@ -563,5 +592,7 @@ namespace MIN.Desktop
         private NotifyIcon notifyIcon;
         private Components.Controls.CheckBoxes.DefaultCheckBox notificationComboBox;
         private NoHorizontalScrollListView participantsFlow;
+        private Components.Labels.Heading3Label createdAt;
+        private Components.Labels.CaptionLabel labelCreatedAt;
     }
 }

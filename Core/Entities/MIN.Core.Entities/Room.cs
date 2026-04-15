@@ -9,32 +9,6 @@ namespace MIN.Core.Entities;
 /// </summary>
 public class Room : IRoomData
 {
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="Room"/>
-    /// </summary>
-    public Room() { }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="Room"/>
-    /// </summary>
-    public Room(string name = "Неизвестная Комната", int maximumParticipants = 2)
-    {
-        Name = name;
-        MaximumParticipants = maximumParticipants;
-    }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="Room"/>
-    /// </summary>
-    public Room(IRoomData roomData)
-    {
-        Id = roomData.Id;
-        Name = roomData.Name;
-        HostParticipant = roomData.HostParticipant;
-        IsActive = roomData.IsActive;
-        MaximumParticipants = roomData.MaximumParticipants;
-    }
-
     /// <inheritdoc />
     public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -49,6 +23,9 @@ public class Room : IRoomData
 
     /// <inheritdoc />
     public bool IsActive { get; set; }
+
+    /// <inheritdoc />
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     /// <summary>
     /// Хост комнаты
@@ -85,5 +62,32 @@ public class Room : IRoomData
     {
         var foundParticipant = CurrentParticipants.FirstOrDefault(x => x.Id == participantId);
         return CurrentParticipants.Remove(foundParticipant!);
+    }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="Room"/>
+    /// </summary>
+    public Room() { }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="Room"/>
+    /// </summary>
+    public Room(string name = "Неизвестная Комната", int maximumParticipants = 2)
+    {
+        Name = name;
+        MaximumParticipants = maximumParticipants;
+    }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="Room"/>
+    /// </summary>
+    public Room(IRoomData roomData)
+    {
+        Id = roomData.Id;
+        Name = roomData.Name;
+        HostParticipant = roomData.HostParticipant;
+        MaximumParticipants = roomData.MaximumParticipants;
+        IsActive = roomData.IsActive;
+        CreatedAt = roomData.CreatedAt;
     }
 }

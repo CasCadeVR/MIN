@@ -36,4 +36,9 @@ public interface IRoomData
     /// Активна ли комната
     /// </summary>
     bool IsActive { get; }
+
+    /// <summary>
+    /// Дата создания комнаты
+    /// </summary>
+    DateTime CreatedAt { get; }
 }

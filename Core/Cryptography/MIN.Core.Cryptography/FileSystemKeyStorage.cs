@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Cryptography.Contracts.Models;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Cryptography;
 
@@ -20,11 +21,12 @@ public sealed class FileSystemKeyStorage : IKeyStorage, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="FileSystemKeyStorage"/>
     /// </summary>
-    public FileSystemKeyStorage(string baseDirectory)
+    public FileSystemKeyStorage(IAppDataProvider appDataProvider)
     {
-        Directory.CreateDirectory(baseDirectory);
-        keysPath = Path.Combine(baseDirectory, "keys.json");
-        partnersPath = Path.Combine(baseDirectory, "partners.json");
+        var directory = Directory.CreateDirectory(Path.Combine(appDataProvider.BaseDirectory, "cryptography")).FullName;
+        keysPath = Path.Combine(directory, "keys.json");
+        partnersPath = Path.Combine(directory, "partners.json");
+
         jsonOptions = new JsonSerializerOptions
         {
             WriteIndented = true,

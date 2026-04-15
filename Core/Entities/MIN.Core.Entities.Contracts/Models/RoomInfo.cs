@@ -25,6 +25,9 @@ public record RoomInfo : IRoomData
     /// <inheritdoc />
     public ParticipantInfo HostParticipant { get; set; } = null!;
 
+    /// <inheritdoc />
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfo"/>
     /// </summary>
@@ -36,6 +39,7 @@ public record RoomInfo : IRoomData
         ParticipantCount = room.ParticipantCount;
         MaximumParticipants = room.MaximumParticipants;
         IsActive = room.IsActive;
+        CreatedAt = room.CreatedAt;
     }
 
     /// <summary>

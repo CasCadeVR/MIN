@@ -1,10 +1,10 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 

@@ -2,10 +2,10 @@
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
-using MIN.Core.Services.Contracts.Constants;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
@@ -15,6 +15,7 @@ using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Discovery.Events;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models;
 using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Helpers.Services;
@@ -41,6 +42,7 @@ namespace MIN.Desktop
         private readonly ILoggerProvider logger;
         private readonly IIdentityService identityService;
 
+        private readonly Version version;
         private readonly SynchronizationContext uiContext;
         private readonly CancellationTokenSource cts;
 
@@ -64,7 +66,8 @@ namespace MIN.Desktop
             INotificationService notificationService,
             ILocalNetworkComputerProvider computerProvider,
             IIdentityService identityService,
-            ILoggerProvider logger)
+            ILoggerProvider logger,
+            Version version)
         {
             InitializeComponent();
 
@@ -82,6 +85,7 @@ namespace MIN.Desktop
             this.computerProvider = computerProvider;
             this.identityService = identityService;
             this.logger = logger;
+            this.version = version;
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -137,7 +141,7 @@ namespace MIN.Desktop
 
                 await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
 
-                OpenChatForm(roomInfo.Id, CoreServicesConstants.LocalConnectionId, isHost: true, new NamedPipeEndpoint()
+                OpenChatForm(roomInfo.Id, CoreRegistryConstants.LocalConnectionId, isHost: true, new NamedPipeEndpoint()
                 {
                     MachineName = Environment.MachineName,
                 });
@@ -299,7 +303,7 @@ namespace MIN.Desktop
 
         private void settingsButton_Click(object sender, EventArgs e)
         {
-            var settingsForm = new SettingsForm(Settings, logger);
+            var settingsForm = new SettingsForm(Settings, version, logger);
             if (settingsForm.ShowDialog() == DialogResult.OK)
             {
                 settingsProvider.SaveSettings(settingsForm.Settings);

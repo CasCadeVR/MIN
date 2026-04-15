@@ -12,6 +12,7 @@ namespace MIN.Desktop
     public partial class SettingsForm : StyledForm
     {
         private readonly ILoggerProvider loggerProvider;
+        private readonly Version version;
 
         /// <summary>
         /// Текущие настройки
@@ -21,10 +22,11 @@ namespace MIN.Desktop
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="SettingsForm"/>
         /// </summary>
-        public SettingsForm(Settings settings, ILoggerProvider loggerProvider)
+        public SettingsForm(Settings settings, Version version, ILoggerProvider loggerProvider)
         {
             Settings = settings;
             this.loggerProvider = loggerProvider;
+            this.version = version;
             InitializeComponent();
             FillControls();
             EnableOutOfRadioButtons();
@@ -32,6 +34,7 @@ namespace MIN.Desktop
 
         private void FillControls()
         {
+            labelVersion.Text += version.ToString();
             roomSearchTime.Value = Settings.DiscoveryTimeout;
             preferredSearch.Checked = Settings.SearchMethod == SearchMethod.Preferred;
             classRoomSearch.Checked = Settings.SearchMethod == SearchMethod.ClassRoom;

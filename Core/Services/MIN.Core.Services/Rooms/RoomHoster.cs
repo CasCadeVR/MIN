@@ -2,7 +2,7 @@
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Rooms

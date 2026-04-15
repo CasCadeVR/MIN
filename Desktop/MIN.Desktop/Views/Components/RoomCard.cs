@@ -44,6 +44,7 @@ namespace MIN.Desktop.Components
             Title.Text = $"Комната {room.Name}";
             participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
             hostName.Text = room.HostParticipant.Name;
+            createdAt.Text = room.CreatedAt.ToShortTimeString();
 
             if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.Name, out int roomNumber, out int computerNumber))
             {

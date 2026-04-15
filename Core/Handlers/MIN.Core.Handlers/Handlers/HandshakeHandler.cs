@@ -6,8 +6,8 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Cryptography.Contracts.Interfaces;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using MIN.Discovery.Transport.Contracts;
+﻿using MIN.Discovery.Transport.Contracts;
 using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Discovery.Transport.NamedPipes.Client;
 using MIN.Discovery.Transport.NamedPipes.Server;
@@ -20,10 +19,9 @@ namespace MIN.Discovery.Transport.NamedPipes
         /// Инициализирует новый экземпляр <see cref="NamedPipeDiscoveryTransport"/>
         /// </summary>
         public NamedPipeDiscoveryTransport(ILocalNetworkComputerProvider localNetworkComputerProvider,
-           IConfiguration configuration,
            ILoggerProvider logger)
         {
-            discoveryServer = new NamedPipeDiscoveryServer(localNetworkComputerProvider, configuration, logger);
+            discoveryServer = new NamedPipeDiscoveryServer(localNetworkComputerProvider, logger);
             discoveryServer.MessageReceived += (sender, e)
                 => MessageReceived?.Invoke(sender, e);
 

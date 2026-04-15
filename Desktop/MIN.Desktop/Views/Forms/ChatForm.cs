@@ -8,7 +8,7 @@ using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
@@ -71,10 +71,17 @@ namespace MIN.Desktop
             this.roomStore = roomStore;
             this.chatService = chatService;
             this.eventBus = eventBus;
-            this.notificationService = notificationService;
             this.logger = logger;
             this.roomId = roomId;
             this.endpoint = endpoint;
+
+            this.notificationService = notificationService;
+            notificationService.OnNotificationClick += () =>
+            {
+                WindowState = FormWindowState.Normal;
+                Focus();
+            };
+            notificationService.NotificationTurnOffClicked += () => notificationComboBox.Checked = false;
 
             localParticipant = new ParticipantInfo(identitiyService.SelfPartcipant);
             this.room = this.roomStore.TryGetRoom(this.roomId, out var room) ? room : null;
@@ -221,6 +228,7 @@ namespace MIN.Desktop
             hostName.ForeColor = ColorScheme.TextOnAccent;
             computer.ForeColor = ColorScheme.TextOnAccent;
             classroom.ForeColor = ColorScheme.TextOnAccent;
+            createdAt.ForeColor = ColorScheme.TextOnAccent;
             notificationComboBox.ForeColor = ColorScheme.TextOnAccent;
 
             captionLabel1.ForeColor = ColorScheme.TextOnAccent;
@@ -228,6 +236,7 @@ namespace MIN.Desktop
             captionLabel3.ForeColor = ColorScheme.TextOnAccent;
             captionLabel4.ForeColor = ColorScheme.TextOnAccent;
             heading3Label4.ForeColor = ColorScheme.TextOnAccent;
+            labelCreatedAt.ForeColor = ColorScheme.TextOnAccent;
 
             participantsFlow.BackColor = ColorScheme.DividerColor;
             chatFlow.BackColor = ColorScheme.ChatAreaBackground;
@@ -249,6 +258,7 @@ namespace MIN.Desktop
 
             var isHost = room.HostParticipant?.Id == localParticipant.Id;
             hostName.Text = isHost ? "Ты" : room.HostParticipant?.Name ?? "Неизвестно";
+            createdAt.Text = room.CreatedAt.ToShortTimeString();
             editButton.Visible = isHost;
 
             if (CollegePCNameParser.TryParseComputerName(endpoint is NamedPipeEndpoint npEndpoint

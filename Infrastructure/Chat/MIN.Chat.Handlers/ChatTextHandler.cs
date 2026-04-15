@@ -5,7 +5,7 @@ using MIN.Chat.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Events.Contracts;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Chat.Handlers;
 
@@ -36,14 +36,17 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
     {
         if (message is ChatTextMessage chatTextMessage)
         {
-            var sender = participantStore.GetParticipantById(context.RoomId, context.SenderId);
+            if (!participantStore.TryGetParticipantById(context.RoomId, context.SenderId, out var sender))
+            {
+                return HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false);
+            }
 
             messageStore.AddMessage(context.RoomId, chatTextMessage);
             await eventBus.PublishAsync(new ChatTextMessageReceivedEvent()
             {
                 Message = chatTextMessage,
                 RoomId = context.RoomId,
-                Sender = sender,
+                Sender = sender!,
             });
 
             return HandlerResult.Success();

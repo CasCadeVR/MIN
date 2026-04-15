@@ -6,7 +6,7 @@ using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 

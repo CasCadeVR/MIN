@@ -2,11 +2,11 @@
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Helpers.Contracts.Interfaces;
-using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless.RoomRelated;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
+using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 

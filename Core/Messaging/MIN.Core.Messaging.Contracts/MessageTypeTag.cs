@@ -187,12 +187,12 @@ public enum MessageTypeTag : byte
     FileTransferResponse = 130,
 
     /// <summary>
-    /// Чанк (фрагмент) файла.
+    /// пакет (фрагмент) файла.
     /// </summary>
     FileChunk = 131,
 
     /// <summary>
-    /// Подтверждение получения чанка.
+    /// Подтверждение получения пакета.
     /// </summary>
     FileChunkAck = 132,
 

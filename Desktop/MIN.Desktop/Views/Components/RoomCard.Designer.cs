@@ -35,14 +35,16 @@ namespace MIN.Desktop.Components
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             connectButton = new CommonButton();
             tableLayoutPanelLabels = new TableLayoutPanel();
+            createdAt = new MIN.Desktop.Components.Labels.Heading3Label();
+            labelCreatedAt = new MIN.Desktop.Components.Labels.CaptionLabel();
             creatorLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
-            roomNumberLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            hostName = new MIN.Desktop.Components.Labels.Heading3Label();
             currentlyConnectedLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
-            computer = new MIN.Desktop.Components.Labels.Heading3Label();
-            classroom = new MIN.Desktop.Components.Labels.Heading3Label();
-            hostName = new MIN.Desktop.Components.Labels.Heading3Label();
             computerNumberLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            computer = new MIN.Desktop.Components.Labels.Heading3Label();
+            roomNumberLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            classroom = new MIN.Desktop.Components.Labels.Heading3Label();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -121,25 +123,53 @@ namespace MIN.Desktop.Components
             tableLayoutPanelLabels.ColumnCount = 2;
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelLabels.Controls.Add(createdAt, 1, 1);
+            tableLayoutPanelLabels.Controls.Add(labelCreatedAt, 0, 1);
             tableLayoutPanelLabels.Controls.Add(creatorLabel, 0, 0);
-            tableLayoutPanelLabels.Controls.Add(roomNumberLabel, 0, 1);
-            tableLayoutPanelLabels.Controls.Add(currentlyConnectedLabel, 0, 3);
-            tableLayoutPanelLabels.Controls.Add(participantsInfo, 1, 3);
-            tableLayoutPanelLabels.Controls.Add(computer, 1, 2);
-            tableLayoutPanelLabels.Controls.Add(classroom, 1, 1);
             tableLayoutPanelLabels.Controls.Add(hostName, 1, 0);
-            tableLayoutPanelLabels.Controls.Add(computerNumberLabel, 0, 2);
+            tableLayoutPanelLabels.Controls.Add(currentlyConnectedLabel, 0, 4);
+            tableLayoutPanelLabels.Controls.Add(participantsInfo, 1, 4);
+            tableLayoutPanelLabels.Controls.Add(computerNumberLabel, 0, 3);
+            tableLayoutPanelLabels.Controls.Add(computer, 1, 3);
+            tableLayoutPanelLabels.Controls.Add(roomNumberLabel, 0, 2);
+            tableLayoutPanelLabels.Controls.Add(classroom, 1, 2);
             tableLayoutPanelLabels.Dock = DockStyle.Top;
             tableLayoutPanelLabels.Location = new Point(0, 0);
             tableLayoutPanelLabels.Margin = new Padding(0);
             tableLayoutPanelLabels.Name = "tableLayoutPanelLabels";
-            tableLayoutPanelLabels.RowCount = 4;
-            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 25.0006237F));
-            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 25.0006275F));
-            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 25.0006237F));
-            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 24.9981289F));
+            tableLayoutPanelLabels.RowCount = 5;
+            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 20.0004959F));
+            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 20.0005016F));
+            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 20.0004978F));
+            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 19.9985046F));
+            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
             tableLayoutPanelLabels.Size = new Size(255, 121);
             tableLayoutPanelLabels.TabIndex = 1;
+            // 
+            // createdAt
+            // 
+            createdAt.Anchor = AnchorStyles.Left;
+            createdAt.AutoEllipsis = true;
+            createdAt.AutoSize = true;
+            createdAt.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            createdAt.ForeColor = Color.FromArgb(0, 0, 0);
+            createdAt.Location = new Point(130, 27);
+            createdAt.Name = "createdAt";
+            createdAt.Size = new Size(74, 17);
+            createdAt.TabIndex = 13;
+            createdAt.Text = "Загрузка...";
+            // 
+            // labelCreatedAt
+            // 
+            labelCreatedAt.Anchor = AnchorStyles.Right;
+            labelCreatedAt.AutoSize = true;
+            labelCreatedAt.Font = new Font("Segoe UI", 8.25F);
+            labelCreatedAt.ForeColor = Color.Black;
+            labelCreatedAt.Location = new Point(70, 29);
+            labelCreatedAt.Name = "labelCreatedAt";
+            labelCreatedAt.Size = new Size(54, 13);
+            labelCreatedAt.TabIndex = 12;
+            labelCreatedAt.Text = "Создана:";
             // 
             // creatorLabel
             // 
@@ -147,23 +177,24 @@ namespace MIN.Desktop.Components
             creatorLabel.AutoSize = true;
             creatorLabel.Font = new Font("Segoe UI", 8.25F);
             creatorLabel.ForeColor = Color.Black;
-            creatorLabel.Location = new Point(60, 8);
+            creatorLabel.Location = new Point(60, 5);
             creatorLabel.Name = "creatorLabel";
             creatorLabel.Size = new Size(64, 13);
             creatorLabel.TabIndex = 11;
             creatorLabel.Text = "Создатель:";
             // 
-            // roomNumberLabel
+            // hostName
             // 
-            roomNumberLabel.Anchor = AnchorStyles.Right;
-            roomNumberLabel.AutoSize = true;
-            roomNumberLabel.Font = new Font("Segoe UI", 8.25F);
-            roomNumberLabel.ForeColor = Color.Black;
-            roomNumberLabel.Location = new Point(70, 38);
-            roomNumberLabel.Name = "roomNumberLabel";
-            roomNumberLabel.Size = new Size(54, 13);
-            roomNumberLabel.TabIndex = 10;
-            roomNumberLabel.Text = "Кабинет:";
+            hostName.Anchor = AnchorStyles.Left;
+            hostName.AutoEllipsis = true;
+            hostName.AutoSize = true;
+            hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            hostName.ForeColor = Color.FromArgb(0, 0, 0);
+            hostName.Location = new Point(130, 3);
+            hostName.Name = "hostName";
+            hostName.Size = new Size(74, 17);
+            hostName.TabIndex = 1;
+            hostName.Text = "Загрузка...";
             // 
             // currentlyConnectedLabel
             // 
@@ -171,7 +202,7 @@ namespace MIN.Desktop.Components
             currentlyConnectedLabel.AutoSize = true;
             currentlyConnectedLabel.Font = new Font("Segoe UI", 8.25F);
             currentlyConnectedLabel.ForeColor = Color.Black;
-            currentlyConnectedLabel.Location = new Point(45, 99);
+            currentlyConnectedLabel.Location = new Point(45, 102);
             currentlyConnectedLabel.Name = "currentlyConnectedLabel";
             currentlyConnectedLabel.Size = new Size(79, 13);
             currentlyConnectedLabel.TabIndex = 9;
@@ -183,48 +214,11 @@ namespace MIN.Desktop.Components
             participantsInfo.AutoSize = true;
             participantsInfo.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(130, 97);
+            participantsInfo.Location = new Point(130, 100);
             participantsInfo.Name = "participantsInfo";
             participantsInfo.Size = new Size(74, 17);
             participantsInfo.TabIndex = 7;
             participantsInfo.Text = "Загрузка...";
-            // 
-            // computer
-            // 
-            computer.Anchor = AnchorStyles.Left;
-            computer.AutoSize = true;
-            computer.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            computer.ForeColor = Color.FromArgb(0, 0, 0);
-            computer.Location = new Point(130, 66);
-            computer.Name = "computer";
-            computer.Size = new Size(74, 17);
-            computer.TabIndex = 5;
-            computer.Text = "Загрузка...";
-            // 
-            // classroom
-            // 
-            classroom.Anchor = AnchorStyles.Left;
-            classroom.AutoSize = true;
-            classroom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            classroom.ForeColor = Color.FromArgb(0, 0, 0);
-            classroom.Location = new Point(130, 36);
-            classroom.Name = "classroom";
-            classroom.Size = new Size(74, 17);
-            classroom.TabIndex = 4;
-            classroom.Text = "Загрузка...";
-            // 
-            // hostName
-            // 
-            hostName.Anchor = AnchorStyles.Left;
-            hostName.AutoEllipsis = true;
-            hostName.AutoSize = true;
-            hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            hostName.ForeColor = Color.FromArgb(0, 0, 0);
-            hostName.Location = new Point(130, 6);
-            hostName.Name = "hostName";
-            hostName.Size = new Size(74, 17);
-            hostName.TabIndex = 1;
-            hostName.Text = "Загрузка...";
             // 
             // computerNumberLabel
             // 
@@ -232,11 +226,47 @@ namespace MIN.Desktop.Components
             computerNumberLabel.AutoSize = true;
             computerNumberLabel.Font = new Font("Segoe UI", 8.25F);
             computerNumberLabel.ForeColor = Color.Black;
-            computerNumberLabel.Location = new Point(65, 68);
+            computerNumberLabel.Location = new Point(65, 77);
             computerNumberLabel.Name = "computerNumberLabel";
             computerNumberLabel.Size = new Size(59, 13);
             computerNumberLabel.TabIndex = 8;
             computerNumberLabel.Text = "№ Компа:";
+            // 
+            // computer
+            // 
+            computer.Anchor = AnchorStyles.Left;
+            computer.AutoSize = true;
+            computer.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            computer.ForeColor = Color.FromArgb(0, 0, 0);
+            computer.Location = new Point(130, 75);
+            computer.Name = "computer";
+            computer.Size = new Size(74, 17);
+            computer.TabIndex = 5;
+            computer.Text = "Загрузка...";
+            // 
+            // roomNumberLabel
+            // 
+            roomNumberLabel.Anchor = AnchorStyles.Right;
+            roomNumberLabel.AutoSize = true;
+            roomNumberLabel.Font = new Font("Segoe UI", 8.25F);
+            roomNumberLabel.ForeColor = Color.Black;
+            roomNumberLabel.Location = new Point(70, 53);
+            roomNumberLabel.Name = "roomNumberLabel";
+            roomNumberLabel.Size = new Size(54, 13);
+            roomNumberLabel.TabIndex = 10;
+            roomNumberLabel.Text = "Кабинет:";
+            // 
+            // classroom
+            // 
+            classroom.Anchor = AnchorStyles.Left;
+            classroom.AutoSize = true;
+            classroom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            classroom.ForeColor = Color.FromArgb(0, 0, 0);
+            classroom.Location = new Point(130, 51);
+            classroom.Name = "classroom";
+            classroom.Size = new Size(74, 17);
+            classroom.TabIndex = 4;
+            classroom.Text = "Загрузка...";
             // 
             // RoomCard
             // 
@@ -273,5 +303,7 @@ namespace MIN.Desktop.Components
         private Labels.CaptionLabel roomNumberLabel;
         private Labels.CaptionLabel currentlyConnectedLabel;
         private Labels.CaptionLabel computerNumberLabel;
+        private Labels.Heading3Label createdAt;
+        private Labels.CaptionLabel labelCreatedAt;
     }
 }

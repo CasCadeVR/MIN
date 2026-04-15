@@ -1,5 +1,4 @@
 using System.Reflection;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MIN.Common.Mvc.Extensions;
@@ -52,19 +51,6 @@ namespace MIN.Desktop
         {
             var appVersion = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0, 0);
             services.AddSingleton(appVersion);
-
-
-            var projectDir = Path.GetDirectoryName(AppContext.BaseDirectory)!;
-            while (!File.Exists(Path.Combine(projectDir, "MIN.Desktop.csproj")))
-            {
-                projectDir = Path.GetDirectoryName(projectDir)!;
-            }
-
-            var config = new ConfigurationBuilder()
-                .SetBasePath(projectDir)
-                .AddJsonFile("appsettings.json", optional: false).Build();
-
-            services.AddSingleton<IConfiguration>(config);
 
             services.RegisterAsImplementedInterfaces<NotificationService>(ServiceLifetime.Singleton);
             services.RegisterAsImplementedInterfaces<SettingsProvider>(ServiceLifetime.Singleton);

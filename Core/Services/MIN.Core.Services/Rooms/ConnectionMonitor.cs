@@ -1,11 +1,11 @@
 ﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Services.Contracts.Models;
+using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;

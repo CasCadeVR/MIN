@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.Configuration;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Client;
@@ -16,7 +15,6 @@ namespace MIN.Core.Transport.NamedPipes;
 public sealed class NamedPipeTransport : ITransport
 {
     private readonly IEndPointProvider endPointProvider;
-    private readonly IConfiguration configuration;
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, NamedPipeServer> servers = new();
     private readonly ConcurrentDictionary<Guid, NamedPipeClient> clients = new();
@@ -25,11 +23,9 @@ public sealed class NamedPipeTransport : ITransport
     /// Инициализирует новый экземпляр <see cref="NamedPipeTransport"/>
     /// </summary>
     public NamedPipeTransport(IEndPointProvider endPointProvider,
-        IConfiguration configuration,
         ILoggerProvider logger)
     {
         this.endPointProvider = endPointProvider;
-        this.configuration = configuration;
         this.logger = logger;
     }
 
@@ -53,7 +49,7 @@ public sealed class NamedPipeTransport : ITransport
             return;
         }
 
-        var server = new NamedPipeServer(namedPipeEndpoint, configuration, logger);
+        var server = new NamedPipeServer(namedPipeEndpoint, logger);
         servers[roomId] = server;
 
         server.RawMessageReceived += (_, args) =>
@@ -103,7 +99,7 @@ public sealed class NamedPipeTransport : ITransport
             return existingClient.ConnectionId;
         }
 
-        var client = new NamedPipeClient(namedPipeEndpoint, configuration, logger);
+        var client = new NamedPipeClient(namedPipeEndpoint, logger);
         var connectionId = await client.ConnectAsync(timeoutMs, cancellationToken);
         clients[roomId] = client;
 

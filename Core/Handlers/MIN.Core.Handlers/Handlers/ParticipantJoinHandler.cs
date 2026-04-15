@@ -8,8 +8,8 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Stores;
 using MIN.Core.Services.Contracts.Models;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;

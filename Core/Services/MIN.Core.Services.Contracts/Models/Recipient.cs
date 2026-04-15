@@ -1,5 +1,5 @@
-﻿using MIN.Core.Services.Contracts.Constants;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
+﻿using MIN.Core.Stores.Contracts.Registries.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Models;
 
 namespace MIN.Core.Services.Contracts.Models;
 
@@ -44,12 +44,12 @@ public readonly struct Recipient
     /// <summary>
     /// Локальный получатель (пользователь)
     /// </summary>
-    public static Recipient Local => FromConnection(CoreServicesConstants.LocalConnectionId);
+    public static Recipient Local => FromConnection(CoreRegistryConstants.LocalConnectionId);
 
     /// <summary>
     /// Локальное ли соединения
     /// </summary>
-    public bool IsLocal => ConnectionId == CoreServicesConstants.LocalConnectionId;
+    public bool IsLocal => ConnectionId == CoreRegistryConstants.LocalConnectionId;
 
     /// <summary>
     /// Пустой ли получатель

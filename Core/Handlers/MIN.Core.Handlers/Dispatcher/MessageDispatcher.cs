@@ -4,9 +4,9 @@ using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Services.Contracts.Interfaces.ConnectionRegistries;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Dispatcher
