@@ -20,7 +20,7 @@ public interface IStreamManager
     /// <summary>
     /// Обрабатывает входящие данные (проверяет ACK)
     /// </summary>
-    void ProcessIncomingData(byte[] data);
+    void ProcessAck(byte[] data);
 
     /// <summary>
     /// Проверяет, является ли данные ACK

@@ -35,24 +35,4 @@ public interface IMessageEncryptor
     /// <param name="encryptedData">Информация для расшифровки</param>
     /// <param name="partnerId">Идентификатор партнёра (участника)</param>
     byte[] DecryptMessage(byte[] encryptedData, Guid partnerId);
-
-    /// <summary>
-    /// Добавить заголовок шифрования
-    /// </summary>
-    byte[] AddEncryptionHeader(byte[] secretData);
-
-    /// <summary>
-    /// Добавить пустой заголовок
-    /// </summary>
-    byte[] AddPlainHeader(byte[] plainData);
-
-    /// <summary>
-    /// Проверяет по заголовку, зашифровано ли сообщение
-    /// </summary>
-    bool IsEncrypted(byte[] data);
-
-    /// <summary>
-    /// Убрать заголовок шифрования
-    /// </summary>
-    byte[] RemoveEncryptionHeader(byte[] data);
 }

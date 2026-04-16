@@ -92,22 +92,6 @@ public class MessageEncryptor : IMessageEncryptor, IDisposable
         }
     }
 
-    bool IMessageEncryptor.IsEncrypted(byte[] data) => data.Length > 0 && (data[0] & 0x01) != 0;
-
-    byte[] IMessageEncryptor.AddEncryptionHeader(byte[] encryptedData)
-    {
-        var header = new byte[] { 0x01 };
-        return header.Concat(encryptedData).ToArray();
-    }
-
-    byte[] IMessageEncryptor.AddPlainHeader(byte[] plainData)
-    {
-        var header = new byte[] { 0x00 };
-        return header.Concat(plainData).ToArray();
-    }
-
-    byte[] IMessageEncryptor.RemoveEncryptionHeader(byte[] data) => data.Skip(1).ToArray();
-
     private byte[] GetSessionKey(Guid partnerId)
     {
         if (sharedSecrets.TryGetValue(partnerId, out var key))

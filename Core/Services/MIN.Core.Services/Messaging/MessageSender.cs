@@ -50,7 +50,11 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
 
         if (serialized.Length > TransportConstants.MessageBufferSize - TransportConstants.StreamHeaderSize)
         {
-            var options = new StreamOptions { RequiresAcks = false };
+            var options = new StreamOptions
+            {
+                RequiresAcks = false,
+                RequiresEncryption = message.RequiresEncryption
+            };
             await streamManager.SendAsync(serialized.AsMemory(), options, roomId, recipientConnectionId, cancellationToken);
             return;
         }
@@ -83,19 +87,21 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
 
     private byte[] EncryptDataIfRequired(IMessage message, byte[] plainData, Guid recipientConnectionId)
     {
-        byte[] resultBytes;
+        var dataWithMarker = new byte[1 + plainData.Length];
+        dataWithMarker[0] = (byte)StreamChunkFlags.RegularMessage;
+        plainData.CopyTo(dataWithMarker, 1);
 
+        byte[] resultBytes;
         if (message.RequiresEncryption)
         {
             var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(recipientConnectionId);
-            var encrypted = encryptor.EncryptMessage(plainData, recipientId);
+            var encrypted = encryptor.EncryptMessage(dataWithMarker, recipientId);
             resultBytes = encryptor.AddEncryptionHeader(encrypted);
         }
         else
         {
-            resultBytes = encryptor.AddPlainHeader(plainData);
+            resultBytes = encryptor.AddPlainHeader(dataWithMarker);
         }
-
         return resultBytes;
     }
 

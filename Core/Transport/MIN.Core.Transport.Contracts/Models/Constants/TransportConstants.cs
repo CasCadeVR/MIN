@@ -8,7 +8,7 @@ public static class TransportConstants
     /// <summary>
     /// Размер буффера для сообщений
     /// </summary>
-    public const int MessageBufferSize = 1024 * 64;
+    public const int MessageBufferSize = 1024 * 4;
 
     /// <summary>
     /// Максимально возможное количество соединений
@@ -16,7 +16,7 @@ public static class TransportConstants
     public const int RoomMaximumConnectionsAmount = 254;
 
     /// <summary>
-    /// Размер заголовка потокового пакета (1 байт флагов + 16 байт GUID + 4 байта индекса + 4 байта количества)
+    /// Размер заголовка потокового пакета (1 байт флагов + 16 байт StreamId + 4 байта индекса + 4 байта количества)
     /// </summary>
     public const int StreamHeaderSize = 25;
 
@@ -34,11 +34,6 @@ public static class TransportConstants
     /// Размер данных одного пакета (без заголовка)
     /// </summary>
     public const int ChunkDataSize = MessageBufferSize - StreamHeaderSize;
-
-    /// <summary>
-    /// Байт-маркер для подтверждения чанка (ACK)
-    /// </summary>
-    public const byte ChunkAckMarker = 0x80;
 
     /// <summary>
     /// Размер пакета подтверждения (маркер + StreamId + chunkIndex)

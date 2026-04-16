@@ -21,10 +21,10 @@ public interface IChunkBufferAssembler
     /// <summary>
     /// Обрабатывает входящий пакет
     /// </summary>
-    void AddChunk(StreamChunk chunk, Guid connectionId, Guid roomId, bool requiresAcks);
+    void AddChunk(StreamChunk chunk, Guid connectionId, Guid roomId);
 
     /// <summary>
     /// Обрабатывает входящий пакет асинхронно
     /// </summary>
-    Task AddChunkAsync(StreamChunk chunk, Guid connectionId, Guid roomId, bool requiresAcks, CancellationToken cancellationToken = default);
+    Task AddChunkAsync(StreamChunk chunk, Guid connectionId, Guid roomId, CancellationToken cancellationToken = default);
 }

@@ -100,12 +100,12 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
         try
         {
             var ack = new byte[TransportConstants.ChunkAckSize];
-            ack[0] = TransportConstants.ChunkAckMarker;
+            ack[0] = (byte)StreamChunkFlags.Ack;
             e.StreamId.TryWriteBytes(new Span<byte>(ack, 1, 16));
             BitConverter.GetBytes(e.ChunkIndex).CopyTo(ack, 17);
 
             await transport.SendAsync(ack, e.RoomId, e.ConnectionId, cts!.Token);
-            logger.Log($"Отправлен ACK для чанка {e.ChunkIndex} потока {e.StreamId}");
+            logger.Log($"Отправлен ACK для пакета {e.ChunkIndex} потока {e.StreamId}");
         }
         catch (Exception ex)
         {
@@ -138,17 +138,18 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
 
             if (streamManager.IsAck(plainData))
             {
-                streamManager.ProcessIncomingData(plainData);
+                streamManager.ProcessAck(plainData);
                 return;
             }
 
             if (IsStreamChunk(plainData))
             {
-                ProcessStreamChunk(plainData, e.ConnectionId, e.RoomId, participantInfo);
+                await ProcessStreamChunk(plainData, e.ConnectionId, e.RoomId, participantInfo);
                 return;
             }
 
-            var message = serializer.Deserialize(plainData);
+            var actualData = plainData.AsSpan(1).ToArray();
+            var message = serializer.Deserialize(actualData);
 
             try
             {
@@ -181,7 +182,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
         return flags.HasFlag(StreamChunkFlags.Start) || flags.HasFlag(StreamChunkFlags.End) || flags.HasFlag(StreamChunkFlags.Mid);
     }
 
-    private void ProcessStreamChunk(byte[] data, Guid connectionId, Guid roomId, ParticipantInfo? participantInfo)
+    private async Task ProcessStreamChunk(byte[] data, Guid connectionId, Guid roomId, ParticipantInfo? participantInfo)
     {
         if (participantInfo == null)
         {
@@ -198,7 +199,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
             Data = new ReadOnlyMemory<byte>(data, TransportConstants.StreamHeaderSize, data.Length - TransportConstants.StreamHeaderSize)
         };
 
-        chunkBufferAssembler.AddChunk(chunk, connectionId, roomId, requiresAcks: true);
+        await chunkBufferAssembler.AddChunkAsync(chunk, connectionId, roomId);
     }
 
     /// <inheritdoc />

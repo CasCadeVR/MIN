@@ -30,7 +30,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
     }
 
     /// <inheritdoc />
-    public void AddChunk(StreamChunk chunk, Guid connectionId, Guid roomId, bool requiresAcks)
+    public void AddChunk(StreamChunk chunk, Guid connectionId, Guid roomId)
     {
         if (disposed)
         {
@@ -39,6 +39,8 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
 
         try
         {
+            var requiresAcks = chunk.Flags.HasFlag(StreamChunkFlags.RequiresAcks);
+
             if (chunk.IsSingle)
             {
                 if (requiresAcks)
@@ -54,7 +56,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
 
             if (stream.ConnectionId != connectionId)
             {
-                logger?.Log($"Получен чанк для потока {chunk.StreamId} от другого соединения");
+                logger?.Log($"Получен пакет для потока {chunk.StreamId} от другого соединения");
                 return;
             }
 
@@ -79,15 +81,15 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         }
         catch (Exception ex)
         {
-            logger?.Log($"Ошибка при добавлении чанка: {ex.Message}");
+            logger?.Log($"Ошибка при добавлении пакета: {ex.Message}");
             RemoveStream(chunk.StreamId);
             throw;
         }
     }
 
-    Task IChunkBufferAssembler.AddChunkAsync(StreamChunk chunk, Guid connectionId, Guid roomId, bool requiresAcks, CancellationToken cancellationToken)
+    Task IChunkBufferAssembler.AddChunkAsync(StreamChunk chunk, Guid connectionId, Guid roomId, CancellationToken cancellationToken)
     {
-        return Task.Run(() => AddChunk(chunk, connectionId, roomId, requiresAcks), cancellationToken);
+        return Task.Run(() => AddChunk(chunk, connectionId, roomId), cancellationToken);
     }
 
     private MessageStream CreateMessageStream(StreamChunk startChunk, Guid connectionId, Guid roomId, bool requiresAcks)

@@ -45,10 +45,10 @@ public sealed class StreamManager : IStreamManager, IDisposable
             throw new ObjectDisposedException(nameof(StreamManager));
         }
 
-        var streamId = options.Id;
+        var streamId = options.StreamId;
         var totalChunks = (int)Math.Ceiling((double)data.Length / TransportConstants.ChunkDataSize);
 
-        logger.Log($"Начало отправки потока {streamId}: {data.Length} байт, {totalChunks} чанков");
+        logger.Log($"Начало отправки потока {streamId}: {data.Length} байт, {totalChunks} пакетов");
 
         for (var i = 0; i < totalChunks; i++)
         {
@@ -62,6 +62,10 @@ public sealed class StreamManager : IStreamManager, IDisposable
             if (i == 0)
             {
                 flags |= StreamChunkFlags.Start;
+                if (options.RequiresAcks)
+                {
+                    flags |= StreamChunkFlags.RequiresAcks;
+                }
             }
             if (i == totalChunks - 1)
             {
@@ -77,8 +81,8 @@ public sealed class StreamManager : IStreamManager, IDisposable
                 Data = chunkData
             };
 
-            var packet = SerializeChunk(chunk);
-            var encrypted = EncryptChunk(packet, recipientConnectionId);
+            var package = SerializeChunk(chunk);
+            var encrypted = EncryptChunkIfNeeded(package, recipientConnectionId, options);
 
             await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
 
@@ -88,13 +92,13 @@ public sealed class StreamManager : IStreamManager, IDisposable
                 StartAckTimer(streamId, i, recipientConnectionId, options.ChunkTimeoutMs);
             }
 
-            logger.Log($"Отправлен чанк {i + 1}/{totalChunks} для потока {streamId}");
+            logger.Log($"Отправлен пакет {i + 1}/{totalChunks} для потока {streamId}");
         }
 
         return streamId;
     }
 
-    void IStreamManager.ProcessIncomingData(byte[] data)
+    void IStreamManager.ProcessAck(byte[] data)
     {
         if (!IsAck(data))
         {
@@ -105,14 +109,12 @@ public sealed class StreamManager : IStreamManager, IDisposable
         var chunkIndex = BitConverter.ToInt32(data, 17);
 
         OnChunkAcknowledged(streamId, chunkIndex);
-        logger.Log($"Получен ACK для чанка {chunkIndex} потока {streamId}");
+        logger.Log($"Получен ACK для пакета {chunkIndex} потока {streamId}");
     }
 
     /// <inheritdoc />
     public bool IsAck(byte[] data)
-    {
-        return data.Length >= TransportConstants.ChunkAckSize && data[0] == TransportConstants.ChunkAckMarker;
-    }
+        => data.Length >= TransportConstants.ChunkAckSize && data[0] == (byte)StreamChunkFlags.Ack;
 
     private void OnChunkAcknowledged(Guid streamId, int chunkIndex)
     {
@@ -127,7 +129,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
         }
     }
 
-    private byte[] SerializeChunk(StreamChunk chunk)
+    private static byte[] SerializeChunk(StreamChunk chunk)
     {
         var headerSize = TransportConstants.StreamHeaderSize;
         var result = new byte[headerSize + chunk.Data.Length];
@@ -142,11 +144,20 @@ public sealed class StreamManager : IStreamManager, IDisposable
         return result;
     }
 
-    private byte[] EncryptChunk(byte[] plainData, Guid recipientConnectionId)
+    private byte[] EncryptChunkIfNeeded(byte[] plainData, Guid recipientConnectionId, StreamOptions options)
     {
-        var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(recipientConnectionId);
-        var encrypted = encryptor.EncryptMessage(plainData, recipientId);
-        return encryptor.AddEncryptionHeader(encrypted);
+        byte[] resultBytes;
+        if (options.RequiresEncryption)
+        {
+            var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(recipientConnectionId);
+            var encrypted = encryptor.EncryptMessage(plainData, recipientId);
+            resultBytes = encryptor.AddEncryptionHeader(encrypted);
+        }
+        else
+        {
+            resultBytes = encryptor.AddPlainHeader(plainData);
+        }
+        return resultBytes;
     }
 
     private void StartAckTimer(Guid streamId, int chunkIndex, Guid recipientConnectionId, int timeoutMs)
@@ -164,7 +175,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
     {
         if (state is ValueTuple<Guid, int, Guid> args)
         {
-            logger.Log($"Таймаут ожидания ACK для чанка {args.Item2} потока {args.Item1}");
+            logger.Log($"Таймаут ожидания ACK для пакета {args.Item2} потока {args.Item1}");
         }
     }
 

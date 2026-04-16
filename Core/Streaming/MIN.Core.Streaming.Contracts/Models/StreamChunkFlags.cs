@@ -3,8 +3,14 @@
 /// <summary>
 /// Флаги для пакетов, регулирующие поток
 /// </summary>
+[Flags]
 public enum StreamChunkFlags : byte
 {
+    /// <summary>
+    /// Обычное сообщение
+    /// </summary>
+    RegularMessage = 0x00,
+
     /// <summary>
     /// Начало потока
     /// </summary>
@@ -18,5 +24,15 @@ public enum StreamChunkFlags : byte
     /// <summary>
     /// Пакет потока
     /// </summary>
-    Mid = 0x04
+    Mid = 0x04,
+
+    /// <summary>
+    /// Флаг, указывающий что отправитель будет ждать подтверждения получения пакета
+    /// </summary>
+    RequiresAcks = 0x08,
+
+    /// <summary>
+    /// Байт-маркер для подтверждения чанка (ACK)
+    /// </summary>
+    Ack = 0x80,
 }

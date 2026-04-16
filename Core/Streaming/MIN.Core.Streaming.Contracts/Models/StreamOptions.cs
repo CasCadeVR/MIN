@@ -10,12 +10,17 @@ public sealed class StreamOptions
     /// <summary>
     /// Идентфикатор потока
     /// </summary>
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public Guid StreamId { get; init; } = Guid.NewGuid();
 
     /// <summary>
     /// Нужно ли подтверждать получение пакетов со стороны получателя
     /// </summary>
     public bool RequiresAcks { get; init; }
+
+    /// <summary>
+    /// Нужно ли шифровать чанки
+    /// </summary>
+    public bool RequiresEncryption { get; init; }
 
     /// <summary>
     /// Таймаут ожидания каждого пакета (мс)
