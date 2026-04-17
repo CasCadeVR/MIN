@@ -1,4 +1,4 @@
-﻿namespace MIN.Core.Streaming.Contracts.Models;
+﻿namespace MIN.Core.Headers.Contracts.Enums;
 
 /// <summary>
 /// Флаги для пакетов, регулирующие поток
@@ -9,7 +9,7 @@ public enum StreamChunkFlags : byte
     /// <summary>
     /// Обычное сообщение
     /// </summary>
-    RegularMessage = 0x00,
+    None = 0x00,
 
     /// <summary>
     /// Начало потока
@@ -30,9 +30,4 @@ public enum StreamChunkFlags : byte
     /// Флаг, указывающий что отправитель будет ждать подтверждения получения пакета
     /// </summary>
     RequiresAcks = 0x08,
-
-    /// <summary>
-    /// Байт-маркер для подтверждения чанка (ACK)
-    /// </summary>
-    Ack = 0x80,
 }

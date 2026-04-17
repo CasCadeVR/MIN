@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.5.11626.173 insiders
+VisualStudioVersion = 18.5.11626.173
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Desktop", "Desktop\MIN.Desktop\MIN.Desktop.csproj", "{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA}"
 EndProject
@@ -93,6 +93,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Handlers", "Handlers", "{CF0E51C4-5FE7-47A4-8A44-11F2EB76527A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Messaging", "Messaging", "{CD03853D-299C-4AE4-BD3B-7AF72C559180}"
+	ProjectSection(SolutionItems) = preProject
+		Core\Services\MIN.Core.Services.Contracts\Models\HeaderMessageType.cs = Core\Services\MIN.Core.Services.Contracts\Models\HeaderMessageType.cs
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Chat.Handlers", "Infrastructure\Chat\MIN.Chat.Handlers\MIN.Chat.Handlers.csproj", "{2AAA0BD4-2C43-488D-A088-A7E0473F7B7A}"
 EndProject
@@ -137,6 +140,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Core.Stores.Contracts", "Core\Stores\MIN.Core.Stores.Contracts\MIN.Core.Stores.Contracts.csproj", "{D195BBF9-0264-4D2E-858E-1F0E2EEA402A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Core.Stores", "Core\Stores\MIN.Core.Stores\MIN.Core.Stores.csproj", "{66224B82-E084-4F36-AE78-57DD798507D8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Headers", "Headers", "{D6E27639-F7FC-44B1-9D3B-D3F559B52554}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Core.Headers.Contracts", "Core\Headers\MIN.Core.Headers.Contracts\MIN.Core.Headers.Contracts.csproj", "{07899D51-153A-4A98-B4ED-59B66C068357}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Core.Headers", "Core\Headers\MIN.Core.Headers\MIN.Core.Headers.csproj", "{8543FBE6-F2B3-4E14-BB74-4C96566D30B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -316,6 +325,14 @@ Global
 		{66224B82-E084-4F36-AE78-57DD798507D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66224B82-E084-4F36-AE78-57DD798507D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66224B82-E084-4F36-AE78-57DD798507D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07899D51-153A-4A98-B4ED-59B66C068357}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07899D51-153A-4A98-B4ED-59B66C068357}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07899D51-153A-4A98-B4ED-59B66C068357}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07899D51-153A-4A98-B4ED-59B66C068357}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -379,6 +396,9 @@ Global
 		{EBD97B04-5D3D-45CB-A371-ABADF6BE1121} = {14359A71-2B4E-49C5-A6D4-7962E0D2131E}
 		{D195BBF9-0264-4D2E-858E-1F0E2EEA402A} = {EBD97B04-5D3D-45CB-A371-ABADF6BE1121}
 		{66224B82-E084-4F36-AE78-57DD798507D8} = {EBD97B04-5D3D-45CB-A371-ABADF6BE1121}
+		{D6E27639-F7FC-44B1-9D3B-D3F559B52554} = {14359A71-2B4E-49C5-A6D4-7962E0D2131E}
+		{07899D51-153A-4A98-B4ED-59B66C068357} = {D6E27639-F7FC-44B1-9D3B-D3F559B52554}
+		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9} = {D6E27639-F7FC-44B1-9D3B-D3F559B52554}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57E9A443-C4F6-4D77-AEA8-F7D953811002}

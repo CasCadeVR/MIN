@@ -1,4 +1,6 @@
-﻿namespace MIN.Core.Streaming.Contracts.Models
+﻿using MIN.Core.Headers.Contracts.Enums;
+
+namespace MIN.Core.Headers.Contracts.Models
 {
     /// <summary>
     /// Заголовок пакета потока

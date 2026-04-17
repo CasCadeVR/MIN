@@ -1,8 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using MIN.Core.Cryptography.Contracts.Constants;
+using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
-using MIN.Core.Cryptography.Contracts.Interfaces;
 
 namespace MIN.Core.Cryptography;
 
@@ -43,17 +44,17 @@ public class MessageEncryptor : IMessageEncryptor, IDisposable
     byte[] IMessageEncryptor.EncryptMessage(byte[] plaintext, Guid partnerId)
     {
         var key = GetSessionKey(partnerId);
-        var iv = RandomNumberGenerator.GetBytes(12);
+        var iv = RandomNumberGenerator.GetBytes(CryptographyConstants.IVSize);
 
-        using var aesGcm = new AesGcm(key, tagSizeInBytes: 16);
+        using var aesGcm = new AesGcm(key, tagSizeInBytes: CryptographyConstants.AuthTagSize);
         var ciphertext = new byte[plaintext.Length];
-        var authTag = new byte[16];
+        var authTag = new byte[CryptographyConstants.AuthTagSize];
         aesGcm.Encrypt(iv, plaintext, ciphertext, authTag);
 
         using var ms = new MemoryStream();
-        ms.Write(iv, 0, 12);
+        ms.Write(iv, 0, CryptographyConstants.IVSize);
         ms.Write(ciphertext, 0, ciphertext.Length);
-        ms.Write(authTag, 0, 16);
+        ms.Write(authTag, 0, CryptographyConstants.AuthTagSize);
 
         return ms.ToArray();
     }
@@ -62,17 +63,17 @@ public class MessageEncryptor : IMessageEncryptor, IDisposable
     {
         var key = GetSessionKey(partnerId);
 
-        if (encryptedData.Length < 12 + 16)
+        if (encryptedData.Length < CryptographyConstants.IVSize + CryptographyConstants.AuthTagSize)
         {
             throw new InvalidDataException($"Invalid encrypted data: length {encryptedData.Length} < 28");
         }
 
-        var iv = encryptedData.AsSpan(0, 12).ToArray();
+        var iv = encryptedData.AsSpan(0, CryptographyConstants.IVSize).ToArray();
         var authTag = encryptedData.AsSpan(encryptedData.Length - 16, 16).ToArray();
-        var ciphertextLength = encryptedData.Length - 12 - 16;
-        var ciphertext = encryptedData.AsSpan(12, ciphertextLength).ToArray();
+        var ciphertextLength = encryptedData.Length - CryptographyConstants.IVSize - CryptographyConstants.AuthTagSize;
+        var ciphertext = encryptedData.AsSpan(CryptographyConstants.IVSize, ciphertextLength).ToArray();
 
-        using var aesGcm = new AesGcm(key, tagSizeInBytes: 16);
+        using var aesGcm = new AesGcm(key, tagSizeInBytes: CryptographyConstants.AuthTagSize);
         var plaintext = new byte[ciphertext.Length];
 
         try

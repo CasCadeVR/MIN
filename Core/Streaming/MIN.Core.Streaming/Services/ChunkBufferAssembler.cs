@@ -1,8 +1,9 @@
 using System.Collections.Concurrent;
+using MIN.Core.Headers.Contracts.Enums;
+using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
-using MIN.Core.Transport.Contracts.Models.Constants;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Streaming.Services;
@@ -39,11 +40,9 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
 
         try
         {
-            var requiresAcks = chunk.Flags.HasFlag(StreamChunkFlags.RequiresAcks);
-
             if (chunk.IsSingle)
             {
-                if (requiresAcks)
+                if (chunk.Flags.HasFlag(StreamChunkFlags.RequiresAcks))
                 {
                     OnChunkAckRequested(chunk.StreamId, chunk.Index, connectionId, roomId);
                 }
@@ -52,7 +51,8 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
                 return;
             }
 
-            var stream = activeStreams.GetOrAdd(chunk.StreamId, _ => CreateMessageStream(chunk, connectionId, roomId, requiresAcks));
+            var stream = activeStreams.GetOrAdd(chunk.StreamId, _ =>
+                   CreateMessageStream(chunk, connectionId, roomId));
 
             if (stream.ConnectionId != connectionId)
             {
@@ -67,7 +67,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
                 stream.LastChunkReceivedAt = DateTime.UtcNow;
             }
 
-            if (requiresAcks)
+            if (stream.RequiresAcks)
             {
                 OnChunkAckRequested(chunk.StreamId, chunk.Index, connectionId, roomId);
             }
@@ -92,8 +92,9 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         return Task.Run(() => AddChunk(chunk, connectionId, roomId), cancellationToken);
     }
 
-    private MessageStream CreateMessageStream(StreamChunk startChunk, Guid connectionId, Guid roomId, bool requiresAcks)
+    private MessageStream CreateMessageStream(StreamChunk startChunk, Guid connectionId, Guid roomId)
     {
+        var requiresAcks = startChunk.Flags.HasFlag(StreamChunkFlags.RequiresAcks);
         var stream = new MessageStream(startChunk.StreamId, connectionId, roomId, startChunk.Total, requiresAcks);
         StartStreamTimer(stream);
         return stream;
@@ -104,7 +105,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         var timer = new Timer(
             OnStreamTimeout,
             stream.Id,
-            stream.CreatedAt.AddMilliseconds(TransportConstants.DefaultStreamLifetimeMs) - DateTime.UtcNow,
+            stream.CreatedAt.AddMilliseconds(StreamingConstants.DefaultStreamLifetimeMs) - DateTime.UtcNow,
             Timeout.InfiniteTimeSpan);
 
         streamTimers.TryAdd(stream.Id, timer);
@@ -115,7 +116,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         if (streamTimers.TryGetValue(stream.Id, out var existingTimer))
         {
             existingTimer.Change(
-                stream.LastChunkReceivedAt.AddMilliseconds(TransportConstants.DefaultChunkTimeoutMs) - DateTime.UtcNow,
+                stream.LastChunkReceivedAt.AddMilliseconds(StreamingConstants.DefaultChunkTimeoutMs) - DateTime.UtcNow,
                 Timeout.InfiniteTimeSpan);
         }
     }

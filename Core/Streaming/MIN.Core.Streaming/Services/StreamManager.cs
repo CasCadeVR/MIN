@@ -1,10 +1,12 @@
 using System.Collections.Concurrent;
 using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Headers.Contracts.Enums;
+using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
+using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Core.Transport.Contracts.Models.Constants;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Streaming.Services;
@@ -14,10 +16,11 @@ public sealed class StreamManager : IStreamManager, IDisposable
 {
     private readonly ITransport transport;
     private readonly IMessageEncryptor encryptor;
+    private readonly IHeaderManager headerManager;
     private readonly IParticipantConnectionRegistry participantConnectionRegistry;
     private readonly ILoggerProvider logger;
-    private readonly ConcurrentDictionary<Guid, PendingChunk> pendingChunks = new();
-    private readonly ConcurrentDictionary<Guid, Timer> ackTimers = new();
+    private readonly ConcurrentDictionary<string, PendingChunk> pendingChunks = new();
+    private readonly ConcurrentDictionary<string, Timer> ackTimers = new();
     private bool disposed;
 
     /// <summary>
@@ -25,11 +28,13 @@ public sealed class StreamManager : IStreamManager, IDisposable
     /// </summary>
     public StreamManager(ITransport transport,
         IMessageEncryptor encryptor,
+        IHeaderManager headerManager,
         IParticipantConnectionRegistry participantConnectionRegistry,
         ILoggerProvider logger)
     {
         this.transport = transport;
         this.encryptor = encryptor;
+        this.headerManager = headerManager;
         this.participantConnectionRegistry = participantConnectionRegistry;
         this.logger = logger;
     }
@@ -40,13 +45,10 @@ public sealed class StreamManager : IStreamManager, IDisposable
         Guid recipientConnectionId,
         CancellationToken cancellationToken)
     {
-        if (disposed)
-        {
-            throw new ObjectDisposedException(nameof(StreamManager));
-        }
+        ObjectDisposedException.ThrowIf(disposed, nameof(StreamManager));
 
         var streamId = options.StreamId;
-        var totalChunks = (int)Math.Ceiling((double)data.Length / TransportConstants.ChunkDataSize);
+        var totalChunks = (int)Math.Ceiling((double)data.Length / StreamingConstants.ChunkDataSize);
 
         logger.Log($"Начало отправки потока {streamId}: {data.Length} байт, {totalChunks} пакетов");
 
@@ -54,8 +56,8 @@ public sealed class StreamManager : IStreamManager, IDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var chunkStart = i * TransportConstants.ChunkDataSize;
-            var chunkLength = Math.Min(TransportConstants.ChunkDataSize, data.Length - chunkStart);
+            var chunkStart = i * StreamingConstants.ChunkDataSize;
+            var chunkLength = Math.Min(StreamingConstants.ChunkDataSize, data.Length - chunkStart);
             var chunkData = data.Slice(chunkStart, chunkLength);
 
             var flags = StreamChunkFlags.Mid;
@@ -88,8 +90,9 @@ public sealed class StreamManager : IStreamManager, IDisposable
 
             if (options.RequiresAcks)
             {
-                pendingChunks.TryAdd(streamId, new PendingChunk(i, totalChunks));
-                StartAckTimer(streamId, i, recipientConnectionId, options.ChunkTimeoutMs);
+                var ackKey = $"{streamId}_{i}";
+                pendingChunks.TryAdd(ackKey, new PendingChunk(i, totalChunks));
+                StartAckTimer(ackKey, recipientConnectionId);
             }
 
             logger.Log($"Отправлен пакет {i + 1}/{totalChunks} для потока {streamId}");
@@ -100,47 +103,57 @@ public sealed class StreamManager : IStreamManager, IDisposable
 
     void IStreamManager.ProcessAck(byte[] data)
     {
-        if (!IsAck(data))
+        if (!headerManager.IsAck(data))
         {
             return;
         }
 
         var streamId = new Guid(data.AsSpan(1, 16));
         var chunkIndex = BitConverter.ToInt32(data, 17);
+        var ackKey = $"{streamId}_{chunkIndex}";
 
-        OnChunkAcknowledged(streamId, chunkIndex);
+        OnChunkAcknowledged(ackKey);
         logger.Log($"Получен ACK для пакета {chunkIndex} потока {streamId}");
     }
 
-    /// <inheritdoc />
-    public bool IsAck(byte[] data)
-        => data.Length >= TransportConstants.ChunkAckSize && data[0] == (byte)StreamChunkFlags.Ack;
-
-    private void OnChunkAcknowledged(Guid streamId, int chunkIndex)
+    private void OnChunkAcknowledged(string ackKey)
     {
-        if (ackTimers.TryRemove(streamId, out var timer))
+        if (ackTimers.TryRemove(ackKey, out var timer))
         {
             timer.Dispose();
         }
 
-        if (pendingChunks.TryGetValue(streamId, out var pending))
+        if (pendingChunks.TryGetValue(ackKey, out var pending))
         {
-            pending.LastAcknowledgedIndex = chunkIndex;
+            pending.LastAcknowledgedIndex = int.Parse(ackKey.Split('_')[1]);
         }
     }
 
-    private static byte[] SerializeChunk(StreamChunk chunk)
+    private void StartAckTimer(string ackKey, Guid recipientConnectionId)
     {
-        var headerSize = TransportConstants.StreamHeaderSize;
-        var result = new byte[headerSize + chunk.Data.Length];
+        var timer = new Timer(
+            OnAckTimeout,
+            (ackKey, recipientConnectionId),
+            StreamingConstants.DefaultChunkTimeoutMs,
+            Timeout.InfiniteTimeSpan.Seconds);
 
-        result[0] = (byte)chunk.Flags;
-        chunk.StreamId.TryWriteBytes(new Span<byte>(result, 1, 16));
-        BitConverter.GetBytes(chunk.Index).CopyTo(result, 17);
-        BitConverter.GetBytes(chunk.Total).CopyTo(result, 21);
+        ackTimers.TryAdd(ackKey, timer);
+    }
 
-        chunk.Data.CopyTo(result.AsMemory(headerSize));
+    private void OnAckTimeout(object? state)
+    {
+        if (state is (string ackKey, Guid))
+        {
+            logger.Log($"Таймаут ожидания ACK для пакета {ackKey}");
+        }
+    }
 
+    private byte[] SerializeChunk(StreamChunk chunk)
+    {
+        var header = headerManager.BuildStreamChunkHeader(chunk.Flags, chunk.StreamId, chunk.Index, chunk.Total);
+        var result = new byte[header.Length + chunk.Data.Length];
+        header.CopyTo(result, 0);
+        chunk.Data.CopyTo(result.AsMemory(header.Length));
         return result;
     }
 
@@ -151,32 +164,13 @@ public sealed class StreamManager : IStreamManager, IDisposable
         {
             var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(recipientConnectionId);
             var encrypted = encryptor.EncryptMessage(plainData, recipientId);
-            resultBytes = encryptor.AddEncryptionHeader(encrypted);
+            resultBytes = headerManager.AddHeader(encrypted, (byte)HeaderMessageType.Encrypted);
         }
         else
         {
-            resultBytes = encryptor.AddPlainHeader(plainData);
+            resultBytes = headerManager.AddHeader(plainData, (byte)HeaderMessageType.Plain);
         }
         return resultBytes;
-    }
-
-    private void StartAckTimer(Guid streamId, int chunkIndex, Guid recipientConnectionId, int timeoutMs)
-    {
-        var timer = new Timer(
-            OnAckTimeout,
-            (streamId, chunkIndex, recipientConnectionId),
-            timeoutMs,
-            Timeout.InfiniteTimeSpan.Seconds);
-
-        ackTimers.TryAdd(streamId, timer);
-    }
-
-    private void OnAckTimeout(object? state)
-    {
-        if (state is ValueTuple<Guid, int, Guid> args)
-        {
-            logger.Log($"Таймаут ожидания ACK для пакета {args.Item2} потока {args.Item1}");
-        }
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

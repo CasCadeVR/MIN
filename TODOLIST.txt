@@ -2,6 +2,6 @@
 2. there is a chance join message will appear on top
 3. Make private messages (like add recipientId in IMessage or smth)
 4. Make something with lots of new PartcipantInfo creation for identity service, and with IParticipantData overall
-5. large messages makes errors, because buffersize is only 4096, so any large message will break encrypting.
-6. still doesnt work with multiple rooms, it writes connection not found, could also be because he has id and in participantConnectionRegistry it overwrites
-7. you have to gamble in order to discover some rooms, should probably somehow give all of them right timeout idk
+5. Still doesnt work with multiple rooms, it writes connection not found, could also be because he has id and in participantConnectionRegistry it overwrites
+6. You have to gamble in order to discover some rooms, should probably somehow give all of them right timeout idk
+7. Maybe we have to make some services to have lifetime of a room. This way we wouldn't put roomId everywhere and make it isolated

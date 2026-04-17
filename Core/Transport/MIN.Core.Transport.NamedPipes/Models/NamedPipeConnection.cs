@@ -1,6 +1,6 @@
 ﻿using System.IO.Pipes;
+using MIN.Core.Transport.Contracts.Constants;
 using MIN.Core.Transport.Contracts.Models;
-using MIN.Core.Transport.Contracts.Models.Constants;
 
 namespace MIN.Core.Transport.NamedPipes.Models;
 

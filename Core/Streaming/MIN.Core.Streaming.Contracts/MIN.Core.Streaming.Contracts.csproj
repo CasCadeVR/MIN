@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Headers\MIN.Core.Headers.Contracts\MIN.Core.Headers.Contracts.csproj" />
     <ProjectReference Include="..\..\Transport\MIN.Core.Transport.Contracts\MIN.Core.Transport.Contracts.csproj" />
   </ItemGroup>
 

@@ -1,27 +1,33 @@
-﻿using MIN.Core.Services.Contracts.Models;
-using MIN.Core.Streaming.Contracts.Models;
+﻿using MIN.Core.Headers.Contracts.Enums;
+using MIN.Core.Headers.Contracts.Models;
 
-namespace MIN.Core.Services.Contracts.Interfaces.ByteSerialization;
+namespace MIN.Core.Headers.Contracts.Interfaces;
 
 /// <summary>
 /// Сервис по работе с заголовками пакетов данных
 /// </summary>
+/// <remarks>
+/// <para><b>Незашифрованное сообщение (Plain):</b> [0x00][сериализованные_данные]</para>
+/// <para><b>Зашифрованное сообщение:</b> [0x01][IV(12)][зашиифрованные_данные][authTag(16)]</para>
+/// <para><b>Пакет потока:</b> [0x10 + flags(0x0F)][streamId(16)][index(4)][total(4)][сериализованные_данные]</para>
+/// <para><b>ACK:</b> [0x80][streamId(16)][index(4)]</para>
+/// </remarks>
 public interface IHeaderManager
 {
     /// <summary>
-    /// Добавить заголовок шифрования
+    /// Добавить заголовок
     /// </summary>
-    byte[] AddEncryptionHeader(byte[] secretData);
-
-    /// <summary>
-    /// Добавить пустой заголовок
-    /// </summary>
-    byte[] AddPlainHeader(byte[] plainData);
+    byte[] AddHeader(byte[] data, byte header);
 
     /// <summary>
     /// Проверяет по заголовку, зашифровано ли сообщение
     /// </summary>
     bool IsEncrypted(byte[] data);
+
+    /// <summary>
+    /// Проверяет по заголовку, является ли сообщение подтверждением пакета потока
+    /// </summary>
+    bool IsAck(byte[] data);
 
     /// <summary>
     /// Убрать заголовок шифрования

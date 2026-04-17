@@ -1,3 +1,5 @@
+using MIN.Core.Headers.Contracts.Enums;
+
 namespace MIN.Core.Streaming.Contracts.Models;
 
 /// <summary>

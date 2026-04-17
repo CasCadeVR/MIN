@@ -1,4 +1,4 @@
-﻿namespace MIN.Core.Services.Contracts.Models;
+﻿namespace MIN.Core.Headers.Contracts.Enums;
 
 /// <summary>
 /// Флаги заголовка для типа сообщений

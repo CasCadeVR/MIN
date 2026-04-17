@@ -6,6 +6,7 @@ using MIN.Core.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Dispatcher;
 using MIN.Core.Handlers.Handlers;
+using MIN.Core.Headers.Services;
 using MIN.Core.Messaging;
 using MIN.Core.Serialization.Json;
 using MIN.Core.Serialization.Json.Services;
@@ -50,6 +51,7 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<MessageSender>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageRouter>(ServiceLifetime.Singleton);
 
+        services.RegisterAsImplementedInterfaces<HeaderManager>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChunkBufferAssembler>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<StreamManager>(ServiceLifetime.Singleton);
 

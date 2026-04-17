@@ -1,20 +1,22 @@
 using MIN.Core.Cryptography.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Headers.Contracts.Constants;
+using MIN.Core.Headers.Contracts.Enums;
+using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
+using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Core.Transport.Contracts.Models.Constants;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Messaging;
@@ -27,6 +29,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
     private readonly IEventBus eventBus;
     private readonly IMessageDispatcher dispatcher;
     private readonly IMessageEncryptor encryptor;
+    private readonly IHeaderManager headerManager;
     private readonly ILoggerProvider logger;
     private readonly IParticipantConnectionRegistry participantConnectionRegistry;
     private readonly IChunkBufferAssembler chunkBufferAssembler;
@@ -41,6 +44,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
         IEventBus eventBus,
         IMessageDispatcher dispatcher,
         IMessageEncryptor encryptor,
+        IHeaderManager headerManager,
         ILoggerProvider logger,
         IParticipantConnectionRegistry participantConnectionRegistry,
         IChunkBufferAssembler chunkBufferAssembler,
@@ -51,6 +55,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
         this.eventBus = eventBus;
         this.dispatcher = dispatcher;
         this.encryptor = encryptor;
+        this.headerManager = headerManager;
         this.logger = logger;
         this.participantConnectionRegistry = participantConnectionRegistry;
         this.chunkBufferAssembler = chunkBufferAssembler;
@@ -91,7 +96,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            logger.Log($"Ошибка при обработке собранного сообщения: {ex.Message}");
+            logger.Log($"Ошибка при обработке собранного с потока сообщения: {ex.Message}");
         }
     }
 
@@ -99,8 +104,8 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
     {
         try
         {
-            var ack = new byte[TransportConstants.ChunkAckSize];
-            ack[0] = (byte)StreamChunkFlags.Ack;
+            var ack = new byte[StreamingConstants.ChunkAckSize];
+            ack[0] = (byte)HeaderMessageType.Ack;
             e.StreamId.TryWriteBytes(new Span<byte>(ack, 1, 16));
             BitConverter.GetBytes(e.ChunkIndex).CopyTo(ack, 17);
 
@@ -117,12 +122,18 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
     {
         try
         {
+            if (headerManager.IsAck(e.Data))
+            {
+                streamManager.ProcessAck(e.Data);
+                return;
+            }
+
             participantConnectionRegistry.TryGetParticipantFromConnectionId(e.ConnectionId, out var participantInfo);
 
             byte[] plainData;
-            var body = encryptor.RemoveEncryptionHeader(e.Data);
+            var body = headerManager.RemoveEncryptionHeader(e.Data);
 
-            if (encryptor.IsEncrypted(e.Data) && e.ConnectionId != CoreRegistryConstants.LocalConnectionId)
+            if (headerManager.IsEncrypted(e.Data) && e.ConnectionId != CoreRegistryConstants.LocalConnectionId)
             {
                 if (participantInfo == null)
                 {
@@ -136,15 +147,9 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
                 plainData = body;
             }
 
-            if (streamManager.IsAck(plainData))
+            if (headerManager.IsStreamChunk(plainData))
             {
-                streamManager.ProcessAck(plainData);
-                return;
-            }
-
-            if (IsStreamChunk(plainData))
-            {
-                await ProcessStreamChunk(plainData, e.ConnectionId, e.RoomId, participantInfo);
+                await ProcessStreamChunk(plainData, e.ConnectionId, e.RoomId);
                 return;
             }
 
@@ -171,32 +176,19 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
         }
     }
 
-    private static bool IsStreamChunk(byte[] data)
+    private async Task ProcessStreamChunk(byte[] data, Guid connectionId, Guid roomId)
     {
-        if (data.Length < TransportConstants.StreamHeaderSize)
-        {
-            return false;
-        }
-
-        var flags = (StreamChunkFlags)data[0];
-        return flags.HasFlag(StreamChunkFlags.Start) || flags.HasFlag(StreamChunkFlags.End) || flags.HasFlag(StreamChunkFlags.Mid);
-    }
-
-    private async Task ProcessStreamChunk(byte[] data, Guid connectionId, Guid roomId, ParticipantInfo? participantInfo)
-    {
-        if (participantInfo == null)
-        {
-            logger.Log($"Получен потоковый пакет от неизвестного соединения {connectionId}");
-            return;
-        }
+        var header = headerManager.ParseStreamChunkHeader(data);
+        var chunkData = new ReadOnlyMemory<byte>(data, HeadersConstants.StreamHeaderSize,
+            data.Length - HeadersConstants.StreamHeaderSize);
 
         var chunk = new StreamChunk
         {
-            StreamId = new Guid(data.AsSpan(1, 16)),
-            Flags = (StreamChunkFlags)data[0],
-            Index = BitConverter.ToInt32(data, 17),
-            Total = BitConverter.ToInt32(data, 21),
-            Data = new ReadOnlyMemory<byte>(data, TransportConstants.StreamHeaderSize, data.Length - TransportConstants.StreamHeaderSize)
+            StreamId = header.StreamId,
+            Flags = header.Flags,
+            Index = header.Index,
+            Total = header.Total,
+            Data = chunkData
         };
 
         await chunkBufferAssembler.AddChunkAsync(chunk, connectionId, roomId);

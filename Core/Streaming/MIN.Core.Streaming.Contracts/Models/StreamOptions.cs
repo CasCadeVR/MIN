@@ -1,4 +1,5 @@
-﻿using MIN.Core.Transport.Contracts.Models.Constants;
+﻿using MIN.Core.Streaming.Contracts.Constants;
+using MIN.Core.Transport.Contracts.Constants;
 
 namespace MIN.Core.Streaming.Contracts.Models;
 
@@ -21,14 +22,4 @@ public sealed class StreamOptions
     /// Нужно ли шифровать чанки
     /// </summary>
     public bool RequiresEncryption { get; init; }
-
-    /// <summary>
-    /// Таймаут ожидания каждого пакета (мс)
-    /// </summary>
-    public int ChunkTimeoutMs { get; init; } = TransportConstants.DefaultChunkTimeoutMs;
-
-    /// <summary>
-    /// Общее время жизни потока (мс)
-    /// </summary>
-    public int StreamLifetimeMs { get; init; } = TransportConstants.DefaultStreamLifetimeMs;
 }
