@@ -6,8 +6,8 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Cryptography.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
+using MIN.Helpers.Contracts.Extensions;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -50,7 +50,7 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 
             var ackMessage = new HandshakeAckMessage()
             {
-                Participant = new ParticipantInfo(identityService.SelfPartcipant),
+                Participant = identityService.SelfPartcipant.ToParticipantInfo(),
                 PublicKey = await encryptor.GetLocalPublicKey(),
             };
 

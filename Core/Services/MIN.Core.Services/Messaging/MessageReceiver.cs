@@ -1,3 +1,4 @@
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
@@ -6,7 +7,6 @@ using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Events;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Streaming.Contracts.Events;
@@ -17,8 +17,10 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Messaging;
 
-/// <inheritdoc cref="IMessageReceiver"/>
-public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
+/// <summary>
+/// Сервис для обработки входящих по сети сообщений
+/// </summary>
+public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 {
     private readonly ITransport transport;
     private readonly IMessageSerializer serializer;
@@ -58,7 +60,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
         this.streamManager = streamManager;
     }
 
-    async Task IMessageReceiver.StartListeningAsync(CancellationToken cancellationToken)
+    async Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         transport.RawMessageReceived += OnRawMessageReceived;
@@ -154,7 +156,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async Task StopListeningAsync()
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         transport.RawMessageReceived -= OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
@@ -164,5 +166,5 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
-    public async ValueTask DisposeAsync() => await StopListeningAsync();
+    public async ValueTask DisposeAsync() => await StopAsync();
 }

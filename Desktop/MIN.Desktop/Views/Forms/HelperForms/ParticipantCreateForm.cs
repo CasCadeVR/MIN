@@ -1,6 +1,6 @@
-using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Desktop
@@ -18,9 +18,7 @@ namespace MIN.Desktop
         public ParticipantCreateForm(IIdentityService identityService)
         {
             InitializeComponent();
-
             this.identityService = identityService;
-
             Shown += (_, _) => participantName.Focus();
         }
 
@@ -49,12 +47,8 @@ namespace MIN.Desktop
                 return;
             }
 
-            var coreParticipant = identityService.SelfPartcipant;
-
-            var newParticipant = new ParticipantInfo(coreParticipant)
-            {
-                Name = participantName.Text
-            };
+            var newParticipant = identityService.SelfPartcipant.ToParticipantInfo();
+            newParticipant.Name = participantName.Text;
 
             identityService.SetParticipant(newParticipant);
 

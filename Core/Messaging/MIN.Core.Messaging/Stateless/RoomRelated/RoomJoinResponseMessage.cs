@@ -22,9 +22,4 @@ public sealed class RoomJoinResponseMessage : BaseMessage
     /// Разрешение на вход
     /// </summary>
     public bool Allow { get; set; }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="RoomInfoRequestMessage"/>
-    /// </summary>
-    public RoomJoinResponseMessage() { }
 }

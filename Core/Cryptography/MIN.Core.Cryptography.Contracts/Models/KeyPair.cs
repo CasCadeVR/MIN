@@ -6,11 +6,6 @@
 public class KeyPair
 {
     /// <summary>
-    /// Идентификатор ключей
-    /// </summary>
-    public Guid Id { get; } = Guid.NewGuid();
-
-    /// <summary>
     /// Дата создания
     /// </summary>
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;

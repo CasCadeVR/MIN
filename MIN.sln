@@ -144,6 +144,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Core.Headers.Contracts"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Core.Headers", "Core\Headers\MIN.Core.Headers\MIN.Core.Headers.csproj", "{8543FBE6-F2B3-4E14-BB74-4C96566D30B9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Common.Core.Contracts", "Common\MIN.Common.Core.Contracts\MIN.Common.Core.Contracts.csproj", "{407EB28C-5377-4942-96D6-49BABF5507D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -330,6 +332,10 @@ Global
 		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{407EB28C-5377-4942-96D6-49BABF5507D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{407EB28C-5377-4942-96D6-49BABF5507D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{407EB28C-5377-4942-96D6-49BABF5507D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{407EB28C-5377-4942-96D6-49BABF5507D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -396,6 +402,7 @@ Global
 		{D6E27639-F7FC-44B1-9D3B-D3F559B52554} = {14359A71-2B4E-49C5-A6D4-7962E0D2131E}
 		{07899D51-153A-4A98-B4ED-59B66C068357} = {D6E27639-F7FC-44B1-9D3B-D3F559B52554}
 		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9} = {D6E27639-F7FC-44B1-9D3B-D3F559B52554}
+		{407EB28C-5377-4942-96D6-49BABF5507D3} = {DF928243-9876-418D-BD29-7A9A399B4758}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57E9A443-C4F6-4D77-AEA8-F7D953811002}

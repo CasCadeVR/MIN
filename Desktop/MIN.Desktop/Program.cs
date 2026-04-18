@@ -1,9 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Common.Mvc.Extensions;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.DI;
 
@@ -29,14 +27,10 @@ namespace MIN.Desktop
 
             using var appLifeTimeCts = new CancellationTokenSource();
 
-            var messageReceiver = serviceProvider.GetRequiredService<IMessageReceiver>();
-            await messageReceiver.StartListeningAsync(appLifeTimeCts.Token);
-
-            var connectionMonitor = serviceProvider.GetRequiredService<IConnectionMonitor>();
-            await connectionMonitor.StartAsync(appLifeTimeCts.Token);
-
-            var jsonDeserializerInitializer = serviceProvider.GetRequiredService<IHostedService>();
-            await jsonDeserializerInitializer.StartAsync(appLifeTimeCts.Token);
+            foreach (var hostedService in serviceProvider.GetServices<IHostedService>())
+            {
+                await hostedService.StartAsync(appLifeTimeCts.Token);
+            }
 
             var mainForm = serviceProvider.GetRequiredService<MainForm>();
             mainForm.FormClosing += (sender, e) =>

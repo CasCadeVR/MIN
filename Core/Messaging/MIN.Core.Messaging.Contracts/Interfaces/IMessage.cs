@@ -32,7 +32,7 @@ public interface IMessage
     bool IsPublic { get; }
 
     /// <summary>
-    /// Временная метка создания сообщения (UTC)
+    /// Временная метка создания сообщения
     /// </summary>
     DateTime Timestamp { get; }
 }

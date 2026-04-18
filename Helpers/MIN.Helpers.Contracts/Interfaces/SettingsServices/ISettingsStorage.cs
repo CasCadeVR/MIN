@@ -1,4 +1,6 @@
-﻿namespace MIN.Helpers.Contracts.Interfaces.SettingsServices;
+﻿using MIN.Helpers.Contracts.Models;
+
+namespace MIN.Helpers.Contracts.Interfaces.SettingsServices;
 
 /// <summary>
 /// Сервис для хранения настроек
@@ -8,10 +10,10 @@ public interface ISettingsStorage
     /// <summary>
     /// Загрузить настройки
     /// </summary>
-    Models.Settings Load();
+    Settings Load();
 
     /// <summary>
     /// Сохранить настройки
     /// </summary>
-    void Save(Models.Settings settings);
+    void Save(Settings settings);
 }

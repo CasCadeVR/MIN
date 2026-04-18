@@ -4,117 +4,116 @@ using MIN.Core.Events.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 
-namespace MIN.Core.Events
+namespace MIN.Core.Events;
+
+/// <inheritdoc cref="IEventBus"/>
+public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
 {
-    /// <inheritdoc cref="IEventBus"/>
-    public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
+    private readonly ConcurrentDictionary<Type, List<Func<object, CancellationToken, Task>>> handlers = new();
+    private readonly ILoggerProvider logger;
+    private readonly CancellationTokenSource cts = new();
+
+    private bool disposed;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="InMemoryEventBus"/>
+    /// </summary>
+    public InMemoryEventBus(ILoggerProvider logger)
     {
-        private readonly ConcurrentDictionary<Type, List<Func<object, CancellationToken, Task>>> handlers = new();
-        private readonly ILoggerProvider logger;
-        private readonly CancellationTokenSource cts = new();
+        this.logger = logger;
+    }
 
-        private bool disposed;
-
-        /// <summary>
-        /// Инициализирует новый экземпляр <see cref="InMemoryEventBus"/>
-        /// </summary>
-        public InMemoryEventBus(ILoggerProvider logger)
+    async Task IEventBus.PublishAsync<T>(T eventMessage, CancellationToken cancellationToken)
+    {
+        var eventType = typeof(T);
+        if (!this.handlers.TryGetValue(eventType, out var handlers))
         {
-            this.logger = logger;
+            return;
         }
 
-        async Task IEventBus.PublishAsync<T>(T eventMessage, CancellationToken cancellationToken)
+        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+        var tasks = handlers.Select(handler => SafeExecuteHandler(handler, eventMessage, linkedCts.Token));
+
+        await Task.WhenAll(tasks);
+    }
+
+    IDisposable IEventBus.Subscribe<T>(Func<T, CancellationToken, Task> handler)
+    {
+        var eventType = typeof(T);
+        var handlers = this.handlers.GetOrAdd(eventType, _ => []);
+
+        Task wrappedHandler(object eventObj, CancellationToken ct) => handler((T)eventObj, ct);
+
+        lock (handlers)
         {
-            var eventType = typeof(T);
-            if (!this.handlers.TryGetValue(eventType, out var handlers))
-            {
-                return;
-            }
-
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
-            var tasks = handlers.Select(handler => SafeExecuteHandler(handler, eventMessage, linkedCts.Token));
-
-            await Task.WhenAll(tasks);
+            handlers.Add(wrappedHandler);
         }
 
-        IDisposable IEventBus.Subscribe<T>(Func<T, CancellationToken, Task> handler)
+        return new SubscriptionToken(() => Unsubscribe(eventType, wrappedHandler));
+    }
+
+    IDisposable IEventBus.Subscribe<T>(Func<T, bool> filter, Func<T, CancellationToken, Task> handler)
+    {
+        var eventType = typeof(T);
+        var handlers = this.handlers.GetOrAdd(eventType, _ => new List<Func<object, CancellationToken, Task>>());
+
+        Func<object, CancellationToken, Task> wrappedHandler = async (eventObj, ct) =>
         {
-            var eventType = typeof(T);
-            var handlers = this.handlers.GetOrAdd(eventType, _ => []);
-
-            Task wrappedHandler(object eventObj, CancellationToken ct) => handler((T)eventObj, ct);
-
-            lock (handlers)
+            var typedEvent = (T)eventObj;
+            if (filter(typedEvent))
             {
-                handlers.Add(wrappedHandler);
+                await handler(typedEvent, ct);
             }
+        };
 
-            return new SubscriptionToken(() => Unsubscribe(eventType, wrappedHandler));
+        lock (handlers)
+        {
+            handlers.Add(wrappedHandler);
         }
 
-        IDisposable IEventBus.Subscribe<T>(Func<T, bool> filter, Func<T, CancellationToken, Task> handler)
+        return new SubscriptionToken(() => Unsubscribe(eventType, wrappedHandler));
+    }
+
+    private async Task SafeExecuteHandler(Func<object, CancellationToken, Task> handler, IEvent eventMessage, CancellationToken cancellationToken)
+    {
+        try
         {
-            var eventType = typeof(T);
-            var handlers = this.handlers.GetOrAdd(eventType, _ => new List<Func<object, CancellationToken, Task>>());
+            await handler(eventMessage, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Произошла ошибка во время обработки события: {eventMessage.GetType().Name}: {ex.Message}", LogLevel.Error);
+        }
+    }
 
-            Func<object, CancellationToken, Task> wrappedHandler = async (eventObj, ct) =>
-            {
-                var typedEvent = (T)eventObj;
-                if (filter(typedEvent))
-                {
-                    await handler(typedEvent, ct);
-                }
-            };
-
-            lock (handlers)
-            {
-                handlers.Add(wrappedHandler);
-            }
-
-            return new SubscriptionToken(() => Unsubscribe(eventType, wrappedHandler));
+    private void Unsubscribe(Type eventType, Func<object, CancellationToken, Task> handler)
+    {
+        if (!this.handlers.TryGetValue(eventType, out var handlers))
+        {
+            return;
         }
 
-        private async Task SafeExecuteHandler(Func<object, CancellationToken, Task> handler, IEvent eventMessage, CancellationToken cancellationToken)
+        lock (handlers)
         {
-            try
+            handlers.Remove(handler);
+            if (handlers.Count == 0)
             {
-                await handler(eventMessage, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                logger.Log($"Произошла ошибка во время обработки события: {eventMessage.GetType().Name}: {ex.Message}", LogLevel.Error);
+                this.handlers.TryRemove(eventType, out _);
             }
         }
+    }
 
-        private void Unsubscribe(Type eventType, Func<object, CancellationToken, Task> handler)
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
+    public async ValueTask DisposeAsync()
+    {
+        if (disposed)
         {
-            if (!this.handlers.TryGetValue(eventType, out var handlers))
-            {
-                return;
-            }
-
-            lock (handlers)
-            {
-                handlers.Remove(handler);
-                if (handlers.Count == 0)
-                {
-                    this.handlers.TryRemove(eventType, out _);
-                }
-            }
+            return;
         }
 
-        /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
-        public async ValueTask DisposeAsync()
-        {
-            if (disposed)
-            {
-                return;
-            }
-
-            disposed = true;
-            await cts.CancelAsync();
-            cts.Dispose();
-            handlers.Clear();
-        }
+        disposed = true;
+        await cts.CancelAsync();
+        cts.Dispose();
+        handlers.Clear();
     }
 }

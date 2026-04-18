@@ -89,7 +89,11 @@ public sealed class StreamManager : IStreamManager, IDisposable
             if (options.RequiresAcks)
             {
                 var ackKey = new ChunkAckKey { StreamId = streamId, ChunkIndex = i };
-                pendingChunks.TryAdd(ackKey, new PendingChunk(i, totalChunks));
+                pendingChunks.TryAdd(ackKey, new PendingChunk()
+                {
+                    LastAcknowledgedIndex = i,
+                    TotalChunks = totalChunks,
+                });
                 StartAckTimer(ackKey);
             }
 

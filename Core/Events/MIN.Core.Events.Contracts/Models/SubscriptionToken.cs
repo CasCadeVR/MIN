@@ -1,31 +1,30 @@
-﻿namespace MIN.Core.Events.Contracts.Models
+﻿namespace MIN.Core.Events.Contracts.Models;
+
+/// <summary>
+/// Токен подписки
+/// </summary>
+public class SubscriptionToken : IDisposable
 {
+    private readonly Action unsubscribe;
+    private bool disposed;
+
     /// <summary>
-    /// Токен подписки
+    /// Инициализирует новый экземпляр <see cref="SubscriptionToken"/>
     /// </summary>
-    public class SubscriptionToken : IDisposable
+    public SubscriptionToken(Action unsubscribe)
     {
-        private readonly Action unsubscribe;
-        private bool disposed;
+        this.unsubscribe = unsubscribe;
+    }
 
-        /// <summary>
-        /// Инициализирует новый экземпляр <see cref="SubscriptionToken"/>
-        /// </summary>
-        public SubscriptionToken(Action unsubscribe)
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    public void Dispose()
+    {
+        if (disposed)
         {
-            this.unsubscribe = unsubscribe;
+            return;
         }
 
-        /// <inheritdoc cref="IDisposable.Dispose"/>
-        public void Dispose()
-        {
-            if (disposed)
-            {
-                return;
-            }
-
-            disposed = true;
-            unsubscribe();
-        }
+        disposed = true;
+        unsubscribe();
     }
 }

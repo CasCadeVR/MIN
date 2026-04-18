@@ -1,5 +1,4 @@
 using MIN.Core.Cryptography.Contracts.Interfaces;
-using MIN.Core.Entities;
 using MIN.Core.Headers.Contracts.Enums;
 using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;

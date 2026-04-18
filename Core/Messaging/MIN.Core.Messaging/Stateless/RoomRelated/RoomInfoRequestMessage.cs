@@ -17,9 +17,4 @@ public sealed class RoomInfoRequestMessage : BaseMessage
     /// Идентификтор комнаты
     /// </summary>
     public Guid RoomId { get; set; }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="RoomInfoRequestMessage"/>
-    /// </summary>
-    public RoomInfoRequestMessage() { }
 }

@@ -1,5 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
@@ -11,6 +10,7 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Extensions;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -74,7 +74,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
 
             var participantJoinedMessage = new ParticipantJoinedMessage()
             {
-                Participant = new ParticipantInfo(identityService.SelfPartcipant),
+                Participant = identityService.SelfPartcipant.ToParticipantInfo(),
                 RoomId = context.RoomId
             };
 

@@ -18,6 +18,7 @@ using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Views.Components;
+using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Services;
 
@@ -83,7 +84,7 @@ namespace MIN.Desktop
             };
             notificationService.NotificationTurnOffClicked += () => notificationComboBox.Checked = false;
 
-            localParticipant = new ParticipantInfo(identitiyService.SelfPartcipant);
+            localParticipant = identitiyService.SelfPartcipant.ToParticipantInfo();
             this.room = this.roomStore.TryGetRoom(this.roomId, out var room) ? room : null;
 
             uiContext = SynchronizationContext.Current ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -152,7 +153,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            room!.CurrentParticipants.Add(eventMessage.Message.Participant);
+            room!.AddParticipant(eventMessage.Message.Participant);
 
             uiContext.Post(_ =>
             {
@@ -170,7 +171,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            room!.CurrentParticipants.Remove(eventMessage.Message.Participant);
+            room!.RemoveParticipant(eventMessage.Message.Participant.Id);
 
             uiContext.Post(_ =>
             {

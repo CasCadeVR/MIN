@@ -3,6 +3,7 @@
 /// <summary>
 /// Флаги заголовка для типа сообщений
 /// </summary>
+[Flags]
 public enum HeaderMessageType : byte
 {
     /// <summary>

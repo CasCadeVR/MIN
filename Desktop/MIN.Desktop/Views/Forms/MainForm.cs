@@ -14,6 +14,7 @@ using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Discovery.Events;
 using MIN.Discovery.Services.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models;
@@ -127,7 +128,7 @@ namespace MIN.Desktop
                 return;
             }
 
-            localParticipant = new ParticipantInfo(identityService.SelfPartcipant);
+            localParticipant = identityService.SelfPartcipant.ToParticipantInfo();
             participantConnectionRegistry.RegisterLocalParticipant(room.Id, localParticipant);
             room.HostParticipant = localParticipant;
 

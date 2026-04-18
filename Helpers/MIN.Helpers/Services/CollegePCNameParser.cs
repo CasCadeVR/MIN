@@ -16,7 +16,7 @@ public static class CollegePCNameParser
         roomNumber = 0;
         computerNumber = 0;
 
-        var match = Regex.Match(pcName, @"^C(\d{3})(\d{1,2})$");
+        var match = Regex.Match(pcName, @"^[A-Z](\d{3})(\d{1,2})$");
 
         if (!match.Success)
         {
@@ -39,13 +39,11 @@ public static class CollegePCNameParser
     /// <summary>
     /// Получить имя компьютера исходя из класса и номера компьютера
     /// </summary>
-    /// <param name="roomNumber"></param>
-    /// <param name="computerNumber"></param>
-    /// <returns></returns>
     public static string CreateComputerName(int roomNumber, int computerNumber)
     {
         var baseName = new StringBuilder();
-        baseName.Append("C" + roomNumber);
+        var desiredLetter = roomNumber / 10 % 10 > 1 ? 'B' : 'C';
+        baseName.Append(desiredLetter + roomNumber);
 
         if (computerNumber > 0 && computerNumber < 10)
         {

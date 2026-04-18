@@ -12,7 +12,7 @@ public abstract class BaseMessage : IMessage
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <inheritdoc />
-    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; } = DateTime.Now;
 
     /// <inheritdoc />
     public abstract MessageTypeTag TypeTag { get; }
@@ -24,5 +24,5 @@ public abstract class BaseMessage : IMessage
     public virtual bool RequiresEncryption { get; } = true;
 
     /// <inheritdoc />
-    public virtual bool RequireStreamAcks { get; } = false;
+    public virtual bool RequireStreamAcks { get; }
 }

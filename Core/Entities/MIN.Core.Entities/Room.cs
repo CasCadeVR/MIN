@@ -38,7 +38,7 @@ public class Room : IRoomData
     public List<ParticipantInfo> CurrentParticipants { get; set; } = [];
 
     /// <summary>
-    /// Получить текущих участников комнаты
+    /// Получить историю чата
     /// </summary>
     public List<IMessage> ChatHistory { get; set; } = [];
 
@@ -68,15 +68,6 @@ public class Room : IRoomData
     /// Инициализирует новый экземпляр <see cref="Room"/>
     /// </summary>
     public Room() { }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="Room"/>
-    /// </summary>
-    public Room(string name = "Неизвестная Комната", int maximumParticipants = 2)
-    {
-        Name = name;
-        MaximumParticipants = maximumParticipants;
-    }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="Room"/>

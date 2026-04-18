@@ -13,14 +13,5 @@ public sealed class PendingChunk
     /// <summary>
     /// Всего пакетов
     /// </summary>
-    public int TotalChunks { get; }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="PendingChunk"/>
-    /// </summary>
-    public PendingChunk(int lastAcknowledged, int totalChunks)
-    {
-        LastAcknowledgedIndex = lastAcknowledged;
-        TotalChunks = totalChunks;
-    }
+    public int TotalChunks { get; init; }
 }

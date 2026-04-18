@@ -5,6 +5,7 @@ using MIN.Chat.Services;
 using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.Handlers.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Chat.DI;
 
@@ -16,8 +17,8 @@ public class ChatModule : Module
     /// <inheritdoc />
     protected override void Load(IServiceCollection services)
     {
-        services.RegisterMultipleMessagesFromAnchor<IChatMessagingAnchor>(ServiceLifetime.Singleton);
+        services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IChatMessagingAnchor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatService>(ServiceLifetime.Singleton);
-        services.RegisterMultipleInterfacesAssignableTo<IMessageHandler, IChatHandlerAnchor>(ServiceLifetime.Singleton);
+        services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, IChatHandlerAnchor>(ServiceLifetime.Singleton);
     }
 }

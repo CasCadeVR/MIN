@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MIN.Core.Messaging.Contracts.Interfaces;
-
 namespace MIN.Common.Mvc.Extensions;
 
 /// <summary>
@@ -10,30 +8,6 @@ namespace MIN.Common.Mvc.Extensions;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>
-    /// Регистрирует все типы сообщений из указанной сборки в реестре десериализаторов
-    /// </summary>
-    /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
-    /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
-    /// <typeparam name="TMarker">Тип-маркер из сборки, содержащей сообщения</typeparam>
-    public static void RegisterMultipleMessagesFromAnchor<TMarker>(this IServiceCollection services, ServiceLifetime lifetime)
-    {
-        var assembly = typeof(TMarker).Assembly;
-        var messageTypes = assembly.GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(IMessage).IsAssignableFrom(t))
-            .ToList();
-
-        if (messageTypes.Count == 0)
-        {
-            return;
-        }
-
-        foreach (var type in messageTypes)
-        {
-            services.TryAddEnumerable(new ServiceDescriptor(typeof(IMessage), type, lifetime));
-        }
-    }
-
     /// <summary>
     /// Регистрирует все интерфейсы указанного типа
     /// </summary>
@@ -87,13 +61,13 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Регистрирует списком реализации с удалением уже зарегистрированных
+    /// Регистрирует списком реализации от якоря
     /// </summary>
     /// <typeparam name="TService">Тип, для которого осуществляется регистрация</typeparam>
     /// <typeparam name="TAnchor">Якорь для определения сборки</typeparam>
     /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
     /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
-    public static void RegisterMultipleInterfacesAssignableTo<TService, TAnchor>(this IServiceCollection services, ServiceLifetime lifetime)
+    public static void RegisterMultipleInterfacesAssignableFromAnchor<TService, TAnchor>(this IServiceCollection services, ServiceLifetime lifetime)
     {
         var serviceType = typeof(TService);
         var types = typeof(TAnchor).Assembly.GetTypes()
@@ -105,6 +79,18 @@ public static class ServiceCollectionExtensions
         {
             services.TryAddEnumerable(new ServiceDescriptor(serviceType, type, lifetime));
         }
+    }
+
+    /// <summary>
+    /// Регистрирует списком реализации от интерфейса
+    /// </summary>
+    /// <typeparam name="TService">Тип, для которого осуществляется регистрация</typeparam>
+    /// <typeparam name="TInterface">Тип, для которого осуществляется регистрация</typeparam>
+    /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
+    /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
+    public static void RegisterMultipleInterfacesAssignableTo<TInterface, TService>(this IServiceCollection services, ServiceLifetime lifetime)
+    {
+        services.TryAddEnumerable(new ServiceDescriptor(typeof(TInterface), typeof(TService), lifetime));
     }
 
     /// <summary>

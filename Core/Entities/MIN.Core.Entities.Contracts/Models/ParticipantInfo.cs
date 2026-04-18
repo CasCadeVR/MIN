@@ -5,26 +5,11 @@ namespace MIN.Core.Entities.Contracts.Models;
 /// <summary>
 /// Данные участника для передачи по сети
 /// </summary>
-public record ParticipantInfo : IParticipantData
+public record ParticipantInfo() : IParticipantData
 {
     /// <inheritdoc />
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <inheritdoc />
     public string Name { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
-    /// </summary>
-    /// <param name="participant">Данные участника</param>
-    public ParticipantInfo(IParticipantData participant)
-    {
-        Id = participant.Id;
-        Name = participant.Name;
-    }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="ParticipantInfo"/>
-    /// </summary>
-    public ParticipantInfo() { }
 }

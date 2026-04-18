@@ -10,8 +10,4 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Core\Serialization\MIN.Core.Serialization\MIN.Core.Serialization.Json.csproj" />
-  </ItemGroup>
-
 </Project>

@@ -2,9 +2,7 @@
 
 namespace MIN.Helpers.Services;
 
-/// <summary>
 /// <inheritdoc cref="IAppDataProvider"/>
-/// </summary>
 public sealed class AppDataProvider : IAppDataProvider
 {
     /// <inheritdoc />

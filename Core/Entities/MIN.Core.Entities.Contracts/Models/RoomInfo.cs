@@ -45,5 +45,8 @@ public record RoomInfo : IRoomData
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfo"/>
     /// </summary>
+    /// <remarks>
+    /// Нужен для сериализации
+    /// </remarks>
     public RoomInfo() { }
 }
