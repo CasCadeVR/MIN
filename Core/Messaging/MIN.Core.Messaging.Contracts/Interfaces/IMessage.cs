@@ -21,6 +21,12 @@ public interface IMessage
     bool RequiresEncryption { get; }
 
     /// <summary>
+    /// Флаг, указывающий, требуется ли подтверждение получения пакета
+    /// при передаче в потоке для этого сообщения
+    /// </summary>
+    bool RequireStreamAcks { get; }
+
+    /// <summary>
     /// Флаг, указывающий, должно ли сообщение рассылаться всем
     /// </summary>
     bool IsPublic { get; }

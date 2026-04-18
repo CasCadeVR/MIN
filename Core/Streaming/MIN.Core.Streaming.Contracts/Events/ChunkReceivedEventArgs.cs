@@ -3,7 +3,7 @@
 /// <summary>
 /// Событие запроса на отправку ACK
 /// </summary>
-public sealed class ChunkAckRequestedEventArgs : EventArgs
+public sealed class ChunkReceivedEventArgs : EventArgs
 {
     /// <summary>
     /// Идентификатор потока

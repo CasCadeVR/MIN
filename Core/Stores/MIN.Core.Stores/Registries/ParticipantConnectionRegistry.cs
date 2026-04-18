@@ -8,38 +8,37 @@ namespace MIN.Core.Stores.Registries;
 /// <inheritdoc cref="IParticipantConnectionRegistry"/>
 public sealed class ParticipantConnectionRegistry : IParticipantConnectionRegistry
 {
-    private readonly ConcurrentDictionary<Guid, ParticipantInfo> participantsByConnectionId = new();
-    private readonly ConcurrentDictionary<Guid, Guid> connectionIdByParticipantId = new();
+    private readonly ConcurrentDictionary<Guid, ParticipantInfo> participantByConnectionId = new(); // <ConnectionId, ParticipantInfo>
+    private readonly ConcurrentDictionary<Guid, Guid> connectionIdByParticipantId = new(); // <ParticipantId, ConnectionId>
 
     void IParticipantConnectionRegistry.Register(Guid connectionId, ParticipantInfo participant)
     {
-        participantsByConnectionId[connectionId] = participant;
+        participantByConnectionId[connectionId] = participant;
         connectionIdByParticipantId[participant.Id] = connectionId;
     }
 
     void IParticipantConnectionRegistry.RegisterLocalParticipant(ParticipantInfo participant)
     {
-        participantsByConnectionId[CoreRegistryConstants.LocalConnectionId] = participant;
+        participantByConnectionId[CoreRegistryConstants.LocalConnectionId] = participant;
         connectionIdByParticipantId[participant.Id] = CoreRegistryConstants.LocalConnectionId;
     }
 
-
     void IParticipantConnectionRegistry.Unregister(Guid connectionId)
     {
-        if (participantsByConnectionId.TryRemove(connectionId, out var participant))
+        if (participantByConnectionId.TryRemove(connectionId, out var participant))
         {
             connectionIdByParticipantId.TryRemove(participant.Id, out _);
         }
     }
 
     ParticipantInfo IParticipantConnectionRegistry.GetParticipant(Guid connectionId)
-        => participantsByConnectionId.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
+        => participantByConnectionId.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
 
     bool IParticipantConnectionRegistry.TryGetParticipantFromConnectionId(Guid connectionId, out ParticipantInfo participant)
-        => participantsByConnectionId.TryGetValue(connectionId, out participant!);
+        => participantByConnectionId.TryGetValue(connectionId, out participant!);
 
     Guid IParticipantConnectionRegistry.GetParticipantIdFromConnectionId(Guid connectionId)
-        => participantsByConnectionId.TryGetValue(connectionId, out var p) ? p.Id : throw new KeyNotFoundException();
+        => participantByConnectionId.TryGetValue(connectionId, out var p) ? p.Id : throw new KeyNotFoundException();
 
     Guid IParticipantConnectionRegistry.GetConnectionIdFromParticipantId(Guid participantId)
         => connectionIdByParticipantId.TryGetValue(participantId, out var connectionId) ? connectionId : throw new KeyNotFoundException();

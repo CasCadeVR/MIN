@@ -1,5 +1,4 @@
 using MIN.Core.Streaming.Contracts.Events;
-using MIN.Core.Streaming.Contracts.Models;
 
 namespace MIN.Core.Streaming.Contracts.Interfaces;
 
@@ -16,15 +15,10 @@ public interface IChunkBufferAssembler
     /// <summary>
     /// Событие запроса на отправку ACK
     /// </summary>
-    event EventHandler<ChunkAckRequestedEventArgs>? ChunkAckRequested;
+    event EventHandler<ChunkReceivedEventArgs>? ChunkReceived;
 
     /// <summary>
     /// Обрабатывает входящий пакет
     /// </summary>
-    void AddChunk(StreamChunk chunk, Guid connectionId, Guid roomId);
-
-    /// <summary>
-    /// Обрабатывает входящий пакет асинхронно
-    /// </summary>
-    Task AddChunkAsync(StreamChunk chunk, Guid connectionId, Guid roomId, CancellationToken cancellationToken = default);
+    Task ProcessStreamChunk(byte[] data, Guid connectionId, Guid roomId, CancellationToken cancellationToken = default);
 }

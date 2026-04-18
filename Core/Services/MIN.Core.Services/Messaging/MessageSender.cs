@@ -49,7 +49,8 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         this.logger = logger;
     }
 
-    async Task IMessageSender.SendAsync(IMessage message, Guid roomId, Guid senderId, Guid recipientConnectionId, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async Task SendAsync(IMessage message, Guid roomId, Guid senderId, Guid recipientConnectionId, CancellationToken cancellationToken)
     {
         var serialized = serializer.Serialize(message);
 
@@ -57,18 +58,19 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         {
             var options = new StreamOptions
             {
-                RequiresAcks = true,
+                RequiresAcks = message.RequireStreamAcks,
                 RequiresEncryption = message.RequiresEncryption
             };
             await streamManager.SendAsync(serialized.AsMemory(), options, roomId, recipientConnectionId, cancellationToken);
             return;
         }
 
-        var dataToSend = EncryptDataIfRequired(message, serialized, recipientConnectionId);
+        var dataWithMarker = headerManager.AddHeader(serialized, (byte)StreamChunkFlags.None);
+        var dataToSend = EncryptDataIfRequired(message, dataWithMarker, recipientConnectionId);
         await transport.SendAsync(dataToSend, roomId, recipientConnectionId, cancellationToken);
     }
 
-    async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken)
+    async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, Guid senderId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken)
     {
         var serialized = serializer.Serialize(message);
         var participants = participantStore.GetParticipants(roomId);
@@ -79,42 +81,24 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         var tasks = participants
             .Select(participant => participantConnectionRegistry.GetConnectionIdFromParticipantId(participant.Id))
             .Where(connectionId => !excludeConnectionIds.Contains(connectionId))
-            .Select(connectionId =>
-            {
-                if (serialized.Length > StreamingConstants.ChunkDataSize)
-                {
-                    var options = new StreamOptions
-                    {
-                        RequiresAcks = false,
-                        RequiresEncryption = message.RequiresEncryption
-                    };
-                    return streamManager.SendAsync(serialized.AsMemory(), options, roomId, connectionId, cancellationToken);
-                }
-
-                return transport.SendAsync(EncryptDataIfRequired(message, serialized, connectionId),
-                    roomId, connectionId, cancellationToken);
-            });
+            .Select(connectionId => SendAsync(message, roomId, senderId, connectionId, cancellationToken));
 
         await Task.WhenAll(tasks);
     }
 
-    async Task<Guid> IMessageSender.SendLargeDataAsync(ReadOnlyMemory<byte> data, StreamOptions options, Guid roomId, Guid recipientConnectionId, CancellationToken cancellationToken)
-        => await streamManager.SendAsync(data, options, roomId, recipientConnectionId, cancellationToken);
-
     private byte[] EncryptDataIfRequired(IMessage message, byte[] plainData, Guid recipientConnectionId)
     {
-        var dataWithMarker = headerManager.AddHeader(plainData, (byte)StreamChunkFlags.None);
-
         byte[] resultBytes;
+
         if (message.RequiresEncryption)
         {
             var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(recipientConnectionId);
-            var encrypted = encryptor.EncryptMessage(dataWithMarker, recipientId);
+            var encrypted = encryptor.EncryptMessage(plainData, recipientId);
             resultBytes = headerManager.AddHeader(encrypted, (byte)HeaderMessageType.Encrypted);
         }
         else
         {
-            resultBytes = headerManager.AddHeader(dataWithMarker, (byte)HeaderMessageType.Plain);
+            resultBytes = headerManager.AddHeader(plainData, (byte)HeaderMessageType.Plain);
         }
 
         return resultBytes;

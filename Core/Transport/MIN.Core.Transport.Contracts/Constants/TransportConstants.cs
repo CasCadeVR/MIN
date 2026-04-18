@@ -11,7 +11,7 @@ public static class TransportConstants
     public const int RoomMaximumConnectionsAmount = 254;
 
     /// <summary>
-    /// Размер буффера для сообщений
+    /// Размер буффера для сообщений (16384 байт)
     /// </summary>
-    public const int MessageBufferSize = 1024 * 4;
+    public const int MessageBufferSize = 1024 * 16;
 }

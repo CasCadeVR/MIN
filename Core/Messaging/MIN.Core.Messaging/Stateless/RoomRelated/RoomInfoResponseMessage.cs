@@ -14,6 +14,9 @@ public sealed class RoomInfoResponseMessage : BaseMessage
     /// <inheritdoc />
     public override bool IsPublic => false;
 
+    /// <inheritdoc />
+    public override bool RequireStreamAcks => true;
+
     /// <summary>
     /// Информация о комнате
     /// </summary>

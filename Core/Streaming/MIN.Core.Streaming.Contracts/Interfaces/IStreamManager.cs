@@ -10,7 +10,7 @@ public interface IStreamManager
     /// <summary>
     /// Отправляет данные через поток
     /// </summary>
-    Task<Guid> SendAsync(
+    Task SendAsync(
         ReadOnlyMemory<byte> data,
         StreamOptions options,
         Guid roomId,

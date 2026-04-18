@@ -11,12 +11,12 @@ public class StreamingConstants
     /// <summary>
     /// Дефолтный таймаут ожидания пакета (мс)
     /// </summary>
-    public const int DefaultChunkTimeoutMs = 1_000;
+    public const int DefaultChunkTimeoutMs = 10_000;
 
     /// <summary>
     /// Дефолтное время жизни потока (мс)
     /// </summary>
-    public const int DefaultStreamLifetimeMs = 5_000;
+    public const int DefaultStreamLifetimeMs = 60_000;
 
     /// <summary>
     /// Размер данных одного пакета (без заголовка)

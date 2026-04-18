@@ -22,4 +22,7 @@ public abstract class BaseMessage : IMessage
 
     /// <inheritdoc />
     public virtual bool RequiresEncryption { get; } = true;
+
+    /// <inheritdoc />
+    public virtual bool RequireStreamAcks { get; } = false;
 }

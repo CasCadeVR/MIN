@@ -19,8 +19,8 @@ public sealed class StreamManager : IStreamManager, IDisposable
     private readonly IHeaderManager headerManager;
     private readonly IParticipantConnectionRegistry participantConnectionRegistry;
     private readonly ILoggerProvider logger;
-    private readonly ConcurrentDictionary<string, PendingChunk> pendingChunks = new();
-    private readonly ConcurrentDictionary<string, Timer> ackTimers = new();
+    private readonly ConcurrentDictionary<ChunkAckKey, PendingChunk> pendingChunks = new();
+    private readonly ConcurrentDictionary<ChunkAckKey, Timer> ackTimers = new();
     private bool disposed;
 
     /// <summary>
@@ -39,7 +39,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
         this.logger = logger;
     }
 
-    async Task<Guid> IStreamManager.SendAsync(ReadOnlyMemory<byte> data,
+    async Task IStreamManager.SendAsync(ReadOnlyMemory<byte> data,
         StreamOptions options,
         Guid roomId,
         Guid recipientConnectionId,
@@ -47,7 +47,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
     {
         ObjectDisposedException.ThrowIf(disposed, nameof(StreamManager));
 
-        var streamId = options.StreamId;
+        var streamId = Guid.NewGuid();
         var totalChunks = (int)Math.Ceiling((double)data.Length / StreamingConstants.ChunkDataSize);
 
         logger.Log($"Начало отправки потока {streamId}: {data.Length} байт, {totalChunks} пакетов");
@@ -86,19 +86,17 @@ public sealed class StreamManager : IStreamManager, IDisposable
             var package = SerializeChunk(chunk);
             var encrypted = EncryptChunkIfNeeded(package, recipientConnectionId, options);
 
-            await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
-
             if (options.RequiresAcks)
             {
-                var ackKey = $"{streamId}_{i}";
+                var ackKey = new ChunkAckKey { StreamId = streamId, ChunkIndex = i };
                 pendingChunks.TryAdd(ackKey, new PendingChunk(i, totalChunks));
-                StartAckTimer(ackKey, recipientConnectionId);
+                StartAckTimer(ackKey);
             }
 
             logger.Log($"Отправлен пакет {i + 1}/{totalChunks} для потока {streamId}");
-        }
 
-        return streamId;
+            await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
+        }
     }
 
     void IStreamManager.ProcessAck(byte[] data)
@@ -110,13 +108,13 @@ public sealed class StreamManager : IStreamManager, IDisposable
 
         var streamId = new Guid(data.AsSpan(1, 16));
         var chunkIndex = BitConverter.ToInt32(data, 17);
-        var ackKey = $"{streamId}_{chunkIndex}";
+        var ackKey = new ChunkAckKey { StreamId = streamId, ChunkIndex = chunkIndex };
 
         OnChunkAcknowledged(ackKey);
         logger.Log($"Получен ACK для пакета {chunkIndex} потока {streamId}");
     }
 
-    private void OnChunkAcknowledged(string ackKey)
+    private void OnChunkAcknowledged(ChunkAckKey ackKey)
     {
         if (ackTimers.TryRemove(ackKey, out var timer))
         {
@@ -125,15 +123,15 @@ public sealed class StreamManager : IStreamManager, IDisposable
 
         if (pendingChunks.TryGetValue(ackKey, out var pending))
         {
-            pending.LastAcknowledgedIndex = int.Parse(ackKey.Split('_')[1]);
+            pending.LastAcknowledgedIndex = ackKey.ChunkIndex;
         }
     }
 
-    private void StartAckTimer(string ackKey, Guid recipientConnectionId)
+    private void StartAckTimer(ChunkAckKey ackKey)
     {
         var timer = new Timer(
             OnAckTimeout,
-            (ackKey, recipientConnectionId),
+            ackKey,
             StreamingConstants.DefaultChunkTimeoutMs,
             Timeout.InfiniteTimeSpan.Seconds);
 
@@ -142,9 +140,9 @@ public sealed class StreamManager : IStreamManager, IDisposable
 
     private void OnAckTimeout(object? state)
     {
-        if (state is (string ackKey, Guid))
+        if (state is ChunkAckKey ackKey)
         {
-            logger.Log($"Таймаут ожидания ACK для пакета {ackKey}");
+            logger.Log($"Таймаут ожидания ACK для пакета {ackKey.ChunkIndex}");
         }
     }
 
@@ -187,8 +185,8 @@ public sealed class StreamManager : IStreamManager, IDisposable
         {
             timer.Dispose();
         }
-        ackTimers.Clear();
 
+        ackTimers.Clear();
         pendingChunks.Clear();
     }
 }

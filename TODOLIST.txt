@@ -1,7 +1,6 @@
-1. Write tests on everything
-2. there is a chance join message will appear on top
-3. Make private messages (like add recipientId in IMessage or smth)
-4. Make something with lots of new PartcipantInfo creation for identity service, and with IParticipantData overall
-5. Still doesnt work with multiple rooms, it writes connection not found, could also be because he has id and in participantConnectionRegistry it overwrites
-6. You have to gamble in order to discover some rooms, should probably somehow give all of them right timeout idk
-7. Maybe we have to make some services to have lifetime of a room. This way we wouldn't put roomId everywhere and make it isolated
+1. there is a chance join message will appear on top
+2. Make private messages (like add recipientId in IMessage or smth)
+3. Make something with lots of new PartcipantInfo creation for identity service, and with IParticipantData overall
+4. Still doesnt work with multiple rooms, it writes connection not found, could also be because he has id and in participantConnectionRegistry it overwrites
+5. You have to gamble in order to discover some rooms, should probably somehow give all of them right timeout idk
+6. Maybe we have to make some services to have lifetime of a room. This way we wouldn't put roomId everywhere and make it isolated

@@ -1,7 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Messaging.Contracts.Interfaces;
-
-namespace MIN.Core.Services.Contracts.Interfaces.Messaging;
+﻿namespace MIN.Core.Services.Contracts.Interfaces.Messaging;
 
 /// <summary>
 /// Сервис по получению и приёму сообщений

@@ -73,7 +73,7 @@ namespace MIN.Core.Handlers.Dispatcher
                     if (message.IsPublic && roomHoster.IsHosting(context.RoomId))
                     {
                         var senderConnectionId = participantConnectionRegistry.GetConnectionIdFromParticipantId(context.SenderId);
-                        await messageSender.BroadcastAsync(message, context.RoomId, [senderConnectionId], context.CancellationToken);
+                        await messageSender.BroadcastAsync(message, context.RoomId, context.SenderId, [senderConnectionId], context.CancellationToken);
                     }
 
                     if (result.Response != null)

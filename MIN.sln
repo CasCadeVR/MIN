@@ -93,9 +93,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Handlers", "Handlers", "{CF0E51C4-5FE7-47A4-8A44-11F2EB76527A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Messaging", "Messaging", "{CD03853D-299C-4AE4-BD3B-7AF72C559180}"
-	ProjectSection(SolutionItems) = preProject
-		Core\Services\MIN.Core.Services.Contracts\Models\HeaderMessageType.cs = Core\Services\MIN.Core.Services.Contracts\Models\HeaderMessageType.cs
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Chat.Handlers", "Infrastructure\Chat\MIN.Chat.Handlers\MIN.Chat.Handlers.csproj", "{2AAA0BD4-2C43-488D-A088-A7E0473F7B7A}"
 EndProject

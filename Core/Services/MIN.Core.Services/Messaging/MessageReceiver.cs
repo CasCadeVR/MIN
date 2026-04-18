@@ -2,8 +2,6 @@ using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Headers.Contracts.Constants;
-using MIN.Core.Headers.Contracts.Enums;
 using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Serialization.Contracts;
@@ -11,10 +9,8 @@ using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
-using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
-using MIN.Core.Streaming.Contracts.Models;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -34,7 +30,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
     private readonly IParticipantConnectionRegistry participantConnectionRegistry;
     private readonly IChunkBufferAssembler chunkBufferAssembler;
     private readonly IStreamManager streamManager;
-    private CancellationTokenSource? cts;
+    private CancellationTokenSource cts = null!;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="MessageReceiver"/>
@@ -67,7 +63,6 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         transport.RawMessageReceived += OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
-        chunkBufferAssembler.ChunkAckRequested += OnChunkAckRequested;
         eventBus.Subscribe<LocalMessageRecievedEvent>(OnLocalMessageRecieved);
         await Task.CompletedTask;
     }
@@ -92,29 +87,11 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
                 participantInfo?.Id ?? Guid.Empty,
                 e.RoomId,
                 e.ConnectionId,
-                cts!.Token));
+                cts.Token));
         }
         catch (Exception ex)
         {
             logger.Log($"Ошибка при обработке собранного с потока сообщения: {ex.Message}");
-        }
-    }
-
-    private async void OnChunkAckRequested(object? sender, ChunkAckRequestedEventArgs e)
-    {
-        try
-        {
-            var ack = new byte[StreamingConstants.ChunkAckSize];
-            ack[0] = (byte)HeaderMessageType.Ack;
-            e.StreamId.TryWriteBytes(new Span<byte>(ack, 1, 16));
-            BitConverter.GetBytes(e.ChunkIndex).CopyTo(ack, 17);
-
-            await transport.SendAsync(ack, e.RoomId, e.ConnectionId, cts!.Token);
-            logger.Log($"Отправлен ACK для пакета {e.ChunkIndex} потока {e.StreamId}");
-        }
-        catch (Exception ex)
-        {
-            logger.Log($"Ошибка при отправке ACK: {ex.Message}");
         }
     }
 
@@ -149,7 +126,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
 
             if (headerManager.IsStreamChunk(plainData))
             {
-                await ProcessStreamChunk(plainData, e.ConnectionId, e.RoomId);
+                await chunkBufferAssembler.ProcessStreamChunk(plainData, e.ConnectionId, e.RoomId, cts.Token);
                 return;
             }
 
@@ -163,7 +140,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
                     participantInfo = ackMessage.Participant;
                 }
 
-                await dispatcher.DispatchAsync(message, new MessageContext(participantInfo?.Id ?? Guid.Empty, e.RoomId, e.ConnectionId, cts!.Token));
+                await dispatcher.DispatchAsync(message, new MessageContext(participantInfo?.Id ?? Guid.Empty, e.RoomId, e.ConnectionId, cts.Token));
             }
             catch (Exception ex)
             {
@@ -176,32 +153,13 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
         }
     }
 
-    private async Task ProcessStreamChunk(byte[] data, Guid connectionId, Guid roomId)
-    {
-        var header = headerManager.ParseStreamChunkHeader(data);
-        var chunkData = new ReadOnlyMemory<byte>(data, HeadersConstants.StreamHeaderSize,
-            data.Length - HeadersConstants.StreamHeaderSize);
-
-        var chunk = new StreamChunk
-        {
-            StreamId = header.StreamId,
-            Flags = header.Flags,
-            Index = header.Index,
-            Total = header.Total,
-            Data = chunkData
-        };
-
-        await chunkBufferAssembler.AddChunkAsync(chunk, connectionId, roomId);
-    }
-
     /// <inheritdoc />
     public async Task StopListeningAsync()
     {
         transport.RawMessageReceived -= OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
-        chunkBufferAssembler.ChunkAckRequested -= OnChunkAckRequested;
-        cts?.Cancel();
-        cts?.Dispose();
+        cts.Cancel();
+        cts.Dispose();
         await Task.CompletedTask;
     }
 

@@ -14,6 +14,9 @@ public sealed class ChatTextMessage : BaseMessage
     /// <inheritdoc />
     public override bool IsPublic => RecipientId == null;
 
+    /// <inheritdoc />
+    public override bool RequireStreamAcks => true;
+
     /// <summary>
     /// Получатель сообщения
     /// </summary>

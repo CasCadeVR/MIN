@@ -10,7 +10,6 @@
     <ProjectReference Include="..\..\Entities\MIN.Core.Entities\MIN.Core.Entities.csproj" />
     <ProjectReference Include="..\..\Events\MIN.Core.Events.Contracts\MIN.Core.Events.Contracts.csproj" />
     <ProjectReference Include="..\..\Stores\MIN.Core.Stores.Contracts\MIN.Core.Stores.Contracts.csproj" />
-    <ProjectReference Include="..\..\Streaming\MIN.Core.Streaming.Contracts\MIN.Core.Streaming.Contracts.csproj" />
     <ProjectReference Include="..\..\Transport\MIN.Core.Transport.Contracts\MIN.Core.Transport.Contracts.csproj" />
   </ItemGroup>
 
