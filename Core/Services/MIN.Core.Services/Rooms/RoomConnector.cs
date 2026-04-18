@@ -45,7 +45,7 @@ namespace MIN.Core.Services.Rooms
         {
             var roomId = room.Id;
             var connectionId = await transport.ConnectAsync(roomId, endpoint, timeoutMs, cancellationToken);
-            participantConnectionRegistry.Register(connectionId, room.HostParticipant);
+            participantConnectionRegistry.Register(roomId, connectionId, room.HostParticipant);
             logger.Log($"Подключились к комнате с {room.Name}, соединение с id {connectionId}");
 
             var selfHandshake = new HandshakeMessage()
@@ -54,7 +54,7 @@ namespace MIN.Core.Services.Rooms
                 PublicKey = await encryptor.GetLocalPublicKey(),
             };
 
-            await messageRouter.RouteAsync(selfHandshake, roomId, selfHandshake.Participant.Id, Recipient.FromConnection(connectionId), cancellationToken);
+            await messageRouter.RouteAsync(selfHandshake, roomId, selfHandshake.Participant.Id, Recipient.FromConnection(roomId, connectionId), cancellationToken);
 
             activeConnections.Add(connectionId);
             return connectionId;

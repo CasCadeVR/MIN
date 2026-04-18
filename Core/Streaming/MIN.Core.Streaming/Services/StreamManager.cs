@@ -84,7 +84,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
             };
 
             var package = SerializeChunk(chunk);
-            var encrypted = EncryptChunkIfNeeded(package, recipientConnectionId, options);
+            var encrypted = EncryptChunkIfNeeded(package, roomId, recipientConnectionId, options);
 
             if (options.RequiresAcks)
             {
@@ -155,12 +155,12 @@ public sealed class StreamManager : IStreamManager, IDisposable
         return result;
     }
 
-    private byte[] EncryptChunkIfNeeded(byte[] plainData, Guid recipientConnectionId, StreamOptions options)
+    private byte[] EncryptChunkIfNeeded(byte[] plainData, Guid roomId, Guid recipientConnectionId, StreamOptions options)
     {
         byte[] resultBytes;
         if (options.RequiresEncryption)
         {
-            var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(recipientConnectionId);
+            var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(roomId, recipientConnectionId);
             var encrypted = encryptor.EncryptMessage(plainData, recipientId);
             resultBytes = headerManager.AddHeader(encrypted, (byte)HeaderMessageType.Encrypted);
         }

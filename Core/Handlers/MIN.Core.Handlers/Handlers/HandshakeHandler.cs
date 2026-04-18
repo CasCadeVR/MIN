@@ -45,7 +45,7 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
         if (message is HandshakeMessage handshakeMessage)
         {
             await encryptor.InitializeSessionWithPartnerAsync(handshakeMessage.Participant.Id, handshakeMessage.PublicKey);
-            participantConnectionRegistry.Register(context.ConnectionId, handshakeMessage.Participant);
+            participantConnectionRegistry.Register(context.RoomId, context.ConnectionId, handshakeMessage.Participant);
             logger.Log($"Сессия с отправителем {handshakeMessage.Participant.Name} инициализирована");
 
             var ackMessage = new HandshakeAckMessage()
@@ -59,7 +59,7 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
         else if (message is HandshakeAckMessage handshakeAckMessage)
         {
             await encryptor.InitializeSessionWithPartnerAsync(handshakeAckMessage.Participant.Id, handshakeAckMessage.PublicKey);
-            participantConnectionRegistry.Register(context.ConnectionId, handshakeAckMessage.Participant);
+            participantConnectionRegistry.Register(context.RoomId, context.ConnectionId, handshakeAckMessage.Participant);
 
             logger.Log($"Сессия с получателем {handshakeAckMessage.Participant.Name} инициализирована");
 

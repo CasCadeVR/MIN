@@ -8,41 +8,58 @@ namespace MIN.Core.Stores.Registries;
 /// <inheritdoc cref="IParticipantConnectionRegistry"/>
 public sealed class ParticipantConnectionRegistry : IParticipantConnectionRegistry
 {
-    private readonly ConcurrentDictionary<Guid, ParticipantInfo> participantByConnectionId = new(); // <ConnectionId, ParticipantInfo>
-    private readonly ConcurrentDictionary<Guid, Guid> connectionIdByParticipantId = new(); // <ParticipantId, ConnectionId>
+    private readonly ConcurrentDictionary<RoomConnectionKey, RoomParticipantInfoKey> participantByConnectionId = new();
+    private readonly ConcurrentDictionary<RoomParticipantIdKey, RoomConnectionKey> connectionIdByParticipantId = new();
 
-    void IParticipantConnectionRegistry.Register(Guid connectionId, ParticipantInfo participant)
+    void IParticipantConnectionRegistry.Register(Guid roomId, Guid connectionId, ParticipantInfo participant)
     {
-        participantByConnectionId[connectionId] = participant;
-        connectionIdByParticipantId[participant.Id] = connectionId;
+        participantByConnectionId[new RoomConnectionKey(roomId, connectionId)]
+            = new RoomParticipantInfoKey(roomId, participant);
+
+        connectionIdByParticipantId[new RoomParticipantIdKey(roomId, participant.Id)]
+            = new RoomConnectionKey(roomId, connectionId);
     }
 
-    void IParticipantConnectionRegistry.RegisterLocalParticipant(ParticipantInfo participant)
+    void IParticipantConnectionRegistry.RegisterLocalParticipant(Guid roomId, ParticipantInfo participant)
     {
-        participantByConnectionId[CoreRegistryConstants.LocalConnectionId] = participant;
-        connectionIdByParticipantId[participant.Id] = CoreRegistryConstants.LocalConnectionId;
+        participantByConnectionId[new RoomConnectionKey(roomId, CoreRegistryConstants.LocalConnectionId)]
+            = new RoomParticipantInfoKey(roomId, participant);
+
+        connectionIdByParticipantId[new RoomParticipantIdKey(roomId, participant.Id)]
+            = new RoomConnectionKey(roomId, CoreRegistryConstants.LocalConnectionId);
     }
 
-    void IParticipantConnectionRegistry.Unregister(Guid connectionId)
+    void IParticipantConnectionRegistry.Unregister(Guid roomId, Guid connectionId)
     {
-        if (participantByConnectionId.TryRemove(connectionId, out var participant))
+        if (participantByConnectionId.TryRemove(new RoomConnectionKey(roomId, connectionId), out var roomParticipantInfoKey))
         {
-            connectionIdByParticipantId.TryRemove(participant.Id, out _);
+            connectionIdByParticipantId.TryRemove(new RoomParticipantIdKey(roomId, roomParticipantInfoKey.ParticipantInfo.Id), out _);
         }
     }
 
-    ParticipantInfo IParticipantConnectionRegistry.GetParticipant(Guid connectionId)
-        => participantByConnectionId.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
+    ParticipantInfo IParticipantConnectionRegistry.GetParticipant(Guid roomId, Guid connectionId)
+        => participantByConnectionId.TryGetValue(new RoomConnectionKey(roomId, connectionId), out var p)
+        ? p.ParticipantInfo : throw new KeyNotFoundException();
 
-    bool IParticipantConnectionRegistry.TryGetParticipantFromConnectionId(Guid connectionId, out ParticipantInfo participant)
-        => participantByConnectionId.TryGetValue(connectionId, out participant!);
+    bool IParticipantConnectionRegistry.TryGetParticipantFromConnectionId(Guid roomId, Guid connectionId, out ParticipantInfo participant)
+    {
+        var result = participantByConnectionId.TryGetValue(new RoomConnectionKey(roomId, connectionId), out var roomParticipantInfoKey);
+        participant = roomParticipantInfoKey.ParticipantInfo;
+        return result;
+    }
 
-    Guid IParticipantConnectionRegistry.GetParticipantIdFromConnectionId(Guid connectionId)
-        => participantByConnectionId.TryGetValue(connectionId, out var p) ? p.Id : throw new KeyNotFoundException();
+    Guid IParticipantConnectionRegistry.GetParticipantIdFromConnectionId(Guid roomId, Guid connectionId)
+        => participantByConnectionId.TryGetValue(new RoomConnectionKey(roomId, connectionId), out var p)
+        ? p.ParticipantInfo.Id : throw new KeyNotFoundException();
 
-    Guid IParticipantConnectionRegistry.GetConnectionIdFromParticipantId(Guid participantId)
-        => connectionIdByParticipantId.TryGetValue(participantId, out var connectionId) ? connectionId : throw new KeyNotFoundException();
+    Guid IParticipantConnectionRegistry.GetConnectionIdFromParticipantId(Guid roomId, Guid participantId)
+        => connectionIdByParticipantId.TryGetValue(new RoomParticipantIdKey(roomId, participantId), out var roomConnectionKey)
+        ? roomConnectionKey.ConnectionId : throw new KeyNotFoundException();
 
-    bool IParticipantConnectionRegistry.TryGetConnectionIdFromParticipantId(Guid participantId, out Guid connectionId)
-        => connectionIdByParticipantId.TryGetValue(participantId, out connectionId);
+    bool IParticipantConnectionRegistry.TryGetConnectionIdFromParticipantId(Guid roomId, Guid participantId, out Guid connectionId)
+    {
+        var result = connectionIdByParticipantId.TryGetValue(new RoomParticipantIdKey(roomId, participantId), out var roomConnectionKey);
+        connectionId = roomConnectionKey.ConnectionId;
+        return result;
+    }
 }

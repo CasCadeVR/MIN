@@ -1,4 +1,5 @@
 using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Entities;
 using MIN.Core.Headers.Contracts.Enums;
 using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -66,7 +67,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         }
 
         var dataWithMarker = headerManager.AddHeader(serialized, (byte)StreamChunkFlags.None);
-        var dataToSend = EncryptDataIfRequired(message, dataWithMarker, recipientConnectionId);
+        var dataToSend = EncryptDataIfRequired(message, dataWithMarker, roomId, recipientConnectionId);
         await transport.SendAsync(dataToSend, roomId, recipientConnectionId, cancellationToken);
     }
 
@@ -79,20 +80,20 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
             .Append(CoreRegistryConstants.LocalConnectionId);
 
         var tasks = participants
-            .Select(participant => participantConnectionRegistry.GetConnectionIdFromParticipantId(participant.Id))
+            .Select(participant => participantConnectionRegistry.GetConnectionIdFromParticipantId(roomId, participant.Id))
             .Where(connectionId => !excludeConnectionIds.Contains(connectionId))
             .Select(connectionId => SendAsync(message, roomId, senderId, connectionId, cancellationToken));
 
         await Task.WhenAll(tasks);
     }
 
-    private byte[] EncryptDataIfRequired(IMessage message, byte[] plainData, Guid recipientConnectionId)
+    private byte[] EncryptDataIfRequired(IMessage message, byte[] plainData, Guid roomId, Guid recipientConnectionId)
     {
         byte[] resultBytes;
 
         if (message.RequiresEncryption)
         {
-            var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(recipientConnectionId);
+            var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(roomId, recipientConnectionId);
             var encrypted = encryptor.EncryptMessage(plainData, recipientId);
             resultBytes = headerManager.AddHeader(encrypted, (byte)HeaderMessageType.Encrypted);
         }

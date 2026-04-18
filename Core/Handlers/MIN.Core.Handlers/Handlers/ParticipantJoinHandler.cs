@@ -81,7 +81,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
             await messageRouter.RouteAsync(participantJoinedMessage,
                 context.RoomId,
                 identityService.SelfPartcipant.Id,
-                Recipient.FromConnection(context.ConnectionId),
+                Recipient.FromConnection(context.RoomId, context.ConnectionId),
                 context.CancellationToken);
 
             return HandlerResult.WithResponse(new RoomInfoRequestMessage()

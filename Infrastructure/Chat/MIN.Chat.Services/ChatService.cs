@@ -41,7 +41,7 @@ namespace MIN.Chat.Services
                 RecipientId = recipientId,
             };
 
-            await messageRouter.RouteAsync(message, roomId, sender.Id, Recipient.FromParticipant(recipientId), cancellationToken);
+            await messageRouter.RouteAsync(message, roomId, sender.Id, Recipient.FromParticipant(roomId, recipientId), cancellationToken);
         }
 
         IReadOnlyList<ChatTextMessage> IChatService.GetChatTextMessageHistory(Guid roomId, int? page, int? pageSize)

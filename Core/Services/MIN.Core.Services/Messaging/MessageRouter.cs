@@ -70,7 +70,7 @@ public sealed class MessageRouter : IMessageRouter
     private Guid GetHostConnectionId(Guid roomId)
     {
         var hostId = roomStore.GetRoomHostParticipantId(roomId);
-        if (!participantConnectionRegistry.TryGetConnectionIdFromParticipantId(hostId, out var connectionId))
+        if (!participantConnectionRegistry.TryGetConnectionIdFromParticipantId(roomId, hostId, out var connectionId))
         {
             throw new InvalidOperationException($"Host participant {hostId} is not registered in room {roomId}");
         }

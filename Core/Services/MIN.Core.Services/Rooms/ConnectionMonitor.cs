@@ -66,7 +66,7 @@ namespace MIN.Core.Services.Rooms
 
                 if (!e.IsConnected)
                 {
-                    participantConnectionRegistry.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant);
+                    participantConnectionRegistry.TryGetParticipantFromConnectionId(e.RoomId, e.ConnectionId, out var leavingParticipant);
 
                     var hostParticipantId = roomStore.GetRoomHostParticipantId(e.RoomId);
                     var isHostLeaving = hostParticipantId == leavingParticipant.Id;
@@ -79,14 +79,14 @@ namespace MIN.Core.Services.Rooms
                     }
                     else if (participantStore.TryGetParticipantById(e.RoomId, leavingParticipant.Id, out _))
                     {
-                        participantConnectionRegistry.Unregister(e.ConnectionId);
+                        participantConnectionRegistry.Unregister(e.RoomId, e.ConnectionId);
                         var participantLeftMessage = new ParticipantLeftMessage()
                         {
                             Participant = leavingParticipant,
                             RoomId = e.RoomId,
                         };
 
-                        await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, Recipient.FromEmpty(), cts.Token);
+                        await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, Recipient.FromEmpty(e.RoomId), cts.Token);
                     }
                 }
 

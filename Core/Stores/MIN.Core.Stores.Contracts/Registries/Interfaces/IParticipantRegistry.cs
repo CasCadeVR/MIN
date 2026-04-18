@@ -10,40 +10,40 @@ public interface IParticipantConnectionRegistry
     /// <summary>
     /// Установить ассоциацию соеднинения с участником
     /// </summary>
-    void Register(Guid connectionId, ParticipantInfo participant);
+    void Register(Guid roomId, Guid connectionId, ParticipantInfo participant);
 
     /// <summary>
     /// Установить ассоциацию соеднинения с локальным участником
     /// </summary>
-    void RegisterLocalParticipant(ParticipantInfo participant);
+    void RegisterLocalParticipant(Guid roomId, ParticipantInfo participant);
 
     /// <summary>
     /// Получить данные участника от его соединения
     /// </summary>
-    ParticipantInfo? GetParticipant(Guid connectionId);
+    ParticipantInfo? GetParticipant(Guid roomId, Guid connectionId);
 
     /// <summary>
     /// Попытаться получить данные участника от его соединения
     /// </summary>
-    bool TryGetParticipantFromConnectionId(Guid connectionId, out ParticipantInfo participant);
+    bool TryGetParticipantFromConnectionId(Guid roomId, Guid connectionId, out ParticipantInfo participant);
 
     /// <summary>
     /// Получить идентификтор участника от идентификатора соеднинения
     /// </summary>
-    Guid GetParticipantIdFromConnectionId(Guid connectionId);
+    Guid GetParticipantIdFromConnectionId(Guid roomId, Guid connectionId);
 
     /// <summary>
     /// Получить идентификтор соеднинения от идентификатора участника
     /// </summary>
-    Guid GetConnectionIdFromParticipantId(Guid participantId);
+    Guid GetConnectionIdFromParticipantId(Guid roomId, Guid participantId);
 
     /// <summary>
     /// Попытаться получить идентификатор соединения от идентификатора участника
     /// </summary>
-    bool TryGetConnectionIdFromParticipantId(Guid participantId, out Guid connectionId);
+    bool TryGetConnectionIdFromParticipantId(Guid roomId, Guid participantId, out Guid connectionId);
 
     /// <summary>
     /// Разорвать ассоциацию соеднинения с участником
     /// </summary>
-    void Unregister(Guid connectionId);
+    void Unregister(Guid roomId, Guid connectionId);
 }

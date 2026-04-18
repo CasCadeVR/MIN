@@ -9,6 +9,11 @@ namespace MIN.Core.Services.Contracts.Models;
 public readonly struct Recipient
 {
     /// <summary>
+    /// Идентфикатор комнаты
+    /// </summary>
+    public Guid RoomId { get; }
+
+    /// <summary>
     /// Идентфикатор участника
     /// </summary>
     public Guid? ParticipantId { get; }
@@ -18,33 +23,28 @@ public readonly struct Recipient
     /// </summary>
     public Guid? ConnectionId { get; }
 
-    private Recipient(Guid? participantId, Guid? connectionId)
+    private Recipient(Guid roomId, Guid? participantId, Guid? connectionId)
     {
-        (ParticipantId, ConnectionId) = (participantId, connectionId);
+        (RoomId, ParticipantId, ConnectionId) = (roomId, participantId, connectionId);
     }
 
     /// <summary>
     /// Сформировать получателя в виде участника
     /// </summary>
-    public static Recipient FromParticipant(Guid? participantId)
-        => new(participantId, null);
+    public static Recipient FromParticipant(Guid roomId, Guid? participantId)
+        => new(roomId, participantId, null);
 
     /// <summary>
     /// Сформировать получателя в виде соединения
     /// </summary>
-    public static Recipient FromConnection(Guid? connectionId)
-        => new(null, connectionId);
+    public static Recipient FromConnection(Guid roomId, Guid? connectionId)
+        => new(roomId, null, connectionId);
 
     /// <summary>
     /// Сформировать получателя в виде пустого получателя
     /// </summary>
-    public static Recipient FromEmpty()
-        => new(null, null);
-
-    /// <summary>
-    /// Локальный получатель (пользователь)
-    /// </summary>
-    public static Recipient Local => FromConnection(CoreRegistryConstants.LocalConnectionId);
+    public static Recipient FromEmpty(Guid roomId)
+        => new(roomId, null, null);
 
     /// <summary>
     /// Локальное ли соединения
@@ -67,7 +67,7 @@ public readonly struct Recipient
         }
         if (ParticipantId.HasValue)
         {
-            return registry.GetConnectionIdFromParticipantId(ParticipantId.Value);
+            return registry.GetConnectionIdFromParticipantId(RoomId, ParticipantId.Value);
         }
 
         throw new InvalidOperationException("Recipient is empty");

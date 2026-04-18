@@ -105,11 +105,6 @@ public sealed class MessageStream : IDisposable
         }
     }
 
-    /// <summary>
-    /// Проверяет, все ли пакеты получены
-    /// </summary>
-    public bool AreAllChunksReceived() => receivedIndices.Count == ExpectedChunks;
-
     /// <inheritdoc/>
     public void Dispose()
     {

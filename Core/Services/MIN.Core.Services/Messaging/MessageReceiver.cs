@@ -80,7 +80,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
     {
         try
         {
-            participantConnectionRegistry.TryGetParticipantFromConnectionId(e.ConnectionId, out var participantInfo);
+            participantConnectionRegistry.TryGetParticipantFromConnectionId(e.RoomId, e.ConnectionId, out var participantInfo);
             var message = serializer.Deserialize(e.Data);
 
             await dispatcher.DispatchAsync(message, new MessageContext(
@@ -105,7 +105,7 @@ public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
                 return;
             }
 
-            participantConnectionRegistry.TryGetParticipantFromConnectionId(e.ConnectionId, out var participantInfo);
+            participantConnectionRegistry.TryGetParticipantFromConnectionId(e.RoomId, e.ConnectionId, out var participantInfo);
 
             byte[] plainData;
             var body = headerManager.RemoveEncryptionHeader(e.Data);

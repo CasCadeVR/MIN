@@ -128,6 +128,7 @@ namespace MIN.Desktop
             }
 
             localParticipant = new ParticipantInfo(identityService.SelfPartcipant);
+            participantConnectionRegistry.RegisterLocalParticipant(room.Id, localParticipant);
             room.HostParticipant = localParticipant;
 
             try
@@ -170,6 +171,7 @@ namespace MIN.Desktop
             try
             {
                 roomStore.Add(new Room(roomInfo));
+                participantConnectionRegistry.RegisterLocalParticipant(roomInfo.Id, localParticipant);
                 var connectionId = await roomConnector.ConnectAsync(roomInfo,
                     endpoint,
                     Settings.DiscoveryTimeout,
@@ -213,7 +215,7 @@ namespace MIN.Desktop
             else
             {
                 await roomConnector.DisconnectAsync(roomId, connectionId);
-                participantConnectionRegistry.Unregister(connectionId);
+                participantConnectionRegistry.Unregister(roomId, connectionId);
             }
 
             participantStore.ClearParticipants(roomId);
@@ -293,7 +295,6 @@ namespace MIN.Desktop
             };
 
             identityService.SetParticipant(localParticipant);
-            participantConnectionRegistry.RegisterLocalParticipant(localParticipant);
 
             if (CollegePCNameParser.TryParseComputerName(Environment.MachineName, out var roomNumber, out var _))
             {
@@ -312,8 +313,6 @@ namespace MIN.Desktop
 
         private async void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            await roomHoster.StopHostingAsync(Guid.Empty);
-            await roomConnector.DisconnectAsync(Guid.Empty, Guid.Empty);
             cts.Cancel();
             cts.Dispose();
         }
