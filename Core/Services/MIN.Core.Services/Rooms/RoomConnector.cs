@@ -3,7 +3,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Stores.Contracts.Registries.Interfaces;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
@@ -19,7 +19,7 @@ public sealed class RoomConnector : IRoomConnector
     private readonly IMessageRouter messageRouter;
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
-    private readonly IParticipantConnectionRegistry participantConnectionRegistry;
+    private readonly IRoomFactory roomFactory;
     private readonly ILoggerProvider logger;
     private readonly HashSet<Guid> activeConnections = [];
 
@@ -30,14 +30,14 @@ public sealed class RoomConnector : IRoomConnector
         IMessageRouter messageRouter,
         IIdentityService identityService,
         IMessageEncryptor encryptor,
-        IParticipantConnectionRegistry participantConnectionRegistry,
+        IRoomFactory roomFactory,
         ILoggerProvider logger)
     {
         this.transport = transport;
         this.messageRouter = messageRouter;
         this.identityService = identityService;
         this.encryptor = encryptor;
-        this.participantConnectionRegistry = participantConnectionRegistry;
+        this.roomFactory = roomFactory;
         this.logger = logger;
     }
 
@@ -45,7 +45,7 @@ public sealed class RoomConnector : IRoomConnector
     {
         var roomId = room.Id;
         var connectionId = await transport.ConnectAsync(roomId, endpoint, timeoutMs, cancellationToken);
-        participantConnectionRegistry.Register(roomId, connectionId, room.HostParticipant);
+        roomFactory.GetOrCreateContext(roomId).Connections.Register(connectionId, room.HostParticipant);
         logger.Log($"Подключились к комнате с {room.Name}, соединение с id {connectionId}");
 
         var selfHandshake = new HandshakeMessage()

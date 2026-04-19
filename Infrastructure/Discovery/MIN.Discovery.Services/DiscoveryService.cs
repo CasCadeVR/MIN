@@ -22,7 +22,7 @@ namespace MIN.Discovery.Services
         private readonly IDiscoveryTransport discoveryTransport;
         private readonly IMessageSerializer serializer;
         private readonly IRoomStore roomStore;
-        private readonly IParticipantStore participantStore;
+        private readonly IRoomFactory roomFactory;
         private readonly IEventBus eventBus;
         private readonly ILoggerProvider logger;
         private readonly HashSet<Guid> activeRoomIds = [];
@@ -37,7 +37,7 @@ namespace MIN.Discovery.Services
             IDiscoveryTransport discoveryTransport,
             IMessageSerializer serializer,
             IRoomStore roomStore,
-            IParticipantStore participantStore,
+            IRoomFactory roomFactory,
             IEventBus eventBus,
             ILoggerProvider logger)
         {
@@ -45,7 +45,7 @@ namespace MIN.Discovery.Services
             this.discoveryTransport = discoveryTransport;
             this.serializer = serializer;
             this.roomStore = roomStore;
-            this.participantStore = participantStore;
+            this.roomFactory = roomFactory;
             this.eventBus = eventBus;
             this.logger = logger;
         }
@@ -169,7 +169,7 @@ namespace MIN.Discovery.Services
 
                     var roomInfo = new RoomInfo(room)
                     {
-                        ParticipantCount = participantStore.GetParticipants(roomId).Count()
+                        ParticipantCount = roomFactory.GetOrCreateContext(roomId).Participants.GetParticipants().Count()
                     };
 
                     discoveryResponse.RoomDiscoveryInfos.Add(new RoomDiscoveryInfo()

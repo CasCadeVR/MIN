@@ -1,6 +1,7 @@
 ﻿using MIN.Chat.Messaging;
 using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 
 namespace MIN.Chat.Services;

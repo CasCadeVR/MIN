@@ -9,4 +9,9 @@ public static class DesktopConstants
     /// Не распознаный компьютер
     /// </summary>
     public readonly static string UndefinedPCName = "ХЗ";
+
+    /// <summary>
+    /// Таймаут на подключение к комнате (мс)
+    /// </summary>
+    public const int RoomConnectionTimeoutMs = 1_000;
 }

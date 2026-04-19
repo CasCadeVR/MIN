@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Headers.Contracts.Enums;
 using MIN.Core.Headers.Contracts.Interfaces;
-using MIN.Core.Stores.Contracts.Registries.Interfaces;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
@@ -17,7 +17,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
     private readonly ITransport transport;
     private readonly IMessageEncryptor encryptor;
     private readonly IHeaderManager headerManager;
-    private readonly IParticipantConnectionRegistry participantConnectionRegistry;
+    private readonly IRoomFactory roomFactory;
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<ChunkAckKey, PendingChunk> pendingChunks = new();
     private readonly ConcurrentDictionary<ChunkAckKey, Timer> ackTimers = new();
@@ -29,13 +29,13 @@ public sealed class StreamManager : IStreamManager, IDisposable
     public StreamManager(ITransport transport,
         IMessageEncryptor encryptor,
         IHeaderManager headerManager,
-        IParticipantConnectionRegistry participantConnectionRegistry,
+        IRoomFactory roomFactory,
         ILoggerProvider logger)
     {
         this.transport = transport;
         this.encryptor = encryptor;
         this.headerManager = headerManager;
-        this.participantConnectionRegistry = participantConnectionRegistry;
+        this.roomFactory = roomFactory;
         this.logger = logger;
     }
 
@@ -164,7 +164,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
         byte[] resultBytes;
         if (options.RequiresEncryption)
         {
-            var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(roomId, recipientConnectionId);
+            var recipientId = roomFactory.GetOrCreateContext(roomId).Connections.GetParticipantIdFromConnectionId(recipientConnectionId);
             var encrypted = encryptor.EncryptMessage(plainData, recipientId);
             resultBytes = headerManager.AddHeader(encrypted, (byte)HeaderMessageType.Encrypted);
         }

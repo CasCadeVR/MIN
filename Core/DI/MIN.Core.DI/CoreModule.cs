@@ -14,11 +14,11 @@ using MIN.Core.Serialization.Json;
 using MIN.Core.Serialization.Json.Services;
 using MIN.Core.Services.Messaging;
 using MIN.Core.Services.Rooms;
+using MIN.Core.Stores.Factories;
 using MIN.Core.Stores.Registries;
 using MIN.Core.Stores.Services;
 using MIN.Core.Streaming.Services;
 using MIN.Core.Transport.NamedPipes;
-using MIN.Core.Transport.NamedPipes.Factories;
 using MIN.Core.Transport.NamedPipes.Services;
 
 namespace MIN.Core.DI;
@@ -31,30 +31,36 @@ public class CoreModule : Module
     /// <inheritdoc />
     protected override void Load(IServiceCollection services)
     {
+        // Global
         services.RegisterAsImplementedInterfaces<JsonMessageSerializer>(ServiceLifetime.Singleton);
 
-        services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<FileSystemKeyStorage>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<KeyProvider>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<FileSystemKeyStorage>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<NamedPipeEndpointProvider>(ServiceLifetime.Singleton);
+        //services.RegisterAsImplementedInterfaces<NamedPipeTransportFactory>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NamedPipeTransport>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<NamedPipeTransportFactory>(ServiceLifetime.Singleton);
 
-        services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<MessageStore>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<ParticipantStore>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<HeaderManager>(ServiceLifetime.Singleton);
+
+        services.RegisterAsImplementedInterfaces<RoomConnector>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<RoomHoster>(ServiceLifetime.Singleton);
+
+        services.RegisterAsImplementedInterfaces<RoomFactory>(ServiceLifetime.Singleton);
+
+        // Room-scoped
+        services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Transient);
+        services.RegisterAsImplementedInterfaces<MessageStore>(ServiceLifetime.Transient);
+        services.RegisterAsImplementedInterfaces<ParticipantStore>(ServiceLifetime.Transient);
+
         services.RegisterAsImplementedInterfaces<RoomStore>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<MessageSender>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageRouter>(ServiceLifetime.Singleton);
 
-        services.RegisterAsImplementedInterfaces<HeaderManager>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChunkBufferAssembler>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<StreamManager>(ServiceLifetime.Singleton);
-
-        services.RegisterAsImplementedInterfaces<RoomConnector>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<RoomHoster>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<InMemoryEventBus>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageDispatcher>(ServiceLifetime.Singleton);

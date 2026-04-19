@@ -4,7 +4,6 @@ using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
-using MIN.Core.Stores.Contracts.Registries.Interfaces;
 
 namespace MIN.Core.Services.Messaging;
 
@@ -15,7 +14,7 @@ public sealed class MessageRouter : IMessageRouter
     private readonly IRoomStore roomStore;
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
-    private readonly IParticipantConnectionRegistry participantConnectionRegistry;
+    private readonly IRoomFactory roomFactory;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="MessageRouter"/>
@@ -24,13 +23,13 @@ public sealed class MessageRouter : IMessageRouter
         IRoomStore roomStore,
         IEventBus eventBus,
         IMessageSender messageSender,
-        IParticipantConnectionRegistry participantConnectionRegistry)
+        IRoomFactory roomFactory)
     {
         this.roomHoster = roomHoster;
         this.roomStore = roomStore;
         this.eventBus = eventBus;
         this.messageSender = messageSender;
-        this.participantConnectionRegistry = participantConnectionRegistry;
+        this.roomFactory = roomFactory;
     }
 
     async Task IMessageRouter.RouteAsync(IMessage message, Guid roomId, Guid senderId, CancellationToken cancellationToken)
@@ -67,7 +66,7 @@ public sealed class MessageRouter : IMessageRouter
 
     private Guid GetHostConnectionId(Guid roomId, Guid hostId)
     {
-        if (!participantConnectionRegistry.TryGetConnectionIdFromParticipantId(roomId, hostId, out var connectionId))
+        if (!roomFactory.GetOrCreateContext(roomId).Connections.TryGetConnectionIdFromParticipantId(hostId, out var connectionId))
         {
             throw new InvalidOperationException($"Host participant {hostId} is not registered in room {roomId}");
         }

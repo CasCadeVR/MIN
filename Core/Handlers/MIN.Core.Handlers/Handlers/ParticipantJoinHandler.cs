@@ -6,23 +6,25 @@ using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Messaging.Stateless.RoomRelated;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
 /// <summary>
-/// Обработчик для сообщений <see cref="ParticipantJoinedMessage"/>, <see cref="ParticipantJoinedMessage"/>, <see cref="ParticipantJoinedMessage"/>,
+/// Обработчик для сообщений <see cref="RoomJoinRequestMessage"/>,
+/// <see cref="RoomJoinResponseMessage"/>,
+/// <see cref="ParticipantAcceptedMessage"/>, 
+/// <see cref="ParticipantJoinedMessage"/>
 /// </summary>
 internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnchor
 {
     private readonly IRoomStore roomStore;
-    private readonly IParticipantStore participantStore;
+    private readonly IRoomHoster roomHoster;
     private readonly IIdentityService identityService;
-    private readonly IMessageRouter messageRouter;
-    private readonly IMessageStore messageStore;
+    private readonly IRoomFactory roomFactory;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
@@ -31,24 +33,23 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
     /// </summary>
     public ParticipantJoinHandler(
         IRoomStore roomStore,
-        IParticipantStore participantStore,
+        IRoomHoster roomHoster,
         IIdentityService identityService,
-        IMessageRouter messageRouter,
-        IMessageStore messageStore,
+        IRoomFactory roomFactory,
         IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.roomStore = roomStore;
-        this.participantStore = participantStore;
+        this.roomHoster = roomHoster;
         this.identityService = identityService;
-        this.messageRouter = messageRouter;
-        this.messageStore = messageStore;
+        this.roomFactory = roomFactory;
         this.eventBus = eventBus;
         this.logger = logger;
     }
 
     IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
-        => [MessageTypeTag.RoomJoinRequest, MessageTypeTag.RoomJoinResponse, MessageTypeTag.ParticipantJoined];
+        => [MessageTypeTag.RoomJoinRequest, MessageTypeTag.RoomJoinResponse,
+            MessageTypeTag.ParticipantJoined, MessageTypeTag.ParticipantAccepted];
 
     int IMessageHandler.Priority => 3;
 
@@ -77,11 +78,10 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
                 RoomId = context.RoomId
             };
 
-            await messageRouter.RouteAsync(participantJoinedMessage,
-                context.RoomId,
-                identityService.SelfPartcipant.Id,
-                context.CancellationToken);
-
+            return HandlerResult.WithResponse(participantJoinedMessage);
+        }
+        else if (message is ParticipantAcceptedMessage participantAcceptedMessage)
+        {
             return HandlerResult.WithResponse(new RoomInfoRequestMessage()
             {
                 RoomId = context.RoomId,
@@ -89,14 +89,24 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         }
         else if (message is ParticipantJoinedMessage participantJoinedMessage)
         {
-            participantStore.AddParticipant(context.RoomId, participantJoinedMessage.Participant);
             logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomId}");
-            messageStore.AddMessage(context.RoomId, message);
+
+            var roomContext = roomFactory.GetOrCreateContext(context.RoomId);
+            roomContext.Participants.AddParticipant(participantJoinedMessage.Participant);
+            roomContext.Messages.AddMessage(message);
 
             await eventBus.PublishAsync(new ParticipantJoinedEvent()
             {
                 Message = participantJoinedMessage,
             }, context.CancellationToken);
+
+            if (roomHoster.IsHosting(context.RoomId))
+            {
+                return HandlerResult.WithResponse(new ParticipantAcceptedMessage()
+                {
+                    RoomId = context.RoomId,
+                });
+            }
 
             return HandlerResult.Success();
         }

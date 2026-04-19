@@ -15,21 +15,18 @@ namespace MIN.Core.Handlers.Handlers;
 /// </summary>
 internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnchor
 {
-    private readonly IMessageStore messageStore;
-    private readonly IParticipantStore participantStore;
+    private readonly IRoomFactory roomFactory;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ParticipantLeftHandler"/>
     /// </summary>
-    public ParticipantLeftHandler(IMessageStore messageStore,
-        IParticipantStore participantStore,
+    public ParticipantLeftHandler(IRoomFactory roomFactory,
         IEventBus eventBus,
         ILoggerProvider logger)
     {
-        this.messageStore = messageStore;
-        this.participantStore = participantStore;
+        this.roomFactory = roomFactory;
         this.eventBus = eventBus;
         this.logger = logger;
     }
@@ -43,8 +40,9 @@ internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnch
     {
         if (message is ParticipantLeftMessage participantLeftMessage)
         {
-            messageStore.AddMessage(context.RoomId, message);
-            participantStore.RemoveParticipant(context.RoomId, participantLeftMessage.Participant.Id);
+            var roomContext = roomFactory.GetOrCreateContext(context.RoomId);
+            roomContext.Messages.AddMessage(message);
+            roomContext.Participants.RemoveParticipant(participantLeftMessage.Participant.Id);
 
             logger.Log($"Участник {participantLeftMessage.Participant.Name} вышел из комнаты");
 

@@ -10,30 +10,30 @@ public interface IParticipantStore
     /// <summary>
     /// Добавить участника в комнату
     /// </summary>
-    void AddParticipant(Guid roomId, ParticipantInfo participant);
+    void AddParticipant(ParticipantInfo participant);
 
     /// <summary>
     /// Удалить участника из комнаты
     /// </summary>
-    void RemoveParticipant(Guid roomId, Guid participantId);
+    void RemoveParticipant(Guid participantId);
 
     /// <summary>
     /// Получить участника комнаты
     /// </summary>
-    ParticipantInfo GetParticipantById(Guid roomId, Guid participantId);
+    ParticipantInfo GetParticipantById(Guid participantId);
 
     /// <summary>
     /// Попытаться получить участника комнаты
     /// </summary>
-    bool TryGetParticipantById(Guid roomId, Guid participantId, out ParticipantInfo? participantInfo);
+    bool TryGetParticipantById(Guid participantId, out ParticipantInfo? participantInfo);
 
     /// <summary>
     /// Получить список всех участников комнаты
     /// </summary>
-    IEnumerable<ParticipantInfo> GetParticipants(Guid roomId);
+    IEnumerable<ParticipantInfo> GetParticipants();
 
     /// <summary>
     /// Очистить участников для комнаты
     /// </summary>
-    void ClearParticipants(Guid roomId);
+    void ClearParticipants();
 }

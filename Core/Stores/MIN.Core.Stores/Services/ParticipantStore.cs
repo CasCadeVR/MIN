@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Core.Stores.Services;
@@ -7,11 +6,10 @@ namespace MIN.Core.Stores.Services;
 /// <inheritdoc cref="IParticipantStore"/>
 public sealed class ParticipantStore : IParticipantStore
 {
-    private readonly ConcurrentDictionary<Guid, List<ParticipantInfo>> participants = new();
+    private readonly List<ParticipantInfo> participants = [];
 
-    void IParticipantStore.AddParticipant(Guid roomId, ParticipantInfo participant)
+    void IParticipantStore.AddParticipant(ParticipantInfo participant)
     {
-        var participants = this.participants.GetOrAdd(roomId, _ => []);
         lock (participants)
         {
             if (!participants.Any(p => p.Id == participant.Id))
@@ -21,68 +19,46 @@ public sealed class ParticipantStore : IParticipantStore
         }
     }
 
-    void IParticipantStore.RemoveParticipant(Guid roomId, Guid participantId)
+    void IParticipantStore.RemoveParticipant(Guid participantId)
     {
-        if (participants.TryGetValue(roomId, out var roomParticipants))
+        lock (participants)
         {
-            lock (roomParticipants)
+            var existing = participants.FirstOrDefault(p => p.Id == participantId);
+            if (existing != null)
             {
-                var existing = roomParticipants.FirstOrDefault(p => p.Id == participantId);
-                if (existing != null)
-                {
-                    roomParticipants.Remove(existing);
-                }
+                participants.Remove(existing);
             }
         }
     }
 
-    ParticipantInfo IParticipantStore.GetParticipantById(Guid roomId, Guid participantId)
+    ParticipantInfo IParticipantStore.GetParticipantById(Guid participantId)
     {
-        if (participants.TryGetValue(roomId, out var roomParticipants))
+        lock (participants)
         {
-            lock (roomParticipants)
-            {
-                return roomParticipants.FirstOrDefault(x => x.Id == participantId)
-                    ?? throw new ArgumentNullException(nameof(participantId));
-            }
-        }
-        else
-        {
-            throw new ArgumentNullException(nameof(roomId));
+            return participants.FirstOrDefault(x => x.Id == participantId)
+                ?? throw new ArgumentNullException(nameof(participantId));
         }
     }
 
-    bool IParticipantStore.TryGetParticipantById(Guid roomId, Guid participantId, out ParticipantInfo? participantInfo)
+    bool IParticipantStore.TryGetParticipantById(Guid participantId, out ParticipantInfo? participantInfo)
     {
-        if (participants.TryGetValue(roomId, out var roomParticipants))
+        lock (participants)
         {
-            lock (roomParticipants)
-            {
-                participantInfo = roomParticipants.FirstOrDefault(x => x.Id == participantId);
-                return participantInfo != null;
-            }
-        }
-        else
-        {
-            throw new ArgumentNullException(nameof(roomId));
+            participantInfo = participants.FirstOrDefault(x => x.Id == participantId);
+            return participantInfo != null;
         }
     }
 
-    IEnumerable<ParticipantInfo> IParticipantStore.GetParticipants(Guid roomId)
+    IEnumerable<ParticipantInfo> IParticipantStore.GetParticipants()
     {
-        if (participants.TryGetValue(roomId, out var roomParticipants))
+        lock (participants)
         {
-            lock (roomParticipants)
-            {
-                return roomParticipants.ToList();
-            }
+            return participants.ToList();
         }
-
-        return [];
     }
 
-    void IParticipantStore.ClearParticipants(Guid roomId)
+    void IParticipantStore.ClearParticipants()
     {
-        participants.TryRemove(roomId, out _);
+        participants.Clear();
     }
 }

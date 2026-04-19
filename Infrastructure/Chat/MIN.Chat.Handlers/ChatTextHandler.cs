@@ -15,7 +15,7 @@ namespace MIN.Chat.Handlers;
 /// </summary>
 internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
 {
-    private readonly IMessageStore messageStore;
+    private readonly IRoomFactory roomFactory;
     private readonly IParticipantStore participantStore;
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
@@ -23,12 +23,12 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ChatTextHandler"/>
     /// </summary>
-    public ChatTextHandler(IMessageStore messageStore,
+    public ChatTextHandler(IRoomFactory roomFactory,
         IParticipantStore participantStore,
         IIdentityService identityService,
         IEventBus eventBus)
     {
-        this.messageStore = messageStore;
+        this.roomFactory = roomFactory;
         this.participantStore = participantStore;
         this.identityService = identityService;
         this.eventBus = eventBus;
@@ -42,12 +42,14 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
     {
         if (message is ChatTextMessage chatTextMessage)
         {
-            if (!participantStore.TryGetParticipantById(context.RoomId, message.SenderId, out var sender))
+            var roomContext = roomFactory.GetOrCreateContext(context.RoomId);
+
+            if (!roomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
             {
                 return HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false);
             }
 
-            messageStore.AddMessage(context.RoomId, chatTextMessage);
+            roomContext.Messages.AddMessage(chatTextMessage);
             var selfId = identityService.SelfPartcipant.Id;
 
             if (message.SenderId == selfId || message.RecipientId == selfId || message.IsPublic)

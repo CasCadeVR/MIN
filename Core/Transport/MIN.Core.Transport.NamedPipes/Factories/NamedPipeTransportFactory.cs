@@ -2,30 +2,29 @@ using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Enum;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MIN.Core.Transport.NamedPipes.Factories
+namespace MIN.Core.Transport.NamedPipes.Factories;
+
+/// <summary>
+/// ‘абрика дл€ транспорта
+/// </summary>
+public class NamedPipeTransportFactory : ITransportFactory
 {
+    private readonly IServiceProvider provider;
+
     /// <summary>
-    /// Simple factory to create transports based on TransportType.
+    /// »нициализирует новый экземпл€р <see cref="NamedPipeTransportFactory"/>
     /// </summary>
-    public class NamedPipeTransportFactory : ITransportFactory
+    public NamedPipeTransportFactory(IServiceProvider provider)
     {
-        private readonly IServiceProvider provider;
+        this.provider = provider;
+    }
 
-        /// <summary>
-        /// »нициализирует новый экземпл€р <see cref="NamedPipeTransportFactory"/>
-        /// </summary>
-        public NamedPipeTransportFactory(IServiceProvider provider)
+    ITransport ITransportFactory.CreateTransport(TransportType type)
+    {
+        return type switch
         {
-            this.provider = provider;
-        }
-
-        ITransport ITransportFactory.CreateTransport(TransportType type)
-        {
-            return type switch
-            {
-                TransportType.NamedPipe => provider.GetRequiredService<ITransport>(),
-                _ => throw new NotSupportedException($"Transport type '{type}' is not supported yet.")
-            };
-        }
+            TransportType.NamedPipe => provider.GetRequiredService<ITransport>(),
+            _ => throw new NotSupportedException($"Transport type '{type}' is not supported yet.")
+        };
     }
 }

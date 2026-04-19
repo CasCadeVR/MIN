@@ -7,7 +7,7 @@ using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Events;
-using MIN.Core.Stores.Contracts.Registries.Interfaces;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
@@ -29,7 +29,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     private readonly IMessageEncryptor encryptor;
     private readonly IHeaderManager headerManager;
     private readonly ILoggerProvider logger;
-    private readonly IParticipantConnectionRegistry participantConnectionRegistry;
+    private readonly IRoomFactory roomFactory;
     private readonly IChunkBufferAssembler chunkBufferAssembler;
     private readonly IStreamManager streamManager;
     private CancellationTokenSource cts = null!;
@@ -44,7 +44,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         IMessageEncryptor encryptor,
         IHeaderManager headerManager,
         ILoggerProvider logger,
-        IParticipantConnectionRegistry participantConnectionRegistry,
+        IRoomFactory roomFactory,
         IChunkBufferAssembler chunkBufferAssembler,
         IStreamManager streamManager)
     {
@@ -55,7 +55,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         this.encryptor = encryptor;
         this.headerManager = headerManager;
         this.logger = logger;
-        this.participantConnectionRegistry = participantConnectionRegistry;
+        this.roomFactory = roomFactory;
         this.chunkBufferAssembler = chunkBufferAssembler;
         this.streamManager = streamManager;
     }
@@ -102,7 +102,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
                 return;
             }
 
-            participantConnectionRegistry.TryGetParticipantFromConnectionId(e.RoomId, e.ConnectionId, out var participantInfo);
+            roomFactory.GetOrCreateContext(e.RoomId).Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var participantInfo);
 
             byte[] plainData;
             var body = headerManager.RemoveEncryptionHeader(e.Data);

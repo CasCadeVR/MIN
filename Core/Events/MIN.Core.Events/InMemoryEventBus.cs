@@ -11,6 +11,7 @@ public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Type, List<Func<object, CancellationToken, Task>>> handlers = new();
     private readonly ILoggerProvider logger;
+
     private readonly CancellationTokenSource cts = new();
 
     private bool disposed;
@@ -26,8 +27,10 @@ public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
     async Task IEventBus.PublishAsync<T>(T eventMessage, CancellationToken cancellationToken)
     {
         var eventType = typeof(T);
+
         if (!this.handlers.TryGetValue(eventType, out var handlers))
         {
+            logger.Log($"Не было подписчиков на {eventType.Name}, когда опубликовали событие", LogLevel.Warning);
             return;
         }
 

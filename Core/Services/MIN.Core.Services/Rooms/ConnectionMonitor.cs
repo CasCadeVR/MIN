@@ -4,7 +4,6 @@ using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Stores.Contracts.Interfaces;
-using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -20,8 +19,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
     private readonly IRoomStore roomStore;
-    private readonly IParticipantStore participantStore;
-    private readonly IParticipantConnectionRegistry participantConnectionRegistry;
+    private readonly IRoomFactory roomFactory;
     private readonly ILoggerProvider logger;
 
     private CancellationTokenSource cts = null!;
@@ -33,16 +31,14 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         IEventBus eventBus,
         IMessageRouter messageRouter,
         IRoomStore roomStore,
-        IParticipantStore participantStore,
-        IParticipantConnectionRegistry participantConnectionRegistry,
+        IRoomFactory roomFactory,
         ILoggerProvider logger)
     {
         this.transport = transport;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
         this.roomStore = roomStore;
-        this.participantStore = participantStore;
-        this.participantConnectionRegistry = participantConnectionRegistry;
+        this.roomFactory = roomFactory;
         this.logger = logger;
     }
 
@@ -67,7 +63,8 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
 
             if (!e.IsConnected)
             {
-                participantConnectionRegistry.TryGetParticipantFromConnectionId(e.RoomId, e.ConnectionId, out var leavingParticipant);
+                var context = roomFactory.GetOrCreateContext(e.RoomId);
+                context.Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant);
 
                 var hostParticipantId = roomStore.GetRoomHostParticipantId(e.RoomId);
                 var isHostLeaving = hostParticipantId == leavingParticipant.Id;
@@ -78,9 +75,9 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
                 {
                     leavingMessage = !string.IsNullOrEmpty(e.LeavingMessage) ? leavingMessage : "Хост остановил комнату";
                 }
-                else if (participantStore.TryGetParticipantById(e.RoomId, leavingParticipant.Id, out _))
+                else if (context.Participants.TryGetParticipantById(leavingParticipant.Id, out _))
                 {
-                    participantConnectionRegistry.Unregister(e.RoomId, e.ConnectionId);
+                    context.Connections.Unregister(e.ConnectionId);
                     var participantLeftMessage = new ParticipantLeftMessage()
                     {
                         Participant = leavingParticipant,

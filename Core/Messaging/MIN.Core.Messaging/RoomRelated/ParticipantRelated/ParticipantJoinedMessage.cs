@@ -4,7 +4,7 @@ using MIN.Core.Messaging.Contracts;
 namespace MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 
 /// <summary>
-/// Уведомление о присоединении нового участника к комнате.
+/// Уведомление о присоединении нового участника к комнате
 /// </summary>
 public sealed class ParticipantJoinedMessage : BaseMessage
 {
@@ -15,7 +15,7 @@ public sealed class ParticipantJoinedMessage : BaseMessage
     public override bool IsPublic => true;
 
     /// <summary>
-    /// Идентификатор комнаты.
+    /// Идентификатор комнаты
     /// </summary>
     public Guid RoomId { get; set; }
 

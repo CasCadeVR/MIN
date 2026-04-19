@@ -10,16 +10,16 @@ namespace MIN.Core.Services.Rooms;
 /// <inheritdoc cref="IRoomHoster"/>
 public sealed class RoomHoster : IRoomHoster
 {
-    private readonly IMessageStore messageStore;
+    private readonly IRoomFactory roomFactory;
     private readonly ITransport transport;
     private readonly HashSet<Guid> activeRooms = [];
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomHoster"/>
     /// </summary>
-    public RoomHoster(IMessageStore messageStore, ITransport transport)
+    public RoomHoster(IRoomFactory roomFactory, ITransport transport)
     {
-        this.messageStore = messageStore;
+        this.roomFactory = roomFactory;
         this.transport = transport;
     }
 
@@ -30,12 +30,14 @@ public sealed class RoomHoster : IRoomHoster
             return;
         }
 
-        messageStore.AddMessage(roomInfo.Id, new SystemTextMessage()
+        var context = roomFactory.GetOrCreateContext(roomInfo.Id);
+
+        context.Messages.AddMessage(new SystemTextMessage()
         {
             Content = $"Комната {roomInfo.Name} была создана в {DateTime.Now.ToShortTimeString()}",
         });
 
-        messageStore.AddMessage(roomInfo.Id, new ParticipantJoinedMessage()
+        context.Messages.AddMessage(new ParticipantJoinedMessage()
         {
             Participant = roomInfo.HostParticipant,
             RoomId = roomInfo.Id

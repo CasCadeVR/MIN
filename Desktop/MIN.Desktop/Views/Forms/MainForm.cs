@@ -4,14 +4,15 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
-using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts;
+using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Discovery.Events;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
@@ -31,9 +32,7 @@ namespace MIN.Desktop
         private readonly IRoomConnector roomConnector;
         private readonly IRoomHoster roomHoster;
         private readonly IRoomStore roomStore;
-        private readonly IParticipantStore participantStore;
-        private readonly IMessageStore messageStore;
-        private readonly IParticipantConnectionRegistry participantConnectionRegistry;
+        private readonly IRoomFactory roomFactory;
         private readonly IChatService chatService;
         private readonly IDiscoveryService discoveryService;
         private readonly IEventBus eventBus;
@@ -57,9 +56,7 @@ namespace MIN.Desktop
             IRoomConnector roomConnector,
             IRoomHoster roomHoster,
             IRoomStore roomStore,
-            IParticipantStore participantStore,
-            IMessageStore messageStore,
-            IParticipantConnectionRegistry participantConnectionRegistry,
+            IRoomFactory roomFactory,
             IChatService chatService,
             IDiscoveryService discoveryService,
             IEventBus eventBus,
@@ -75,9 +72,7 @@ namespace MIN.Desktop
             this.roomConnector = roomConnector;
             this.roomHoster = roomHoster;
             this.roomStore = roomStore;
-            this.participantStore = participantStore;
-            this.messageStore = messageStore;
-            this.participantConnectionRegistry = participantConnectionRegistry;
+            this.roomFactory = roomFactory;
             this.chatService = chatService;
             this.discoveryService = discoveryService;
             this.eventBus = eventBus;
@@ -129,7 +124,9 @@ namespace MIN.Desktop
             }
 
             localParticipant = identityService.SelfPartcipant.ToParticipantInfo();
-            participantConnectionRegistry.RegisterLocalParticipant(room.Id, localParticipant);
+            var context = roomFactory.GetOrCreateContext(room.Id);
+
+            context.Connections.RegisterLocalParticipant(localParticipant);
             room.HostParticipant = localParticipant;
 
             try
@@ -139,11 +136,11 @@ namespace MIN.Desktop
                 var roomInfo = new RoomInfo(room);
                 await roomHoster.StartHostingAsync(roomInfo, cts.Token);
 
-                participantStore.AddParticipant(roomInfo.Id, localParticipant);
+                context.Participants.AddParticipant(localParticipant);
 
                 await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
 
-                OpenChatForm(roomInfo.Id, CoreRegistryConstants.LocalConnectionId, isHost: true, new NamedPipeEndpoint()
+                OpenChatForm(roomStore.GetRoom(room.Id), CoreRegistryConstants.LocalConnectionId, isHost: true, new NamedPipeEndpoint()
                 {
                     MachineName = Environment.MachineName,
                 });
@@ -156,13 +153,6 @@ namespace MIN.Desktop
 
         private async Task OnRoomJoin(RoomInfo roomInfo, IEndpoint endpoint)
         {
-            if (roomInfo.ParticipantCount >= roomInfo.MaximumParticipants)
-            {
-                MessageBox.Show("Невозможно подключиться: комната заполнена.", "Ошибка",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             var participantCreateForm = new ParticipantCreateForm(identityService);
             if (participantCreateForm.ShowDialog() != DialogResult.OK)
             {
@@ -171,14 +161,23 @@ namespace MIN.Desktop
 
             try
             {
-                roomStore.Add(new Room(roomInfo));
-                participantConnectionRegistry.RegisterLocalParticipant(roomInfo.Id, localParticipant);
-                var connectionId = await roomConnector.ConnectAsync(roomInfo,
-                    endpoint,
-                    Settings.DiscoveryTimeout,
-                    cts.Token);
+                var connectionId = Guid.Empty;
 
-                OpenChatForm(roomInfo.Id, connectionId, isHost: false, endpoint);
+                roomStore.Add(new Room(roomInfo));
+
+                new LoadingForm(roomInfo.Id, eventBus, room =>
+                {
+                    if (room == null)
+                    {
+                        return;
+                    }
+                    OpenChatForm(room, connectionId, isHost: false, endpoint);
+                }, DesktopConstants.RoomConnectionTimeoutMs).Show();
+
+                roomFactory.GetOrCreateContext(roomInfo.Id).Connections.RegisterLocalParticipant(localParticipant);
+
+                connectionId = await roomConnector.ConnectAsync(roomInfo, endpoint,
+                    DesktopConstants.RoomConnectionTimeoutMs, cts.Token);
             }
             catch (Exception ex)
             {
@@ -186,7 +185,7 @@ namespace MIN.Desktop
             }
         }
 
-        private void OpenChatForm(Guid roomId, Guid connectionId, bool isHost, IEndpoint endpoint)
+        private void OpenChatForm(Room room, Guid connectionId, bool isHost, IEndpoint endpoint)
         {
             var chatForm = new ChatForm(
                 chatService,
@@ -195,12 +194,12 @@ namespace MIN.Desktop
                 notificationService,
                 logger,
                 identityService,
-                roomId,
+                room,
                 endpoint);
 
             chatForm.FormClosing += async (_, _) =>
             {
-                await CleanUpAsync(roomId, connectionId, isHost);
+                await CleanUpAsync(room.Id, connectionId, isHost);
             };
 
             chatForm.Show();
@@ -216,11 +215,9 @@ namespace MIN.Desktop
             else
             {
                 await roomConnector.DisconnectAsync(roomId, connectionId);
-                participantConnectionRegistry.Unregister(roomId, connectionId);
             }
 
-            participantStore.ClearParticipants(roomId);
-            messageStore.ClearMessages(roomId);
+            roomFactory.DestroyContext(roomId);
             roomStore.Remove(roomId);
         }
 

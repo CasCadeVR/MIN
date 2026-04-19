@@ -150,24 +150,29 @@ public enum MessageTypeTag : byte
     ParticipantJoined = 100,
 
     /// <summary>
+    /// Подтверждение о присоединении нового участника.
+    /// </summary>
+    ParticipantAccepted = 101,
+
+    /// <summary>
     /// Уведомление о выходе участника.
     /// </summary>
-    ParticipantLeft = 101,
+    ParticipantLeft = 102,
 
     /// <summary>
     /// Обновление информации об участнике.
     /// </summary>
-    ParticipantUpdated = 102,
+    ParticipantUpdated = 103,
 
     /// <summary>
     /// Сообщение о миграции хоста.
     /// </summary>
-    HostMigration = 103,
+    HostMigration = 104,
 
     /// <summary>
     /// Изменение состояния комнаты.
     /// </summary>
-    RoomStateChanged = 104,
+    RoomStateChanged = 105,
 
     // ===== Сообщения для передачи файлов (128-159) =====
 

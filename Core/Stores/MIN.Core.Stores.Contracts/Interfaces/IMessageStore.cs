@@ -10,15 +10,15 @@ public interface IMessageStore
     /// <summary>
     /// Добавить сообщение
     /// </summary>
-    void AddMessage(Guid roomId, IMessage message);
+    void AddMessage(IMessage message);
 
     /// <summary>
     /// Получить историю сообщений
     /// </summary>
-    IEnumerable<IMessage> GetHistory(Guid roomId, int? page = 1, int? pageSize = 100);
+    IEnumerable<IMessage> GetHistory(int? page = 1, int? pageSize = 100);
 
     /// <summary>
     /// Очистить сообщения из комнаты
     /// </summary>
-    void ClearMessages(Guid roomId);
+    void ClearMessages();
 }

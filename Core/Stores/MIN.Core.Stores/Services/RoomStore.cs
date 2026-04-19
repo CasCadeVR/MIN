@@ -7,17 +7,15 @@ namespace MIN.Core.Stores.Services;
 /// <inheritdoc cref="IRoomStore"/>
 public sealed class RoomStore : IRoomStore
 {
-    private readonly IParticipantStore participantStore;
-    private readonly IMessageStore messageStore;
+    private readonly IRoomFactory roomFactory;
     private readonly ConcurrentDictionary<Guid, Room> roomsById = new();
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomStore"/>
     /// </summary>
-    public RoomStore(IParticipantStore participantStore, IMessageStore messageStore)
+    public RoomStore(IRoomFactory roomFactory)
     {
-        this.participantStore = participantStore;
-        this.messageStore = messageStore;
+        this.roomFactory = roomFactory;
     }
 
     bool IRoomStore.RoomExists(Guid roomId)
@@ -27,8 +25,9 @@ public sealed class RoomStore : IRoomStore
     {
         if (roomsById.TryGetValue(roomId, out var room))
         {
-            room.CurrentParticipants = participantStore.GetParticipants(roomId).ToList();
-            room.ChatHistory = messageStore.GetHistory(roomId).ToList();
+            var context = roomFactory.GetOrCreateContext(roomId);
+            room.CurrentParticipants = context.Participants.GetParticipants().ToList();
+            room.ChatHistory = context.Messages.GetHistory().ToList();
             return room;
         }
 
@@ -39,8 +38,9 @@ public sealed class RoomStore : IRoomStore
     {
         if (roomsById.TryGetValue(roomId, out room!))
         {
-            room.CurrentParticipants = participantStore.GetParticipants(roomId).ToList();
-            room.ChatHistory = messageStore.GetHistory(roomId).ToList();
+            var context = roomFactory.GetOrCreateContext(roomId);
+            room.CurrentParticipants = context.Participants.GetParticipants().ToList();
+            room.ChatHistory = roomFactory.GetOrCreateContext(roomId).Messages.GetHistory().ToList();
             return true;
         }
 
@@ -51,8 +51,9 @@ public sealed class RoomStore : IRoomStore
     {
         if (roomsById.TryGetValue(roomId, out var room))
         {
-            room.CurrentParticipants = participantStore.GetParticipants(roomId).ToList();
-            room.ChatHistory = messageStore.GetHistory(roomId)
+            var context = roomFactory.GetOrCreateContext(roomId);
+            room.CurrentParticipants = context.Participants.GetParticipants().ToList();
+            room.ChatHistory = context.Messages.GetHistory()
                 .Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId)
                 .ToList();
             return room;

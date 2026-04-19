@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using MIN.Core.Messaging.Contracts.Interfaces;
+﻿using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Core.Stores.Services;
@@ -7,44 +6,38 @@ namespace MIN.Core.Stores.Services;
 /// <inheritdoc cref="IMessageStore"/>
 public sealed class MessageStore : IMessageStore
 {
-    private readonly ConcurrentDictionary<Guid, List<IMessage>> messages = new();
+    private readonly List<IMessage> messages = [];
 
-    void IMessageStore.AddMessage(Guid roomId, IMessage message)
+    void IMessageStore.AddMessage(IMessage message)
     {
-        var messages = this.messages.GetOrAdd(roomId, _ => []);
         lock (messages)
         {
             messages.Add(message);
         }
     }
 
-    IEnumerable<IMessage> IMessageStore.GetHistory(Guid roomId, int? page, int? pageSize)
+    IEnumerable<IMessage> IMessageStore.GetHistory(int? page, int? pageSize)
     {
-        if (messages.TryGetValue(roomId, out var roomMessages))
+        lock (messages)
         {
-            lock (roomMessages)
+            var resultMessages = messages.ToList();
+
+            if (page.HasValue)
             {
-                var resultMessages = roomMessages.ToList();
-
-                if (page.HasValue)
-                {
-                    resultMessages = roomMessages.Skip((int)page).ToList();
-                }
-
-                if (pageSize.HasValue)
-                {
-                    resultMessages = roomMessages.Take((int)pageSize).ToList();
-                }
-
-                return resultMessages;
+                resultMessages = messages.Skip((int)page).ToList();
             }
-        }
 
-        return [];
+            if (pageSize.HasValue)
+            {
+                resultMessages = messages.Take((int)pageSize).ToList();
+            }
+
+            return resultMessages;
+        }
     }
 
-    void IMessageStore.ClearMessages(Guid roomId)
+    void IMessageStore.ClearMessages()
     {
-        messages.TryRemove(roomId, out _);
+        messages.Clear();
     }
 }

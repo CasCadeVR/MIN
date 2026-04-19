@@ -5,7 +5,6 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Stores.Contracts.Interfaces;
-using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Interfaces;
@@ -22,8 +21,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
     private readonly IMessageEncryptor encryptor;
     private readonly IMessageSerializer serializer;
     private readonly IHeaderManager headerManager;
-    private readonly IParticipantStore participantStore;
-    private readonly IParticipantConnectionRegistry participantConnectionRegistry;
+    private readonly IRoomFactory roomFactory;
     private readonly IStreamManager streamManager;
     private readonly ILoggerProvider logger;
 
@@ -34,8 +32,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         IMessageEncryptor encryptor,
         IMessageSerializer serializer,
         IHeaderManager headerManager,
-        IParticipantStore participantStore,
-        IParticipantConnectionRegistry participantConnectionRegistry,
+        IRoomFactory roomFactory,
         IStreamManager streamManager,
         ILoggerProvider logger)
     {
@@ -43,8 +40,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         this.encryptor = encryptor;
         this.serializer = serializer;
         this.headerManager = headerManager;
-        this.participantStore = participantStore;
-        this.participantConnectionRegistry = participantConnectionRegistry;
+        this.roomFactory = roomFactory;
         this.streamManager = streamManager;
         this.logger = logger;
     }
@@ -73,13 +69,14 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
     async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken)
     {
         var serialized = serializer.Serialize(message);
-        var participants = participantStore.GetParticipants(roomId);
+        var context = roomFactory.GetOrCreateContext(roomId);
+        var participants = context.Participants.GetParticipants();
 
         excludeConnectionIds = (excludeConnectionIds ?? [])
             .Append(CoreRegistryConstants.LocalConnectionId);
 
         var tasks = participants
-            .Select(participant => participantConnectionRegistry.GetConnectionIdFromParticipantId(roomId, participant.Id))
+            .Select(participant => context.Connections.GetConnectionIdFromParticipantId(participant.Id))
             .Where(connectionId => !excludeConnectionIds.Contains(connectionId))
             .Select(connectionId => SendAsync(message, roomId, connectionId, cancellationToken));
 
@@ -92,7 +89,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
 
         if (message.RequiresEncryption)
         {
-            var recipientId = participantConnectionRegistry.GetParticipantIdFromConnectionId(roomId, recipientConnectionId);
+            var recipientId = roomFactory.GetOrCreateContext(roomId).Connections.GetParticipantIdFromConnectionId(recipientConnectionId);
             var encrypted = encryptor.EncryptMessage(plainData, recipientId);
             resultBytes = headerManager.AddHeader(encrypted, (byte)HeaderMessageType.Encrypted);
         }
