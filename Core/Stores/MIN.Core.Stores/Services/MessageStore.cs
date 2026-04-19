@@ -14,10 +14,7 @@ public sealed class MessageStore : IMessageStore
         var messages = this.messages.GetOrAdd(roomId, _ => []);
         lock (messages)
         {
-            if (!messages.Any(x => x.Id == message.Id))
-            {
-                messages.Add(message);
-            }
+            messages.Add(message);
         }
     }
 

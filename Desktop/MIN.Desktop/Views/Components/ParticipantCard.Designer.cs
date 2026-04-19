@@ -108,10 +108,9 @@
         }
 
         #endregion
-
-        private TableLayoutPanel tableLayoutPanelLabels;
         private Labels.Heading3Label lastOnline;
         private Labels.Heading3Label participantName;
         private Labels.Heading3Label participantRole;
+        internal TableLayoutPanel tableLayoutPanelLabels;
     }
 }

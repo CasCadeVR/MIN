@@ -12,18 +12,10 @@ public sealed class ChatTextMessage : BaseMessage
     public override MessageTypeTag TypeTag => MessageTypeTag.ChatTextMessage;
 
     /// <inheritdoc />
-    public override bool IsPublic => RecipientId == null;
-
-    /// <inheritdoc />
     public override bool RequireStreamAcks => true;
 
-    /// <summary>
-    /// Получатель сообщения
-    /// </summary>
-    /// <remarks>
-    /// если null – публичное, иначе приватное
-    /// </remarks>
-    public Guid? RecipientId { get; set; }
+    /// <inheritdoc />
+    public override bool RequiresLocalDuplication => true;
 
     /// <summary>
     /// Отправитель сообщения

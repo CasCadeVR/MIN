@@ -72,8 +72,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     private async Task OnLocalMessageRecieved(LocalMessageRecievedEvent e, CancellationToken cancellationToken)
     {
         await dispatcher.DispatchAsync(e.Message,
-            new MessageContext(e.SenderId,
-            e.RoomId,
+            new MessageContext(e.RoomId,
             CoreRegistryConstants.LocalConnectionId,
             cancellationToken));
     }
@@ -82,12 +81,8 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     {
         try
         {
-            participantConnectionRegistry.TryGetParticipantFromConnectionId(e.RoomId, e.ConnectionId, out var participantInfo);
             var message = serializer.Deserialize(e.Data);
-
-            await dispatcher.DispatchAsync(message, new MessageContext(
-                participantInfo?.Id ?? Guid.Empty,
-                e.RoomId,
+            await dispatcher.DispatchAsync(message, new MessageContext(e.RoomId,
                 e.ConnectionId,
                 cts.Token));
         }
@@ -142,7 +137,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
                     participantInfo = ackMessage.Participant;
                 }
 
-                await dispatcher.DispatchAsync(message, new MessageContext(participantInfo?.Id ?? Guid.Empty, e.RoomId, e.ConnectionId, cts.Token));
+                await dispatcher.DispatchAsync(message, new MessageContext(e.RoomId, e.ConnectionId, cts.Token));
             }
             catch (Exception ex)
             {

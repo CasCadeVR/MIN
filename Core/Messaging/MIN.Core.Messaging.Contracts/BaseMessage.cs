@@ -18,7 +18,16 @@ public abstract class BaseMessage : IMessage
     public abstract MessageTypeTag TypeTag { get; }
 
     /// <inheritdoc />
-    public virtual bool IsPublic { get; } = true;
+    public Guid SenderId { get; set; }
+
+    /// <inheritdoc />
+    public virtual Guid? RecipientId { get; init; }
+
+    /// <inheritdoc />
+    public virtual bool RequiresLocalDuplication { get; }
+
+    /// <inheritdoc />
+    public virtual bool IsPublic => RecipientId == null;
 
     /// <inheritdoc />
     public virtual bool RequiresEncryption { get; } = true;

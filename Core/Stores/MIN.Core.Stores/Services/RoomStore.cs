@@ -47,6 +47,21 @@ public sealed class RoomStore : IRoomStore
         return false;
     }
 
+    Room IRoomStore.GetRoomFor(Guid participantId, Guid roomId)
+    {
+        if (roomsById.TryGetValue(roomId, out var room))
+        {
+            room.CurrentParticipants = participantStore.GetParticipants(roomId).ToList();
+            room.ChatHistory = messageStore.GetHistory(roomId)
+                .Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId)
+                .ToList();
+            return room;
+        }
+
+        throw new InvalidOperationException($"Комнаты с {roomId} не нашлось");
+    }
+
+
     Guid IRoomStore.GetRoomHostParticipantId(Guid roomId)
         => roomsById.TryGetValue(roomId, out var room) ? room.HostParticipant.Id : throw new KeyNotFoundException();
 

@@ -1,5 +1,4 @@
 1. there is a chance join message will appear on top
-2. Make private messages (like add recipientId in IMessage or smth)
-3. You have to gamble in order to discover some rooms, should probably somehow give all of them right timeout idk
-4. Maybe we have to make some services to have lifetime of a room. This way we wouldn't put roomId everywhere and make it isolated
-5. Might actually make some error handling with messageBox showing and not just logging
+2. You have to gamble in order to discover some rooms, should probably somehow give all of them right timeout idk
+3. Maybe we have to make some services to have lifetime of a room. This way we wouldn't put roomId everywhere and make it isolated
+4. Might actually make some error handling with messageBox showing and not just logging

@@ -19,17 +19,11 @@ public sealed class LocalMessageRecievedEvent : BaseEvent
     public Guid RoomId { get; }
 
     /// <summary>
-    /// Участник отправитель
-    /// </summary>
-    public Guid SenderId { get; }
-
-    /// <summary>
     /// Инициализирует новый экземпляр <see cref="LocalMessageRecievedEvent"/>
     /// </summary>
-    public LocalMessageRecievedEvent(IMessage message, Guid roomId, Guid senderId)
+    public LocalMessageRecievedEvent(IMessage message, Guid roomId)
     {
         Message = message;
         RoomId = roomId;
-        SenderId = senderId;
     }
 }

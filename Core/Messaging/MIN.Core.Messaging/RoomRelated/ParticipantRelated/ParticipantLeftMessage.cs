@@ -11,6 +11,9 @@ public sealed class ParticipantLeftMessage : BaseMessage
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.ParticipantLeft;
 
+    /// <inheritdoc />
+    public override bool IsPublic => true;
+
     /// <summary>
     /// Идентификатор комнаты
     /// </summary>

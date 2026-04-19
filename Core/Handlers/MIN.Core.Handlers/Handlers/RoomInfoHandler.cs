@@ -46,7 +46,7 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
     {
         if (message is RoomInfoRequestMessage roomInfoRequest)
         {
-            var room = roomStore.GetRoom(roomInfoRequest.RoomId);
+            var room = roomStore.GetRoomFor(message.SenderId, roomInfoRequest.RoomId);
 
             var response = new RoomInfoResponseMessage()
             {

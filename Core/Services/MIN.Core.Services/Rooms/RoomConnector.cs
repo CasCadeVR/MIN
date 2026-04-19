@@ -3,7 +3,6 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
@@ -55,7 +54,7 @@ public sealed class RoomConnector : IRoomConnector
             PublicKey = await encryptor.GetLocalPublicKey(),
         };
 
-        await messageRouter.RouteAsync(selfHandshake, roomId, selfHandshake.Participant.Id, Recipient.FromConnection(roomId, connectionId), cancellationToken);
+        await messageRouter.RouteAsync(selfHandshake, roomId, selfHandshake.Participant.Id, cancellationToken);
 
         activeConnections.Add(connectionId);
         return connectionId;

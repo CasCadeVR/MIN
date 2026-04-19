@@ -12,14 +12,4 @@ public interface IChatService
     /// Отправить текстовое сообщение
     /// </summary>
     Task SendMessageAsync(Guid roomId, string content, ParticipantInfo sender, Guid? recipientId = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Получить историю сообщений из кэша
-    /// </summary>
-    IReadOnlyList<ChatTextMessage> GetChatTextMessageHistory(Guid roomId, int? page, int? pageSize);
-
-    /// <summary>
-    /// Получить список участников комнаты из кэша
-    /// </summary>
-    IReadOnlyList<ParticipantInfo> GetParticipants(Guid roomId);
 }

@@ -50,7 +50,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async Task SendAsync(IMessage message, Guid roomId, Guid senderId, Guid recipientConnectionId, CancellationToken cancellationToken)
+    public async Task SendAsync(IMessage message, Guid roomId, Guid recipientConnectionId, CancellationToken cancellationToken)
     {
         var serialized = serializer.Serialize(message);
 
@@ -70,7 +70,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         await transport.SendAsync(dataToSend, roomId, recipientConnectionId, cancellationToken);
     }
 
-    async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, Guid senderId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken)
+    async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken)
     {
         var serialized = serializer.Serialize(message);
         var participants = participantStore.GetParticipants(roomId);
@@ -81,7 +81,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         var tasks = participants
             .Select(participant => participantConnectionRegistry.GetConnectionIdFromParticipantId(roomId, participant.Id))
             .Where(connectionId => !excludeConnectionIds.Contains(connectionId))
-            .Select(connectionId => SendAsync(message, roomId, senderId, connectionId, cancellationToken));
+            .Select(connectionId => SendAsync(message, roomId, connectionId, cancellationToken));
 
         await Task.WhenAll(tasks);
     }

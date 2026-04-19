@@ -10,10 +10,10 @@ public interface IMessageSender
     /// <summary>
     /// Отправляет сообщение через указанное соединение
     /// </summary>
-    Task SendAsync(IMessage message, Guid roomId, Guid senderId, Guid recipientConnectionId, CancellationToken cancellationToken = default);
+    Task SendAsync(IMessage message, Guid roomId, Guid recipientConnectionId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Отправить сообщение всем участникам комнаты
     /// </summary>
-    Task BroadcastAsync(IMessage message, Guid roomId, Guid senderId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken = default);
+    Task BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken = default);
 }

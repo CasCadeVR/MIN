@@ -7,7 +7,6 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
@@ -81,7 +80,6 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
             await messageRouter.RouteAsync(participantJoinedMessage,
                 context.RoomId,
                 identityService.SelfPartcipant.Id,
-                Recipient.FromConnection(context.RoomId, context.ConnectionId),
                 context.CancellationToken);
 
             return HandlerResult.WithResponse(new RoomInfoRequestMessage()

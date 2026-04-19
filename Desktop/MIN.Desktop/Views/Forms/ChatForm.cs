@@ -50,6 +50,7 @@ namespace MIN.Desktop
         private bool isResizing;
         private Room? room;
         private ChatTextMessage? lastTextMessage;
+        private Guid? privateChatParticipantId;
 
         private HashSet<IDisposable> eventTokens = null!;
 
@@ -295,6 +296,12 @@ namespace MIN.Desktop
                 {
                     Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2,
                 };
+
+                card.tableLayoutPanelLabels.MouseClick += (_, _) =>
+                {
+                    privateChatParticipantId = participant.Id;
+                    card.tableLayoutPanelLabels.BackColor = Color.Gray;
+                };
                 participantsFlow.Controls.Add(card);
             }
 
@@ -439,7 +446,12 @@ namespace MIN.Desktop
 
             try
             {
-                await chatService.SendMessageAsync(roomId, messageTextBox.Text.Trim(), localParticipant, cancellationToken: formCts.Token);
+                await chatService.SendMessageAsync(roomId,
+                    messageTextBox.Text.Trim(),
+                    localParticipant,
+                    privateChatParticipantId,
+                    formCts.Token
+                );
                 messageTextBox.Text = string.Empty;
                 changeMessageBoxSize();
             }

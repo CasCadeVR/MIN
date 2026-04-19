@@ -7,7 +7,9 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Handlers.Dispatcher;
 
@@ -16,6 +18,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
 {
     private readonly IEnumerable<IMessageHandler> handlers;
     private readonly IMessageSender messageSender;
+    private readonly IIdentityService identityService;
     private readonly IRoomHoster roomHoster;
     private readonly IEventBus eventBus;
     private readonly IParticipantConnectionRegistry participantConnectionRegistry;
@@ -26,6 +29,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
     /// </summary>
     public MessageDispatcher(IEnumerable<IMessageHandler> handlers,
         IMessageSender messageSender,
+        IIdentityService identityService,
         IRoomHoster roomHoster,
         IEventBus eventBus,
         IParticipantConnectionRegistry participantConnectionRegistry,
@@ -33,6 +37,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
     {
         this.handlers = handlers;
         this.messageSender = messageSender;
+        this.identityService = identityService;
         this.roomHoster = roomHoster;
         this.eventBus = eventBus;
         this.participantConnectionRegistry = participantConnectionRegistry;
@@ -70,21 +75,43 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     break;
                 }
 
-                if (message.IsPublic && roomHoster.IsHosting(context.RoomId))
+                if (roomHoster.IsHosting(context.RoomId))
                 {
-                    var senderConnectionId = participantConnectionRegistry.GetConnectionIdFromParticipantId(context.RoomId, context.SenderId);
-                    await messageSender.BroadcastAsync(message, context.RoomId, context.SenderId, [senderConnectionId], context.CancellationToken);
+                    await HandleServerMessageRouting(message, context);
                 }
 
                 if (result.Response != null)
                 {
-                    await messageSender.SendAsync(result.Response, context.RoomId, context.SenderId, context.ConnectionId, context.CancellationToken);
+                    result.Response.SenderId = identityService.SelfPartcipant.Id;
+                    await messageSender.SendAsync(result.Response, context.RoomId, context.ConnectionId, context.CancellationToken);
                 }
             }
             catch (Exception ex)
             {
                 logger.Log($"Handler {handler.GetType().Name} threw exception: {ex.Message}");
                 await PublishErrorEvent(ex.Message, needToDisconnect: true, context);
+            }
+        }
+    }
+
+    private async Task HandleServerMessageRouting(IMessage message, MessageContext context)
+    {
+        if (message.IsPublic)
+        {
+            var senderConnectionId = participantConnectionRegistry.GetConnectionIdFromParticipantId(context.RoomId, message.SenderId);
+            await messageSender.BroadcastAsync(message, context.RoomId, [senderConnectionId], context.CancellationToken);
+        }
+        else if (message.RecipientId != null)
+        {
+            if (!participantConnectionRegistry.TryGetConnectionIdFromParticipantId(context.RoomId, message.RecipientId ?? Guid.Empty, out var recipientConnectionId))
+            {
+                logger.Log($"Не удалось найти участника с id {message.RecipientId} во время маршрутизации приватного сообщения", LogLevel.Error);
+                return;
+            }
+
+            if (recipientConnectionId != CoreRegistryConstants.LocalConnectionId)
+            {
+                await messageSender.SendAsync(message, context.RoomId, recipientConnectionId, context.CancellationToken);
             }
         }
     }

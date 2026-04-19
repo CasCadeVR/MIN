@@ -3,7 +3,6 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 
@@ -34,42 +33,40 @@ public sealed class MessageRouter : IMessageRouter
         this.participantConnectionRegistry = participantConnectionRegistry;
     }
 
-    async Task IMessageRouter.RouteAsync(IMessage message, Guid roomId, Guid senderId, Recipient recipient, CancellationToken cancellationToken)
+    async Task IMessageRouter.RouteAsync(IMessage message, Guid roomId, Guid senderId, CancellationToken cancellationToken)
     {
+        message.SenderId = senderId;
+
         if (roomHoster.IsHosting(roomId))
         {
-            if (message.IsPublic)
-            {
-                await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId, senderId), cancellationToken);
-            }
-            else
-            {
-                if (!recipient.IsLocal)
-                {
-                    var recipientConnectionId = recipient.ResolveAsync(participantConnectionRegistry);
-                    await messageSender.SendAsync(message, roomId, senderId, recipientConnectionId, cancellationToken);
-                }
-                else
-                {
-                    await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId, senderId), cancellationToken);
-                }
-            }
+            // Server
+
+            // If its public, dispatcher will broadcast to anyone except server and sender (cuz they already handled it)
+            // Regardless of recipient - they had to put recipientId and public = false if they wanted it to be private
+            // So basically dispatcher will handle all of it
+
+            await PublishLocally(message, roomId, cancellationToken);
         }
         else
         {
-            if (message.IsPublic)
+            // Client
+
+            if (message.RequiresLocalDuplication)
             {
-                await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId, senderId), cancellationToken);
+                await PublishLocally(message, roomId, cancellationToken);
             }
 
-            var hostConnectionId = GetHostConnectionId(roomId);
-            await messageSender.SendAsync(message, roomId, senderId, hostConnectionId, cancellationToken);
+            var hostId = roomStore.GetRoomHostParticipantId(roomId);
+            var hostConnectionId = GetHostConnectionId(roomId, hostId);
+            await messageSender.SendAsync(message, roomId, hostConnectionId, cancellationToken);
         }
     }
 
-    private Guid GetHostConnectionId(Guid roomId)
+    private async Task PublishLocally(IMessage message, Guid roomId, CancellationToken cancellationToken)
+        => await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId), cancellationToken);
+
+    private Guid GetHostConnectionId(Guid roomId, Guid hostId)
     {
-        var hostId = roomStore.GetRoomHostParticipantId(roomId);
         if (!participantConnectionRegistry.TryGetConnectionIdFromParticipantId(roomId, hostId, out var connectionId))
         {
             throw new InvalidOperationException($"Host participant {hostId} is not registered in room {roomId}");

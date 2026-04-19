@@ -3,7 +3,6 @@ using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Transport.Contracts.Events;
@@ -88,7 +87,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
                         RoomId = e.RoomId,
                     };
 
-                    await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, Recipient.FromEmpty(e.RoomId), cts.Token);
+                    await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, cts.Token);
                 }
             }
 
