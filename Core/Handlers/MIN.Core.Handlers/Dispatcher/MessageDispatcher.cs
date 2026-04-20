@@ -75,7 +75,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     break;
                 }
 
-                if (roomHoster.IsHosting(context.RoomId))
+                if (roomHoster.IsHosting(context.RoomContext.RoomId))
                 {
                     await HandleServerMessageRouting(message, context);
                 }
@@ -83,7 +83,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
                 if (result.Response != null)
                 {
                     result.Response.SenderId = identityService.SelfPartcipant.Id;
-                    await messageSender.SendAsync(result.Response, context.RoomId, context.ConnectionId, context.CancellationToken);
+                    await messageSender.SendAsync(result.Response, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
                 }
             }
             catch (Exception ex)
@@ -96,16 +96,14 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
     private async Task HandleServerMessageRouting(IMessage message, MessageContext context)
     {
-        var roomContext = roomFactory.GetOrCreateContext(context.RoomId);
-
         if (message.IsPublic)
         {
-            var senderConnectionId = roomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId);
-            await messageSender.BroadcastAsync(message, context.RoomId, [senderConnectionId], context.CancellationToken);
+            var senderConnectionId = context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId);
+            await messageSender.BroadcastAsync(message, context.RoomContext.RoomId, [senderConnectionId], context.CancellationToken);
         }
         else if (message.RecipientId != null)
         {
-            if (!roomContext.Connections.TryGetConnectionIdFromParticipantId(message.RecipientId ?? Guid.Empty, out var recipientConnectionId))
+            if (!context.RoomContext.Connections.TryGetConnectionIdFromParticipantId(message.RecipientId ?? Guid.Empty, out var recipientConnectionId))
             {
                 logger.Log($"Не удалось найти участника с id {message.RecipientId} во время маршрутизации приватного сообщения", LogLevel.Error);
                 return;
@@ -113,7 +111,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
             if (recipientConnectionId != CoreRegistryConstants.LocalConnectionId)
             {
-                await messageSender.SendAsync(message, context.RoomId, recipientConnectionId, context.CancellationToken);
+                await messageSender.SendAsync(message, context.RoomContext.RoomId, recipientConnectionId, context.CancellationToken);
             }
         }
     }
@@ -124,7 +122,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
         {
             ErrorMessage = message,
             NeedToDisconnect = needToDisconnect,
-            RoomId = context.RoomId
+            RoomId = context.RoomContext.RoomId
         }, context.CancellationToken);
     }
 }

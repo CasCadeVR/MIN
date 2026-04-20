@@ -1,57 +1,76 @@
-﻿using MIN.Core.Entities;
-using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Desktop.Components.Controls.ContextMenuStrips;
 using MIN.Desktop.Contracts;
 
-namespace MIN.Desktop.Components
+namespace MIN.Desktop.Components;
+
+/// <summary>
+/// Карточка участника в комнате
+/// </summary>
+public partial class ParticipantCard : UserControl
 {
+    private const string StartPrivateChatText = "Начать приватное общение";
+    private const string StopPrivateChatText = "Прекратить приватное общение";
+
+    private readonly ParticipantInfo participant;
+    private readonly bool isHost;
+    private bool selected;
+
     /// <summary>
-    /// Кнопка меню
+    /// Событие по нажатию ПКМ на карточку
     /// </summary>
-    public partial class ParticipantCard : UserControl
+    public Action<bool, ParticipantInfo>? OnCardContextMenuStripClicked { get; set; }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="RoomCard"/>
+    /// </summary>
+    public ParticipantCard(ParticipantInfo participant, bool isHost, bool isSelf)
     {
-        private readonly ParticipantInfo participant;
-        private readonly Room room;
+        InitializeComponent();
+        ApplyStylings();
+        this.participant = participant;
+        this.isHost = isHost;
+        FillLabels();
 
-        /// <summary>
-        /// Инициализирует новый экземпляр <see cref="RoomCard"/>
-        /// </summary>
-        public ParticipantCard(ParticipantInfo participant, Room room)
+        if (!isSelf)
         {
-            InitializeComponent();
-            ApplyStylings();
-            this.participant = participant;
-            this.room = room;
-            FillLabels();
+            var pictureBoxContextMenuStrip = new ParticipantCardContextMenuStrip();
+            pictureBoxContextMenuStrip.OnItemClick += CardContextMenuStripClicked;
+            pictureBoxContextMenuStrip.Items[0].Text = StartPrivateChatText;
+            ContextMenuStrip = pictureBoxContextMenuStrip;
         }
+    }
 
-        private void ApplyStylings()
+    private void CardContextMenuStripClicked()
+    {
+        selected = !selected;
+        ContextMenuStrip!.Items[0].Text = selected ? StopPrivateChatText : StartPrivateChatText;
+        BackColor = selected
+            ? ColorScheme.PrivateParticipantCardBackground
+            : ColorScheme.DefaultParticipantCardBackground;
+        OnCardContextMenuStripClicked?.Invoke(selected, participant);
+    }
+
+    private void ApplyStylings()
+    {
+        participantName.Font = FontScheme.Caption;
+        lastOnline.Font = FontScheme.MicroCaption;
+        participantRole.Font = FontScheme.Caption;
+        BackColor = ColorScheme.DefaultParticipantCardBackground;
+    }
+
+    private void FillLabels()
+    {
+        lastOnline.Text = string.Empty;
+        participantName.Text = participant.Name;
+        if (isHost)
         {
-            participantName.Font = FontScheme.Caption;
-            lastOnline.Font = FontScheme.MicroCaption;
-            participantRole.Font = FontScheme.Caption;
-
-            tableLayoutPanelLabels.BackColor = ColorScheme.IncomingMessageBackground;
+            participantRole.Text = "Хост";
         }
-
-        private void FillLabels()
+        else
         {
-            participantName.Text = participant.Name;
-            if (participant.Id == room.HostParticipant.Id)
-            {
-                participantRole.Text = "Хост";
-            }
-            else
-            {
-                participantRole.Text = "";
-                tableLayoutPanelLabels.ColumnStyles[1].Width = 0;
-            }
-
-            //var lastMessage = room.ChatHistory
-            //    .Where(x => x. == participant.Id)
-            //    .OrderByDescending(x => x.Time)
-            //    .LastOrDefault();
-
-            //lastOnline.Text = lastMessage == null ? "" : $"Последний раз в сети: {lastMessage.Time.ToShortTimeString()}";
+            participantRole.Text = "";
+            tableLayoutPanelLabels.ColumnStyles[1].Width = 0;
         }
     }
 }

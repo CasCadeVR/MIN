@@ -200,36 +200,6 @@ public partial class ChatForm : StyledForm
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
-    protected override void ApplyStylings()
-    {
-        splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
-        splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
-        splitContainerSideBar.Panel2.BackColor = ColorScheme.PrimaryAccent;
-        tableLayoutPanelStats.BackColor = ColorScheme.PrimaryAccent;
-
-        participantsInfo.ForeColor = ColorScheme.TextOnAccent;
-        hostName.ForeColor = ColorScheme.TextOnAccent;
-        computer.ForeColor = ColorScheme.TextOnAccent;
-        classroom.ForeColor = ColorScheme.TextOnAccent;
-        createdAt.ForeColor = ColorScheme.TextOnAccent;
-        notificationComboBox.ForeColor = ColorScheme.TextOnAccent;
-
-        captionLabel1.ForeColor = ColorScheme.TextOnAccent;
-        captionLabel2.ForeColor = ColorScheme.TextOnAccent;
-        captionLabel3.ForeColor = ColorScheme.TextOnAccent;
-        captionLabel4.ForeColor = ColorScheme.TextOnAccent;
-        heading3Label4.ForeColor = ColorScheme.TextOnAccent;
-        labelCreatedAt.ForeColor = ColorScheme.TextOnAccent;
-
-        participantsFlow.BackColor = ColorScheme.DividerColor;
-        chatFlow.BackColor = ColorScheme.ChatAreaBackground;
-        chatFlow.Padding = new Padding(chatFlow.Padding.Left, chatFlow.Padding.Top, chatFlow.Padding.Right, messageMinPadding);
-
-        tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
-        tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
-    }
-
     private void UpdateStats()
     {
         if (room == null)
@@ -274,16 +244,18 @@ public partial class ChatForm : StyledForm
 
         foreach (var participant in room.CurrentParticipants)
         {
-            var card = new ParticipantCard(participant, room)
+            var card = new ParticipantCard(participant,
+                isHost: participant.Id == room.HostParticipant.Id,
+                isSelf: participant.Id == localParticipant.Id)
             {
                 Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2,
             };
 
-            card.tableLayoutPanelLabels.MouseClick += (_, _) =>
+            card.OnCardContextMenuStripClicked += (selected, particpant) =>
             {
-                privateChatParticipantId = participant.Id;
-                card.tableLayoutPanelLabels.BackColor = Color.Gray;
+                privateChatParticipantId = selected ? participant.Id : null;
             };
+
             participantsFlow.Controls.Add(card);
         }
 
@@ -357,7 +329,42 @@ public partial class ChatForm : StyledForm
                         Margin = new Padding(20, 0, 20, 0)
                     };
 
-                    row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
+                    var isCurrentPrivate = chatTextMessage.RecipientId == localParticipant.Id
+                        || (chatTextMessage.SenderId == localParticipant.Id && chatTextMessage.RecipientId != null);
+
+                    var wasLastPrivate = lastTextMessage != null && (
+                        lastTextMessage.RecipientId == localParticipant.Id
+                        || (lastTextMessage.SenderId == localParticipant.Id && lastTextMessage.RecipientId != null)
+                    );
+
+                    if (isCurrentPrivate && !wasLastPrivate)
+                    {
+                        var partner = chatTextMessage.SenderId == localParticipant.Id
+                            ? chatTextMessage.Sender
+                            : localParticipant;
+
+                        var sender = room?.CurrentParticipants.First(x => x.Id == chatTextMessage.SenderId);
+                        var recipient = room?.CurrentParticipants.First(x => x.Id == chatTextMessage.RecipientId);
+
+                        AddMessageToChatFlow(new SystemTextMessage
+                        {
+                            Content = recipient?.Id != localParticipant.Id
+                                ? $"Это начало приватного общения с {recipient?.Name}"
+                                : $"{sender?.Name} прислал вам приватное сообщение:",
+                            RecipientId = localParticipant.Id,
+                        });
+                    }
+
+                    if (isCurrentPrivate)
+                    {
+                        row.BackColor = ColorScheme.PrivateParticipantCardBackground;
+                        rowControl.Margin = new Padding(rowControl.Margin.Left, minutesPassed, rowControl.Margin.Right, rowControl.Margin.Bottom);
+                    }
+                    else
+                    {
+                        row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
+                    }
+
                     lastTextMessage = chatTextMessage;
                     break;
 
@@ -392,6 +399,11 @@ public partial class ChatForm : StyledForm
                         Anchor = AnchorStyles.None,
                         AutoSize = true
                     };
+
+                    if (systemTextMessage.RecipientId != null)
+                    {
+                        row.BackColor = ColorScheme.PrivateParticipantCardBackground;
+                    }
 
                     row.Height = rowControl.Height;
                     break;
@@ -443,6 +455,37 @@ public partial class ChatForm : StyledForm
             MessageBox.Show("Не удалось отправить сообщение", "Ошибка",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    /// <inheritdoc />
+    protected override void ApplyStylings()
+    {
+        splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
+        splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
+        splitContainerSideBar.Panel2.BackColor = ColorScheme.PrimaryAccent;
+        tableLayoutPanelStats.BackColor = ColorScheme.PrimaryAccent;
+        notificationComboBox.BackColor = ColorScheme.PrimaryAccent;
+
+        participantsInfo.ForeColor = ColorScheme.TextOnAccent;
+        hostName.ForeColor = ColorScheme.TextOnAccent;
+        computer.ForeColor = ColorScheme.TextOnAccent;
+        classroom.ForeColor = ColorScheme.TextOnAccent;
+        createdAt.ForeColor = ColorScheme.TextOnAccent;
+        notificationComboBox.ForeColor = ColorScheme.TextOnAccent;
+
+        captionLabel1.ForeColor = ColorScheme.TextOnAccent;
+        captionLabel2.ForeColor = ColorScheme.TextOnAccent;
+        captionLabel3.ForeColor = ColorScheme.TextOnAccent;
+        captionLabel4.ForeColor = ColorScheme.TextOnAccent;
+        heading3Label4.ForeColor = ColorScheme.TextOnAccent;
+        labelCreatedAt.ForeColor = ColorScheme.TextOnAccent;
+
+        participantsFlow.BackColor = ColorScheme.DividerColor;
+        chatFlow.BackColor = ColorScheme.ChatAreaBackground;
+        chatFlow.Padding = new Padding(chatFlow.Padding.Left, chatFlow.Padding.Top, chatFlow.Padding.Right, messageMinPadding);
+
+        tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
+        tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
     }
 
     private void editButton_Click(object sender, EventArgs e)

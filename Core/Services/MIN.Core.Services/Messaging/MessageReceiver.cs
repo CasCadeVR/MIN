@@ -71,8 +71,9 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 
     private async Task OnLocalMessageRecieved(LocalMessageRecievedEvent e, CancellationToken cancellationToken)
     {
+        var context = roomFactory.GetOrCreateContext(e.RoomId);
         await dispatcher.DispatchAsync(e.Message,
-            new MessageContext(e.RoomId,
+            new MessageContext(context,
             CoreRegistryConstants.LocalConnectionId,
             cancellationToken));
     }
@@ -81,8 +82,9 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     {
         try
         {
+            var context = roomFactory.GetOrCreateContext(e.RoomId);
             var message = serializer.Deserialize(e.Data);
-            await dispatcher.DispatchAsync(message, new MessageContext(e.RoomId,
+            await dispatcher.DispatchAsync(message, new MessageContext(context,
                 e.ConnectionId,
                 cts.Token));
         }
@@ -102,7 +104,9 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
                 return;
             }
 
-            roomFactory.GetOrCreateContext(e.RoomId).Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var participantInfo);
+            var context = roomFactory.GetOrCreateContext(e.RoomId);
+
+            context.Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var participantInfo);
 
             byte[] plainData;
             var body = headerManager.RemoveEncryptionHeader(e.Data);
@@ -137,7 +141,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
                     participantInfo = ackMessage.Participant;
                 }
 
-                await dispatcher.DispatchAsync(message, new MessageContext(e.RoomId, e.ConnectionId, cts.Token));
+                await dispatcher.DispatchAsync(message, new MessageContext(context, e.ConnectionId, cts.Token));
             }
             catch (Exception ex)
             {

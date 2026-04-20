@@ -16,7 +16,6 @@ namespace MIN.Core.Handlers.Handlers;
 internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
 {
     private readonly IRoomStore roomStore;
-    private readonly IRoomFactory roomFactory;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
@@ -24,12 +23,10 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
     public RoomInfoHandler(IRoomStore roomStore,
-        IRoomFactory roomFactory,
         IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.roomStore = roomStore;
-        this.roomFactory = roomFactory;
         this.eventBus = eventBus;
         this.logger = logger;
     }
@@ -57,16 +54,14 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
         else if (message is RoomInfoResponseMessage roomInfoResponse)
         {
             roomStore.Add(roomInfoResponse.Room);
-            var roomContext = roomFactory.GetOrCreateContext(context.RoomId);
-
             foreach (var roomMessage in roomInfoResponse.Room.ChatHistory)
             {
-                roomContext.Messages.AddMessage(message);
+                context.RoomContext.Messages.AddMessage(message);
             }
 
             foreach (var roomParticipant in roomInfoResponse.Room.CurrentParticipants)
             {
-                roomContext.Participants.AddParticipant(roomParticipant);
+                context.RoomContext.Participants.AddParticipant(roomParticipant);
             }
 
             logger.Log($"Получил информацию о комнате с id {roomInfoResponse.Room.Id}");

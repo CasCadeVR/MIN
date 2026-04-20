@@ -31,6 +31,16 @@ public static class ColorScheme
     public readonly static Color OutgoingMessageBackground = ColorTranslator.FromHtml("#E6E8FF");
 
     /// <summary>
+    /// Цвет фона карточки участника в комнате
+    /// </summary>
+    public readonly static Color DefaultParticipantCardBackground = ColorTranslator.FromHtml("#F0F2FF");
+
+    /// <summary>
+    /// Цвет фона карточки участника в комнате, при приватном общении
+    /// </summary>
+    public readonly static Color PrivateParticipantCardBackground = ColorTranslator.FromHtml("#CDC0ED");
+
+    /// <summary>
     /// Основной акцентный цвет (фиолетовый — для кнопок, выделений, активных элементов)
     /// </summary>
     public readonly static Color PrimaryAccent = ColorTranslator.FromHtml("#6A5BFF");

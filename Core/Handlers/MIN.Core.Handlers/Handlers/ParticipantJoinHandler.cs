@@ -24,7 +24,6 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
     private readonly IRoomStore roomStore;
     private readonly IRoomHoster roomHoster;
     private readonly IIdentityService identityService;
-    private readonly IRoomFactory roomFactory;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
@@ -35,14 +34,12 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         IRoomStore roomStore,
         IRoomHoster roomHoster,
         IIdentityService identityService,
-        IRoomFactory roomFactory,
         IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.roomStore = roomStore;
         this.roomHoster = roomHoster;
         this.identityService = identityService;
-        this.roomFactory = roomFactory;
         this.eventBus = eventBus;
         this.logger = logger;
     }
@@ -59,9 +56,9 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         {
             var response = new RoomJoinResponseMessage()
             {
-                RoomId = context.RoomId,
+                RoomId = context.RoomContext.RoomId,
             };
-            var room = roomStore.GetRoom(context.RoomId);
+            var room = roomStore.GetRoom(context.RoomContext.RoomId);
             response.Allow = !room.IsFull;
             return HandlerResult.WithResponse(response);
         }
@@ -75,7 +72,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
             var participantJoinedMessage = new ParticipantJoinedMessage()
             {
                 Participant = identityService.SelfPartcipant.ToParticipantInfo(),
-                RoomId = context.RoomId
+                RoomId = context.RoomContext.RoomId
             };
 
             return HandlerResult.WithResponse(participantJoinedMessage);
@@ -84,27 +81,26 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         {
             return HandlerResult.WithResponse(new RoomInfoRequestMessage()
             {
-                RoomId = context.RoomId,
+                RoomId = context.RoomContext.RoomId,
             });
         }
         else if (message is ParticipantJoinedMessage participantJoinedMessage)
         {
-            logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomId}");
+            logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomContext.RoomId}");
 
-            var roomContext = roomFactory.GetOrCreateContext(context.RoomId);
-            roomContext.Participants.AddParticipant(participantJoinedMessage.Participant);
-            roomContext.Messages.AddMessage(message);
+            context.RoomContext.Participants.AddParticipant(participantJoinedMessage.Participant);
+            context.RoomContext.Messages.AddMessage(message);
 
             await eventBus.PublishAsync(new ParticipantJoinedEvent()
             {
                 Message = participantJoinedMessage,
             }, context.CancellationToken);
 
-            if (roomHoster.IsHosting(context.RoomId))
+            if (roomHoster.IsHosting(context.RoomContext.RoomId))
             {
                 return HandlerResult.WithResponse(new ParticipantAcceptedMessage()
                 {
-                    RoomId = context.RoomId,
+                    RoomId = context.RoomContext.RoomId,
                 });
             }
 

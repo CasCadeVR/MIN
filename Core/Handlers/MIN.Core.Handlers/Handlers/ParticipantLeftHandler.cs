@@ -6,7 +6,6 @@ using MIN.Helpers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
-using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
@@ -15,18 +14,14 @@ namespace MIN.Core.Handlers.Handlers;
 /// </summary>
 internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnchor
 {
-    private readonly IRoomFactory roomFactory;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ParticipantLeftHandler"/>
     /// </summary>
-    public ParticipantLeftHandler(IRoomFactory roomFactory,
-        IEventBus eventBus,
-        ILoggerProvider logger)
+    public ParticipantLeftHandler(IEventBus eventBus, ILoggerProvider logger)
     {
-        this.roomFactory = roomFactory;
         this.eventBus = eventBus;
         this.logger = logger;
     }
@@ -40,9 +35,8 @@ internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnch
     {
         if (message is ParticipantLeftMessage participantLeftMessage)
         {
-            var roomContext = roomFactory.GetOrCreateContext(context.RoomId);
-            roomContext.Messages.AddMessage(message);
-            roomContext.Participants.RemoveParticipant(participantLeftMessage.Participant.Id);
+            context.RoomContext.Messages.AddMessage(message);
+            context.RoomContext.Participants.RemoveParticipant(participantLeftMessage.Participant.Id);
 
             logger.Log($"Участник {participantLeftMessage.Participant.Name} вышел из комнаты");
 

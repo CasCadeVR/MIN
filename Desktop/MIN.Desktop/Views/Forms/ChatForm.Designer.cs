@@ -434,7 +434,7 @@ namespace MIN.Desktop
             // 
             notificationComboBox.Anchor = AnchorStyles.None;
             notificationComboBox.AutoSize = true;
-            notificationComboBox.BackColor = Color.FromArgb(106, 91, 255);
+            notificationComboBox.BackColor = Color.White;
             tableLayoutPanelStats.SetColumnSpan(notificationComboBox, 2);
             notificationComboBox.Location = new Point(43, 46);
             notificationComboBox.Name = "notificationComboBox";

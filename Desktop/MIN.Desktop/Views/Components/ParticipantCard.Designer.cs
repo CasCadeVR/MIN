@@ -37,6 +37,7 @@
             // 
             // tableLayoutPanelLabels
             // 
+            tableLayoutPanelLabels.BackColor = Color.Transparent;
             tableLayoutPanelLabels.ColumnCount = 2;
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 36F));
@@ -111,6 +112,6 @@
         private Labels.Heading3Label lastOnline;
         private Labels.Heading3Label participantName;
         private Labels.Heading3Label participantRole;
-        internal TableLayoutPanel tableLayoutPanelLabels;
+        private TableLayoutPanel tableLayoutPanelLabels;
     }
 }

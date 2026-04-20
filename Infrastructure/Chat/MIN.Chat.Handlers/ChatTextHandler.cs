@@ -5,7 +5,6 @@ using MIN.Chat.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Events.Contracts;
-using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Handlers;
@@ -15,21 +14,14 @@ namespace MIN.Chat.Handlers;
 /// </summary>
 internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
 {
-    private readonly IRoomFactory roomFactory;
-    private readonly IParticipantStore participantStore;
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ChatTextHandler"/>
     /// </summary>
-    public ChatTextHandler(IRoomFactory roomFactory,
-        IParticipantStore participantStore,
-        IIdentityService identityService,
-        IEventBus eventBus)
+    public ChatTextHandler(IIdentityService identityService, IEventBus eventBus)
     {
-        this.roomFactory = roomFactory;
-        this.participantStore = participantStore;
         this.identityService = identityService;
         this.eventBus = eventBus;
     }
@@ -42,14 +34,12 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
     {
         if (message is ChatTextMessage chatTextMessage)
         {
-            var roomContext = roomFactory.GetOrCreateContext(context.RoomId);
-
-            if (!roomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
+            if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
             {
                 return HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false);
             }
 
-            roomContext.Messages.AddMessage(chatTextMessage);
+            context.RoomContext.Messages.AddMessage(chatTextMessage);
             var selfId = identityService.SelfPartcipant.Id;
 
             if (message.SenderId == selfId || message.RecipientId == selfId || message.IsPublic)
@@ -57,7 +47,7 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
                 await eventBus.PublishAsync(new ChatTextMessageReceivedEvent()
                 {
                     Message = chatTextMessage,
-                    RoomId = context.RoomId,
+                    RoomId = context.RoomContext.RoomId,
                     Sender = sender!,
                 });
             }

@@ -1,4 +1,6 @@
-﻿namespace MIN.Core.Handlers.Contracts.Models;
+﻿using MIN.Core.Stores.Contracts.Models;
+
+namespace MIN.Core.Handlers.Contracts.Models;
 
 /// <summary>
 /// Контекст обработки сообщения
@@ -6,9 +8,9 @@
 public sealed class MessageContext
 {
     /// <summary>
-    /// Идентификатор комнаты, в которой было получено сообщение
+    /// Контекст комнаты, в которой было получено сообщение
     /// </summary>
-    public Guid RoomId { get; init; }
+    public RoomContext RoomContext { get; init; }
 
     /// <summary>
     /// Идентификатор соеднинения, по которому пришло сообщение
@@ -23,9 +25,9 @@ public sealed class MessageContext
     /// <summary>
     /// Инициализирует новый экзмепляр <see cref="MessageContext"/>
     /// </summary>
-    public MessageContext(Guid roomId, Guid connectionId, CancellationToken cancellationToken)
+    public MessageContext(RoomContext roomContext, Guid connectionId, CancellationToken cancellationToken)
     {
-        RoomId = roomId;
+        RoomContext = roomContext;
         ConnectionId = connectionId;
         CancellationToken = cancellationToken;
     }
