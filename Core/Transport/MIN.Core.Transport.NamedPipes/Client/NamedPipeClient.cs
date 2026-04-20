@@ -87,7 +87,7 @@ internal sealed class NamedPipeClient : IAsyncDisposable
 
             return connection.Id;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             logger.Log($"Не получилось подключиться: {ex.Message}");
             await DisposeAsync();

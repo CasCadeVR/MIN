@@ -153,6 +153,13 @@ namespace MIN.Desktop
 
         private async Task OnRoomJoin(RoomInfo roomInfo, IEndpoint endpoint)
         {
+            if (roomConnector.IsConnected(roomInfo.Id))
+            {
+                MessageBox.Show($"Вы уже подключены к этой комнате", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                return;
+            }
+
             var participantCreateForm = new ParticipantCreateForm(identityService);
             if (participantCreateForm.ShowDialog() != DialogResult.OK)
             {
@@ -161,9 +168,11 @@ namespace MIN.Desktop
 
             try
             {
+                roomStore.Add(new Room(roomInfo));
+
                 var connectionId = Guid.Empty;
 
-                roomStore.Add(new Room(roomInfo));
+                var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
 
                 new LoadingForm(roomInfo.Id, eventBus, room =>
                 {
@@ -172,12 +181,12 @@ namespace MIN.Desktop
                         return;
                     }
                     OpenChatForm(room, connectionId, isHost: false, endpoint);
-                }, DesktopConstants.RoomConnectionTimeoutMs).Show();
+                }, connectCts, DesktopConstants.RoomConnectionTimeoutMs).Show();
 
                 roomFactory.GetOrCreateContext(roomInfo.Id).Connections.RegisterLocalParticipant(localParticipant);
 
                 connectionId = await roomConnector.ConnectAsync(roomInfo, endpoint,
-                    DesktopConstants.RoomConnectionTimeoutMs, cts.Token);
+                    DesktopConstants.RoomConnectionTimeoutMs, connectCts.Token);
             }
             catch (Exception ex)
             {

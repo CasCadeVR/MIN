@@ -16,11 +16,12 @@ public partial class LoadingForm : StyledForm
     private readonly SynchronizationContext uiContext;
     private IDisposable roomInfoReceivedSubscriptionToken = null!;
     private readonly System.Windows.Forms.Timer timeoutTimer;
+    private readonly CancellationTokenSource cts;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="LoadingForm"/>
     /// </summary>
-    public LoadingForm(Guid roomId, IEventBus eventBus, Action<Room?> onRoomReady, int timeoutMs = 30000)
+    public LoadingForm(Guid roomId, IEventBus eventBus, Action<Room?> onRoomReady, CancellationTokenSource cts, int timeoutMs = 30000)
     {
         InitializeComponent();
 
@@ -30,6 +31,7 @@ public partial class LoadingForm : StyledForm
         this.onRoomReady = onRoomReady;
         this.roomId = roomId;
         this.eventBus = eventBus;
+        this.cts = cts;
 
         timeoutTimer = new System.Windows.Forms.Timer { Interval = timeoutMs };
         timeoutTimer.Tick += OnTimeout;
@@ -46,6 +48,7 @@ public partial class LoadingForm : StyledForm
             MessageBox.Show("Не удалось подключиться: Время подключения истекло.\nВозможно, комнаты уже и нет", "Ошибка",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
             onRoomReady.Invoke(null!);
+            cts.Cancel();
             Close();
         }, null);
     }

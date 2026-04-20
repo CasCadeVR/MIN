@@ -43,32 +43,36 @@ public sealed class RoomConnector : IRoomConnector
 
     async Task<Guid> IRoomConnector.ConnectAsync(RoomInfo room, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
     {
-        var roomId = room.Id;
-        var connectionId = await transport.ConnectAsync(roomId, endpoint, timeoutMs, cancellationToken);
-        roomFactory.GetOrCreateContext(roomId).Connections.Register(connectionId, room.HostParticipant);
-        logger.Log($"Подключились к комнате с {room.Name}, соединение с id {connectionId}");
-
-        var selfHandshake = new HandshakeMessage()
+        try
         {
-            Participant = identityService.SelfPartcipant.ToParticipantInfo(),
-            PublicKey = await encryptor.GetLocalPublicKey(),
-        };
+            var roomId = room.Id;
+            var connectionId = await transport.ConnectAsync(roomId, endpoint, timeoutMs, cancellationToken);
+            roomFactory.GetOrCreateContext(roomId).Connections.Register(connectionId, room.HostParticipant);
+            logger.Log($"Подключились к комнате с {room.Name}, соединение с id {connectionId}");
 
-        await messageRouter.RouteAsync(selfHandshake, roomId, selfHandshake.Participant.Id, cancellationToken);
+            var selfHandshake = new HandshakeMessage()
+            {
+                Participant = identityService.SelfPartcipant.ToParticipantInfo(),
+                PublicKey = await encryptor.GetLocalPublicKey(),
+            };
 
-        activeConnections.Add(connectionId);
-        return connectionId;
+            await messageRouter.RouteAsync(selfHandshake, roomId, selfHandshake.Participant.Id, cancellationToken);
+            activeConnections.Add(roomId);
+            return connectionId;
+        }
+        catch (TimeoutException) { return Guid.Empty; }
+        catch (OperationCanceledException) { return Guid.Empty; }
     }
 
     async Task IRoomConnector.DisconnectAsync(Guid roomId, Guid connectionId)
     {
-        if (!activeConnections.Contains(connectionId))
+        if (!activeConnections.Contains(roomId))
         {
             return;
         }
 
         await transport.DisconnectAsync(roomId, connectionId);
-        activeConnections.Remove(connectionId);
+        activeConnections.Remove(roomId);
         logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {connectionId}");
     }
 

@@ -117,10 +117,8 @@ internal sealed class NamedPipeConnection : BaseConnection, IAsyncDisposable
 
         try
         {
-            if (Pipe.IsConnected)
-            {
-                await Pipe.DisposeAsync();
-            }
+            Pipe.Close();
+            await Pipe.DisposeAsync();
         }
         catch
         {
