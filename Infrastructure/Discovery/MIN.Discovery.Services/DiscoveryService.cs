@@ -145,6 +145,7 @@ namespace MIN.Discovery.Services
                     logger.Log($"Нашёл +{response.RoomDiscoveryInfos.Count} комнат");
                     eventBus.PublishAsync(new RoomDiscoveredEvent()
                     {
+                        MachineName = e.MachineName,
                         RoomDiscoveryInfos = response.RoomDiscoveryInfos,
                     });
                 }

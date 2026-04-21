@@ -85,10 +85,10 @@ internal sealed class NamedPipeDiscoveryClient
         await pipe.WriteAsync(data.AsMemory(), cancellationToken);
         await pipe.FlushAsync(cancellationToken);
 
-        await AcceptResponse(pipe, cancellationToken);
+        await AcceptResponse(pipe, machineName, cancellationToken);
     }
 
-    private async Task AcceptResponse(NamedPipeClientStream pipe, CancellationToken cancellationToken)
+    private async Task AcceptResponse(NamedPipeClientStream pipe, string machineName, CancellationToken cancellationToken)
     {
         try
         {
@@ -98,7 +98,7 @@ internal sealed class NamedPipeDiscoveryClient
             {
                 var data = new byte[bytesRead];
                 Array.Copy(buffer, data, bytesRead);
-                MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(data));
+                MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(data, machineName));
             }
         }
         finally

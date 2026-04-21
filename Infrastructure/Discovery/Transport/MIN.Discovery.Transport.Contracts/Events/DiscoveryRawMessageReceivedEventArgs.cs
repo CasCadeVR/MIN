@@ -13,6 +13,11 @@ public sealed class DiscoveryRawMessageReceivedEventArgs : EventArgs
     public byte[] Data { get; }
 
     /// <summary>
+    /// Имя компьютера в сети, где было получено сообщение
+    /// </summary>
+    public string MachineName { get; }
+
+    /// <summary>
     /// Идентификатор соединения (pipe) для маршрутизации ответа
     /// </summary>
     public Guid ConnectionId { get; }
@@ -20,18 +25,20 @@ public sealed class DiscoveryRawMessageReceivedEventArgs : EventArgs
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="DiscoveryRawMessageReceivedEventArgs"/>
     /// </summary>
-    public DiscoveryRawMessageReceivedEventArgs(byte[] data)
+    public DiscoveryRawMessageReceivedEventArgs(byte[] data, string machineName)
     {
         Data = data;
+        MachineName = machineName;
         ConnectionId = Guid.Empty;
     }
 
     /// <summary>
-    /// Инициализирует новый экземпляр с указанием идентификатора соединения
+    /// Инициализирует новый экземпляр <see cref="DiscoveryRawMessageReceivedEventArgs"/>
     /// </summary>
-    public DiscoveryRawMessageReceivedEventArgs(byte[] data, Guid connectionId)
+    public DiscoveryRawMessageReceivedEventArgs(byte[] data, string machineName, Guid connectionId)
     {
         Data = data;
+        MachineName = machineName;
         ConnectionId = connectionId;
     }
 }

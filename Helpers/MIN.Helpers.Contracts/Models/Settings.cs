@@ -9,6 +9,11 @@ namespace MIN.Helpers.Contracts.Models;
 public class Settings
 {
     /// <summary>
+    /// Имя своего участника по умолчанию
+    /// </summary>
+    public string DefaultParticipantName { get; set; } = string.Empty;
+
+    /// <summary>
     /// Время ожидания поиска комнаты
     /// </summary>
     public int DiscoveryTimeout { get; set; } = 300;

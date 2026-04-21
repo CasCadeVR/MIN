@@ -20,7 +20,7 @@ public class ParticipantCardContextMenuStrip : ContextMenuStrip
             Size = new Size(180, 22)
         };
         showPictureToolStripMenuItem.Click += PictureBoxContextMenuStrip_Click;
-        Items.AddRange([showPictureToolStripMenuItem]);
+        Items.AddRange(new ToolStripItem[] { showPictureToolStripMenuItem });
     }
 
     private void PictureBoxContextMenuStrip_Click(object? sender, EventArgs e)

@@ -1,4 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Helpers.Services;
@@ -8,10 +10,15 @@ namespace MIN.Desktop.Components
     /// <summary>
     /// Кнопка меню
     /// </summary>
-    public partial class RoomCard : UserControl
+    public partial class RoomCard : UserControl, IDisposable
     {
+        private readonly IEventBus eventBus;
         private readonly RoomInfo room;
         private readonly ParticipantInfo localParticipant;
+        private readonly string computerName;
+        private readonly SynchronizationContext uiContext;
+
+        private HashSet<IDisposable> eventTokens = null!;
 
         /// <summary>
         /// Событие по нажатию
@@ -21,14 +28,79 @@ namespace MIN.Desktop.Components
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="RoomCard"/>
         /// </summary>
-        public RoomCard(ParticipantInfo localParticipant, RoomInfo room)
+        public RoomCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room, string computerName)
         {
             InitializeComponent();
+            this.eventBus = eventBus;
             this.localParticipant = localParticipant;
             this.room = room;
+            this.computerName = computerName;
+
+            uiContext = SynchronizationContext.Current
+                ?? throw new InvalidOperationException("Must be created on UI thread");
 
             ApplyStylings();
             UpdateStats();
+            SubscribeToEvents();
+        }
+
+        private void SubscribeToEvents()
+        {
+            eventTokens =
+            [
+                eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
+                eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
+                eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged),
+            ];
+        }
+
+        private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+        {
+            if (eventMessage.Message.RoomId != room.Id)
+            {
+                return;
+            }
+
+            room.ParticipantCount++;
+
+            uiContext.Post(_ =>
+            {
+                UpdateStats();
+            }, null);
+            await Task.CompletedTask;
+        }
+
+        private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+        {
+            if (eventMessage.Message.RoomId != room.Id)
+            {
+                return;
+            }
+
+            room.ParticipantCount--;
+
+            uiContext.Post(_ =>
+            {
+                UpdateStats();
+            }, null);
+            await Task.CompletedTask;
+        }
+
+        private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
+        {
+            if (eventMessage.RoomId != room.Id)
+            {
+                return;
+            }
+
+            if (eventMessage.NeedToDisconnect)
+            {
+                uiContext.Post(_ =>
+                {
+                    Dispose();
+                }, null);
+            }
+            await Task.CompletedTask;
         }
 
         private void ApplyStylings()
@@ -46,7 +118,7 @@ namespace MIN.Desktop.Components
             hostName.Text = room.HostParticipant.Name;
             createdAt.Text = room.CreatedAt.ToShortTimeString();
 
-            if (CollegePCNameParser.TryParseComputerName(room.HostParticipant.Name, out int roomNumber, out int computerNumber))
+            if (CollegePCNameParser.TryParseComputerName(computerName, out int roomNumber, out int computerNumber))
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
@@ -83,6 +155,15 @@ namespace MIN.Desktop.Components
         private void connectButton_Click(object sender, EventArgs e)
         {
             Clicked?.Invoke();
+        }
+
+        /// <inheritdoc cref="IDisposable.Dispose"/>
+        void IDisposable.Dispose()
+        {
+            foreach (var token in eventTokens)
+            {
+                token.Dispose();
+            }
         }
     }
 }

@@ -35,6 +35,7 @@ namespace MIN.Desktop
         private void FillControls()
         {
             labelVersion.Text += version.ToString();
+            defaultName.Text = Settings.DefaultParticipantName;
             roomSearchTime.Value = Settings.DiscoveryTimeout;
             preferredSearch.Checked = Settings.SearchMethod == SearchMethod.Preferred;
             classRoomSearch.Checked = Settings.SearchMethod == SearchMethod.ClassRoom;
@@ -72,6 +73,7 @@ namespace MIN.Desktop
 
         private void saveButton_Click(object sender, EventArgs e)
         {
+            Settings.DefaultParticipantName = defaultName.Text;
             Settings.DiscoveryTimeout = Convert.ToInt32(roomSearchTime.Value);
             Settings.SearchMethod = preferredSearch.Checked ? SearchMethod.Preferred : SearchMethod.ClassRoom;
             Settings.PreferredPCNames = GetPCNames();

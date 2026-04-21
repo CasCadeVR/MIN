@@ -58,7 +58,6 @@ public partial class ChatForm : StyledForm
     /// </summary>
     public ChatForm(
          IChatService chatService,
-         IRoomStore roomStore,
          IEventBus eventBus,
          INotificationService notificationService,
          ILoggerProvider logger,

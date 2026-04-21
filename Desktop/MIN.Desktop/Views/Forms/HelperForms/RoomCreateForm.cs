@@ -27,6 +27,9 @@ namespace MIN.Desktop
             InitializeComponent();
 
             Shown += (_, _) => roomName.Focus();
+            var title = isNew ? "Создание комнаты" : "Редактирование комнаты";
+            Title.Text = title;
+            Text = "MIN - " + title;
         }
 
         /// <inheritdoc />

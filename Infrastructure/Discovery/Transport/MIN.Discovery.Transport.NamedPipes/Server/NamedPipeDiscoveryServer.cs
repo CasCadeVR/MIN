@@ -151,7 +151,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
         {
             var data = new byte[bytesRead];
             Array.Copy(buffer, data, bytesRead);
-            MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(data, connectionId));
+            MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(data, pipeName, connectionId));
         }
     }
 

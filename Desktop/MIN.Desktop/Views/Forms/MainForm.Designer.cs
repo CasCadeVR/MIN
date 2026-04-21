@@ -32,7 +32,7 @@ namespace MIN.Desktop
         {
             splitContainer = new SplitContainer();
             tableLayoutPanelHeader = new TableLayoutPanel();
-            Title = new MIN.Desktop.Components.Labels.Heading1Label();
+            Title = new Components.Labels.Heading1Label();
             splitContainerClass = new SplitContainer();
             tableLayoutPanelMainButtons = new TableLayoutPanel();
             createRoom = new CommonButton();
@@ -41,8 +41,8 @@ namespace MIN.Desktop
             discoverRooms = new CommonButton();
             discoveryProgressBar = new ProgressBar();
             tableLayoutPanel1 = new TableLayoutPanel();
-            ClassroomTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
-            classNumber = new MIN.Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown();
+            ClassroomTitleInput = new Components.Labels.Heading3Label();
+            classNumber = new Components.Controls.NumericUpDowns.DefaultNumericUpDown();
             statusStrip = new StatusStrip();
             totalRoomsCount = new ToolStripStatusLabel();
             flowLayoutPanel = new FlowLayoutPanel();
@@ -193,12 +193,11 @@ namespace MIN.Desktop
             // splitContainerDiscovery.Panel1
             // 
             splitContainerDiscovery.Panel1.Controls.Add(discoverRooms);
-            splitContainerDiscovery.Panel1.Padding = new Padding(3);
+            splitContainerDiscovery.Panel1.Padding = new Padding(0, 0, 0, 3);
             // 
             // splitContainerDiscovery.Panel2
             // 
             splitContainerDiscovery.Panel2.Controls.Add(discoveryProgressBar);
-            splitContainerDiscovery.Panel2.Padding = new Padding(3);
             splitContainerDiscovery.Panel2Collapsed = true;
             splitContainerDiscovery.Size = new Size(168, 45);
             splitContainerDiscovery.SplitterDistance = 25;
@@ -212,11 +211,10 @@ namespace MIN.Desktop
             discoverRooms.FlatStyle = FlatStyle.Flat;
             discoverRooms.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             discoverRooms.ForeColor = Color.FromArgb(248, 249, 255);
-            discoverRooms.Location = new Point(3, 3);
-            discoverRooms.Margin = new Padding(0);
+            discoverRooms.Location = new Point(0, 0);
             discoverRooms.Name = "discoverRooms";
             discoverRooms.Padding = new Padding(8, 4, 8, 4);
-            discoverRooms.Size = new Size(162, 39);
+            discoverRooms.Size = new Size(168, 42);
             discoverRooms.TabIndex = 2;
             discoverRooms.Text = "Найти комнаты";
             discoverRooms.UseVisualStyleBackColor = false;
@@ -225,10 +223,10 @@ namespace MIN.Desktop
             // discoveryProgressBar
             // 
             discoveryProgressBar.Dock = DockStyle.Fill;
-            discoveryProgressBar.Location = new Point(3, 3);
+            discoveryProgressBar.Location = new Point(0, 0);
             discoveryProgressBar.Margin = new Padding(0);
             discoveryProgressBar.Name = "discoveryProgressBar";
-            discoveryProgressBar.Size = new Size(162, 10);
+            discoveryProgressBar.Size = new Size(168, 16);
             discoveryProgressBar.TabIndex = 0;
             // 
             // tableLayoutPanel1
