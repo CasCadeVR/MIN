@@ -42,7 +42,7 @@ public static class CollegePCNameParser
     public static string CreateComputerName(int roomNumber, int computerNumber)
     {
         var baseName = new StringBuilder();
-        var desiredLetter = roomNumber / 10 % 10 > 1 ? 'B' : 'C';
+        var desiredLetter = roomNumber / 10 % 10 > 1 ? "B" : "C";
         baseName.Append(desiredLetter + roomNumber);
 
         if (computerNumber > 0 && computerNumber < 10)

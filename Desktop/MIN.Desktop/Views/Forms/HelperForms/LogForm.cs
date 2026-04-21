@@ -10,6 +10,7 @@ namespace MIN.Desktop
     public partial class LogForm : StyledForm
     {
         private readonly ILoggerProvider loggerProvider;
+        private readonly SynchronizationContext uiContext;
 
         /// <summary>
         /// »нициализирует новый экземпл€р <see cref="LogForm"/>
@@ -18,6 +19,10 @@ namespace MIN.Desktop
         {
             InitializeComponent();
             this.loggerProvider = loggerProvider;
+
+            uiContext = SynchronizationContext.Current
+                ?? throw new InvalidOperationException("Must be created on UI thread");
+
             loggerProvider.OnLogReceived += OnLogReceived;
         }
 
@@ -28,9 +33,12 @@ namespace MIN.Desktop
 
         private void AddLogMessage(string message)
         {
-            logListBox.Items.Add(message);
-            var visibleItems = logListBox.ClientSize.Height / logListBox.ItemHeight;
-            logListBox.TopIndex = Math.Max(logListBox.Items.Count - visibleItems + 1, 0);
+            uiContext.Post(_ =>
+            {
+                logListBox.Items.Add(message);
+                var visibleItems = logListBox.ClientSize.Height / logListBox.ItemHeight;
+                logListBox.TopIndex = Math.Max(logListBox.Items.Count - visibleItems + 1, 0);
+            }, this);
         }
 
         /// <inheritdoc />

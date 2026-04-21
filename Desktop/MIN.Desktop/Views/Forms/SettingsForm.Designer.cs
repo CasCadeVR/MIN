@@ -80,7 +80,7 @@ namespace MIN.Desktop
             // 
             splitContainer.Panel2.Controls.Add(tableLayoutPanelButtons);
             splitContainer.Panel2.Controls.Add(tableLayoutPanel1);
-            splitContainer.Size = new Size(416, 506);
+            splitContainer.Size = new Size(416, 594);
             splitContainer.SplitterDistance = 55;
             splitContainer.TabIndex = 0;
             // 
@@ -117,7 +117,7 @@ namespace MIN.Desktop
             tableLayoutPanelButtons.Controls.Add(saveButton, 0, 0);
             tableLayoutPanelButtons.Controls.Add(cancelButton, 1, 0);
             tableLayoutPanelButtons.Dock = DockStyle.Bottom;
-            tableLayoutPanelButtons.Location = new Point(0, 397);
+            tableLayoutPanelButtons.Location = new Point(0, 485);
             tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
             tableLayoutPanelButtons.RowCount = 1;
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -182,15 +182,15 @@ namespace MIN.Desktop
             tableLayoutPanel1.Margin = new Padding(0);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 8;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2850122F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2850046F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2850046F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2850046F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2850046F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2850075F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2899618F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 11.3630123F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 11.3630085F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 11.3630085F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 11.3630085F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 11.3630085F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 31.8180046F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 11.36695F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new Size(416, 398);
+            tableLayoutPanel1.Size = new Size(416, 485);
             tableLayoutPanel1.TabIndex = 1;
             // 
             // pcNameDescription
@@ -200,7 +200,7 @@ namespace MIN.Desktop
             pcNameDescription.Enabled = false;
             pcNameDescription.Font = new Font("Segoe UI", 8.25F);
             pcNameDescription.ForeColor = Color.Black;
-            pcNameDescription.Location = new Point(10, 219);
+            pcNameDescription.Location = new Point(10, 214);
             pcNameDescription.Name = "pcNameDescription";
             pcNameDescription.Size = new Size(195, 39);
             pcNameDescription.TabIndex = 9;
@@ -213,7 +213,7 @@ namespace MIN.Desktop
             preferredSearch.BackColor = Color.FromArgb(248, 249, 255);
             preferredSearch.Font = new Font("Segoe UI", 9.75F);
             preferredSearch.ForeColor = Color.FromArgb(45, 43, 58);
-            preferredSearch.Location = new Point(47, 175);
+            preferredSearch.Location = new Point(47, 171);
             preferredSearch.Name = "preferredSearch";
             preferredSearch.Size = new Size(158, 21);
             preferredSearch.TabIndex = 7;
@@ -227,7 +227,7 @@ namespace MIN.Desktop
             classRoomDescription.AutoSize = true;
             classRoomDescription.Font = new Font("Segoe UI", 8.25F);
             classRoomDescription.ForeColor = Color.Black;
-            classRoomDescription.Location = new Point(211, 106);
+            classRoomDescription.Location = new Point(211, 104);
             classRoomDescription.Name = "classRoomDescription";
             classRoomDescription.Size = new Size(193, 52);
             classRoomDescription.TabIndex = 5;
@@ -239,7 +239,7 @@ namespace MIN.Desktop
             heading3Label1.AutoSize = true;
             heading3Label1.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             heading3Label1.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label1.Location = new Point(68, 71);
+            heading3Label1.Location = new Point(68, 69);
             heading3Label1.Name = "heading3Label1";
             heading3Label1.Size = new Size(137, 17);
             heading3Label1.TabIndex = 2;
@@ -251,7 +251,7 @@ namespace MIN.Desktop
             ClassTitleInput.AutoSize = true;
             ClassTitleInput.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             ClassTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
-            ClassTitleInput.Location = new Point(5, 18);
+            ClassTitleInput.Location = new Point(5, 17);
             ClassTitleInput.Name = "ClassTitleInput";
             ClassTitleInput.Size = new Size(200, 17);
             ClassTitleInput.TabIndex = 0;
@@ -264,7 +264,8 @@ namespace MIN.Desktop
             roomSearchTime.BorderStyle = BorderStyle.None;
             roomSearchTime.Font = new Font("Segoe UI", 9.75F);
             roomSearchTime.ForeColor = Color.FromArgb(122, 119, 143);
-            roomSearchTime.Location = new Point(211, 16);
+            roomSearchTime.Increment = new decimal(new int[] { 100, 0, 0, 0 });
+            roomSearchTime.Location = new Point(211, 15);
             roomSearchTime.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             roomSearchTime.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
             roomSearchTime.Name = "roomSearchTime";
@@ -280,7 +281,7 @@ namespace MIN.Desktop
             classRoomSearch.Checked = true;
             classRoomSearch.Font = new Font("Segoe UI", 9.75F);
             classRoomSearch.ForeColor = Color.FromArgb(45, 43, 58);
-            classRoomSearch.Location = new Point(67, 122);
+            classRoomSearch.Location = new Point(67, 119);
             classRoomSearch.Name = "classRoomSearch";
             classRoomSearch.Size = new Size(138, 21);
             classRoomSearch.TabIndex = 3;
@@ -295,7 +296,7 @@ namespace MIN.Desktop
             searchTypeDescription.AutoSize = true;
             searchTypeDescription.Font = new Font("Segoe UI", 8.25F);
             searchTypeDescription.ForeColor = Color.Black;
-            searchTypeDescription.Location = new Point(211, 60);
+            searchTypeDescription.Location = new Point(211, 58);
             searchTypeDescription.Name = "searchTypeDescription";
             searchTypeDescription.Size = new Size(197, 39);
             searchTypeDescription.TabIndex = 4;
@@ -308,7 +309,7 @@ namespace MIN.Desktop
             preferredPcNameDescription.Enabled = false;
             preferredPcNameDescription.Font = new Font("Segoe UI", 8.25F);
             preferredPcNameDescription.ForeColor = Color.Black;
-            preferredPcNameDescription.Location = new Point(211, 159);
+            preferredPcNameDescription.Location = new Point(211, 156);
             preferredPcNameDescription.Name = "preferredPcNameDescription";
             preferredPcNameDescription.Size = new Size(200, 52);
             preferredPcNameDescription.TabIndex = 6;
@@ -332,11 +333,11 @@ namespace MIN.Desktop
             preferredPcNameList.Dock = DockStyle.Fill;
             preferredPcNameList.Font = new Font("Segoe UI", 8.25F);
             preferredPcNameList.GridColor = Color.FromArgb(248, 249, 255);
-            preferredPcNameList.Location = new Point(211, 215);
+            preferredPcNameList.Location = new Point(211, 211);
             preferredPcNameList.Name = "preferredPcNameList";
             preferredPcNameList.RowHeadersWidth = 51;
             tableLayoutPanel1.SetRowSpan(preferredPcNameList, 2);
-            preferredPcNameList.Size = new Size(202, 100);
+            preferredPcNameList.Size = new Size(202, 193);
             preferredPcNameList.TabIndex = 10;
             preferredPcNameList.CellValidating += preferredPcNameList_CellValidating;
             // 
@@ -354,7 +355,7 @@ namespace MIN.Desktop
             logDescriptionLabel.Enabled = false;
             logDescriptionLabel.Font = new Font("Segoe UI", 8.25F);
             logDescriptionLabel.ForeColor = Color.Black;
-            logDescriptionLabel.Location = new Point(211, 325);
+            logDescriptionLabel.Location = new Point(211, 413);
             logDescriptionLabel.Name = "logDescriptionLabel";
             logDescriptionLabel.Size = new Size(202, 39);
             logDescriptionLabel.TabIndex = 11;
@@ -369,7 +370,7 @@ namespace MIN.Desktop
             logButton.FlatStyle = FlatStyle.Flat;
             logButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             logButton.ForeColor = Color.FromArgb(167, 157, 255);
-            logButton.Location = new Point(3, 323);
+            logButton.Location = new Point(3, 411);
             logButton.Name = "logButton";
             logButton.Padding = new Padding(8, 4, 8, 4);
             logButton.Size = new Size(202, 44);
@@ -386,7 +387,7 @@ namespace MIN.Desktop
             labelVersion.Enabled = false;
             labelVersion.Font = new Font("Segoe UI", 8.25F);
             labelVersion.ForeColor = Color.Black;
-            labelVersion.Location = new Point(184, 378);
+            labelVersion.Location = new Point(184, 465);
             labelVersion.Name = "labelVersion";
             labelVersion.Size = new Size(47, 13);
             labelVersion.TabIndex = 13;
@@ -396,7 +397,7 @@ namespace MIN.Desktop
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(416, 506);
+            ClientSize = new Size(416, 594);
             Controls.Add(splitContainer);
             Margin = new Padding(3, 4, 3, 4);
             MinimumSize = new Size(432, 189);

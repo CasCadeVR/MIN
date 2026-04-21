@@ -1,5 +1,4 @@
 ﻿using System.IO.Pipes;
-using System.Net.NetworkInformation;
 using MIN.Discovery.Services.Contracts.Exceptions;
 using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Discovery.Transport.NamedPipes.Services;
@@ -13,6 +12,7 @@ namespace MIN.Discovery.Transport.NamedPipes.Client;
 internal sealed class NamedPipeDiscoveryClient
 {
     private readonly ILoggerProvider logger;
+    private const int MaxAttempts = 3;
 
     /// <summary>
     /// Событие получения сырых данных от транспорта
@@ -30,16 +30,45 @@ internal sealed class NamedPipeDiscoveryClient
     /// <summary>
     /// Отправить данные к компьютеру
     /// </summary>
-    public async Task SendAsync(byte[] data, string? machineName, TimeSpan? timeout, CancellationToken cancellationToken = default)
+    public async Task<bool> SendAsync(byte[] data, string? machineName, TimeSpan? timeout, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(machineName);
 
         timeout = timeout ?? TimeSpan.FromSeconds(1);
 
-        await PingAsync(machineName, timeout.Value, cancellationToken);
+        Exception? lastException = null;
 
-        logger.Log($"Отправляю запрос discovery к {machineName}");
+        for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+        {
+            try
+            {
+                await ConnectAndSendAsync(data, machineName, timeout.Value, cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+                logger.Log($"[DEBUG]: attempt {attempt}/{MaxAttempts} failed for {machineName}: {ex.Message}");
 
+                if (attempt < MaxAttempts)
+                {
+                    try
+                    {
+                        await Task.Delay((int)timeout.Value.TotalMilliseconds + ((int)timeout.Value.TotalMilliseconds * (attempt - 1) / 10), cancellationToken);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        throw new DiscoveryException($"Failed to connect to {machineName} after {MaxAttempts} attempts: {lastException?.Message}");
+    }
+
+    private async Task ConnectAndSendAsync(byte[] data, string machineName, TimeSpan timeout, CancellationToken cancellationToken)
+    {
         using var pipe = new NamedPipeClientStream(
             machineName,
             DiscoveryPipeNameProvider.GetDiscoveryPipeName(machineName),
@@ -47,21 +76,16 @@ internal sealed class NamedPipeDiscoveryClient
             PipeOptions.Asynchronous | PipeOptions.WriteThrough
         );
 
-        try
-        {
-            await pipe.ConnectAsync(timeout.Value.Seconds, cancellationToken);
+        logger.Log($"[DEBUG]: starting connect to {machineName}");
 
-            // Connected here
+        await pipe.ConnectAsync((int)timeout.TotalMilliseconds, cancellationToken);
 
-            await pipe.WriteAsync(data.AsMemory(), cancellationToken);
-            await pipe.FlushAsync(cancellationToken);
+        logger.Log($"[DEBUG]: connected to {machineName}");
 
-            await AcceptResponse(pipe, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            throw new DiscoveryException(ex.Message);
-        }
+        await pipe.WriteAsync(data.AsMemory(), cancellationToken);
+        await pipe.FlushAsync(cancellationToken);
+
+        await AcceptResponse(pipe, cancellationToken);
     }
 
     private async Task AcceptResponse(NamedPipeClientStream pipe, CancellationToken cancellationToken)
@@ -80,30 +104,6 @@ internal sealed class NamedPipeDiscoveryClient
         finally
         {
             pipe?.Dispose();
-        }
-    }
-
-    private static async Task PingAsync(string host, TimeSpan timeout, CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var pingSender = new Ping();
-            var pingTask = pingSender.SendPingAsync(host, timeout, cancellationToken: cancellationToken);
-
-            if (await Task.WhenAny(pingTask, Task.Delay(timeout, cancellationToken)) == pingTask)
-            {
-                var reply = await pingTask;
-                if (reply.Status == IPStatus.Success)
-                {
-                    return;
-                }
-                throw new DiscoveryException(reply.Status.ToString());
-            }
-            throw new DiscoveryException("Истекло время проверки хоста");
-        }
-        catch (Exception ex) when (ex is not DiscoveryException)
-        {
-            throw new DiscoveryException(ex.Message);
         }
     }
 }

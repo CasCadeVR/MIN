@@ -154,7 +154,12 @@ public partial class ChatForm : StyledForm
             return;
         }
 
-        room!.RemoveParticipant(eventMessage.Message.Participant.Id);
+        var leavingParticipantId = eventMessage.Message.Participant.Id;
+        room!.RemoveParticipant(leavingParticipantId);
+        if (privateChatParticipantId == leavingParticipantId)
+        {
+            privateChatParticipantId = null;
+        }
 
         uiContext.Post(_ =>
         {

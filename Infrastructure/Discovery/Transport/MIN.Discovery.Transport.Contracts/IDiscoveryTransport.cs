@@ -15,7 +15,7 @@ public interface IDiscoveryTransport
     /// <summary>
     /// Отправить данные
     /// </summary>
-    Task SendAsync(byte[] data, string? destination, TimeSpan? timeout, CancellationToken cancellationToken = default);
+    Task<bool> SendAsync(byte[] data, string? destination, TimeSpan? timeout, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Начать прослушивание широковещательных сообщений, с отправкой ответа

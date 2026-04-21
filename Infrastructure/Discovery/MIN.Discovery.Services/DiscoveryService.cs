@@ -26,7 +26,6 @@ namespace MIN.Discovery.Services
         private readonly IEventBus eventBus;
         private readonly ILoggerProvider logger;
         private readonly HashSet<Guid> activeRoomIds = [];
-
         private CancellationTokenSource? serviceCts;
 
         /// <summary>
@@ -93,34 +92,46 @@ namespace MIN.Discovery.Services
             }
 
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            cts.CancelAfter(timeout);
-
             discoveryTransport.MessageReceived += OnResponseReceived;
+
+            logger.Log("[DEBUG]: starting discovery");
 
             try
             {
                 var tasks = computers
-                   .Select(computer =>
-                   {
-                       try
-                       {
-                           return discoveryTransport.SendAsync(requestData, computer, timeout, cts.Token);
-                       }
-                       catch (Exception ex)
-                       {
-                           logger.Log($"Не удалось отправить запрос на обнаружение компу {computer}: {ex.Message}");
-                       }
-
-                       return Task.CompletedTask;
-                   });
+                .Select(async computer =>
+                {
+                    try
+                    {
+                        using var perComputerCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
+                        perComputerCts.CancelAfter(timeout);
+                        await discoveryTransport.SendAsync(requestData, computer, timeout, perComputerCts.Token);
+                        return eventBus.PublishAsync(new EndpointCheckedEvent()
+                        {
+                            Endpoint = computer
+                        }, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Log($"Не удалось отправить запрос на обнаружение компу {computer}: {ex.Message}");
+                        return Task.CompletedTask;
+                    }
+                });
 
                 await Task.WhenAll(tasks);
             }
-            catch (DiscoveryException) { }
-            catch (OperationCanceledException) { }
+            catch (DiscoveryException ex)
+            {
+                logger.Log($"[DEBUG]: discovery failed at discoveryException: {ex.Message}");
+            }
+            catch (OperationCanceledException ex)
+            {
+                logger.Log($"[DEBUG]: discovery failed at OperationCanceledException: {ex.Message}");
+            }
             finally
             {
                 discoveryTransport.MessageReceived -= OnResponseReceived;
+                logger.Log("[DEBUG]: discovery ended");
             }
         }
 

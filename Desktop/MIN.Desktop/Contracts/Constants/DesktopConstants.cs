@@ -13,5 +13,5 @@ public static class DesktopConstants
     /// <summary>
     /// Таймаут на подключение к комнате (мс)
     /// </summary>
-    public const int RoomConnectionTimeoutMs = 1_000;
+    public const int RoomConnectionTimeoutMs = 10_000;
 }

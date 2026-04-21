@@ -1,4 +1,5 @@
-﻿using MIN.Chat.Services.Contracts.Interfaces;
+﻿using System.Diagnostics;
+using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
@@ -104,6 +105,7 @@ namespace MIN.Desktop
             splitContainerClass.Panel2.BackColor = ColorScheme.FormBackground;
             statusStrip.BackColor = ColorScheme.PrimaryAccent;
             totalRoomsCount.ForeColor = ColorScheme.TextOnAccent;
+            discoveryProgressBar.ForeColor = ColorScheme.PrimaryAccent;
         }
 
         private async void createRoom_Click(object sender, EventArgs e)
@@ -230,22 +232,37 @@ namespace MIN.Desktop
             roomStore.Remove(roomId);
         }
 
-        private async Task PerformSearch()
+        private async void discoverRooms_Click(object sender, EventArgs e)
         {
-            uiContext.Post(_ =>
-            {
-                findRooms.Enabled = false;
-            }, null);
+            await PerformDiscovery();
+        }
 
-            try
-            {
-                var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
+        private async Task PerformDiscovery()
+        {
+            var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
                     ? computerProvider.GetLocalNetworkMachineNames(classNumber.Value.ToString())
                     : Settings.PreferredPCNames;
 
+            uiContext.Post(_ =>
+            {
+                discoverRooms.Enabled = false;
+                splitContainerDiscovery.Panel1Collapsed = true;
+                splitContainerDiscovery.Panel2Collapsed = false;
+                discoveryProgressBar.Value = 1;
+                discoveryProgressBar.Maximum = availablePCs.Count();
                 flowLayoutPanel.Controls.Clear();
                 totalRoomsCount.Text = "Поиск комнат...";
+            }, null);
 
+            using var subscriptionToken = eventBus.Subscribe(
+                    (EndpointCheckedEvent e, CancellationToken cancellationToken) =>
+                    {
+                        discoveryProgressBar.Value++;
+                        return Task.CompletedTask;
+                    });
+
+            try
+            {
                 await discoveryService.DiscoverRoomsAsync(availablePCs, TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), cts.Token);
             }
             catch (Exception ex)
@@ -254,13 +271,11 @@ namespace MIN.Desktop
             }
             finally
             {
-                uiContext.Post(_ =>
-                {
-                    findRooms.Enabled = true;
-
-                    var roomsCount = flowLayoutPanel.Controls.Count;
-                    totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
-                }, null);
+                discoverRooms.Enabled = true;
+                splitContainerDiscovery.Panel1Collapsed = false;
+                splitContainerDiscovery.Panel2Collapsed = true;
+                var roomsCount = flowLayoutPanel.Controls.Count;
+                totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
             }
         }
 
@@ -287,11 +302,6 @@ namespace MIN.Desktop
             }, null);
 
             return Task.CompletedTask;
-        }
-
-        private async void findRooms_Click(object sender, EventArgs e)
-        {
-            await PerformSearch();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
