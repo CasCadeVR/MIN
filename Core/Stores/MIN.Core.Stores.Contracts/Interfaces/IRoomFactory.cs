@@ -8,7 +8,7 @@ namespace MIN.Core.Stores.Contracts.Interfaces;
 public interface IRoomFactory
 {
     /// <summary>
-    /// Создать контекст комнаты
+    /// Создать или получить контекст комнаты
     /// </summary>
     RoomContext GetOrCreateContext(Guid roomId);
 

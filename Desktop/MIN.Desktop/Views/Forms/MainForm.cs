@@ -12,6 +12,7 @@ using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Discovery.Events;
 using MIN.Discovery.Services.Contracts.Interfaces;
@@ -107,7 +108,7 @@ public partial class MainForm : StyledForm
         discoveryProgressBar.ForeColor = ColorScheme.PrimaryAccent;
     }
 
-    private void ResolveParticipant()
+    private bool ResolveParticipant()
     {
         if (Settings.DefaultParticipantName != string.Empty)
         {
@@ -119,11 +120,12 @@ public partial class MainForm : StyledForm
             var participantCreateForm = new ParticipantCreateForm(identityService);
             if (participantCreateForm.ShowDialog() != DialogResult.OK)
             {
-                return;
+                return false;
             }
             Settings.DefaultParticipantName = identityService.SelfPartcipant.Name;
             settingsProvider.SaveSettings(Settings);
         }
+        return true;
     }
 
     private async void createRoom_Click(object sender, EventArgs e)
@@ -137,7 +139,10 @@ public partial class MainForm : StyledForm
 
         var room = roomCreateForm.Room;
 
-        ResolveParticipant();
+        if (!ResolveParticipant())
+        {
+            return;
+        }
 
         localParticipant = identityService.SelfPartcipant.ToParticipantInfo();
         var context = roomFactory.GetOrCreateContext(room.Id);
@@ -165,7 +170,10 @@ public partial class MainForm : StyledForm
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}", "Ошибка");
+            MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}",
+                "Ошибка",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
         }
     }
 
@@ -185,19 +193,20 @@ public partial class MainForm : StyledForm
             roomStore.Add(new Room(roomInfo));
 
             var connectionId = Guid.Empty;
-
             var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
 
-            new LoadingForm(roomInfo.Id, eventBus, room =>
+            new LoadingForm(roomInfo.Id, eventBus, async room =>
             {
                 if (room == null)
                 {
                     return;
                 }
                 OpenChatForm(room, connectionId, isHost: false, endpoint);
+                await eventBus.PublishAsync(new RoomJoinedEvent() { RoomId = room.Id });
             }, connectCts, DesktopConstants.RoomConnectionTimeoutMs).Show();
 
-            roomFactory.GetOrCreateContext(roomInfo.Id).Connections.RegisterLocalParticipant(localParticipant);
+            roomFactory.GetOrCreateContext(roomInfo.Id)
+                .Connections.RegisterLocalParticipant(localParticipant);
 
             connectionId = await roomConnector.ConnectAsync(roomInfo, endpoint,
                 DesktopConstants.RoomConnectionTimeoutMs, connectCts.Token);
@@ -239,6 +248,7 @@ public partial class MainForm : StyledForm
             await roomConnector.DisconnectAsync(roomId, connectionId);
         }
 
+        await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
         roomFactory.DestroyContext(roomId);
         roomStore.Remove(roomId);
     }
@@ -265,12 +275,11 @@ public partial class MainForm : StyledForm
             totalRoomsCount.Text = "Поиск комнат...";
         }, null);
 
-        using var subscriptionToken = eventBus.Subscribe(
-                (EndpointCheckedEvent e, CancellationToken cancellationToken) =>
-                {
-                    discoveryProgressBar.Value++;
-                    return Task.CompletedTask;
-                });
+        using var subscriptionToken = eventBus.Subscribe((EndpointCheckedEvent _, CancellationToken _) =>
+            {
+                discoveryProgressBar.Value++;
+                return Task.CompletedTask;
+            });
 
         try
         {

@@ -3,6 +3,7 @@ using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
+using MIN.Desktop.Infrastructure.Events;
 using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Components
@@ -14,9 +15,9 @@ namespace MIN.Desktop.Components
     {
         private readonly IEventBus eventBus;
         private readonly RoomInfo room;
-        private readonly ParticipantInfo localParticipant;
         private readonly string computerName;
         private readonly SynchronizationContext uiContext;
+        private readonly bool isOwner;
 
         private HashSet<IDisposable> eventTokens = null!;
 
@@ -32,9 +33,9 @@ namespace MIN.Desktop.Components
         {
             InitializeComponent();
             this.eventBus = eventBus;
-            this.localParticipant = localParticipant;
             this.room = room;
             this.computerName = computerName;
+            isOwner = room.HostParticipant.Id == localParticipant.Id;
 
             uiContext = SynchronizationContext.Current
                 ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -50,7 +51,8 @@ namespace MIN.Desktop.Components
             [
                 eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
                 eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
-                eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged),
+                eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
+                eventBus.Subscribe<RoomJoinedEvent>(OnRoomJoined),
             ];
         }
 
@@ -86,20 +88,46 @@ namespace MIN.Desktop.Components
             await Task.CompletedTask;
         }
 
-        private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
+        private async Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
         {
             if (eventMessage.RoomId != room.Id)
             {
                 return;
             }
 
-            if (eventMessage.NeedToDisconnect)
+            if (isOwner)
             {
                 uiContext.Post(_ =>
                 {
                     Dispose();
                 }, null);
             }
+            else
+            {
+                room.ParticipantCount--;
+
+                uiContext.Post(_ =>
+                {
+                    UpdateStats();
+                }, null);
+            }
+
+            await Task.CompletedTask;
+        }
+
+        private async Task OnRoomJoined(RoomJoinedEvent eventMessage, CancellationToken cancellationToken)
+        {
+            if (eventMessage.RoomId != room.Id)
+            {
+                return;
+            }
+
+            room.ParticipantCount++;
+
+            uiContext.Post(_ =>
+            {
+                UpdateStats();
+            }, null);
             await Task.CompletedTask;
         }
 
@@ -118,7 +146,7 @@ namespace MIN.Desktop.Components
             hostName.Text = room.HostParticipant.Name;
             createdAt.Text = room.CreatedAt.ToShortTimeString();
 
-            if (CollegePCNameParser.TryParseComputerName(computerName, out int roomNumber, out int computerNumber))
+            if (CollegePCNameParser.TryParseComputerName(computerName, out var roomNumber, out var computerNumber))
             {
                 computer.Text = computerNumber.ToString();
                 classroom.Text = roomNumber.ToString();
@@ -129,13 +157,12 @@ namespace MIN.Desktop.Components
                 classroom.Text = DesktopConstants.UndefinedPCName;
             }
 
-            manageConnectButtonAccessability();
+            ManageConnectButtonAccessability();
         }
 
-        private void manageConnectButtonAccessability()
+        private void ManageConnectButtonAccessability()
         {
             var isFull = room.ParticipantCount >= room.MaximumParticipants;
-            var isOwner = room.HostParticipant.Id == localParticipant.Id;
             var isNotAccessible = isFull || isOwner;
 
             connectButton.Enabled = !isNotAccessible;
