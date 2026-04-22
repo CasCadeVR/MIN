@@ -49,6 +49,8 @@ public partial class MainForm : StyledForm
 
     private Settings Settings => settingsProvider.GetSettings();
     private ParticipantInfo localParticipant = null!;
+    private CancellationTokenSource? discoveryCts;
+    private bool isDiscovering;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MainForm"/>
@@ -255,18 +257,28 @@ public partial class MainForm : StyledForm
 
     private async void discoverRooms_Click(object sender, EventArgs e)
     {
-        await PerformDiscovery();
+        if (isDiscovering)
+        {
+            discoveryCts?.Cancel();
+            isDiscovering = false;
+        }
+        else
+        {
+            await PerformDiscovery();
+        }
     }
 
     private async Task PerformDiscovery()
     {
+        isDiscovering = true;
+
         var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
                 ? computerProvider.GetLocalNetworkMachineNames(classNumber.Value.ToString())
                 : Settings.PreferredPCNames;
 
         uiContext.Post(_ =>
         {
-            discoverRooms.Enabled = false;
+            discoverRooms.Text = "Остановить поиск";
             splitContainerDiscovery.Panel2Collapsed = false;
             discoveryProgressBar.Value = 1;
             discoveryProgressBar.Maximum = availablePCs.Count() + 1;
@@ -274,15 +286,18 @@ public partial class MainForm : StyledForm
             totalRoomsCount.Text = "Поиск комнат...";
         }, null);
 
+        discoveryCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
+
         using var subscriptionToken = eventBus.Subscribe((EndpointCheckedEvent _, CancellationToken _) =>
-            {
-                discoveryProgressBar.Value++;
-                return Task.CompletedTask;
-            });
+        {
+            discoveryProgressBar.Value++;
+            return Task.CompletedTask;
+        });
 
         try
         {
-            await discoveryService.DiscoverRoomsAsync(availablePCs, TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), cts.Token);
+            await discoveryService.DiscoverRoomsAsync(availablePCs,
+                TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), discoveryCts.Token);
         }
         catch (Exception ex)
         {
@@ -290,10 +305,11 @@ public partial class MainForm : StyledForm
         }
         finally
         {
-            discoverRooms.Enabled = true;
+            discoverRooms.Text = "Найти комнаты";
             splitContainerDiscovery.Panel2Collapsed = true;
             var roomsCount = flowLayoutPanel.Controls.Count;
             totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
+            isDiscovering = false;
         }
     }
 
