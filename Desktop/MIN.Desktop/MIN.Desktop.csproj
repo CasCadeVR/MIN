@@ -53,6 +53,9 @@
     <Compile Update="Contracts\Views\Forms\StyledForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Contracts\Views\PanelViews\StyledPanelView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -64,16 +67,16 @@
     <Compile Update="Views\Components\ChatMessageCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Views\Forms\HelperForms\LogForm.cs">
+    <Compile Update="Views\Forms\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Views\Forms\SettingsForm.cs">
+    <Compile Update="Views\Panels\SidePanelViews\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Views\Forms\HelperForms\ParticipantCreateForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Views\Forms\ChatForm.cs">
+    <Compile Update="Views\Panels\PanelViews\ChatForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Views\Forms\HelperForms\RoomCreateForm.cs">

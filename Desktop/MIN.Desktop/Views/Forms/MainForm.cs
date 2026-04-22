@@ -4,31 +4,26 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
-using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Core.Transport.NamedPipes.Models;
-using MIN.Desktop.Components;
-using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Models;
+using MIN.Desktop.Contracts.Models.Enums;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Infrastructure.Events;
-using MIN.Desktop.Views.Forms.HelperForms;
-using MIN.Discovery.Events;
+using MIN.Desktop.Views.Panels.SidePanelViews;
 using MIN.Discovery.Services.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models;
-using MIN.Helpers.Contracts.Models.Enums;
-using MIN.Helpers.Services;
 
 namespace MIN.Desktop;
 
 /// <summary>
 /// Главная форма приложения
 /// </summary>
-public partial class MainForm : StyledForm
+public partial class MainForm : StyledForm, INavigationService
 {
     private readonly IRoomConnector roomConnector;
     private readonly IRoomHoster roomHoster;
@@ -49,8 +44,8 @@ public partial class MainForm : StyledForm
 
     private Settings Settings => settingsProvider.GetSettings();
     private ParticipantInfo localParticipant = null!;
-    private CancellationTokenSource? discoveryCts;
-    private bool isDiscovering;
+
+    private BasePanelView currentPanelView = null!;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MainForm"/>
@@ -71,6 +66,7 @@ public partial class MainForm : StyledForm
         Version version)
     {
         InitializeComponent();
+        InitializeViews();
 
         this.roomConnector = roomConnector;
         this.roomHoster = roomHoster;
@@ -90,24 +86,76 @@ public partial class MainForm : StyledForm
             ?? throw new InvalidOperationException("Must be created on UI thread");
 
         cts = new CancellationTokenSource();
-
-        SubscribeToEvents();
     }
 
-    private void SubscribeToEvents()
+    private void InitializeViews()
     {
-        eventBus.Subscribe<RoomDiscoveredEvent>(OnRoomDiscovered);
+        NavigateCoreTo(new NavigationItem()
+        {
+            PanelType = PanelType.Side,
+            ViewInstance = new MainSidePanelView()
+        });
+        NavigateCoreTo(new NavigationItem()
+        {
+            PanelType = PanelType.Main,
+            ViewInstance = new DiscoveryPanelView(discoveryService, roomConnector, roomHoster,
+            roomStore, roomFactory, eventBus, settingsProvider, computerProvider,
+                localParticipant, uiContext, cts)
+        });
+    }
+
+    void INavigationService.NavigateTo(NavigationItem item)
+    {
+        NavigateCoreTo(item);
+    }
+
+    private void NavigateCoreTo(NavigationItem item)
+    {
+        if (currentPanelView != null)
+        {
+            currentPanelView.RequestNavigate -= NavigateCoreTo;
+        }
+
+        Panel container = null!;
+
+        switch (item.PanelType)
+        {
+            case PanelType.Main:
+                container = mainPanel;
+                break;
+
+            case PanelType.Side:
+                container = sidePanel;
+                break;
+        }
+
+        container.Controls.Clear();
+
+        BasePanelView view;
+
+        if (item.ViewInstance != null)
+        {
+            view = item.ViewInstance;
+        }
+        else
+        {
+            throw new InvalidOperationException("Ошибка: не было установлено значение у навигационной модели");
+        }
+
+        view.RequestNavigate += NavigateCoreTo;
+        currentPanelView = view;
+
+        view.OnNavigation(item);
+        view.Dock = DockStyle.Fill;
+
+        container.Controls.Add(view);
     }
 
     /// <inheritdoc />
     protected override void ApplyStylings()
     {
-        splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
-        splitContainerClass.Panel1.BackColor = ColorScheme.MainPanelBackground;
-        splitContainerClass.Panel2.BackColor = ColorScheme.FormBackground;
-        statusStrip.BackColor = ColorScheme.PrimaryAccent;
-        totalRoomsCount.ForeColor = ColorScheme.TextOnAccent;
-        discoveryProgressBar.ForeColor = ColorScheme.PrimaryAccent;
+        sidePanel.BackColor = ColorScheme.MainPanelBackground;
+        mainPanel.BackColor = ColorScheme.FormBackground;
     }
 
     private bool ResolveParticipant()
@@ -128,95 +176,6 @@ public partial class MainForm : StyledForm
             settingsProvider.SaveSettings(Settings);
         }
         return true;
-    }
-
-    private async void createRoom_Click(object sender, EventArgs e)
-    {
-        var roomCreateForm = new RoomCreateForm();
-
-        if (roomCreateForm.ShowDialog() != DialogResult.OK)
-        {
-            return;
-        }
-
-        var room = roomCreateForm.Room;
-
-        if (!ResolveParticipant())
-        {
-            return;
-        }
-
-        localParticipant = identityService.SelfPartcipant.ToParticipantInfo();
-        var context = roomFactory.GetOrCreateContext(room.Id);
-
-        context.Connections.RegisterLocalParticipant(localParticipant);
-        room.HostParticipant = localParticipant;
-
-        try
-        {
-            roomStore.Add(room);
-
-            var roomInfo = new RoomInfo(room);
-            await roomHoster.StartHostingAsync(roomInfo, cts.Token);
-
-            context.Participants.AddParticipant(localParticipant);
-
-            await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
-
-            OpenChatForm(roomStore.GetRoom(room.Id),
-                CoreRegistryConstants.LocalConnectionId,
-                isHost: true, new NamedPipeEndpoint()
-                {
-                    MachineName = Environment.MachineName,
-                });
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}",
-                "Ошибка",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
-        }
-    }
-
-    private async Task OnRoomJoin(RoomInfo roomInfo, IEndpoint endpoint)
-    {
-        if (roomConnector.IsConnected(roomInfo.Id))
-        {
-            MessageBox.Show($"Вы уже подключены к этой комнате", "Ошибка",
-                MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            return;
-        }
-
-        ResolveParticipant();
-
-        try
-        {
-            roomStore.Add(new Room(roomInfo));
-
-            var connectionId = Guid.Empty;
-            var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
-
-            new LoadingForm(roomInfo.Id, eventBus, async room =>
-            {
-                if (room == null)
-                {
-                    return;
-                }
-                OpenChatForm(room, connectionId, isHost: false, endpoint);
-                await eventBus.PublishAsync(new RoomJoinedEvent() { RoomId = room.Id });
-            }, connectCts, DesktopConstants.RoomConnectionTimeoutMs).Show();
-
-            roomFactory.GetOrCreateContext(roomInfo.Id)
-                .Connections.RegisterLocalParticipant(localParticipant);
-
-            connectionId = await roomConnector.ConnectAsync(roomInfo, endpoint,
-                DesktopConstants.RoomConnectionTimeoutMs, connectCts.Token);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Произошла ошибка: {ex.Message}");
-        }
     }
 
     private void OpenChatForm(Room room, Guid connectionId, bool isHost, IEndpoint endpoint)
@@ -255,90 +214,6 @@ public partial class MainForm : StyledForm
         roomStore.Remove(roomId);
     }
 
-    private async void discoverRooms_Click(object sender, EventArgs e)
-    {
-        if (isDiscovering)
-        {
-            discoveryCts?.Cancel();
-            isDiscovering = false;
-        }
-        else
-        {
-            await PerformDiscovery();
-        }
-    }
-
-    private async Task PerformDiscovery()
-    {
-        isDiscovering = true;
-
-        var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
-                ? computerProvider.GetLocalNetworkMachineNames(classNumber.Value.ToString())
-                : Settings.PreferredPCNames;
-
-        uiContext.Post(_ =>
-        {
-            discoverRooms.Text = "Остановить поиск";
-            splitContainerDiscovery.Panel2Collapsed = false;
-            discoveryProgressBar.Value = 1;
-            discoveryProgressBar.Maximum = availablePCs.Count() + 1;
-            flowLayoutPanel.Controls.Clear();
-            totalRoomsCount.Text = "Поиск комнат...";
-        }, null);
-
-        discoveryCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
-
-        using var subscriptionToken = eventBus.Subscribe((EndpointCheckedEvent _, CancellationToken _) =>
-        {
-            discoveryProgressBar.Value++;
-            return Task.CompletedTask;
-        });
-
-        try
-        {
-            await discoveryService.DiscoverRoomsAsync(availablePCs,
-                TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), discoveryCts.Token);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Discovery failed: {ex.Message}", "Error");
-        }
-        finally
-        {
-            discoverRooms.Text = "Найти комнаты";
-            splitContainerDiscovery.Panel2Collapsed = true;
-            var roomsCount = flowLayoutPanel.Controls.Count;
-            totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
-            isDiscovering = false;
-        }
-    }
-
-    private Task OnRoomDiscovered(RoomDiscoveredEvent e, CancellationToken cancellationToken)
-    {
-        uiContext.Post(_ =>
-        {
-            foreach (var discoveryInfo in e.RoomDiscoveryInfos)
-            {
-                var card = new RoomCard(eventBus, localParticipant,
-                    discoveryInfo.Room, e.MachineName)
-                {
-                    Parent = flowLayoutPanel
-                };
-
-                card.Clicked += () => OnRoomJoin(discoveryInfo.Room, discoveryInfo.Endpoint);
-                card.Disposed += (s, _) =>
-                {
-                    totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanel.Controls.Count}";
-                };
-            }
-
-            var roomsCount = flowLayoutPanel.Controls.Count;
-            totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
-        }, null);
-
-        return Task.CompletedTask;
-    }
-
     private void MainForm_Load(object sender, EventArgs e)
     {
         localParticipant = new ParticipantInfo()
@@ -347,20 +222,6 @@ public partial class MainForm : StyledForm
         };
 
         identityService.SetParticipant(localParticipant);
-
-        if (CollegePCNameParser.TryParseComputerName(Environment.MachineName, out var roomNumber, out var _))
-        {
-            classNumber.Value = roomNumber;
-        }
-    }
-
-    private void settingsButton_Click(object sender, EventArgs e)
-    {
-        var settingsForm = new SettingsForm(Settings, version, logger);
-        if (settingsForm.ShowDialog() == DialogResult.OK)
-        {
-            settingsProvider.SaveSettings(settingsForm.Settings);
-        }
     }
 
     private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
