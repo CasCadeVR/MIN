@@ -1,4 +1,4 @@
-﻿namespace MIN.Desktop.Contracts;
+﻿namespace MIN.Desktop.Contracts.Schemes;
 
 /// <summary>
 /// Цветовая схема приложения

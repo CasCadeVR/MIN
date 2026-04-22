@@ -102,7 +102,7 @@ namespace MIN.Desktop.Components
             // 
             // connectButton
             // 
-            connectButton.BackColor = Color.FromArgb(192, 192, 255);
+            connectButton.BackColor = Color.FromArgb(167, 157, 255);
             connectButton.Cursor = Cursors.Hand;
             connectButton.Dock = DockStyle.Bottom;
             connectButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);

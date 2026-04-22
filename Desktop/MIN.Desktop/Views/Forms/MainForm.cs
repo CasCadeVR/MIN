@@ -8,9 +8,9 @@ using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
-using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Forms.HelperForms;
@@ -267,7 +267,6 @@ public partial class MainForm : StyledForm
         uiContext.Post(_ =>
         {
             discoverRooms.Enabled = false;
-            splitContainerDiscovery.Panel1Collapsed = true;
             splitContainerDiscovery.Panel2Collapsed = false;
             discoveryProgressBar.Value = 1;
             discoveryProgressBar.Maximum = availablePCs.Count() + 1;
@@ -292,7 +291,6 @@ public partial class MainForm : StyledForm
         finally
         {
             discoverRooms.Enabled = true;
-            splitContainerDiscovery.Panel1Collapsed = false;
             splitContainerDiscovery.Panel2Collapsed = true;
             var roomsCount = flowLayoutPanel.Controls.Count;
             totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";

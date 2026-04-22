@@ -8,14 +8,13 @@ using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
-using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
-using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Views.Components;
 using MIN.Helpers.Contracts.Extensions;
@@ -506,7 +505,9 @@ public partial class ChatForm : StyledForm
         {
             Close();
         }
-        else if (result == DialogResult.OK)
+        else if (result == DialogResult.OK
+            && (editForm.Room.Name != room.Name
+            || editForm.Room.MaximumParticipants != room.MaximumParticipants))
         {
             // TODO: Исправить
 

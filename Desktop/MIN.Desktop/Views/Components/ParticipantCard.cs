@@ -1,6 +1,7 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Components.Controls.ContextMenuStrips;
 using MIN.Desktop.Contracts;
+using MIN.Desktop.Contracts.Schemes;
 
 namespace MIN.Desktop.Components;
 

@@ -1,196 +1,195 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
-using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Constants;
+using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Helpers.Services;
 
-namespace MIN.Desktop.Components
+namespace MIN.Desktop.Components;
+
+/// <summary>
+/// Кнопка меню
+/// </summary>
+public partial class RoomCard : UserControl, IDisposable
 {
+    private readonly IEventBus eventBus;
+    private readonly RoomInfo room;
+    private readonly string computerName;
+    private readonly SynchronizationContext uiContext;
+    private readonly bool isOwner;
+
+    private HashSet<IDisposable> eventTokens = null!;
+
     /// <summary>
-    /// Кнопка меню
+    /// Событие по нажатию
     /// </summary>
-    public partial class RoomCard : UserControl, IDisposable
+    public event Func<Task>? Clicked;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="RoomCard"/>
+    /// </summary>
+    public RoomCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room, string computerName)
     {
-        private readonly IEventBus eventBus;
-        private readonly RoomInfo room;
-        private readonly string computerName;
-        private readonly SynchronizationContext uiContext;
-        private readonly bool isOwner;
+        InitializeComponent();
+        this.eventBus = eventBus;
+        this.room = room;
+        this.computerName = computerName;
+        isOwner = room.HostParticipant.Id == localParticipant.Id;
 
-        private HashSet<IDisposable> eventTokens = null!;
+        uiContext = SynchronizationContext.Current
+            ?? throw new InvalidOperationException("Must be created on UI thread");
 
-        /// <summary>
-        /// Событие по нажатию
-        /// </summary>
-        public event Func<Task> Clicked = null!;
+        ApplyStylings();
+        UpdateStats();
+        SubscribeToEvents();
+    }
 
-        /// <summary>
-        /// Инициализирует новый экземпляр <see cref="RoomCard"/>
-        /// </summary>
-        public RoomCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room, string computerName)
+    private void SubscribeToEvents()
+    {
+        eventTokens =
+        [
+            eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
+            eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
+            eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
+            eventBus.Subscribe<RoomJoinedEvent>(OnRoomJoined),
+        ];
+    }
+
+    private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.Message.RoomId != room.Id)
         {
-            InitializeComponent();
-            this.eventBus = eventBus;
-            this.room = room;
-            this.computerName = computerName;
-            isOwner = room.HostParticipant.Id == localParticipant.Id;
+            return;
+        }
 
-            uiContext = SynchronizationContext.Current
-                ?? throw new InvalidOperationException("Must be created on UI thread");
+        room.ParticipantCount++;
 
-            ApplyStylings();
+        uiContext.Post(_ =>
+        {
             UpdateStats();
-            SubscribeToEvents();
+        }, null);
+        await Task.CompletedTask;
+    }
+
+    private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.Message.RoomId != room.Id)
+        {
+            return;
         }
 
-        private void SubscribeToEvents()
+        room.ParticipantCount--;
+
+        uiContext.Post(_ =>
         {
-            eventTokens =
-            [
-                eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
-                eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
-                eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
-                eventBus.Subscribe<RoomJoinedEvent>(OnRoomJoined),
-            ];
+            UpdateStats();
+        }, null);
+        await Task.CompletedTask;
+    }
+
+    private async Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != room.Id)
+        {
+            return;
         }
 
-        private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+        if (isOwner)
         {
-            if (eventMessage.Message.RoomId != room.Id)
-            {
-                return;
-            }
-
-            room.ParticipantCount++;
-
             uiContext.Post(_ =>
             {
-                UpdateStats();
+                Dispose();
             }, null);
-            await Task.CompletedTask;
         }
-
-        private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+        else
         {
-            if (eventMessage.Message.RoomId != room.Id)
-            {
-                return;
-            }
-
             room.ParticipantCount--;
 
             uiContext.Post(_ =>
             {
                 UpdateStats();
             }, null);
-            await Task.CompletedTask;
         }
 
-        private async Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
+        await Task.CompletedTask;
+    }
+
+    private async Task OnRoomJoined(RoomJoinedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != room.Id)
         {
-            if (eventMessage.RoomId != room.Id)
-            {
-                return;
-            }
-
-            if (isOwner)
-            {
-                uiContext.Post(_ =>
-                {
-                    Dispose();
-                }, null);
-            }
-            else
-            {
-                room.ParticipantCount--;
-
-                uiContext.Post(_ =>
-                {
-                    UpdateStats();
-                }, null);
-            }
-
-            await Task.CompletedTask;
+            return;
         }
 
-        private async Task OnRoomJoined(RoomJoinedEvent eventMessage, CancellationToken cancellationToken)
+        room.ParticipantCount++;
+
+        uiContext.Post(_ =>
         {
-            if (eventMessage.RoomId != room.Id)
-            {
-                return;
-            }
+            UpdateStats();
+        }, null);
+        await Task.CompletedTask;
+    }
 
-            room.ParticipantCount++;
+    private void ApplyStylings()
+    {
+        splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
+        splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
+        tableLayoutPanelLabels.BackColor = ColorScheme.MainPanelBackground;
+        Title.ForeColor = ColorScheme.TextOnAccent;
+    }
 
-            uiContext.Post(_ =>
-            {
-                UpdateStats();
-            }, null);
-            await Task.CompletedTask;
+    private void UpdateStats()
+    {
+        Title.Text = $"Комната {room.Name}";
+        participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
+        hostName.Text = room.HostParticipant.Name;
+        createdAt.Text = room.CreatedAt.ToShortTimeString();
+
+        if (CollegePCNameParser.TryParseComputerName(computerName, out var roomNumber, out var computerNumber))
+        {
+            computer.Text = computerNumber.ToString();
+            classroom.Text = roomNumber.ToString();
+        }
+        else
+        {
+            computer.Text = DesktopConstants.UndefinedPCName;
+            classroom.Text = DesktopConstants.UndefinedPCName;
         }
 
-        private void ApplyStylings()
+        ManageConnectButtonAccessability();
+    }
+
+    private void ManageConnectButtonAccessability()
+    {
+        var isFull = room.ParticipantCount >= room.MaximumParticipants;
+        var isNotAccessible = isFull || isOwner;
+
+        connectButton.Enabled = !isNotAccessible;
+
+        if (isNotAccessible)
         {
-            splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
-            splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
-            tableLayoutPanelLabels.BackColor = ColorScheme.MainPanelBackground;
-            Title.ForeColor = ColorScheme.TextOnAccent;
+            connectButton.Text = isFull ? "Заполнено" : "Твоя комната";
+            connectButton.BackColor = ColorScheme.ConnectionDisabled;
         }
-
-        private void UpdateStats()
+        else
         {
-            Title.Text = $"Комната {room.Name}";
-            participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
-            hostName.Text = room.HostParticipant.Name;
-            createdAt.Text = room.CreatedAt.ToShortTimeString();
-
-            if (CollegePCNameParser.TryParseComputerName(computerName, out var roomNumber, out var computerNumber))
-            {
-                computer.Text = computerNumber.ToString();
-                classroom.Text = roomNumber.ToString();
-            }
-            else
-            {
-                computer.Text = DesktopConstants.UndefinedPCName;
-                classroom.Text = DesktopConstants.UndefinedPCName;
-            }
-
-            ManageConnectButtonAccessability();
+            connectButton.Text = "Присоединиться";
+            connectButton.BackColor = ColorScheme.SecondaryAccent;
         }
+    }
 
-        private void ManageConnectButtonAccessability()
+    private void connectButton_Click(object sender, EventArgs e)
+    {
+        Clicked?.Invoke();
+    }
+
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    void IDisposable.Dispose()
+    {
+        foreach (var token in eventTokens)
         {
-            var isFull = room.ParticipantCount >= room.MaximumParticipants;
-            var isNotAccessible = isFull || isOwner;
-
-            connectButton.Enabled = !isNotAccessible;
-
-            if (isNotAccessible)
-            {
-                connectButton.Text = isFull ? "Заполнено" : "Твоя комната";
-                connectButton.BackColor = ColorScheme.ConnectionDisabled;
-            }
-            else
-            {
-                connectButton.Text = "Присоединиться";
-                connectButton.BackColor = ColorScheme.SecondaryAccent;
-            }
-        }
-
-        private void connectButton_Click(object sender, EventArgs e)
-        {
-            Clicked?.Invoke();
-        }
-
-        /// <inheritdoc cref="IDisposable.Dispose"/>
-        void IDisposable.Dispose()
-        {
-            foreach (var token in eventTokens)
-            {
-                token.Dispose();
-            }
+            token.Dispose();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using MIN.Desktop.Contracts;
+using MIN.Desktop.Contracts.Schemes;
 
 namespace MIN.Desktop.Components.Controls.Buttons
 {
@@ -27,7 +28,6 @@ namespace MIN.Desktop.Components.Controls.Buttons
             FlatStyle = FlatStyle.Flat;
             FlatAppearance.BorderColor = ColorScheme.DividerColor;
             FlatAppearance.BorderSize = 1;
-            Padding = new Padding(8, 4, 8, 4);
         }
 
         /// <inheritdoc cref="Control.OnHandleCreated(EventArgs)"/>

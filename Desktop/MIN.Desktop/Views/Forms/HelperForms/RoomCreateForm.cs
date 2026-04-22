@@ -1,5 +1,5 @@
 using MIN.Core.Entities;
-using MIN.Desktop.Contracts;
+using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 
 namespace MIN.Desktop

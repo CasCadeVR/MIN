@@ -1,4 +1,5 @@
 ﻿using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Properties;
 
 namespace MIN.Desktop.Contracts.Views.Forms

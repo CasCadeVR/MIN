@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using MIN.Desktop.Contracts;
+using MIN.Desktop.Contracts.Schemes;
 
 namespace MIN.Desktop.Components.Controls.TextBoxes
 {

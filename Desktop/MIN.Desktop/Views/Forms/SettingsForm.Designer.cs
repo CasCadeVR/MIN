@@ -30,30 +30,31 @@ namespace MIN.Desktop
         /// </summary>
         private void InitializeComponent()
         {
+            var resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
             var dataGridViewCellStyle1 = new DataGridViewCellStyle();
             splitContainer = new SplitContainer();
             tableLayoutPanelHeader = new TableLayoutPanel();
-            Title = new Components.Labels.Heading1Label();
+            Title = new MIN.Desktop.Components.Labels.Heading1Label();
             tableLayoutPanelButtons = new TableLayoutPanel();
             saveButton = new CommonButton();
             cancelButton = new InvertedButton();
             tableLayoutPanel1 = new TableLayoutPanel();
-            labelVersion = new Components.Labels.CaptionLabel();
+            labelVersion = new MIN.Desktop.Components.Labels.CaptionLabel();
             logButton = new InvertedButton();
-            logDescriptionLabel = new Components.Labels.CaptionLabel();
-            pcNameDescription = new Components.Labels.CaptionLabel();
-            preferredPcNameList = new Components.Controls.DGVs.OneColumnDataGridView();
+            logDescriptionLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            pcNameDescription = new MIN.Desktop.Components.Labels.CaptionLabel();
+            preferredPcNameList = new MIN.Desktop.Components.Controls.DGVs.OneColumnDataGridView();
             PCName = new DataGridViewTextBoxColumn();
-            preferredSearch = new Components.Controls.RadioButtons.DefaultRadioButton();
-            preferredPcNameDescription = new Components.Labels.CaptionLabel();
-            classRoomSearch = new Components.Controls.RadioButtons.DefaultRadioButton();
-            classRoomDescription = new Components.Labels.CaptionLabel();
-            searchTypeDescription = new Components.Labels.CaptionLabel();
-            ClassTitleInput = new Components.Labels.Heading3Label();
-            roomSearchTime = new Components.Controls.NumericUpDowns.DefaultNumericUpDown();
-            heading3Label1 = new Components.Labels.Heading3Label();
-            heading3Label2 = new Components.Labels.Heading3Label();
-            defaultName = new Components.Controls.TextBoxes.DefaultTextBox();
+            preferredSearch = new MIN.Desktop.Components.Controls.RadioButtons.DefaultRadioButton();
+            preferredPcNameDescription = new MIN.Desktop.Components.Labels.CaptionLabel();
+            classRoomSearch = new MIN.Desktop.Components.Controls.RadioButtons.DefaultRadioButton();
+            classRoomDescription = new MIN.Desktop.Components.Labels.CaptionLabel();
+            searchTypeDescription = new MIN.Desktop.Components.Labels.CaptionLabel();
+            ClassTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
+            roomSearchTime = new MIN.Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown();
+            heading3Label1 = new MIN.Desktop.Components.Labels.Heading3Label();
+            heading3Label2 = new MIN.Desktop.Components.Labels.Heading3Label();
+            defaultName = new MIN.Desktop.Components.Controls.TextBoxes.DefaultTextBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -82,7 +83,7 @@ namespace MIN.Desktop
             // 
             splitContainer.Panel2.Controls.Add(tableLayoutPanelButtons);
             splitContainer.Panel2.Controls.Add(tableLayoutPanel1);
-            splitContainer.Size = new Size(416, 608);
+            splitContainer.Size = new Size(416, 593);
             splitContainer.SplitterDistance = 55;
             splitContainer.TabIndex = 0;
             // 
@@ -119,7 +120,7 @@ namespace MIN.Desktop
             tableLayoutPanelButtons.Controls.Add(saveButton, 0, 0);
             tableLayoutPanelButtons.Controls.Add(cancelButton, 1, 0);
             tableLayoutPanelButtons.Dock = DockStyle.Bottom;
-            tableLayoutPanelButtons.Location = new Point(0, 499);
+            tableLayoutPanelButtons.Location = new Point(0, 484);
             tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
             tableLayoutPanelButtons.RowCount = 1;
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -186,14 +187,14 @@ namespace MIN.Desktop
             tableLayoutPanel1.Margin = new Padding(0);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 9;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 7.6444397F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 7.644439F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 7.644439F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 7.644439F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 7.6444397F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 14.0412121F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 38.53144F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 9.205144F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 7.03335857F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 7.033357F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 9.50556F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 9.50556F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 13.8009281F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 9.20062F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 35.451313F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 8.469302F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel1.Size = new Size(416, 485);
             tableLayoutPanel1.TabIndex = 1;
@@ -221,10 +222,9 @@ namespace MIN.Desktop
             logButton.FlatStyle = FlatStyle.Flat;
             logButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             logButton.ForeColor = Color.FromArgb(167, 157, 255);
-            logButton.Location = new Point(3, 422);
+            logButton.Location = new Point(3, 425);
             logButton.Name = "logButton";
-            logButton.Padding = new Padding(8, 4, 8, 4);
-            logButton.Size = new Size(202, 36);
+            logButton.Size = new Size(202, 33);
             logButton.TabIndex = 12;
             logButton.Text = "Открыть окно логов";
             logButton.UseVisualStyleBackColor = false;
@@ -237,7 +237,7 @@ namespace MIN.Desktop
             logDescriptionLabel.Enabled = false;
             logDescriptionLabel.Font = new Font("Segoe UI", 8.25F);
             logDescriptionLabel.ForeColor = Color.Black;
-            logDescriptionLabel.Location = new Point(211, 420);
+            logDescriptionLabel.Location = new Point(211, 422);
             logDescriptionLabel.Name = "logDescriptionLabel";
             logDescriptionLabel.Size = new Size(202, 39);
             logDescriptionLabel.TabIndex = 11;
@@ -245,16 +245,17 @@ namespace MIN.Desktop
             // 
             // pcNameDescription
             // 
-            pcNameDescription.Anchor = AnchorStyles.Right;
+            pcNameDescription.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             pcNameDescription.AutoSize = true;
             pcNameDescription.Enabled = false;
             pcNameDescription.Font = new Font("Segoe UI", 8.25F);
             pcNameDescription.ForeColor = Color.Black;
-            pcNameDescription.Location = new Point(10, 188);
+            pcNameDescription.Location = new Point(10, 216);
             pcNameDescription.Name = "pcNameDescription";
-            pcNameDescription.Size = new Size(195, 39);
+            tableLayoutPanel1.SetRowSpan(pcNameDescription, 2);
+            pcNameDescription.Size = new Size(195, 104);
             pcNameDescription.TabIndex = 9;
-            pcNameDescription.Text = "Формат: C(номер кабинета)(номер компьютера), например: C31203, C31415";
+            pcNameDescription.Text = resources.GetString("pcNameDescription.Text");
             // 
             // preferredPcNameList
             // 
@@ -274,11 +275,11 @@ namespace MIN.Desktop
             preferredPcNameList.Dock = DockStyle.Fill;
             preferredPcNameList.Font = new Font("Segoe UI", 8.25F);
             preferredPcNameList.GridColor = Color.FromArgb(248, 249, 255);
-            preferredPcNameList.Location = new Point(211, 178);
+            preferredPcNameList.Location = new Point(211, 219);
             preferredPcNameList.Name = "preferredPcNameList";
             preferredPcNameList.RowHeadersWidth = 51;
             tableLayoutPanel1.SetRowSpan(preferredPcNameList, 2);
-            preferredPcNameList.Size = new Size(202, 238);
+            preferredPcNameList.Size = new Size(202, 200);
             preferredPcNameList.TabIndex = 10;
             preferredPcNameList.CellValidating += preferredPcNameList_CellValidating;
             // 
@@ -296,7 +297,7 @@ namespace MIN.Desktop
             preferredSearch.BackColor = Color.FromArgb(248, 249, 255);
             preferredSearch.Font = new Font("Segoe UI", 9.75F);
             preferredSearch.ForeColor = Color.FromArgb(45, 43, 58);
-            preferredSearch.Location = new Point(47, 147);
+            preferredSearch.Location = new Point(47, 173);
             preferredSearch.Name = "preferredSearch";
             preferredSearch.Size = new Size(158, 21);
             preferredSearch.TabIndex = 7;
@@ -311,9 +312,9 @@ namespace MIN.Desktop
             preferredPcNameDescription.Enabled = false;
             preferredPcNameDescription.Font = new Font("Segoe UI", 8.25F);
             preferredPcNameDescription.ForeColor = Color.Black;
-            preferredPcNameDescription.Location = new Point(211, 140);
+            preferredPcNameDescription.Location = new Point(211, 158);
             preferredPcNameDescription.Name = "preferredPcNameDescription";
-            preferredPcNameDescription.Size = new Size(200, 35);
+            preferredPcNameDescription.Size = new Size(200, 52);
             preferredPcNameDescription.TabIndex = 6;
             preferredPcNameDescription.Text = "Вот это лучше - будет быстрее. Подходит если у тебя есть друзья за каким-то компом и ты знаешь к кому хочешь подключиться";
             // 
@@ -325,7 +326,7 @@ namespace MIN.Desktop
             classRoomSearch.Checked = true;
             classRoomSearch.Font = new Font("Segoe UI", 9.75F);
             classRoomSearch.ForeColor = Color.FromArgb(45, 43, 58);
-            classRoomSearch.Location = new Point(67, 112);
+            classRoomSearch.Location = new Point(67, 119);
             classRoomSearch.Name = "classRoomSearch";
             classRoomSearch.Size = new Size(138, 21);
             classRoomSearch.TabIndex = 3;
@@ -340,11 +341,11 @@ namespace MIN.Desktop
             classRoomDescription.AutoSize = true;
             classRoomDescription.Font = new Font("Segoe UI", 8.25F);
             classRoomDescription.ForeColor = Color.Black;
-            classRoomDescription.Location = new Point(211, 105);
+            classRoomDescription.Location = new Point(211, 110);
             classRoomDescription.Name = "classRoomDescription";
-            classRoomDescription.Size = new Size(193, 35);
+            classRoomDescription.Size = new Size(193, 39);
             classRoomDescription.TabIndex = 5;
-            classRoomDescription.Text = "По умолчанию это. Оно проходит каждый компьютер, в  заданном кабинете (обычно их 20) - долгая фигулька не советую";
+            classRoomDescription.Text = "По умолчанию это. Оно проходит каждый компьютер, в  заданном кабинете (обычно их 20)\r\n";
             // 
             // searchTypeDescription
             // 
@@ -352,9 +353,9 @@ namespace MIN.Desktop
             searchTypeDescription.AutoSize = true;
             searchTypeDescription.Font = new Font("Segoe UI", 8.25F);
             searchTypeDescription.ForeColor = Color.Black;
-            searchTypeDescription.Location = new Point(211, 70);
+            searchTypeDescription.Location = new Point(211, 66);
             searchTypeDescription.Name = "searchTypeDescription";
-            searchTypeDescription.Size = new Size(197, 35);
+            searchTypeDescription.Size = new Size(197, 39);
             searchTypeDescription.TabIndex = 4;
             searchTypeDescription.Text = "Ты можешь тут выбрать как искать комнаты, это повляет на скорость поиска";
             // 
@@ -364,7 +365,7 @@ namespace MIN.Desktop
             ClassTitleInput.AutoSize = true;
             ClassTitleInput.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             ClassTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
-            ClassTitleInput.Location = new Point(5, 44);
+            ClassTitleInput.Location = new Point(5, 39);
             ClassTitleInput.Name = "ClassTitleInput";
             ClassTitleInput.Size = new Size(200, 17);
             ClassTitleInput.TabIndex = 0;
@@ -378,7 +379,7 @@ namespace MIN.Desktop
             roomSearchTime.Font = new Font("Segoe UI", 9.75F);
             roomSearchTime.ForeColor = Color.FromArgb(122, 119, 143);
             roomSearchTime.Increment = new decimal(new int[] { 100, 0, 0, 0 });
-            roomSearchTime.Location = new Point(211, 42);
+            roomSearchTime.Location = new Point(211, 37);
             roomSearchTime.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             roomSearchTime.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
             roomSearchTime.Name = "roomSearchTime";
@@ -392,7 +393,7 @@ namespace MIN.Desktop
             heading3Label1.AutoSize = true;
             heading3Label1.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             heading3Label1.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label1.Location = new Point(68, 79);
+            heading3Label1.Location = new Point(68, 77);
             heading3Label1.Name = "heading3Label1";
             heading3Label1.Size = new Size(137, 17);
             heading3Label1.TabIndex = 2;
@@ -404,7 +405,7 @@ namespace MIN.Desktop
             heading3Label2.AutoSize = true;
             heading3Label2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             heading3Label2.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label2.Location = new Point(63, 9);
+            heading3Label2.Location = new Point(63, 7);
             heading3Label2.Name = "heading3Label2";
             heading3Label2.Size = new Size(142, 17);
             heading3Label2.TabIndex = 14;
@@ -417,7 +418,7 @@ namespace MIN.Desktop
             defaultName.BorderStyle = BorderStyle.None;
             defaultName.Font = new Font("Segoe UI", 9.75F);
             defaultName.ForeColor = Color.FromArgb(122, 119, 143);
-            defaultName.Location = new Point(211, 8);
+            defaultName.Location = new Point(211, 7);
             defaultName.Name = "defaultName";
             defaultName.Size = new Size(197, 18);
             defaultName.TabIndex = 15;
@@ -426,7 +427,7 @@ namespace MIN.Desktop
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(416, 608);
+            ClientSize = new Size(416, 593);
             Controls.Add(splitContainer);
             Margin = new Padding(3, 4, 3, 4);
             MinimumSize = new Size(432, 189);
