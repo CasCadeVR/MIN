@@ -1,21 +1,15 @@
-﻿using MIN.Desktop.Contracts.Models;
+﻿using MIN.Desktop.Contracts.Enums;
+using MIN.Desktop.Contracts.Views.PanelViews.Models;
 
 namespace MIN.Desktop.Contracts.Views.PanelViews;
 
 /// <summary>
 /// Базовая вкладка
 /// </summary>
-public partial class BasePanelView : UserControl
+public partial class BasePanelView : UserControl, IPanel
 {
-    /// <summary>
-    /// Текущая модель навигации
-    /// </summary>
-    public NavigationItem CurrentNavigationItem = null!;
-
-    /// <summary>
-    /// Запрос навигации
-    /// </summary>
-    public event Action<NavigationItem> RequestNavigate = null!;
+    /// <inheritdoc />
+    public virtual PanelType PanelType { get; }
 
     /// <summary>
     /// Инициализирует новый экземляр <see cref="BasePanelView"/>
@@ -25,36 +19,6 @@ public partial class BasePanelView : UserControl
         InitializeComponent();
     }
 
-    /// <summary>
-    /// Инициализирует новый экземляр <see cref="BasePanelView"/>
-    /// </summary>
-    public BasePanelView(NavigationItem item)
-    {
-        InitializeComponent();
-        CurrentNavigationItem = item;
-    }
-
-    private void OnBackButtonClick(object? sender, EventArgs e)
-    {
-        NavigateToParent();
-    }
-
-    /// <summary>
-    /// Инициализация панели всякий раз, когда на неё приходят
-    /// </summary>
-    public virtual void OnNavigation(NavigationItem item)
-    {
-        CurrentNavigationItem = item;
-    }
-
-    /// <summary>
-    /// Перейти к родителю
-    /// </summary>
-    protected void NavigateToParent()
-    {
-        if (CurrentNavigationItem?.Parent != null)
-        {
-            RequestNavigate?.Invoke(CurrentNavigationItem.Parent);
-        }
-    }
+    /// <inheritdoc />
+    public virtual void OnNavigatedTo() => throw new NotImplementedException();
 }

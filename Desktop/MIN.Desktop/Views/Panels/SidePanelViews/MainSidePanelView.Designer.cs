@@ -30,7 +30,7 @@
         {
             roomSearchTextBox = new MIN.Desktop.Components.Controls.TextBoxes.DefaultTextBox();
             commonButton2 = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
-            commonButton1 = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            discoveryButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             settingsButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             createRoom = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             tableLayoutPanelHeader = new TableLayoutPanel();
@@ -84,20 +84,21 @@
             commonButton2.TabIndex = 5;
             commonButton2.UseVisualStyleBackColor = false;
             // 
-            // commonButton1
+            // discoveryButton
             // 
-            commonButton1.BackColor = Color.FromArgb(167, 157, 255);
-            commonButton1.BackgroundImage = Properties.Resources.compass;
-            commonButton1.BackgroundImageLayout = ImageLayout.Zoom;
-            commonButton1.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
-            commonButton1.FlatStyle = FlatStyle.Flat;
-            commonButton1.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
-            commonButton1.ForeColor = Color.FromArgb(248, 249, 255);
-            commonButton1.Location = new Point(349, 3);
-            commonButton1.Name = "commonButton1";
-            commonButton1.Size = new Size(42, 42);
-            commonButton1.TabIndex = 4;
-            commonButton1.UseVisualStyleBackColor = false;
+            discoveryButton.BackColor = Color.FromArgb(167, 157, 255);
+            discoveryButton.BackgroundImage = Properties.Resources.compass;
+            discoveryButton.BackgroundImageLayout = ImageLayout.Zoom;
+            discoveryButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            discoveryButton.FlatStyle = FlatStyle.Flat;
+            discoveryButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            discoveryButton.ForeColor = Color.FromArgb(248, 249, 255);
+            discoveryButton.Location = new Point(349, 3);
+            discoveryButton.Name = "discoveryButton";
+            discoveryButton.Size = new Size(42, 42);
+            discoveryButton.TabIndex = 4;
+            discoveryButton.UseVisualStyleBackColor = false;
+            discoveryButton.Click += discoveryButton_Click;
             // 
             // settingsButton
             // 
@@ -141,7 +142,7 @@
             tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
             tableLayoutPanelHeader.Controls.Add(createRoom, 0, 1);
             tableLayoutPanelHeader.Controls.Add(settingsButton, 0, 0);
-            tableLayoutPanelHeader.Controls.Add(commonButton1, 3, 0);
+            tableLayoutPanelHeader.Controls.Add(discoveryButton, 3, 0);
             tableLayoutPanelHeader.Controls.Add(commonButton2, 2, 0);
             tableLayoutPanelHeader.Controls.Add(roomSearchTextBox, 1, 0);
             tableLayoutPanelHeader.Dock = DockStyle.Fill;
@@ -185,7 +186,7 @@
         private TableLayoutPanel tableLayoutPanelHeader;
         private Desktop.Components.Controls.Buttons.CommonButton createRoom;
         private Desktop.Components.Controls.Buttons.CommonButton settingsButton;
-        private Desktop.Components.Controls.Buttons.CommonButton commonButton1;
+        private Desktop.Components.Controls.Buttons.CommonButton discoveryButton;
         private Desktop.Components.Controls.Buttons.CommonButton commonButton2;
         private Desktop.Components.Controls.TextBoxes.DefaultTextBox roomSearchTextBox;
         private FlowLayoutPanel flowLayoutPanelRooms;

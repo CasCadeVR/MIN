@@ -1,31 +1,60 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Services.Rooms;
 using MIN.Core.Stores.Contracts.Registries.Models;
-using MIN.Core.Stores.Factories;
-using MIN.Core.Stores.Services;
+using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
+using MIN.Desktop.Contracts.Enums;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.PanelViews;
-using MIN.Discovery.Services;
-using MIN.Helpers.Contracts.Models;
-using MIN.Helpers.Services;
+using MIN.Desktop.Views.Panels.PanelViews;
+using MIN.DI;
+using MIN.Helpers.Contracts.Extensions;
 
 namespace MIN.Desktop.Views.Panels.SidePanelViews;
 
 /// <summary>
-/// Главная панель
+/// Главная боковая панель
 /// </summary>
 public partial class MainSidePanelView : StyledPanelView
 {
+    private readonly IMinFeatureCollection featureCollection;
+    private readonly INavigationService navigationService;
 
+    /// <inheritdoc />
+    public override PanelType PanelType => PanelType.Side;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MainSidePanelView"/>
     /// </summary>
-    public MainSidePanelView()
+    public MainSidePanelView(IMinFeatureCollection featureCollection,
+        INavigationService navigationService)
     {
         InitializeComponent();
+        this.featureCollection = featureCollection;
+        this.navigationService = navigationService;
     }
 
+    private bool ResolveParticipant()
+    {
+        var settings = featureCollection.Helper.SettingsProvider.GetSettings();
+        var localParticipant = featureCollection.Helper.IdentityService.SelfPartcipant.ToParticipantInfo();
+
+        if (settings.DefaultParticipantName != string.Empty)
+        {
+            localParticipant.Name = settings.DefaultParticipantName;
+            featureCollection.Helper.IdentityService.SetParticipant(localParticipant);
+        }
+        else
+        {
+            var participantCreateForm = new ParticipantCreateForm(featureCollection.Helper.IdentityService);
+            if (participantCreateForm.ShowDialog() != DialogResult.OK)
+            {
+                return false;
+            }
+            settings.DefaultParticipantName = featureCollection.Helper.IdentityService.SelfPartcipant.Name;
+            featureCollection.Helper.SettingsProvider.SaveSettings(settings);
+        }
+        return true;
+    }
 
     private async void createRoom_Click(object sender, EventArgs e)
     {
@@ -43,29 +72,30 @@ public partial class MainSidePanelView : StyledPanelView
             return;
         }
 
-        localParticipant = identityService.SelfPartcipant.ToParticipantInfo();
-        var context = roomFactory.GetOrCreateContext(room.Id);
+        var localParticipant = featureCollection.Helper.IdentityService.SelfPartcipant.ToParticipantInfo();
+        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(room.Id);
 
         context.Connections.RegisterLocalParticipant(localParticipant);
         room.HostParticipant = localParticipant;
 
         try
         {
-            roomStore.Add(room);
+            featureCollection.Core.RoomStore.Add(room);
 
             var roomInfo = new RoomInfo(room);
-            await roomHoster.StartHostingAsync(roomInfo, cts.Token);
+            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, cts.Token);
 
             context.Participants.AddParticipant(localParticipant);
 
-            await discoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
+            await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
 
-            OpenChatForm(roomStore.GetRoom(room.Id),
+            navigationService.NavigateTo<ChatPanelView, (Guid roomId, Guid connectionId, IEndpoint endpoint)>(
+                (room.Id,
                 CoreRegistryConstants.LocalConnectionId,
-                isHost: true, new NamedPipeEndpoint()
+                new NamedPipeEndpoint()
                 {
                     MachineName = Environment.MachineName,
-                });
+                }));
         }
         catch (Exception ex)
         {
@@ -78,16 +108,11 @@ public partial class MainSidePanelView : StyledPanelView
 
     private void settingsButton_Click(object sender, EventArgs e)
     {
-        var settingsForm = new SettingsForm(Settings, version, logger);
-        if (settingsForm.ShowDialog() == DialogResult.OK)
-        {
-            settingsProvider.SaveSettings(settingsForm.Settings);
-        }
+        navigationService.NavigateTo<SettingsSidePanelView>();
     }
 
-    /// <inheritdoc />
-    public override void ApplyStylings()
+    private void discoveryButton_Click(object sender, EventArgs e)
     {
-        //discoveryProgressBar.ForeColor = ColorScheme.PrimaryAccent;
+        navigationService.NavigateTo<DiscoveryPanelView>();
     }
 }

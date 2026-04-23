@@ -1,4 +1,4 @@
-﻿using MIN.Desktop.Contracts.Models;
+﻿using MIN.Desktop.Contracts.Views.PanelViews;
 
 namespace MIN.Desktop.Contracts.Interfaces;
 
@@ -8,7 +8,16 @@ namespace MIN.Desktop.Contracts.Interfaces;
 public interface INavigationService
 {
     /// <summary>
-    /// Перейти по <see cref="NavigationItem"/>
+    /// Перейти на панель
     /// </summary>
-    void NavigateTo(NavigationItem item);
+    /// <typeparam name="TPanel">Панель</typeparam>
+    void NavigateTo<TPanel>() where TPanel : BasePanelView;
+
+    /// <summary>
+    /// Перейти на панель, предварительно инициализировав её параметры
+    /// </summary>
+    /// <typeparam name="TPanel">Панель</typeparam>
+    /// <typeparam name="TParams">Параметры</typeparam>
+    /// <param name="param">Параметры</param>
+    void NavigateTo<TPanel, TParams>(TParams param) where TPanel : BasePanelView;
 }

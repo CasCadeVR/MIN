@@ -1,4 +1,4 @@
-﻿namespace MIN.Desktop.Contracts.Models.Enums;
+﻿namespace MIN.Desktop.Contracts.Enums;
 
 /// <summary>
 /// Тип панели на экране

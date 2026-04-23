@@ -1,13 +1,12 @@
-﻿namespace MIN.Desktop.Contracts.Interfaces
+﻿namespace MIN.Desktop.Contracts.Interfaces;
+
+/// <summary>
+/// Стилизованный
+/// </summary>
+internal interface IStyled
 {
     /// <summary>
-    /// Стилизованный
+    /// Применить дополнительные стили
     /// </summary>
-    internal interface IStyled
-    {
-        /// <summary>
-        /// Применить дополнительные стили
-        /// </summary>
-        public void ApplyStylings();
-    }
+    void ApplyStylings();
 }

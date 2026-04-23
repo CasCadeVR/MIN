@@ -117,4 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="pcNameDescription.Text" xml:space="preserve">
+    <value>Формат: C(номер кабинета)(номер компьютера), например: C31203, C31415.
+Также отмечу, что если кабинет находиться в центральном крыле (где номер кабинета больше 20,
+например 321) - нужно ставить букву B а не C</value>
+  </data>
+  <metadata name="PCName.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
 </root>

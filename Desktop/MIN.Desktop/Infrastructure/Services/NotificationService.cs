@@ -1,5 +1,5 @@
-﻿using MIN.Desktop.Contracts.Interfaces;
-using MIN.Desktop.Views.Forms.HelperForms;
+﻿using MIN.Desktop.Views.Forms.HelperForms;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Desktop.Infrastructure.Services
 {

@@ -1,19 +1,17 @@
 ﻿using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Forms.HelperForms;
+using MIN.Desktop.Views.Panels.PanelViews;
+using MIN.DI;
 using MIN.Discovery.Events;
-using MIN.Discovery.Services.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Interfaces.SettingsServices;
+using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Models;
 using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Helpers.Services;
@@ -25,60 +23,39 @@ namespace MIN.Desktop.Views.Panels.SidePanelViews;
 /// </summary>
 public partial class DiscoveryPanelView : StyledPanelView
 {
-    private readonly IDiscoveryService discoveryService;
-    private readonly IRoomConnector roomConnector;
-    private readonly IRoomHoster roomHoster;
-    private readonly IRoomStore roomStore;
-    private readonly IRoomFactory roomFactory;
-    private readonly IEventBus eventBus;
-    private readonly ISettingsProvider settingsProvider;
-    private readonly ILocalNetworkComputerProvider computerProvider;
-    private readonly IIdentityService identityService;
+    private readonly IMinFeatureCollection featureCollection;
+    private readonly INavigationService navigationService;
     private readonly ParticipantInfo localParticipant;
 
-    private Settings Settings => settingsProvider.GetSettings();
-    private readonly SynchronizationContext uiContext;
-    private readonly CancellationTokenSource cts;
+    private Settings Settings => featureCollection.Helper.SettingsProvider.GetSettings();
+    private CancellationTokenSource lifeTimeCts;
     private CancellationTokenSource? discoveryCts;
     private bool isDiscovering;
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="DiscoveryPanelView"/>
     /// </summary>
-    public DiscoveryPanelView(IDiscoveryService discoveryService,
-        IRoomConnector roomConnector,
-        IRoomHoster roomHoster,
-        IRoomStore roomStore,
-        IRoomFactory roomFactory,
-        IEventBus eventBus,
-        ISettingsProvider settingsProvider,
-        ILocalNetworkComputerProvider computerProvider,
-        IIdentityService identityService,
-        ParticipantInfo localParticipant,
-        SynchronizationContext uiContext,
-        CancellationTokenSource cts)
+    public DiscoveryPanelView(IMinFeatureCollection featureCollection,
+        INavigationService navigationService)
     {
         InitializeComponent();
         ParseMachineName();
 
-        this.discoveryService = discoveryService;
-        this.roomConnector = roomConnector;
-        this.roomHoster = roomHoster;
-        this.roomStore = roomStore;
-        this.roomFactory = roomFactory;
-        this.eventBus = eventBus;
-        this.settingsProvider = settingsProvider;
-        this.localParticipant = localParticipant;
-        this.computerProvider = computerProvider;
-        this.uiContext = uiContext;
-        this.cts = cts;
+        this.featureCollection = featureCollection;
+        this.navigationService = navigationService;
+
+        localParticipant = featureCollection.Helper.IdentityService.SelfPartcipant.ToParticipantInfo();
+
+        lifeTimeCts = new CancellationTokenSource();
+        uiContext = SynchronizationContext.Current
+            ?? throw new InvalidOperationException("");
 
         SubscribeToEvents();
-
     }
 
     private void ParseMachineName()
     {
-        if (CollegePCNameParser.TryParseComputerName(computerProvider.GetLocalMachineName(), out var roomNumber, out var _))
+        if (CollegePCNameParser.TryParseComputerName(featureCollection.Helper.ComputerProvider.GetLocalMachineName(), out var roomNumber, out var _))
         {
             classNumber.Value = roomNumber;
         }
@@ -86,7 +63,7 @@ public partial class DiscoveryPanelView : StyledPanelView
 
     private void SubscribeToEvents()
     {
-        eventBus.Subscribe<RoomDiscoveredEvent>(OnRoomDiscovered);
+        featureCollection.Core.EventBus.Subscribe<RoomDiscoveredEvent>(OnRoomDiscovered);
     }
 
     private async void discoverRooms_Click(object sender, EventArgs e)
@@ -107,7 +84,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         isDiscovering = true;
 
         var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
-                ? computerProvider.GetLocalNetworkMachineNames(classNumber.Value.ToString())
+                ? featureCollection.Helper.ComputerProvider.GetLocalNetworkMachineNames(classNumber.Value.ToString())
                 : Settings.PreferredPCNames;
 
         uiContext.Post(_ =>
@@ -120,9 +97,9 @@ public partial class DiscoveryPanelView : StyledPanelView
             totalRoomsCount.Text = "Поиск комнат...";
         }, null);
 
-        discoveryCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
+        discoveryCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
 
-        using var subscriptionToken = eventBus.Subscribe((EndpointCheckedEvent _, CancellationToken _) =>
+        using var subscriptionToken = featureCollection.Core.EventBus.Subscribe((EndpointCheckedEvent _, CancellationToken _) =>
         {
             discoveryProgressBar.Value++;
             return Task.CompletedTask;
@@ -130,7 +107,7 @@ public partial class DiscoveryPanelView : StyledPanelView
 
         try
         {
-            await discoveryService.DiscoverRoomsAsync(availablePCs,
+            await featureCollection.Discovery.DiscoveryService.DiscoverRoomsAsync(availablePCs,
                 TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), discoveryCts.Token);
         }
         catch (Exception ex)
@@ -153,7 +130,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         {
             foreach (var discoveryInfo in e.RoomDiscoveryInfos)
             {
-                var card = new RoomCard(eventBus, localParticipant,
+                var card = new RoomCard(featureCollection.Core.EventBus, localParticipant,
                     discoveryInfo.Room, e.MachineName)
                 {
                     Parent = flowLayoutPanelDiscoveredRooms
@@ -178,24 +155,24 @@ public partial class DiscoveryPanelView : StyledPanelView
         if (Settings.DefaultParticipantName != string.Empty)
         {
             localParticipant.Name = Settings.DefaultParticipantName;
-            identityService.SetParticipant(localParticipant);
+            featureCollection.Helper.IdentityService.SetParticipant(localParticipant);
         }
         else
         {
-            var participantCreateForm = new ParticipantCreateForm(identityService);
+            var participantCreateForm = new ParticipantCreateForm(featureCollection.Helper.IdentityService);
             if (participantCreateForm.ShowDialog() != DialogResult.OK)
             {
                 return false;
             }
-            Settings.DefaultParticipantName = identityService.SelfPartcipant.Name;
-            settingsProvider.SaveSettings(Settings);
+            Settings.DefaultParticipantName = featureCollection.Helper.IdentityService.SelfPartcipant.Name;
+            featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         }
         return true;
     }
 
     private async Task OnRoomJoin(RoomInfo roomInfo, IEndpoint endpoint)
     {
-        if (roomConnector.IsConnected(roomInfo.Id))
+        if (featureCollection.Core.RoomConnector.IsConnected(roomInfo.Id))
         {
             MessageBox.Show($"Вы уже подключены к этой комнате", "Ошибка",
                 MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
@@ -206,25 +183,25 @@ public partial class DiscoveryPanelView : StyledPanelView
 
         try
         {
-            roomStore.Add(new Room(roomInfo));
+            featureCollection.Core.RoomStore.Add(new Room(roomInfo));
 
             var connectionId = Guid.Empty;
-            var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
+            var connectCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
 
-            new LoadingForm(roomInfo.Id, eventBus, async room =>
+            new LoadingForm(roomInfo.Id, featureCollection.Core.EventBus, async room =>
             {
                 if (room == null)
                 {
                     return;
                 }
-                OpenChatForm(room, connectionId, isHost: false, endpoint);
-                await eventBus.PublishAsync(new RoomJoinedEvent() { RoomId = room.Id });
+                navigationService.NavigateTo<ChatPanelView, (Guid roomId, Guid connectionId, IEndpoint endpoint)>((room.Id, connectionId, endpoint));
+                await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent() { RoomId = room.Id });
             }, connectCts, DesktopConstants.RoomConnectionTimeoutMs).Show();
 
-            roomFactory.GetOrCreateContext(roomInfo.Id)
+            featureCollection.Core.RoomFactory.GetOrCreateContext(roomInfo.Id)
                 .Connections.RegisterLocalParticipant(localParticipant);
 
-            connectionId = await roomConnector.ConnectAsync(roomInfo, endpoint,
+            connectionId = await featureCollection.Core.RoomConnector.ConnectAsync(roomInfo, endpoint,
                 DesktopConstants.RoomConnectionTimeoutMs, connectCts.Token);
         }
         catch (Exception ex)
@@ -233,44 +210,8 @@ public partial class DiscoveryPanelView : StyledPanelView
         }
     }
 
-    private void OpenChatForm(Room room, Guid connectionId, bool isHost, IEndpoint endpoint)
-    {
-        var chatForm = new ChatForm(
-            chatService,
-            eventBus,
-            notificationService,
-            logger,
-            identityService,
-            room,
-            endpoint);
-
-        chatForm.FormClosing += async (_, _) =>
-        {
-            await CleanUpAsync(room.Id, connectionId, isHost);
-        };
-
-        chatForm.Show();
-    }
-
-    private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)
-    {
-        if (isHost)
-        {
-            await discoveryService.StopDiscoveryAsync(roomId);
-            await roomHoster.StopHostingAsync(roomId);
-        }
-        else
-        {
-            await roomConnector.DisconnectAsync(roomId, connectionId);
-        }
-
-        await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
-        roomFactory.DestroyContext(roomId);
-        roomStore.Remove(roomId);
-    }
-
     /// <inheritdoc />
-    public override void ApplyStylings()
+    protected override void ApplyStylings()
     {
         statusStrip.BackColor = ColorScheme.PrimaryAccent;
         totalRoomsCount.ForeColor = ColorScheme.TextOnAccent;

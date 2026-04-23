@@ -1,5 +1,4 @@
 ﻿using MIN.Desktop.Contracts.Interfaces;
-using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
 
 namespace MIN.Desktop.Contracts.Views.PanelViews;
@@ -10,25 +9,28 @@ namespace MIN.Desktop.Contracts.Views.PanelViews;
 public partial class StyledPanelView : BasePanelView, IStyled
 {
     /// <summary>
+    /// Контекст синхронизации для UI
+    /// </summary>
+    protected SynchronizationContext uiContext;
+
+    /// <summary>
     /// Инициализирует новый экземляр <see cref="BasePanelView"/>
     /// </summary>
     public StyledPanelView()
     {
         InitializeComponent();
-        //ApplyStylings();
+        ApplyStylings();
+        uiContext = SynchronizationContext.Current
+            ?? throw new InvalidOperationException("Must be created on UI thread");
     }
 
-    /// <summary>
-    /// Инициализирует новый экземляр <see cref="BasePanelView"/>
-    /// </summary>
-    public StyledPanelView(NavigationItem item)
+    void IStyled.ApplyStylings()
     {
-        InitializeComponent();
         ApplyStylings();
     }
 
-    /// <inheritdoc />
-    public virtual void ApplyStylings()
+    /// <inheritdoc cref="IStyled.ApplyStylings"/>
+    protected virtual void ApplyStylings()
     {
         splitContainer.BackColor = ColorScheme.MainPanelBackground;
         splitContainer.ForeColor = ColorScheme.TextPrimary;
