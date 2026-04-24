@@ -1,6 +1,6 @@
 ﻿using MIN.Discovery.Services.Contracts.Interfaces;
 
-namespace MIN.Discovery.DI;
+namespace MIN.Discovery.DI.FeatureCollection;
 
 /// <summary>
 /// Набор функциональностей для Discovery

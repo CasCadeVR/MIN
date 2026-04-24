@@ -1,6 +1,6 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
 
-namespace MIN.Chat.DI;
+namespace MIN.Chat.DI.FeatureCollection;
 
 /// <summary>
 /// Набор функциональностей для Chat

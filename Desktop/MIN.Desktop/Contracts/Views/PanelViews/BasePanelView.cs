@@ -9,7 +9,7 @@ namespace MIN.Desktop.Contracts.Views.PanelViews;
 public partial class BasePanelView : UserControl, IPanel
 {
     /// <inheritdoc />
-    public virtual PanelType PanelType { get; }
+    public virtual PanelType PanelType { get; } = PanelType.Main;
 
     /// <summary>
     /// Инициализирует новый экземляр <see cref="BasePanelView"/>

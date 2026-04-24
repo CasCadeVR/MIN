@@ -70,13 +70,7 @@
     <Compile Update="Views\Forms\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Views\Panels\SidePanelViews\SettingsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Update="Views\Forms\HelperForms\ParticipantCreateForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Views\Panels\PanelViews\ChatForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Views\Forms\HelperForms\RoomCreateForm.cs">

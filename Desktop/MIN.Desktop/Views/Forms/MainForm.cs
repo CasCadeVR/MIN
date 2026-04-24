@@ -17,6 +17,11 @@ public partial class MainForm : StyledForm
     {
         InitializeComponent();
 
+        navigationService.Parent = this;
+        navigationService.SplitContainer = splitContainer;
+        navigationService.SidePanel = splitContainer.Panel1;
+        navigationService.MainPanel = splitContainer.Panel2;
+
         navigationService.NavigateTo<MainSidePanelView>();
         navigationService.NavigateTo<DiscoveryPanelView>();
     }
@@ -24,7 +29,7 @@ public partial class MainForm : StyledForm
     /// <inheritdoc />
     protected override void ApplyStylings()
     {
-        sidePanel.BackColor = ColorScheme.MainPanelBackground;
-        mainPanel.BackColor = ColorScheme.FormBackground;
+        splitContainer.Panel1.BackColor = ColorScheme.MainPanelBackground;
+        splitContainer.Panel2.BackColor = ColorScheme.FormBackground;
     }
 }

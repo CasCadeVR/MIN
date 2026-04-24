@@ -9,7 +9,7 @@ using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Desktop.Views.Panels.PanelViews;
-using MIN.DI;
+using MIN.DI.FeatureCollection;
 using MIN.Discovery.Events;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Models;
@@ -39,7 +39,6 @@ public partial class DiscoveryPanelView : StyledPanelView
         INavigationService navigationService)
     {
         InitializeComponent();
-        ParseMachineName();
 
         this.featureCollection = featureCollection;
         this.navigationService = navigationService;
@@ -50,6 +49,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("");
 
+        ParseMachineName();
         SubscribeToEvents();
     }
 
@@ -194,7 +194,7 @@ public partial class DiscoveryPanelView : StyledPanelView
                 {
                     return;
                 }
-                navigationService.NavigateTo<ChatPanelView, (Guid roomId, Guid connectionId, IEndpoint endpoint)>((room.Id, connectionId, endpoint));
+                navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>((room, connectionId, endpoint));
                 await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent() { RoomId = room.Id });
             }, connectCts, DesktopConstants.RoomConnectionTimeoutMs).Show();
 

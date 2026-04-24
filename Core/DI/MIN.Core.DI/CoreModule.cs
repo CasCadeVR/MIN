@@ -3,6 +3,7 @@ using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.Cryptography;
+using MIN.Core.DI.FeatureCollection;
 using MIN.Core.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Dispatcher;
@@ -39,7 +40,6 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<NamedPipeEndpointProvider>(ServiceLifetime.Singleton);
-        //services.RegisterAsImplementedInterfaces<NamedPipeTransportFactory>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NamedPipeTransport>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<HeaderManager>(ServiceLifetime.Singleton);
@@ -71,5 +71,7 @@ public class CoreModule : Module
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, JsonOptionsInitializer>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, MessageReceiver>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, ConnectionMonitor>(ServiceLifetime.Singleton);
+
+        services.RegisterAsImplementedInterfaces<CoreFeatureCollection>(ServiceLifetime.Singleton);
     }
 }

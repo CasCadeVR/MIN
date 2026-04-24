@@ -1,8 +1,10 @@
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Common.Mvc.Extensions;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Infrastructure.Services;
+using MIN.Desktop.Views.Panels.PanelViews;
+using MIN.Desktop.Views.Panels.SidePanelViews;
 using MIN.DI;
 
 namespace MIN.Desktop;
@@ -22,10 +24,11 @@ static internal class Program
 
         var services = new ServiceCollection();
         ConfigureServices(services);
+        ConfigurePanels(services);
 
         var serviceProvider = services.BuildServiceProvider();
 
-        using var appLifeTimeCts = new CancellationTokenSource();
+        var appLifeTimeCts = serviceProvider.GetRequiredService<ICtsProvider>().AppCts;
 
         foreach (var hostedService in serviceProvider.GetServices<IHostedService>())
         {
@@ -36,6 +39,7 @@ static internal class Program
         mainForm.FormClosing += (sender, e) =>
         {
             appLifeTimeCts.Cancel();
+            appLifeTimeCts.Dispose();
         };
 
         Application.Run(mainForm);
@@ -43,13 +47,20 @@ static internal class Program
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        var appVersion = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0, 0);
-        services.AddSingleton(appVersion);
-
+        services.RegisterAsImplementedInterfaces<CtsProvider>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<NavigationService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NotificationService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SettingsProvider>(ServiceLifetime.Singleton);
         services.RegisterModule<MinModule>();
 
         services.RegisterAsImplementedInterfaces<MainForm>(ServiceLifetime.Transient);
+    }
+
+    private static void ConfigurePanels(IServiceCollection services)
+    {
+        services.RegisterAsImplementedInterfaces<MainSidePanelView>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<SettingsSidePanelView>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<DiscoveryPanelView>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<ChatPanelView>(ServiceLifetime.Singleton);
     }
 }

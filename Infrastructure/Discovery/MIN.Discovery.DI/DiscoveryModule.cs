@@ -2,6 +2,7 @@
 using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Discovery.DI.FeatureCollection;
 using MIN.Discovery.Messaging;
 using MIN.Discovery.Services;
 using MIN.Discovery.Transport.NamedPipes;
@@ -19,5 +20,6 @@ public class DiscoveryModule : Module
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IDiscoveryMessagingAnchor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NamedPipeDiscoveryTransport>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<DiscoveryService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<DiscoveryFeatureCollection>(ServiceLifetime.Singleton);
     }
 }

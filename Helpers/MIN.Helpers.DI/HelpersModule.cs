@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
+using MIN.Helpers.DI.FeatureCollection;
 using MIN.Helpers.Services;
 
 namespace MIN.Helpers.DI;
@@ -18,5 +19,6 @@ public class HelpersModule : Module
         services.RegisterAsImplementedInterfaces<AppDataProvider>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<FileSystemSettingsStorage>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<CollegeNetworkComputerProvider>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<HelperFeatureCollection>(ServiceLifetime.Singleton);
     }
 }

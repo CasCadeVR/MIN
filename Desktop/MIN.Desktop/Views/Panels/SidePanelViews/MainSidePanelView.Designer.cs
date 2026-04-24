@@ -44,6 +44,8 @@
             // 
             // splitContainer
             // 
+            splitContainer.BackColor = Color.FromArgb(240, 242, 255);
+            splitContainer.ForeColor = Color.FromArgb(45, 43, 58);
             // 
             // splitContainer.Panel1
             // 
@@ -53,7 +55,7 @@
             // splitContainer.Panel2
             // 
             splitContainer.Panel2.Controls.Add(flowLayoutPanelRooms);
-            splitContainer.Size = new Size(394, 768);
+            splitContainer.Size = new Size(409, 800);
             splitContainer.SplitterDistance = 88;
             // 
             // roomSearchTextBox
@@ -66,7 +68,7 @@
             roomSearchTextBox.Location = new Point(51, 11);
             roomSearchTextBox.Name = "roomSearchTextBox";
             roomSearchTextBox.PlaceholderText = "Поиск";
-            roomSearchTextBox.Size = new Size(244, 26);
+            roomSearchTextBox.Size = new Size(259, 26);
             roomSearchTextBox.TabIndex = 6;
             // 
             // commonButton2
@@ -78,7 +80,7 @@
             commonButton2.FlatStyle = FlatStyle.Flat;
             commonButton2.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             commonButton2.ForeColor = Color.FromArgb(248, 249, 255);
-            commonButton2.Location = new Point(301, 3);
+            commonButton2.Location = new Point(316, 3);
             commonButton2.Name = "commonButton2";
             commonButton2.Size = new Size(42, 42);
             commonButton2.TabIndex = 5;
@@ -93,7 +95,7 @@
             discoveryButton.FlatStyle = FlatStyle.Flat;
             discoveryButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             discoveryButton.ForeColor = Color.FromArgb(248, 249, 255);
-            discoveryButton.Location = new Point(349, 3);
+            discoveryButton.Location = new Point(364, 3);
             discoveryButton.Name = "discoveryButton";
             discoveryButton.Size = new Size(42, 42);
             discoveryButton.TabIndex = 4;
@@ -127,7 +129,7 @@
             createRoom.ForeColor = Color.FromArgb(248, 249, 255);
             createRoom.Location = new Point(3, 51);
             createRoom.Name = "createRoom";
-            createRoom.Size = new Size(388, 34);
+            createRoom.Size = new Size(403, 34);
             createRoom.TabIndex = 8;
             createRoom.Text = "Создать комнату";
             createRoom.UseVisualStyleBackColor = false;
@@ -152,7 +154,7 @@
             tableLayoutPanelHeader.RowCount = 2;
             tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
             tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelHeader.Size = new Size(394, 88);
+            tableLayoutPanelHeader.Size = new Size(409, 88);
             tableLayoutPanelHeader.TabIndex = 1;
             // 
             // flowLayoutPanelRooms
@@ -162,15 +164,16 @@
             flowLayoutPanelRooms.Location = new Point(0, 0);
             flowLayoutPanelRooms.Margin = new Padding(20);
             flowLayoutPanelRooms.Name = "flowLayoutPanelRooms";
-            flowLayoutPanelRooms.Size = new Size(394, 678);
+            flowLayoutPanelRooms.Size = new Size(409, 710);
             flowLayoutPanelRooms.TabIndex = 2;
             // 
             // MainSidePanelView
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            MinimumSize = new Size(250, 195);
             Name = "MainSidePanelView";
-            Size = new Size(394, 768);
+            Size = new Size(409, 800);
             Controls.SetChildIndex(splitContainer, 0);
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);

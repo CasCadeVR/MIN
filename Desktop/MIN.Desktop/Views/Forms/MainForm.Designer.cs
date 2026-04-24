@@ -31,11 +31,7 @@ namespace MIN.Desktop
         private void InitializeComponent()
         {
             splitContainer = new SplitContainer();
-            sidePanel = new Panel();
-            mainPanel = new Panel();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
-            splitContainer.Panel1.SuspendLayout();
-            splitContainer.Panel2.SuspendLayout();
             splitContainer.SuspendLayout();
             SuspendLayout();
             // 
@@ -45,33 +41,11 @@ namespace MIN.Desktop
             splitContainer.FixedPanel = FixedPanel.Panel1;
             splitContainer.Location = new Point(0, 0);
             splitContainer.Name = "splitContainer";
-            // 
-            // splitContainer.Panel1
-            // 
-            splitContainer.Panel1.Controls.Add(sidePanel);
-            // 
-            // splitContainer.Panel2
-            // 
-            splitContainer.Panel2.Controls.Add(mainPanel);
+            splitContainer.Panel1MinSize = 500;
             splitContainer.Size = new Size(1287, 729);
-            splitContainer.SplitterDistance = 369;
+            splitContainer.SplitterDistance = 500;
+            splitContainer.SplitterWidth = 6;
             splitContainer.TabIndex = 0;
-            // 
-            // sidePanel
-            // 
-            sidePanel.Dock = DockStyle.Fill;
-            sidePanel.Location = new Point(0, 0);
-            sidePanel.Name = "sidePanel";
-            sidePanel.Size = new Size(369, 729);
-            sidePanel.TabIndex = 0;
-            // 
-            // mainPanel
-            // 
-            mainPanel.Dock = DockStyle.Fill;
-            mainPanel.Location = new Point(0, 0);
-            mainPanel.Name = "mainPanel";
-            mainPanel.Size = new Size(914, 729);
-            mainPanel.TabIndex = 1;
             // 
             // MainForm
             // 
@@ -83,10 +57,6 @@ namespace MIN.Desktop
             MinimumSize = new Size(816, 487);
             Name = "MainForm";
             Text = "MIN";
-            FormClosing += MainForm_FormClosing;
-            Load += MainForm_Load;
-            splitContainer.Panel1.ResumeLayout(false);
-            splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();
             splitContainer.ResumeLayout(false);
             ResumeLayout(false);
@@ -94,7 +64,5 @@ namespace MIN.Desktop
 
         #endregion
         private SplitContainer splitContainer;
-        private Panel sidePanel;
-        private Panel mainPanel;
     }
 }

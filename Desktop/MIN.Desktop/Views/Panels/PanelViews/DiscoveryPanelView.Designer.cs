@@ -52,6 +52,8 @@
             // 
             // splitContainer
             // 
+            splitContainer.BackColor = Color.FromArgb(240, 242, 255);
+            splitContainer.ForeColor = Color.FromArgb(45, 43, 58);
             // 
             // splitContainer.Panel1
             // 
@@ -61,6 +63,7 @@
             // 
             splitContainer.Panel2.Controls.Add(statusStrip);
             splitContainer.Panel2.Controls.Add(flowLayoutPanelDiscoveredRooms);
+            splitContainer.Size = new Size(848, 591);
             // 
             // tableLayoutPanel1
             // 
@@ -77,13 +80,13 @@
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
-            tableLayoutPanel1.Size = new Size(821, 48);
+            tableLayoutPanel1.Size = new Size(848, 48);
             tableLayoutPanel1.TabIndex = 2;
             // 
             // splitContainerDiscoverRoom
             // 
             splitContainerDiscoverRoom.Dock = DockStyle.Fill;
-            splitContainerDiscoverRoom.Location = new Point(656, 3);
+            splitContainerDiscoverRoom.Location = new Point(683, 3);
             splitContainerDiscoverRoom.Name = "splitContainerDiscoverRoom";
             splitContainerDiscoverRoom.Orientation = Orientation.Horizontal;
             // 
@@ -110,7 +113,7 @@
             discoverRooms.ForeColor = Color.FromArgb(248, 249, 255);
             discoverRooms.Location = new Point(0, 0);
             discoverRooms.Name = "discoverRooms";
-            discoverRooms.Size = new Size(162, 41);
+            discoverRooms.Size = new Size(162, 47);
             discoverRooms.TabIndex = 2;
             discoverRooms.Text = "Найти комнаты";
             discoverRooms.UseVisualStyleBackColor = false;
@@ -119,10 +122,10 @@
             // discoveryProgressBar
             // 
             discoveryProgressBar.Dock = DockStyle.Bottom;
-            discoveryProgressBar.Location = new Point(0, 7);
+            discoveryProgressBar.Location = new Point(0, 38);
             discoveryProgressBar.Margin = new Padding(0);
             discoveryProgressBar.Name = "discoveryProgressBar";
-            discoveryProgressBar.Size = new Size(162, 8);
+            discoveryProgressBar.Size = new Size(150, 8);
             discoveryProgressBar.TabIndex = 0;
             // 
             // ClassroomTitleInput
@@ -159,16 +162,16 @@
             flowLayoutPanelDiscoveredRooms.Location = new Point(0, 0);
             flowLayoutPanelDiscoveredRooms.Margin = new Padding(20);
             flowLayoutPanelDiscoveredRooms.Name = "flowLayoutPanelDiscoveredRooms";
-            flowLayoutPanelDiscoveredRooms.Size = new Size(821, 642);
+            flowLayoutPanelDiscoveredRooms.Size = new Size(848, 541);
             flowLayoutPanelDiscoveredRooms.TabIndex = 1;
             // 
             // statusStrip
             // 
             statusStrip.ImageScalingSize = new Size(20, 20);
             statusStrip.Items.AddRange(new ToolStripItem[] { totalRoomsCount });
-            statusStrip.Location = new Point(0, 620);
+            statusStrip.Location = new Point(0, 519);
             statusStrip.Name = "statusStrip";
-            statusStrip.Size = new Size(821, 22);
+            statusStrip.Size = new Size(848, 22);
             statusStrip.TabIndex = 2;
             statusStrip.Text = "statusStrip1";
             // 
@@ -182,7 +185,9 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            MinimumSize = new Size(429, 306);
             Name = "DiscoveryPanelView";
+            Size = new Size(848, 591);
             Controls.SetChildIndex(splitContainer, 0);
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);

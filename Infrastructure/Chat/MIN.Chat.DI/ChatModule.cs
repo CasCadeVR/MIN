@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using MIN.Chat.DI.FeatureCollection;
 using MIN.Chat.Handlers;
 using MIN.Chat.Messaging;
 using MIN.Chat.Services;
@@ -20,5 +21,6 @@ public class ChatModule : Module
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IChatMessagingAnchor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatService>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, IChatHandlerAnchor>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<ChatFeatureCollection>(ServiceLifetime.Singleton);
     }
 }

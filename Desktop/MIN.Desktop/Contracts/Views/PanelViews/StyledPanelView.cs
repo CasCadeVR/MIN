@@ -19,9 +19,15 @@ public partial class StyledPanelView : BasePanelView, IStyled
     public StyledPanelView()
     {
         InitializeComponent();
-        ApplyStylings();
         uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("Must be created on UI thread");
+    }
+
+    /// <inheritdoc cref="Form.OnLoad(EventArgs)"/>
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+        ApplyStylings();
     }
 
     void IStyled.ApplyStylings()

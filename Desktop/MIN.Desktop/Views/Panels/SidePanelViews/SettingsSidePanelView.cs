@@ -1,7 +1,8 @@
 ﻿using MIN.Desktop.Contracts.Enums;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
-using MIN.DI;
+using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Models;
 using MIN.Helpers.Contracts.Models.Enums;
 
@@ -13,6 +14,7 @@ namespace MIN.Desktop.Views.Panels.SidePanelViews;
 public partial class SettingsSidePanelView : StyledPanelView
 {
     private readonly IMinFeatureCollection featureCollection;
+    private readonly INavigationService navigationService;
 
     /// <summary>
     /// Текущие настройки
@@ -25,10 +27,14 @@ public partial class SettingsSidePanelView : StyledPanelView
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MainSidePanelView"/>
     /// </summary>
-    public SettingsSidePanelView(IMinFeatureCollection featureCollection)
+    public SettingsSidePanelView(IMinFeatureCollection featureCollection,
+        INavigationService navigationService)
     {
         InitializeComponent();
+
         this.featureCollection = featureCollection;
+        this.navigationService = navigationService;
+        Settings = featureCollection.Helper.SettingsProvider.GetSettings();
         FillControls();
         EnableOutOfRadioButtons();
     }
@@ -80,6 +86,8 @@ public partial class SettingsSidePanelView : StyledPanelView
         Settings.PreferredPCNames = GetPCNames();
 
         featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
+
+        navigationService.NavigateTo<MainSidePanelView>();
     }
 
     private List<string> GetPCNames()

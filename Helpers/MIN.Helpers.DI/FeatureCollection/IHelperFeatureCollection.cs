@@ -1,7 +1,7 @@
 ﻿using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 
-namespace MIN.Helpers.DI;
+namespace MIN.Helpers.DI.FeatureCollection;
 
 /// <summary>
 /// Набор функциональностей для Helper

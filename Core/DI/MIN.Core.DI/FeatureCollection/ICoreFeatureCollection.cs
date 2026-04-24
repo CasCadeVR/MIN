@@ -2,7 +2,7 @@
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 
-namespace MIN.Core.DI;
+namespace MIN.Core.DI.FeatureCollection;
 
 /// <summary>
 /// Набор функциональностей для Core

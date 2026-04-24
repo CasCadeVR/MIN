@@ -1,9 +1,9 @@
-﻿using MIN.Chat.DI;
-using MIN.Core.DI;
-using MIN.Discovery.DI;
-using MIN.Helpers.DI;
+﻿using MIN.Chat.DI.FeatureCollection;
+using MIN.Core.DI.FeatureCollection;
+using MIN.Discovery.DI.FeatureCollection;
+using MIN.Helpers.DI.FeatureCollection;
 
-namespace MIN.DI;
+namespace MIN.DI.FeatureCollection;
 
 /// <summary>
 /// Набор функциональностей для MIN

@@ -1,4 +1,5 @@
-﻿using MIN.Desktop.Contracts.Views.PanelViews;
+﻿using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Desktop.Contracts.Views.PanelViews;
 
 namespace MIN.Desktop.Contracts.Interfaces;
 
@@ -7,6 +8,26 @@ namespace MIN.Desktop.Contracts.Interfaces;
 /// </summary>
 public interface INavigationService
 {
+    /// <summary>
+    /// Родительская форма
+    /// </summary>
+    BaseForm Parent { get; set; }
+
+    /// <summary>
+    /// Окно разделения
+    /// </summary>
+    SplitContainer SplitContainer { get; set; }
+
+    /// <summary>
+    /// Главная панель
+    /// </summary>
+    Panel MainPanel { get; set; }
+
+    /// <summary>
+    /// Боковая панель
+    /// </summary>
+    Panel SidePanel { get; set; }
+
     /// <summary>
     /// Перейти на панель
     /// </summary>

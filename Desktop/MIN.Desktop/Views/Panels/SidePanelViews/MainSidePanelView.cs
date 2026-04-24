@@ -1,12 +1,14 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Models;
+using MIN.Core.Stores.Services;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Views.Panels.PanelViews;
-using MIN.DI;
+using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Extensions;
 
 namespace MIN.Desktop.Views.Panels.SidePanelViews;
@@ -17,6 +19,7 @@ namespace MIN.Desktop.Views.Panels.SidePanelViews;
 public partial class MainSidePanelView : StyledPanelView
 {
     private readonly IMinFeatureCollection featureCollection;
+    private readonly ICtsProvider ctsProvider;
     private readonly INavigationService navigationService;
 
     /// <inheritdoc />
@@ -26,10 +29,13 @@ public partial class MainSidePanelView : StyledPanelView
     /// Инициализирует новый экземпляр <see cref="MainSidePanelView"/>
     /// </summary>
     public MainSidePanelView(IMinFeatureCollection featureCollection,
+        ICtsProvider ctsProvider,
         INavigationService navigationService)
     {
         InitializeComponent();
+
         this.featureCollection = featureCollection;
+        this.ctsProvider = ctsProvider;
         this.navigationService = navigationService;
     }
 
@@ -83,14 +89,14 @@ public partial class MainSidePanelView : StyledPanelView
             featureCollection.Core.RoomStore.Add(room);
 
             var roomInfo = new RoomInfo(room);
-            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, cts.Token);
+            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, ctsProvider.AppCts.Token);
 
             context.Participants.AddParticipant(localParticipant);
 
-            await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomInfo.Id, cts.Token);
+            await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomInfo.Id, ctsProvider.AppCts.Token);
 
-            navigationService.NavigateTo<ChatPanelView, (Guid roomId, Guid connectionId, IEndpoint endpoint)>(
-                (room.Id,
+            navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>(
+                (featureCollection.Core.RoomStore.GetRoom(room.Id),
                 CoreRegistryConstants.LocalConnectionId,
                 new NamedPipeEndpoint()
                 {
