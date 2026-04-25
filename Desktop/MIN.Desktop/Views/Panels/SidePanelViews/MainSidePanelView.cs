@@ -1,12 +1,15 @@
-﻿using MIN.Core.Entities;
+using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Models;
-using MIN.Core.Stores.Services;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
+using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
+using MIN.Desktop.Infrastructure.Events;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Panels.PanelViews;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Extensions;
@@ -16,11 +19,13 @@ namespace MIN.Desktop.Views.Panels.SidePanelViews;
 /// <summary>
 /// Главная боковая панель
 /// </summary>
-public partial class MainSidePanelView : StyledPanelView
+public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
 {
     private readonly IMinFeatureCollection featureCollection;
     private readonly ICtsProvider ctsProvider;
     private readonly INavigationService navigationService;
+    private readonly Dictionary<Guid, RecentRoomCard> activeRecentRoomCards = [];
+    private readonly Dictionary<Guid, ChatPanelView> activeChatPanels = [];
 
     /// <inheritdoc />
     public override PanelType PanelType => PanelType.Side;
@@ -37,6 +42,19 @@ public partial class MainSidePanelView : StyledPanelView
         this.featureCollection = featureCollection;
         this.ctsProvider = ctsProvider;
         this.navigationService = navigationService;
+
+        SubscribeToEvents();
+    }
+
+    private void SubscribeToEvents()
+    {
+        featureCollection.Core.EventBus.Subscribe<RoomClosedEvent>(OnRoomClosedEvent);
+    }
+
+    private Task OnRoomClosedEvent(RoomClosedEvent e, CancellationToken cancellationToken)
+    {
+        UnregisterChat(e.RoomId);
+        return Task.CompletedTask;
     }
 
     private bool ResolveParticipant()
@@ -95,13 +113,13 @@ public partial class MainSidePanelView : StyledPanelView
 
             await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomInfo.Id, ctsProvider.AppCts.Token);
 
-            navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>(
+            RegisterChat(room.Id, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>(
                 (featureCollection.Core.RoomStore.GetRoom(room.Id),
                 CoreRegistryConstants.LocalConnectionId,
                 new NamedPipeEndpoint()
                 {
                     MachineName = Environment.MachineName,
-                }));
+                })));
         }
         catch (Exception ex)
         {
@@ -111,6 +129,51 @@ public partial class MainSidePanelView : StyledPanelView
                 MessageBoxIcon.Error);
         }
     }
+
+    /// <inheritdoc />
+    public void RegisterChat(Guid roomId, ChatPanelView panel)
+    {
+        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
+
+        activeChatPanels[roomId] = panel;
+        var card = new RecentRoomCard(featureCollection.Core.EventBus, context,
+            featureCollection.Helper.IdentityService.SelfPartcipant.ToParticipantInfo(),
+            featureCollection.Core.RoomStore.GetRoom(roomId))
+        {
+            Width = flowLayoutPanelRooms.Width - flowLayoutPanelRooms.Margin.Horizontal * 2,
+        };
+
+        card.Clicked += () => SelectChatPanel(roomId, panel);
+
+        flowLayoutPanelRooms.Controls.Add(card);
+
+        activeRecentRoomCards[roomId] = card;
+    }
+
+    private void SelectChatPanel(Guid roomId, ChatPanelView panel)
+    {
+        foreach (var card in activeRecentRoomCards.Values)
+        {
+            card.BackColor = ColorScheme.ChatAreaBackground;
+        }
+
+        activeRecentRoomCards[roomId].BackColor = ColorScheme.SecondaryAccent;
+        navigationService.NavigateToExisting(panel);
+    }
+
+    /// <inheritdoc />
+    public void UnregisterChat(Guid roomId)
+    {
+        activeChatPanels.Remove(roomId);
+
+        if (activeRecentRoomCards.Remove(roomId, out var card))
+        {
+            card.Dispose();
+        }
+    }
+
+    ChatPanelView? IChatPanelManager.GetChatPanel(Guid roomId)
+        => activeChatPanels.TryGetValue(roomId, out var chatPanelView) ? chatPanelView : null;
 
     private void settingsButton_Click(object sender, EventArgs e)
     {

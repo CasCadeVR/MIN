@@ -41,9 +41,8 @@ namespace MIN.Desktop
             splitContainer.FixedPanel = FixedPanel.Panel1;
             splitContainer.Location = new Point(0, 0);
             splitContainer.Name = "splitContainer";
-            splitContainer.Panel1MinSize = 500;
             splitContainer.Size = new Size(1287, 729);
-            splitContainer.SplitterDistance = 500;
+            splitContainer.SplitterDistance = 331;
             splitContainer.SplitterWidth = 6;
             splitContainer.TabIndex = 0;
             // 

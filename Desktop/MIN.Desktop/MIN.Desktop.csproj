@@ -67,6 +67,9 @@
     <Compile Update="Views\Components\ChatMessageCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Views\Components\RecentRoomCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Views\Forms\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>

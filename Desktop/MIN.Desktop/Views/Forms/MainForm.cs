@@ -22,6 +22,9 @@ public partial class MainForm : StyledForm
         navigationService.SidePanel = splitContainer.Panel1;
         navigationService.MainPanel = splitContainer.Panel2;
 
+        navigationService.UiContext = SynchronizationContext.Current
+            ?? throw new InvalidOperationException("Must be created on UI thread");
+
         navigationService.NavigateTo<MainSidePanelView>();
         navigationService.NavigateTo<DiscoveryPanelView>();
     }

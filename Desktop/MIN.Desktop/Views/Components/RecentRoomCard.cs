@@ -1,21 +1,24 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Chat.Messaging;
+using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
-using MIN.Desktop.Contracts.Constants;
+using MIN.Core.Messaging.RoomRelated;
+using MIN.Core.Stores.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
-using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Components;
 
 /// <summary>
 /// Кнопка меню
 /// </summary>
-public partial class RoomCard : UserControl, IDisposable
+public partial class RecentRoomCard : UserControl, IDisposable
 {
     private readonly IEventBus eventBus;
-    private readonly RoomInfo room;
-    private readonly string computerName;
+    private readonly RoomContext roomContext;
+    private readonly Room room;
+    private readonly ParticipantInfo localParticipant;
     private readonly SynchronizationContext uiContext;
     private readonly bool isOwner;
 
@@ -24,17 +27,18 @@ public partial class RoomCard : UserControl, IDisposable
     /// <summary>
     /// Событие по нажатию
     /// </summary>
-    public event Func<Task>? Clicked;
+    public event Action? Clicked;
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="RoomCard"/>
+    /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
     /// </summary>
-    public RoomCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room, string computerName)
+    public RecentRoomCard(IEventBus eventBus, RoomContext roomContext, ParticipantInfo localParticipant, Room room)
     {
         InitializeComponent();
         this.eventBus = eventBus;
+        this.roomContext = roomContext;
+        this.localParticipant = localParticipant;
         this.room = room;
-        this.computerName = computerName;
         isOwner = room.HostParticipant.Id == localParticipant.Id;
 
         uiContext = SynchronizationContext.Current
@@ -63,7 +67,7 @@ public partial class RoomCard : UserControl, IDisposable
             return;
         }
 
-        room.ParticipantCount++;
+        room.AddParticipant(eventMessage.Message.Participant);
 
         uiContext.Post(_ =>
         {
@@ -79,7 +83,7 @@ public partial class RoomCard : UserControl, IDisposable
             return;
         }
 
-        room.ParticipantCount--;
+        room.RemoveParticipantById(eventMessage.Message.Participant.Id);
 
         uiContext.Post(_ =>
         {
@@ -97,20 +101,16 @@ public partial class RoomCard : UserControl, IDisposable
 
         if (isOwner)
         {
-            uiContext.Post(_ =>
-            {
-                Dispose();
-            }, null);
+            Dispose();
+            return;
         }
-        else
-        {
-            room.ParticipantCount--;
 
-            uiContext.Post(_ =>
-            {
-                UpdateStats();
-            }, null);
-        }
+        room.RemoveParticipantById(localParticipant.Id);
+
+        uiContext.Post(_ =>
+        {
+            UpdateStats();
+        }, null);
 
         await Task.CompletedTask;
     }
@@ -122,7 +122,7 @@ public partial class RoomCard : UserControl, IDisposable
             return;
         }
 
-        room.ParticipantCount++;
+        room.RemoveParticipantById(localParticipant.Id);
 
         uiContext.Post(_ =>
         {
@@ -133,53 +133,43 @@ public partial class RoomCard : UserControl, IDisposable
 
     private void ApplyStylings()
     {
-        splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
-        splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
-        tableLayoutPanelLabels.BackColor = ColorScheme.MainPanelBackground;
-        Title.ForeColor = ColorScheme.TextOnAccent;
+        tableLayoutPanelLabels.BackColor = ColorScheme.ChatAreaBackground;
     }
 
     private void UpdateStats()
     {
         Title.Text = $"Комната {room.Name}";
         participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
-        hostName.Text = room.HostParticipant.Name;
-        createdAt.Text = room.CreatedAt.ToShortTimeString();
 
-        if (CollegePCNameParser.TryParseComputerName(computerName, out var roomNumber, out var computerNumber))
+        var lastMessage = room.ChatHistory.LastOrDefault();
+
+        if (lastMessage == null)
         {
-            computer.Text = computerNumber.ToString();
-            classroom.Text = roomNumber.ToString();
-        }
-        else
-        {
-            computer.Text = DesktopConstants.UndefinedPCName;
-            classroom.Text = DesktopConstants.UndefinedPCName;
+            lastMessageTime.Text = string.Empty;
+            lastMessageSenderName.Text = string.Empty;
+            lastMessageContent.Text = string.Empty;
+            return;
         }
 
-        ManageConnectButtonAccessability();
-    }
+        lastMessageTime.Text = lastMessage.Timestamp.ToShortTimeString();
 
-    private void ManageConnectButtonAccessability()
-    {
-        var isFull = room.ParticipantCount >= room.MaximumParticipants;
-        var isNotAccessible = isFull || isOwner;
+        roomContext.Participants.TryGetParticipantById(lastMessage.SenderId, out var senderInfo);
 
-        connectButton.Enabled = !isNotAccessible;
+        lastMessageSenderName.Text = senderInfo?.Name ?? string.Empty;
 
-        if (isNotAccessible)
+        switch (lastMessage)
         {
-            connectButton.Text = isFull ? "Заполнено" : "Твоя комната";
-            connectButton.BackColor = ColorScheme.ConnectionDisabled;
-        }
-        else
-        {
-            connectButton.Text = "Присоединиться";
-            connectButton.BackColor = ColorScheme.SecondaryAccent;
+            case ChatTextMessage chatTextMessage:
+                lastMessageContent.Text = chatTextMessage.Content;
+                break;
+
+            case SystemTextMessage systemTextMessage:
+                lastMessageContent.Text = systemTextMessage.Content;
+                break;
         }
     }
 
-    private void connectButton_Click(object sender, EventArgs e)
+    private void RecentRoomCard_Click(object sender, EventArgs e)
     {
         Clicked?.Invoke();
     }

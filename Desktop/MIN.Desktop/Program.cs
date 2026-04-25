@@ -61,6 +61,6 @@ static internal class Program
         services.RegisterAsImplementedInterfaces<MainSidePanelView>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SettingsSidePanelView>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<DiscoveryPanelView>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<ChatPanelView>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<ChatPanelView>(ServiceLifetime.Transient);
     }
 }

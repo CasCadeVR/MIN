@@ -151,7 +151,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         }
 
         var leavingParticipantId = eventMessage.Message.Participant.Id;
-        room!.RemoveParticipant(leavingParticipantId);
+        room!.RemoveParticipantById(leavingParticipantId);
         if (privateChatParticipantId == leavingParticipantId)
         {
             privateChatParticipantId = null;
@@ -178,27 +178,26 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                        "Подключение разорвано",
                        MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
             }, null);
+            await DisposeAsync();
+            navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
         }
-        await Task.CompletedTask;
     }
 
-    private Task OnErrorOccured(ErrorOccurredEvent e, CancellationToken cancellationToken)
+    private async Task OnErrorOccured(ErrorOccurredEvent e, CancellationToken cancellationToken)
     {
         uiContext.Post(_ =>
         {
             MessageBox.Show(e.ErrorMessage,
                 "Ошибка",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-            if (e.NeedToDisconnect)
-            {
-                navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
-            }
         }, null);
 
-        return Task.CompletedTask;
+        if (e.NeedToDisconnect)
+        {
+            await DisposeAsync();
+            navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
+        }
     }
 
     private void UpdateStats()
@@ -288,9 +287,11 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
     private void NotifyIfNeeded(string content, string? senderName = null)
     {
-        if (notificationComboBox.Checked && (navigationService.Parent.WindowState == FormWindowState.Minimized || !ContainsFocus))
+        if (notificationComboBox.Checked
+            && (navigationService.Parent.WindowState == FormWindowState.Minimized || !ContainsFocus))
         {
-            featureCollection.Helper.NotificationService.Notify(content, room?.Name ?? "Комната", senderName);
+            featureCollection.Helper.NotificationService
+                .Notify(content, room?.Name ?? "Комната", senderName);
         }
     }
 
@@ -488,7 +489,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         //tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
     }
 
-    private void editButton_Click(object sender, EventArgs e)
+    private async void editButton_Click(object sender, EventArgs e)
     {
         if (room == null)
         {
@@ -500,6 +501,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
         if (result == DialogResult.Abort)
         {
+            await DisposeAsync();
             navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
         }
         else if (result == DialogResult.OK
@@ -520,7 +522,11 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
     private async void sendButton_Click(object sender, EventArgs e) => await SendMessage();
 
-    private void disconnectButton_Click(object sender, EventArgs e) => navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
+    private async void disconnectButton_Click(object sender, EventArgs e)
+    {
+        await DisposeAsync();
+        navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
+    }
 
     private void closeButton_Click(object sender, EventArgs e)
     {

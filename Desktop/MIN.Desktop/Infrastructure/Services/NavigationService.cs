@@ -20,6 +20,9 @@ public class NavigationService : INavigationService
     /// <inheritdoc />
     public Panel SidePanel { get; set; } = null!;
 
+    /// <inheritdoc />
+    public SynchronizationContext UiContext { get; set; } = null!;
+
     private readonly IServiceProvider provider;
 
     /// <summary>
@@ -30,13 +33,14 @@ public class NavigationService : INavigationService
         this.provider = provider;
     }
 
-    void INavigationService.NavigateTo<TPanel>()
+    TPanel INavigationService.NavigateTo<TPanel>()
     {
         var panel = provider.GetRequiredService<TPanel>();
         NavigateToPanel(panel);
+        return panel;
     }
 
-    void INavigationService.NavigateTo<TPanel, TParams>(TParams param)
+    TPanel INavigationService.NavigateTo<TPanel, TParams>(TParams param)
     {
         var panel = provider.GetRequiredService<TPanel>();
 
@@ -46,25 +50,35 @@ public class NavigationService : INavigationService
         }
 
         NavigateToPanel(panel);
+        return panel;
+    }
+
+    TPanel INavigationService.NavigateToExisting<TPanel>(TPanel panel)
+    {
+        NavigateToPanel(panel);
+        return panel;
     }
 
     private void NavigateToPanel(BasePanelView panel)
     {
-        switch (panel.PanelType)
+        UiContext.Post(_ =>
         {
-            case Contracts.Enums.PanelType.Main:
-                MainPanel.Controls.Clear();
-                SplitContainer.Panel2MinSize = panel.MinimumSize.Width;
-                MainPanel.Controls.Add(panel);
-                break;
+            switch (panel.PanelType)
+            {
+                case Contracts.Enums.PanelType.Main:
+                    MainPanel.Controls.Clear();
+                    SplitContainer.Panel2MinSize = panel.MinimumSize.Width;
+                    MainPanel.Controls.Add(panel);
+                    break;
 
-            case Contracts.Enums.PanelType.Side:
-                SidePanel.Controls.Clear();
-                SplitContainer.Panel1MinSize = panel.MinimumSize.Width;
-                SidePanel.Controls.Add(panel);
-                break;
-        }
+                case Contracts.Enums.PanelType.Side:
+                    SidePanel.Controls.Clear();
+                    SplitContainer.Panel1MinSize = panel.MinimumSize.Width;
+                    SidePanel.Controls.Add(panel);
+                    break;
+            }
 
-        panel.Dock = DockStyle.Fill;
+            panel.Dock = DockStyle.Fill;
+        }, null);
     }
 }

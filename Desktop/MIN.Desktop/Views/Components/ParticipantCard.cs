@@ -23,7 +23,7 @@ public partial class ParticipantCard : UserControl
     public Action<bool, ParticipantInfo>? OnCardContextMenuStripClicked { get; set; }
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="RoomCard"/>
+    /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
     /// </summary>
     public ParticipantCard(ParticipantInfo participant, bool isHost, bool isSelf)
     {

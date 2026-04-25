@@ -2,7 +2,7 @@
 
 namespace MIN.Desktop.Components
 {
-    partial class RoomCard
+    partial class RoomDiscoveryCard
     {
         /// <summary> 
         /// Обязательная переменная конструктора.

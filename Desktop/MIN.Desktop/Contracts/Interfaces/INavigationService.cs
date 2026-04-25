@@ -29,10 +29,15 @@ public interface INavigationService
     Panel SidePanel { get; set; }
 
     /// <summary>
+    /// Контекст синхронизации UI
+    /// </summary>
+    SynchronizationContext UiContext { get; set; }
+
+    /// <summary>
     /// Перейти на панель
     /// </summary>
     /// <typeparam name="TPanel">Панель</typeparam>
-    void NavigateTo<TPanel>() where TPanel : BasePanelView;
+    TPanel NavigateTo<TPanel>() where TPanel : BasePanelView;
 
     /// <summary>
     /// Перейти на панель, предварительно инициализировав её параметры
@@ -40,5 +45,11 @@ public interface INavigationService
     /// <typeparam name="TPanel">Панель</typeparam>
     /// <typeparam name="TParams">Параметры</typeparam>
     /// <param name="param">Параметры</param>
-    void NavigateTo<TPanel, TParams>(TParams param) where TPanel : BasePanelView;
+    TPanel NavigateTo<TPanel, TParams>(TParams param) where TPanel : BasePanelView;
+
+    /// <summary>
+    /// Перейти на существующий экземпляр панели
+    /// </summary>
+    /// <typeparam name="TPanel">Панель</typeparam>
+    TPanel NavigateToExisting<TPanel>(TPanel panel) where TPanel : BasePanelView;
 }

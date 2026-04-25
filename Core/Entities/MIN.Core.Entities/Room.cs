@@ -58,7 +58,7 @@ public class Room : IRoomData
     /// <summary>
     /// Добавить участника в комнату
     /// </summary>
-    public bool RemoveParticipant(Guid participantId)
+    public bool RemoveParticipantById(Guid participantId)
     {
         var foundParticipant = CurrentParticipants.FirstOrDefault(x => x.Id == participantId);
         return CurrentParticipants.Remove(foundParticipant!);

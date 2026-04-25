@@ -16,7 +16,7 @@ namespace MIN.Desktop.Components
         private readonly bool removeHeaders;
 
         /// <summary>
-        /// Инициализирует новый экземпляр <see cref="RoomCard"/>
+        /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
         /// </summary>
         public ChatMessageCard(ChatTextMessage chatMessage, ParticipantInfo localParticipant, bool hostMessage, bool removeHeaders)
         {

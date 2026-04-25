@@ -72,7 +72,112 @@ Feature Collections (уже созданы):
 DI/
 └── MIN.DI/
     └── IMinFeatureCollection.cs  (существует)
+---
+
+## NavigationService + MainForm Connection
+
+### Проблема:
+MainForm создаётся в Program.cs вручную (не через DI), но ему нужен INavigationService, который требует Panel.
+
+### Решение - Panel через property:
+
+```csharp
+public class NavigationService : INavigationService
+{
+    public Panel MainPanel { get; set; }  // устанавливается после создания
+    public Panel SidePanel { get; set; }
+    private readonly IServiceProvider _provider;
+
+    public NavigationService(IServiceProvider provider)
+    {
+        _provider = provider;
+    }
+
+    public void NavigateTo<TPanel>() where TPanel : BasePanelView
+    {
+        var panel = _provider.GetRequiredService<TPanel>();
+        MainPanel.Controls.Clear();
+        panel.Dock = DockStyle.Fill;
+        MainPanel.Controls.Add(panel);
+    }
+}
 ```
+
+В Program.cs:
+```csharp
+var nav = new NavigationService(provider);
+var mainForm = new MainForm(nav);
+nav.MainPanel = mainForm.MainPanelContainer;  // после InitializeComponent
+nav.SidePanel = mainForm.SidePanelContainer;
+```
+
+---
+Панели должны получить CancellationTokenSource времени жизни приложения без его передачи в конструктор.
+
+### Решение:
+
+Создать ICtsProvider в DI:
+
+```csharp
+public interface ICtsProvider
+{
+    CancellationTokenSource AppCts { get; }
+    CancellationToken Token { get; }
+}
+
+// Регистрируется один раз в MinModule
+services.AddSingleton<ICtsProvider, CtsProvider>();
+
+// Панели получают через конструктор
+public DiscoveryPanelView(IMinFeatureCollection features, ICtsProvider ctsProvider)
+{
+    var token = ctsProvider.Token;  // можно передавать в async операции
+}
+```
+
+---
+
+## RecentRoomCard + ChatPanelView Management
+
+### Задача:
+При входе в комнату (создание/присоединение) добавлять RecentRoomCard в MainSidePanelView. При нажатии на карточку - переход на ChatPanelView.
+
+### Проблема:
+- ChatPanelView создаётся каждый раз заново = пересоздание UI
+- Или берётся из ServiceProvider = всегда новый экземпляр
+
+### Решение:
+
+**MainSidePanelView хранит Dictionary<Guid, ChatPanelView> activeChats:**
+1. При входе в комнату - создаётся ChatPanelView, добавляется в Dictionary
+2. В flowLayoutPanel добавляется RecentRoomCard с информацией о комнате
+3. При нажатии на карточку - берём существующий ChatPanelView из Dictionary, вызываем NavigateTo
+4. При закрытии чата - удаляем из Dictionary
+
+**Подход:**
+- DiscoveryPanelView и ChatPanelView НЕ берутся из ServiceProvider напрямую
+- Вместо этого NavigationService содержит IServiceProvider для создания панелей через DI
+- Каждая панель создаётся один раз и хранится в MainSidePanelView
+
+### Как работает:
+1. DiscoveryPanelView при входе в комнату уведомляет MainSidePanelView (через событие или интерфейс)
+2. MainSidePanelView создаёт ChatPanelView через INavigationService.CreatePanel (который использует IServiceProvider)
+3. ChatPanelView сохраняется в Dictionary<Guid, ChatPanelView>
+4. В recentFlowLayoutPanel добавляется RecentRoomCard
+5. При нажатии - NavigateTo на существующий ChatPanelView
+
+### Интерфейс для связи:
+```csharp
+public interface IChatRoomManager
+{
+    void RegisterChat(Guid roomId, ChatPanelView panel);
+    void UnregisterChat(Guid roomId);
+    ChatPanelView? GetChat(Guid roomId);
+    event Action<Guid, ChatPanelView> OnChatRegistered;
+}
+```
+
+---
 
 ---
 
@@ -127,12 +232,12 @@ public class ChatPanelView : BasePanelView, IPanelInitializer<(Guid roomId, Guid
 
 **Files:**
 - Create: `Desktop/MIN.Desktop/Contracts/Views/PanelViews/IPanelInitializer.cs`
+- Create: `Desktop/MIN.Desktop/Contracts/Views/PanelViews/IChatRoomManager.cs`
 - Create: `Desktop/MIN.Desktop/Infrastructure/Services/NavigationService.cs`
 
 - [ ] **Step 1: Создать IPanelInitializer**
 
 ```csharp
-// IPanelInitializer.cs
 namespace MIN.Desktop.Contracts.Views.PanelViews;
 
 public interface IPanelInitializer<TParams>
@@ -146,54 +251,67 @@ public interface IPanel
 }
 ```
 
-- [ ] **Step 2: Создать NavigationService**
+- [ ] **Step 2: Создать IChatRoomManager**
 
 ```csharp
-// NavigationService.cs
-using MIN.Desktop.Contracts.Interfaces;
-using MIN.Desktop.Contracts.Models;
-using MIN.Desktop.Contracts.Models.Enums;
-using MIN.Desktop.Contracts.Views.PanelViews;
-using Microsoft.Extensions.DependencyInjection;
+namespace MIN.Desktop.Contracts.Interfaces;
 
-namespace MIN.Desktop.Infrastructure.Services;
+public interface IChatRoomManager
+{
+    void RegisterChat(Guid roomId, ChatPanelView panel);
+    void UnregisterChat(Guid roomId);
+    ChatPanelView? GetChat(Guid roomId);
+    IReadOnlyDictionary<Guid, ChatPanelView> ActiveChats { get; }
+    event Action<Guid, ChatPanelView> OnChatRegistered;
+    event Action<Guid> OnChatUnregistered;
+}
+```
 
+- [ ] **Step 3: Создать NavigationService**
+
+```csharp
 public class NavigationService : INavigationService
 {
-    private readonly Panel _mainPanel;
-    private readonly Panel _sidePanel;
+    public Panel MainPanel { get; set; }
+    public Panel SidePanel { get; set; }
+    
     private readonly IServiceProvider _provider;
+    private readonly IChatRoomManager _chatRoomManager;
 
-    public NavigationService(Panel mainPanel, Panel sidePanel, IServiceProvider provider)
+    public NavigationService(IServiceProvider provider, IChatRoomManager chatRoomManager)
     {
-        _mainPanel = mainPanel;
-        _sidePanel = sidePanel;
         _provider = provider;
+        _chatRoomManager = chatRoomManager;
     }
 
     public void NavigateTo<TPanel>() where TPanel : BasePanelView
     {
         var panel = _provider.GetRequiredService<TPanel>();
-        NavigateToPanel(panel);
+        ShowInMainPanel(panel);
     }
 
     public void NavigateTo<TPanel, TParams>(TParams param) where TPanel : BasePanelView
     {
         var panel = _provider.GetRequiredService<TPanel>();
-        
-        if (panel is IPanelInitializer<TParams> initializer)
-        {
-            initializer.Initialize(param);
-        }
-        
-        NavigateToPanel(panel);
+        if (panel is IPanelInitializer<TParams> init)
+            init.Initialize(param);
+        ShowInMainPanel(panel);
     }
 
-    private void NavigateToPanel(BasePanelView panel)
+    public void NavigateToExistingChat(Guid roomId)
     {
-        _mainPanel.Controls.Clear();
+        var chat = _chatRoomManager.GetChat(roomId);
+        if (chat != null)
+            ShowInMainPanel(chat);
+    }
+
+    private void ShowInMainPanel(BasePanelView panel)
+    {
+        MainPanel.Controls.Clear();
         panel.Dock = DockStyle.Fill;
-        _mainPanel.Controls.Add(panel);
+        MainPanel.Controls.Add(panel);
+        if (panel is IPanel p)
+            p.OnNavigatedTo();
     }
 }
 ```
@@ -201,19 +319,15 @@ public class NavigationService : INavigationService
 Обновить INavigationService:
 
 ```csharp
-// INavigationService.cs
-using MIN.Desktop.Contracts.Models;
-
-namespace MIN.Desktop.Contracts.Interfaces;
-
 public interface INavigationService
 {
     void NavigateTo<TPanel>() where TPanel : BasePanelView;
     void NavigateTo<TPanel, TParams>(TParams param) where TPanel : BasePanelView;
+    void NavigateToExistingChat(Guid roomId);
 }
 ```
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ---
 
@@ -225,24 +339,38 @@ public interface INavigationService
 - [ ] **Step 1: Обновить конструктор**
 
 ```csharp
-// DiscoveryPanelView - изменить конструктор
 public partial class DiscoveryPanelView : BasePanelView
 {
     private readonly IMinFeatureCollection _features;
 
-    // Конструктор - DI
     public DiscoveryPanelView(IMinFeatureCollection features)
     {
         _features = features;
         InitializeComponent();
     }
-
+    
     // Использовать _features.Discovery, _features.Core, _features.Helper
-    // вместо отдельных сервисов
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 2: При входе в комнату - регистрация в IChatRoomManager**
+
+При подключении к комнате получаем IChatRoomManager и INavigationService из IMinFeatureCollection.Core, создаём ChatPanelView через NavigationService.CreateChatPanel и регистрируем:
+
+```csharp
+// В DiscoveryPanelView при успешном подключении к комнате
+var chatRoomManager = _features.Core.GetService<IChatRoomManager>();
+var nav = _features.Core.GetService<INavigationService>();
+
+// Создаём и инициализируем ChatPanelView
+var chat = nav.CreateChatPanel(roomId, connectionId);
+chatRoomManager.RegisterChat(roomId, chat);
+
+// Показываем
+nav.NavigateToExistingChat(roomId);
+```
+
+- [ ] **Step 3: Commit**
 
 ---
 
@@ -250,19 +378,17 @@ public partial class DiscoveryPanelView : BasePanelView
 
 **Files:**
 - Create: `Desktop/MIN.Desktop/Views/Panels/PanelViews/ChatPanelView.cs`
-- Modify: DI регистрация
 
 - [ ] **Step 1: Создать ChatPanelView**
 
 ```csharp
-// ChatPanelView.cs
-public partial class ChatPanelView : BasePanelView, IPanelInitializer<(Guid roomId, Guid connectionId)>
+public partial class ChatPanelView : BasePanelView, 
+    IPanelInitializer<(Guid roomId, Guid connectionId)>
 {
     private readonly IMinFeatureCollection _features;
     private Guid _roomId;
     private Guid _connectionId;
 
-    // Конструктор - DI
     public ChatPanelView(IMinFeatureCollection features)
     {
         _features = features;
@@ -273,7 +399,6 @@ public partial class ChatPanelView : BasePanelView, IPanelInitializer<(Guid room
     {
         _roomId = parameters.roomId;
         _connectionId = parameters.connectionId;
-        
         // Подключение к комнате через _features
     }
 }
@@ -283,12 +408,102 @@ public partial class ChatPanelView : BasePanelView, IPanelInitializer<(Guid room
 
 ---
 
-## Task 4: DI Registration
+## Task 4: MainSidePanelView с IChatRoomManager
 
 **Files:**
+- Modify: `Desktop/MIN.Desktop/Views/Panels/SidePanelViews/MainSidePanelView.cs`
+
+- [ ] **Step 1: Обновить MainSidePanelView**
+
+MainSidePanelView реализует IChatRoomManager и хранит Dictionary<Guid, ChatPanelView>:
+- При RegisterChat - добавляет в Dictionary и создаёт RecentRoomCard
+- При нажатии на карточку - вызывает NavigateToExistingChat
+
+```csharp
+public partial class MainSidePanelView : BasePanelView, IChatRoomManager
+{
+    private readonly Dictionary<Guid, ChatPanelView> _activeChats = new();
+    private readonly INavigationService _navService;
+
+    public MainSidePanelView(INavigationService navService)
+    {
+        _navService = navService;
+        InitializeComponent();
+    }
+
+    public void RegisterChat(Guid roomId, ChatPanelView panel)
+    {
+        _activeChats[roomId] = panel;
+        var card = new RecentRoomCard(panel.RoomInfo);
+        card.OnClick = () => _navService.NavigateToExistingChat(roomId);
+        _recentRoomsPanel.Controls.Add(card);
+    }
+
+    public void UnregisterChat(Guid roomId)
+    {
+        if (_activeChats.Remove(roomId))
+        {
+            // Удалить карточку из UI
+        }
+    }
+}
+```
+
+- [ ] **Step 2: Commit**
+
+---
+
+## Task 5: DI Registration + CtsProvider
+
+**Files:**
+- Create: `DI/MIN.DI/CtsProvider.cs`
+- Create: `DI/MIN.DI/ChatRoomManager.cs`
 - Modify: `DI/MIN.DI/MinModule.cs`
 
-- [ ] **Step 1: Добавить регистрации панелей**
+- [ ] **Step 1: Создать CtsProvider**
+
+```csharp
+public interface ICtsProvider
+{
+    CancellationTokenSource AppCts { get; }
+    CancellationToken Token { get; }
+}
+
+public class CtsProvider : ICtsProvider
+{
+    public CancellationTokenSource AppCts { get; } = new();
+    public CancellationToken Token => AppCts.Token;
+}
+```
+
+- [ ] **Step 2: Создать ChatRoomManager**
+
+```csharp
+public class ChatRoomManager : IChatRoomManager
+{
+    private readonly Dictionary<Guid, ChatPanelView> _chats = new();
+    
+    public event Action<Guid, ChatPanelView> OnChatRegistered = delegate { };
+    public event Action<Guid> OnChatUnregistered = delegate { };
+
+    public void RegisterChat(Guid roomId, ChatPanelView panel)
+    {
+        _chats[roomId] = panel;
+        OnChatRegistered(roomId, panel);
+    }
+
+    public void UnregisterChat(Guid roomId)
+    {
+        if (_chats.Remove(roomId))
+            OnChatUnregistered(roomId);
+    }
+
+    public ChatPanelView? GetChat(Guid roomId) => _chats.GetValueOrDefault(roomId);
+    public IReadOnlyDictionary<Guid, ChatPanelView> ActiveChats => _chats;
+}
+```
+
+- [ ] **Step 3: Обновить MinModule**
 
 ```csharp
 public class MinModule : Module
@@ -302,8 +517,14 @@ public class MinModule : Module
 
         // IMinFeatureCollection
         services.AddSingleton<IMinFeatureCollection, MinFeatureCollection>();
+        
+        // CTS Provider
+        services.AddSingleton<ICtsProvider, CtsProvider>();
 
-        // Panels - регистрируем в DI
+        // Chat Room Manager
+        services.AddSingleton<IChatRoomManager, ChatRoomManager>();
+
+        // Panels
         services.AddTransient<DiscoveryPanelView>();
         services.AddTransient<ChatPanelView>();
         services.AddTransient<MainSidePanelView>();
@@ -315,34 +536,64 @@ public class MinModule : Module
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 4: Commit**
 
 ---
 
-## Task 5: MainForm Integration
+## Task 6: MainForm Integration + Program.cs
 
 **Files:**
 - Modify: `Desktop/MIN.Desktop/Views/Forms/MainForm.cs`
+- Modify: `Desktop/MIN.Desktop/Program.cs`
 
 - [ ] **Step 1: Обновить MainForm**
+
+MainForm получает INavigationService и IChatRoomManager через конструктор. После InitializeComponent() устанавливает Panel в NavigationService:
 
 ```csharp
 public partial class MainForm : StyledForm
 {
     private readonly INavigationService _navigationService;
+    private readonly IChatRoomManager _chatRoomManager;
 
-    public MainForm(INavigationService navigationService)
+    public MainForm(INavigationService navigationService, IChatRoomManager chatRoomManager)
     {
         _navigationService = navigationService;
+        _chatRoomManager = chatRoomManager;
         InitializeComponent();
         
-        // Показать Discovery при старте
+        // Навигация настраивается после InitializeComponent
+        _navigationService.MainPanel = mainPanel;
+        _navigationService.SidePanel = sidePanel;
+        
+        // Показать side и discovery при старте
+        _navigationService.NavigateTo<MainSidePanelView>();
         _navigationService.NavigateTo<DiscoveryPanelView>();
     }
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 2: Обновить Program.cs**
+
+MainForm создаётся вручную (не через DI), поэтому NavigationService и ChatRoomManager создаются вручную:
+
+```csharp
+var provider = new ServiceCollection()
+    .AddModules<MinModule>()
+    .BuildServiceProvider();
+
+// Создаём вручную - не через DI
+var chatRoomManager = new ChatRoomManager();
+var navService = new NavigationService(provider, chatRoomManager);
+
+var mainForm = new MainForm(navService, chatRoomManager);
+navService.MainPanel = mainForm.MainPanelContainer;
+navService.SidePanel = mainForm.SidePanelContainer;
+
+Application.Run(mainForm);
+```
+
+- [ ] **Step 3: Commit**
 
 ---
 
@@ -350,51 +601,20 @@ public partial class MainForm : StyledForm
 
 | Task | Description | Files |
 |------|-------------|-------|
-| 1 | IPanelInitializer + NavigationService | 3 new |
+| 1 | IPanelInitializer + INavigationService | 3 new |
 | 2 | DiscoveryPanelView | 1 modified |
 | 3 | ChatPanelView | 1 new |
-| 4 | DI Registration | 1 modified |
-| 5 | MainForm | 1 modified |
-Desktop/MIN.Desktop/
-├── Contracts/
-│   ├── Interfaces/
-│   │   └── INavigationService.cs          (существует)
-│   ├── Models/
-│   │   ├── Enums/
-│   │   │   └── PanelType.cs           (существует)
-│   │   └── NavigationItem.cs          (существует)
-│   └── Views/
-│       └── PanelViews/
-│           └── BasePanelView.cs       (существует)
-├── Views/
-│   ├── Forms/
-│   │   └── MainForm.cs                (изменить - вынести NavigationService)
-│   └── Panels/
-│       ├── PanelViews/
-│       │   ├── ChatPanelView.cs     (создать - из ChatForm)
-│       │   ├── DiscoveryPanelView.cs (рефакторить)
-│       │   └── LoadingPanelView.cs (существует LoadingForm)
-│       └── SidePanelViews/
-│           ├── MainSidePanelView.cs   (изменить - добавить кнопки)
-│           └── SettingsPanelView.cs  (создать - из SettingsForm)
-├── Infrastructure/
-│   └── Services/
-│       └── NavigationService.cs    (создать - вынести из MainForm)
-└── DI/
-    └── MinModule.cs                   (изменить - добавить регистрации)
-```
-
-Feature Services уже созданы в:
-```
-DI/
-└── MIN.FeatureServices.Contracts/
-    ├── FeatureServiceInterfaces.cs
-    └── Interfaces/
-        ├── IChatFeatureCollection.cs
-        └── IDiscoveryFeatureCollection.cs
-```
+| 4 | MainSidePanelView + IChatRoomManager | 1 modified |
+| 5 | DI Registration + CtsProvider + ChatRoomManager | 3 files |
+| 6 | MainForm + Program.cs | 2 modified |
 
 ---
+
+## Verification
+
+```bash
+cd Desktop/MIN.Desktop && dotnet build
+```
 
 ## Task 1: NavigationService + IPanelInitializer
 

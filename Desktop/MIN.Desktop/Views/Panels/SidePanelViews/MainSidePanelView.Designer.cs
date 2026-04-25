@@ -160,7 +160,7 @@
             // flowLayoutPanelRooms
             // 
             flowLayoutPanelRooms.AutoScroll = true;
-            flowLayoutPanelRooms.Dock = DockStyle.Fill;
+            flowLayoutPanelRooms.Dock = DockStyle.Top;
             flowLayoutPanelRooms.Location = new Point(0, 0);
             flowLayoutPanelRooms.Margin = new Padding(20);
             flowLayoutPanelRooms.Name = "flowLayoutPanelRooms";
