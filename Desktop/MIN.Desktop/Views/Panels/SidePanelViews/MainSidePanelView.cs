@@ -26,6 +26,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
     private readonly INavigationService navigationService;
     private readonly Dictionary<Guid, RecentRoomCard> activeRecentRoomCards = [];
     private readonly Dictionary<Guid, ChatPanelView> activeChatPanels = [];
+    private Guid selectedChatPanelRoomId;
 
     /// <inheritdoc />
     public override PanelType PanelType => PanelType.Side;
@@ -143,22 +144,35 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
             Width = flowLayoutPanelRooms.Width - flowLayoutPanelRooms.Margin.Horizontal * 2,
         };
 
-        card.Clicked += () => SelectChatPanel(roomId, panel);
-
+        card.Clicked += () =>
+        {
+            if (selectedChatPanelRoomId != roomId)
+            {
+                SelectChatCard(roomId, card);
+                navigationService.NavigateToExisting(panel);
+            }
+        };
         flowLayoutPanelRooms.Controls.Add(card);
-
         activeRecentRoomCards[roomId] = card;
+        SelectChatCard(roomId, card);
     }
 
-    private void SelectChatPanel(Guid roomId, ChatPanelView panel)
+    private void UnselectAllChatCards()
     {
-        foreach (var card in activeRecentRoomCards.Values)
+        foreach (var otherCard in activeRecentRoomCards.Values)
         {
-            card.BackColor = ColorScheme.ChatAreaBackground;
+            otherCard.BackColor = ColorScheme.Transparent;
         }
 
-        activeRecentRoomCards[roomId].BackColor = ColorScheme.SecondaryAccent;
-        navigationService.NavigateToExisting(panel);
+        selectedChatPanelRoomId = Guid.Empty;
+    }
+
+    private void SelectChatCard(Guid roomId, RecentRoomCard card)
+    {
+        UnselectAllChatCards();
+
+        card.BackColor = ColorScheme.SecondaryAccent;
+        selectedChatPanelRoomId = roomId;
     }
 
     /// <inheritdoc />
@@ -175,6 +189,12 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
     ChatPanelView? IChatPanelManager.GetChatPanel(Guid roomId)
         => activeChatPanels.TryGetValue(roomId, out var chatPanelView) ? chatPanelView : null;
 
+    /// <inheritdoc />
+    protected override void ApplyStylings()
+    {
+        BackColor = ColorScheme.MainPanelBackground;
+    }
+
     private void settingsButton_Click(object sender, EventArgs e)
     {
         navigationService.NavigateTo<SettingsSidePanelView>();
@@ -182,6 +202,29 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
 
     private void discoveryButton_Click(object sender, EventArgs e)
     {
+        UnselectAllChatCards();
         navigationService.NavigateTo<DiscoveryPanelView>();
+    }
+
+    private void flowLayoutPanelRooms_Resize(object sender, EventArgs e)
+    {
+        foreach (RecentRoomCard card in flowLayoutPanelRooms.Controls.OfType<RecentRoomCard>())
+        {
+            card.Width = flowLayoutPanelRooms.Width - flowLayoutPanelRooms.Margin.Horizontal * 2;
+        }
+    }
+
+    private void searchButton_Click(object sender, EventArgs e)
+    {
+        var lowerQuery = roomSearchTextBox.Text.ToLowerInvariant();
+
+        flowLayoutPanelRooms.Controls.Clear();
+
+        foreach (var card in activeRecentRoomCards.Values
+            .Where(x => x.RoomName
+                .Contains(lowerQuery, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            flowLayoutPanelRooms.Controls.Add(card);
+        }
     }
 }

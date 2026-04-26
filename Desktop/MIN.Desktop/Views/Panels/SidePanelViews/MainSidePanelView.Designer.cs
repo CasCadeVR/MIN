@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             roomSearchTextBox = new MIN.Desktop.Components.Controls.TextBoxes.DefaultTextBox();
-            commonButton2 = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            searchButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             discoveryButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             settingsButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             createRoom = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             tableLayoutPanelHeader = new TableLayoutPanel();
-            flowLayoutPanelRooms = new FlowLayoutPanel();
+            flowLayoutPanelRooms = new MIN.Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -44,7 +44,7 @@
             // 
             // splitContainer
             // 
-            splitContainer.BackColor = Color.FromArgb(240, 242, 255);
+            splitContainer.BackColor = Color.Transparent;
             splitContainer.ForeColor = Color.FromArgb(45, 43, 58);
             // 
             // splitContainer.Panel1
@@ -71,20 +71,21 @@
             roomSearchTextBox.Size = new Size(259, 26);
             roomSearchTextBox.TabIndex = 6;
             // 
-            // commonButton2
+            // searchButton
             // 
-            commonButton2.BackColor = Color.FromArgb(167, 157, 255);
-            commonButton2.BackgroundImage = Properties.Resources.search;
-            commonButton2.BackgroundImageLayout = ImageLayout.Zoom;
-            commonButton2.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
-            commonButton2.FlatStyle = FlatStyle.Flat;
-            commonButton2.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
-            commonButton2.ForeColor = Color.FromArgb(248, 249, 255);
-            commonButton2.Location = new Point(316, 3);
-            commonButton2.Name = "commonButton2";
-            commonButton2.Size = new Size(42, 42);
-            commonButton2.TabIndex = 5;
-            commonButton2.UseVisualStyleBackColor = false;
+            searchButton.BackColor = Color.FromArgb(167, 157, 255);
+            searchButton.BackgroundImage = Properties.Resources.search;
+            searchButton.BackgroundImageLayout = ImageLayout.Zoom;
+            searchButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            searchButton.FlatStyle = FlatStyle.Flat;
+            searchButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            searchButton.ForeColor = Color.FromArgb(248, 249, 255);
+            searchButton.Location = new Point(316, 3);
+            searchButton.Name = "searchButton";
+            searchButton.Size = new Size(42, 42);
+            searchButton.TabIndex = 5;
+            searchButton.UseVisualStyleBackColor = false;
+            searchButton.Click += searchButton_Click;
             // 
             // discoveryButton
             // 
@@ -137,6 +138,7 @@
             // 
             // tableLayoutPanelHeader
             // 
+            tableLayoutPanelHeader.BackColor = Color.Transparent;
             tableLayoutPanelHeader.ColumnCount = 4;
             tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
             tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -145,7 +147,7 @@
             tableLayoutPanelHeader.Controls.Add(createRoom, 0, 1);
             tableLayoutPanelHeader.Controls.Add(settingsButton, 0, 0);
             tableLayoutPanelHeader.Controls.Add(discoveryButton, 3, 0);
-            tableLayoutPanelHeader.Controls.Add(commonButton2, 2, 0);
+            tableLayoutPanelHeader.Controls.Add(searchButton, 2, 0);
             tableLayoutPanelHeader.Controls.Add(roomSearchTextBox, 1, 0);
             tableLayoutPanelHeader.Dock = DockStyle.Fill;
             tableLayoutPanelHeader.Location = new Point(0, 0);
@@ -159,13 +161,11 @@
             // 
             // flowLayoutPanelRooms
             // 
-            flowLayoutPanelRooms.AutoScroll = true;
-            flowLayoutPanelRooms.Dock = DockStyle.Top;
+            flowLayoutPanelRooms.Dock = DockStyle.Fill;
             flowLayoutPanelRooms.Location = new Point(0, 0);
-            flowLayoutPanelRooms.Margin = new Padding(20);
             flowLayoutPanelRooms.Name = "flowLayoutPanelRooms";
             flowLayoutPanelRooms.Size = new Size(409, 710);
-            flowLayoutPanelRooms.TabIndex = 2;
+            flowLayoutPanelRooms.TabIndex = 0;
             // 
             // MainSidePanelView
             // 
@@ -190,8 +190,8 @@
         private Desktop.Components.Controls.Buttons.CommonButton createRoom;
         private Desktop.Components.Controls.Buttons.CommonButton settingsButton;
         private Desktop.Components.Controls.Buttons.CommonButton discoveryButton;
-        private Desktop.Components.Controls.Buttons.CommonButton commonButton2;
+        private Desktop.Components.Controls.Buttons.CommonButton searchButton;
         private Desktop.Components.Controls.TextBoxes.DefaultTextBox roomSearchTextBox;
-        private FlowLayoutPanel flowLayoutPanelRooms;
+        private Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView flowLayoutPanelRooms;
     }
 }

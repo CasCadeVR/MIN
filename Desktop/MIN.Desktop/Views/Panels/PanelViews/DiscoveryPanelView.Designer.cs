@@ -28,11 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
-            tableLayoutPanel1 = new TableLayoutPanel();
+            tableLayoutPanel = new TableLayoutPanel();
             splitContainerDiscoverRoom = new SplitContainer();
-            discoverRooms = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            discoverRooms = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             discoveryProgressBar = new ProgressBar();
-            ClassroomTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
+            classroomTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
             classNumber = new MIN.Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown();
             flowLayoutPanelDiscoveredRooms = new FlowLayoutPanel();
             statusStrip = new StatusStrip();
@@ -41,7 +41,7 @@
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
             splitContainer.SuspendLayout();
-            tableLayoutPanel1.SuspendLayout();
+            tableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerDiscoverRoom).BeginInit();
             splitContainerDiscoverRoom.Panel1.SuspendLayout();
             splitContainerDiscoverRoom.Panel2.SuspendLayout();
@@ -52,12 +52,12 @@
             // 
             // splitContainer
             // 
-            splitContainer.BackColor = Color.FromArgb(240, 242, 255);
+            splitContainer.BackColor = Color.Transparent;
             splitContainer.ForeColor = Color.FromArgb(45, 43, 58);
             // 
             // splitContainer.Panel1
             // 
-            splitContainer.Panel1.Controls.Add(tableLayoutPanel1);
+            splitContainer.Panel1.Controls.Add(tableLayoutPanel);
             // 
             // splitContainer.Panel2
             // 
@@ -65,23 +65,23 @@
             splitContainer.Panel2.Controls.Add(flowLayoutPanelDiscoveredRooms);
             splitContainer.Size = new Size(848, 591);
             // 
-            // tableLayoutPanel1
+            // tableLayoutPanel
             // 
-            tableLayoutPanel1.ColumnCount = 3;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 168F));
-            tableLayoutPanel1.Controls.Add(splitContainerDiscoverRoom, 2, 0);
-            tableLayoutPanel1.Controls.Add(ClassroomTitleInput, 0, 0);
-            tableLayoutPanel1.Controls.Add(classNumber, 1, 0);
-            tableLayoutPanel1.Dock = DockStyle.Fill;
-            tableLayoutPanel1.Location = new Point(0, 0);
-            tableLayoutPanel1.Margin = new Padding(0);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 1;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
-            tableLayoutPanel1.Size = new Size(848, 48);
-            tableLayoutPanel1.TabIndex = 2;
+            tableLayoutPanel.ColumnCount = 3;
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200F));
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 168F));
+            tableLayoutPanel.Controls.Add(splitContainerDiscoverRoom, 2, 0);
+            tableLayoutPanel.Controls.Add(classroomTitleInput, 0, 0);
+            tableLayoutPanel.Controls.Add(classNumber, 1, 0);
+            tableLayoutPanel.Dock = DockStyle.Fill;
+            tableLayoutPanel.Location = new Point(0, 0);
+            tableLayoutPanel.Margin = new Padding(0);
+            tableLayoutPanel.Name = "tableLayoutPanel";
+            tableLayoutPanel.RowCount = 1;
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
+            tableLayoutPanel.Size = new Size(848, 48);
+            tableLayoutPanel.TabIndex = 2;
             // 
             // splitContainerDiscoverRoom
             // 
@@ -105,16 +105,17 @@
             // 
             // discoverRooms
             // 
-            discoverRooms.BackColor = Color.FromArgb(192, 192, 255);
+            discoverRooms.BackColor = Color.FromArgb(248, 249, 255);
             discoverRooms.Dock = DockStyle.Fill;
-            discoverRooms.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            discoverRooms.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
+            discoverRooms.FlatAppearance.BorderSize = 2;
             discoverRooms.FlatStyle = FlatStyle.Flat;
-            discoverRooms.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            discoverRooms.ForeColor = Color.FromArgb(248, 249, 255);
+            discoverRooms.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            discoverRooms.ForeColor = Color.FromArgb(167, 157, 255);
             discoverRooms.Location = new Point(0, 0);
             discoverRooms.Name = "discoverRooms";
             discoverRooms.Size = new Size(162, 47);
-            discoverRooms.TabIndex = 2;
+            discoverRooms.TabIndex = 0;
             discoverRooms.Text = "Найти комнаты";
             discoverRooms.UseVisualStyleBackColor = false;
             discoverRooms.Click += discoverRooms_Click;
@@ -128,17 +129,17 @@
             discoveryProgressBar.Size = new Size(150, 8);
             discoveryProgressBar.TabIndex = 0;
             // 
-            // ClassroomTitleInput
+            // classroomTitleInput
             // 
-            ClassroomTitleInput.Anchor = AnchorStyles.Right;
-            ClassroomTitleInput.AutoSize = true;
-            ClassroomTitleInput.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            ClassroomTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
-            ClassroomTitleInput.Location = new Point(3, 14);
-            ClassroomTitleInput.Name = "ClassroomTitleInput";
-            ClassroomTitleInput.Size = new Size(194, 21);
-            ClassroomTitleInput.TabIndex = 0;
-            ClassroomTitleInput.Text = "Введи номер кабинета: ";
+            classroomTitleInput.Anchor = AnchorStyles.Right;
+            classroomTitleInput.AutoSize = true;
+            classroomTitleInput.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            classroomTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
+            classroomTitleInput.Location = new Point(3, 14);
+            classroomTitleInput.Name = "classroomTitleInput";
+            classroomTitleInput.Size = new Size(194, 21);
+            classroomTitleInput.TabIndex = 0;
+            classroomTitleInput.Text = "Введи номер кабинета: ";
             // 
             // classNumber
             // 
@@ -146,7 +147,7 @@
             classNumber.BackColor = Color.White;
             classNumber.BorderStyle = BorderStyle.None;
             classNumber.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            classNumber.ForeColor = Color.Purple;
+            classNumber.ForeColor = Color.Black;
             classNumber.Location = new Point(203, 10);
             classNumber.Maximum = new decimal(new int[] { 440, 0, 0, 0 });
             classNumber.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
@@ -158,6 +159,7 @@
             // flowLayoutPanelDiscoveredRooms
             // 
             flowLayoutPanelDiscoveredRooms.AutoScroll = true;
+            flowLayoutPanelDiscoveredRooms.BackColor = Color.Transparent;
             flowLayoutPanelDiscoveredRooms.Dock = DockStyle.Fill;
             flowLayoutPanelDiscoveredRooms.Location = new Point(0, 0);
             flowLayoutPanelDiscoveredRooms.Margin = new Padding(20);
@@ -194,8 +196,8 @@
             splitContainer.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();
             splitContainer.ResumeLayout(false);
-            tableLayoutPanel1.ResumeLayout(false);
-            tableLayoutPanel1.PerformLayout();
+            tableLayoutPanel.ResumeLayout(false);
+            tableLayoutPanel.PerformLayout();
             splitContainerDiscoverRoom.Panel1.ResumeLayout(false);
             splitContainerDiscoverRoom.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainerDiscoverRoom).EndInit();
@@ -208,14 +210,14 @@
 
         #endregion
 
-        private TableLayoutPanel tableLayoutPanel1;
-        private Desktop.Components.Labels.Heading3Label ClassroomTitleInput;
+        private TableLayoutPanel tableLayoutPanel;
+        private Desktop.Components.Labels.Heading3Label classroomTitleInput;
         private Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown classNumber;
         private SplitContainer splitContainerDiscoverRoom;
-        private Desktop.Components.Controls.Buttons.CommonButton discoverRooms;
         private ProgressBar discoveryProgressBar;
         private FlowLayoutPanel flowLayoutPanelDiscoveredRooms;
         private StatusStrip statusStrip;
         private ToolStripStatusLabel totalRoomsCount;
+        private Desktop.Components.Controls.Buttons.InvertedButton discoverRooms;
     }
 }

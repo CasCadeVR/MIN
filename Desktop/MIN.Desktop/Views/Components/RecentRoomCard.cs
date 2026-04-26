@@ -30,6 +30,11 @@ public partial class RecentRoomCard : UserControl, IDisposable
     public event Action? Clicked;
 
     /// <summary>
+    /// Имя комнаты
+    /// </summary>
+    public string RoomName { get; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
     /// </summary>
     public RecentRoomCard(IEventBus eventBus, RoomContext roomContext, ParticipantInfo localParticipant, Room room)
@@ -39,6 +44,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
         this.roomContext = roomContext;
         this.localParticipant = localParticipant;
         this.room = room;
+        RoomName = room.Name;
         isOwner = room.HostParticipant.Id == localParticipant.Id;
 
         uiContext = SynchronizationContext.Current
@@ -133,7 +139,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
 
     private void ApplyStylings()
     {
-        tableLayoutPanelLabels.BackColor = ColorScheme.ChatAreaBackground;
+        BackColor = ColorScheme.Transparent;
     }
 
     private void UpdateStats()
@@ -146,8 +152,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
         if (lastMessage == null)
         {
             lastMessageTime.Text = string.Empty;
-            lastMessageSenderName.Text = string.Empty;
-            lastMessageContent.Text = string.Empty;
+            lastMessageSenderAndContent.Text = string.Empty;
             return;
         }
 
@@ -155,16 +160,16 @@ public partial class RecentRoomCard : UserControl, IDisposable
 
         roomContext.Participants.TryGetParticipantById(lastMessage.SenderId, out var senderInfo);
 
-        lastMessageSenderName.Text = senderInfo?.Name ?? string.Empty;
+        lastMessageSenderAndContent.Text = senderInfo?.Name ?? string.Empty;
 
         switch (lastMessage)
         {
             case ChatTextMessage chatTextMessage:
-                lastMessageContent.Text = chatTextMessage.Content;
+                lastMessageSenderAndContent.Text = $"{chatTextMessage.Sender.Name}: {chatTextMessage.Content}";
                 break;
 
             case SystemTextMessage systemTextMessage:
-                lastMessageContent.Text = systemTextMessage.Content;
+                lastMessageSenderAndContent.Text = systemTextMessage.Content;
                 break;
         }
     }

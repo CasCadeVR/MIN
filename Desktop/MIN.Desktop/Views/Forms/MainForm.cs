@@ -32,7 +32,6 @@ public partial class MainForm : StyledForm
     /// <inheritdoc />
     protected override void ApplyStylings()
     {
-        splitContainer.Panel1.BackColor = ColorScheme.MainPanelBackground;
-        splitContainer.Panel2.BackColor = ColorScheme.FormBackground;
+        BackColor = ColorScheme.FormBackground;
     }
 }

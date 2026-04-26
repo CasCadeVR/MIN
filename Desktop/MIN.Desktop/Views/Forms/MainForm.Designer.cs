@@ -37,10 +37,15 @@ namespace MIN.Desktop
             // 
             // splitContainer
             // 
+            splitContainer.BackColor = Color.Transparent;
             splitContainer.Dock = DockStyle.Fill;
             splitContainer.FixedPanel = FixedPanel.Panel1;
             splitContainer.Location = new Point(0, 0);
             splitContainer.Name = "splitContainer";
+            // 
+            // splitContainer.Panel2
+            // 
+            splitContainer.Panel2.BackColor = Color.Transparent;
             splitContainer.Size = new Size(1287, 729);
             splitContainer.SplitterDistance = 331;
             splitContainer.SplitterWidth = 6;

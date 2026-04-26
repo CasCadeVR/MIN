@@ -5,6 +5,8 @@
 /// </summary>
 public static class ColorScheme
 {
+    #region Main backgrounds
+
     /// <summary>
     /// Цвет заднего фона приложения (основной фон)
     /// </summary>
@@ -14,6 +16,24 @@ public static class ColorScheme
     /// Цвет заднего фона главной панели (список чатов / боковая панель)
     /// </summary>
     public readonly static Color MainPanelBackground = ColorTranslator.FromHtml("#F0F2FF");
+
+    #endregion
+
+    #region Buttons
+
+    /// <summary>
+    /// Основной акцентный цвет (фиолетовый — для кнопок, выделений, активных элементов)
+    /// </summary>
+    public readonly static Color PrimaryAccent = ColorTranslator.FromHtml("#6A5BFF");
+
+    /// <summary>
+    /// Вторичный акцентный цвет (светло-фиолетовый — для ховеров, второстепенных действий)
+    /// </summary>
+    public readonly static Color SecondaryAccent = ColorTranslator.FromHtml("#A79DFF");
+
+    #endregion
+
+    #region Chat panel
 
     /// <summary>
     /// Цвет заднего фона области чата
@@ -40,15 +60,9 @@ public static class ColorScheme
     /// </summary>
     public readonly static Color PrivateParticipantCardBackground = ColorTranslator.FromHtml("#CDC0ED");
 
-    /// <summary>
-    /// Основной акцентный цвет (фиолетовый — для кнопок, выделений, активных элементов)
-    /// </summary>
-    public readonly static Color PrimaryAccent = ColorTranslator.FromHtml("#6A5BFF");
+    #endregion
 
-    /// <summary>
-    /// Вторичный акцентный цвет (светло-фиолетовый — для ховеров, второстепенных действий)
-    /// </summary>
-    public readonly static Color SecondaryAccent = ColorTranslator.FromHtml("#A79DFF");
+    #region Text colors
 
     /// <summary>
     /// Цвет текста по умолчанию (основной контент)
@@ -70,6 +84,10 @@ public static class ColorScheme
     /// </summary>
     public readonly static Color TextOnAccentInverted = ColorTranslator.FromHtml("#000000");
 
+    #endregion
+
+    #region Other
+
     /// <summary>
     /// Цвет разделителей и лёгких границ
     /// </summary>
@@ -89,4 +107,11 @@ public static class ColorScheme
     /// Цвет запрета присоединения к комнате
     /// </summary>
     public readonly static Color ConnectionDisabled = Color.Gray;
+
+    /// <summary>
+    /// Невидимый цвет (цвет родителя)
+    /// </summary>
+    public readonly static Color Transparent = Color.Transparent;
+
+    #endregion
 }

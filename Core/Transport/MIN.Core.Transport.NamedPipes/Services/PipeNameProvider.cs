@@ -5,7 +5,7 @@
 /// </summary>
 public static class PipeNameProvider
 {
-    private const string PipePrefix = "MIN_Chat_";
+    private const string PipePrefix = "MIN_Room_";
 
     /// <summary>
     /// Генерация имени канала для комнаты по её уникальному идентификатору
