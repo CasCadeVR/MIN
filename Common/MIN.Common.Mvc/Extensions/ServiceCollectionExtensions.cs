@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
         services.TryAdd(new ServiceDescriptor(typeof(TService), typeof(TService), lifetime));
         var interfaces = typeof(TService).GetTypeInfo()
             .ImplementedInterfaces
-            .Where(i => i != typeof(IDisposable) && (i.IsPublic));
+            .Where(i => i != typeof(IDisposable) && i != typeof(IAsyncDisposable) && (i.IsPublic));
 
         foreach (Type interfaceType in interfaces)
         {
@@ -91,6 +91,18 @@ public static class ServiceCollectionExtensions
     public static void RegisterMultipleInterfacesAssignableTo<TInterface, TService>(this IServiceCollection services, ServiceLifetime lifetime)
     {
         services.TryAddEnumerable(new ServiceDescriptor(typeof(TInterface), typeof(TService), lifetime));
+    }
+
+    /// <summary>
+    /// Регистрирует интерфейс указанного типа
+    /// </summary>
+    /// <typeparam name="TService">Тип, для которого осуществляется регистрация</typeparam>
+    /// <typeparam name="TInterface">Тип, для которого осуществляется регистрация</typeparam>
+    /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
+    /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
+    public static void RegisterInterfaceAssignableTo<TInterface, TService>(this IServiceCollection services, ServiceLifetime lifetime)
+    {
+        services.TryAdd(new ServiceDescriptor(typeof(TInterface), typeof(TService), lifetime));
     }
 
     /// <summary>

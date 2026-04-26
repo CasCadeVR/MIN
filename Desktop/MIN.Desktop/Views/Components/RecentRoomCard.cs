@@ -1,6 +1,5 @@
 ﻿using MIN.Chat.Messaging;
 using MIN.Core.Entities;
-using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated;
@@ -18,9 +17,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
     private readonly IEventBus eventBus;
     private readonly RoomContext roomContext;
     private readonly Room room;
-    private readonly ParticipantInfo localParticipant;
     private readonly SynchronizationContext uiContext;
-    private readonly bool isOwner;
 
     private HashSet<IDisposable> eventTokens = null!;
 
@@ -37,15 +34,13 @@ public partial class RecentRoomCard : UserControl, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
     /// </summary>
-    public RecentRoomCard(IEventBus eventBus, RoomContext roomContext, ParticipantInfo localParticipant, Room room)
+    public RecentRoomCard(IEventBus eventBus, RoomContext roomContext, Room room)
     {
         InitializeComponent();
         this.eventBus = eventBus;
         this.roomContext = roomContext;
-        this.localParticipant = localParticipant;
         this.room = room;
         RoomName = room.Name;
-        isOwner = room.HostParticipant.Id == localParticipant.Id;
 
         uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -62,7 +57,6 @@ public partial class RecentRoomCard : UserControl, IDisposable
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
             eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
-            eventBus.Subscribe<RoomJoinedEvent>(OnRoomJoined),
         ];
     }
 
@@ -105,35 +99,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
             return;
         }
 
-        if (isOwner)
-        {
-            Dispose();
-            return;
-        }
-
-        room.RemoveParticipantById(localParticipant.Id);
-
-        uiContext.Post(_ =>
-        {
-            UpdateStats();
-        }, null);
-
-        await Task.CompletedTask;
-    }
-
-    private async Task OnRoomJoined(RoomJoinedEvent eventMessage, CancellationToken cancellationToken)
-    {
-        if (eventMessage.RoomId != room.Id)
-        {
-            return;
-        }
-
-        room.RemoveParticipantById(localParticipant.Id);
-
-        uiContext.Post(_ =>
-        {
-            UpdateStats();
-        }, null);
+        Dispose();
         await Task.CompletedTask;
     }
 

@@ -166,6 +166,7 @@
             flowLayoutPanelRooms.Name = "flowLayoutPanelRooms";
             flowLayoutPanelRooms.Size = new Size(409, 710);
             flowLayoutPanelRooms.TabIndex = 0;
+            flowLayoutPanelRooms.Resize += flowLayoutPanelRooms_Resize;
             // 
             // MainSidePanelView
             // 

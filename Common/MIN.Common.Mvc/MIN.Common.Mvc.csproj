@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MIN.Common.Core.Contracts\MIN.Common.Core.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

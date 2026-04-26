@@ -52,12 +52,12 @@ static internal class Program
         services.RegisterAsImplementedInterfaces<NotificationService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SettingsProvider>(ServiceLifetime.Singleton);
         services.RegisterModule<MinModule>();
-
-        services.RegisterAsImplementedInterfaces<MainForm>(ServiceLifetime.Transient);
     }
 
     private static void ConfigurePanels(IServiceCollection services)
     {
+        services.RegisterAsImplementedInterfaces<MainForm>(ServiceLifetime.Transient);
+
         services.RegisterAsImplementedInterfaces<MainSidePanelView>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SettingsSidePanelView>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<DiscoveryPanelView>(ServiceLifetime.Singleton);

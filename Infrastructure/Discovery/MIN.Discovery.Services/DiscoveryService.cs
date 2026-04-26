@@ -13,192 +13,197 @@ using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 
-namespace MIN.Discovery.Services
+namespace MIN.Discovery.Services;
+
+/// <inheritdoc cref="IDiscoveryService"/>
+public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
 {
-    /// <inheritdoc cref="IDiscoveryService"/>
-    public sealed class DiscoveryService : IDiscoveryService
+    private readonly ITransport transport;
+    private readonly IDiscoveryTransport discoveryTransport;
+    private readonly IMessageSerializer serializer;
+    private readonly IRoomStore roomStore;
+    private readonly IEventBus eventBus;
+    private readonly ILoggerProvider logger;
+    private readonly HashSet<Guid> activeRoomIds = [];
+    private readonly Dictionary<Guid, CancellationTokenSource> roomIdByCts = [];
+    private readonly CancellationTokenSource serviceCts = null!;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="DiscoveryService"/>
+    /// </summary>
+    public DiscoveryService(
+        ITransport transport,
+        IDiscoveryTransport discoveryTransport,
+        IMessageSerializer serializer,
+        IRoomStore roomStore,
+        IEventBus eventBus,
+        ILoggerProvider logger)
     {
-        private readonly ITransport transport;
-        private readonly IDiscoveryTransport discoveryTransport;
-        private readonly IMessageSerializer serializer;
-        private readonly IRoomStore roomStore;
-        private readonly IRoomFactory roomFactory;
-        private readonly IEventBus eventBus;
-        private readonly ILoggerProvider logger;
-        private readonly HashSet<Guid> activeRoomIds = [];
-        private CancellationTokenSource? serviceCts;
+        this.transport = transport;
+        this.discoveryTransport = discoveryTransport;
+        this.serializer = serializer;
+        this.roomStore = roomStore;
+        this.eventBus = eventBus;
+        this.logger = logger;
 
-        /// <summary>
-        /// Инициализирует новый экземпляр <see cref="DiscoveryService"/>
-        /// </summary>
-        public DiscoveryService(
-            ITransport transport,
-            IDiscoveryTransport discoveryTransport,
-            IMessageSerializer serializer,
-            IRoomStore roomStore,
-            IRoomFactory roomFactory,
-            IEventBus eventBus,
-            ILoggerProvider logger)
+        serviceCts = new CancellationTokenSource();
+        discoveryTransport.MessageReceived += OnRequestReceived;
+    }
+
+    async Task IDiscoveryService.StartDiscoveryAsync(Guid roomId, CancellationToken cancellationToken)
+    {
+        activeRoomIds.Add(roomId);
+
+        if (roomIdByCts.ContainsKey(roomId))
         {
-            this.transport = transport;
-            this.discoveryTransport = discoveryTransport;
-            this.serializer = serializer;
-            this.roomStore = roomStore;
-            this.roomFactory = roomFactory;
-            this.eventBus = eventBus;
-            this.logger = logger;
+            return;
         }
 
-        async Task IDiscoveryService.StartDiscoveryAsync(Guid roomId, CancellationToken cancellationToken)
+        roomIdByCts[roomId] = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        await discoveryTransport.StartListeningAsync(roomIdByCts[roomId].Token);
+    }
+
+    /// <inheritdoc />
+    public async Task StopDiscoveryAsync(Guid roomId)
+    {
+        if (!roomIdByCts.TryGetValue(roomId, out var cts))
         {
-            activeRoomIds.Add(roomId);
-
-            if (serviceCts != null)
-            {
-                return;
-            }
-
-            serviceCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            discoveryTransport.MessageReceived += OnRequestReceived;
-            await discoveryTransport.StartListeningAsync(serviceCts.Token);
+            return;
         }
 
-        /// <inheritdoc />
-        public async Task StopDiscoveryAsync(Guid roomId)
+        await cts.CancelAsync();
+        cts.Dispose();
+
+        roomIdByCts.Remove(roomId);
+        activeRoomIds.Remove(roomId);
+    }
+
+    async Task IDiscoveryService.DiscoverRoomsAsync(IEnumerable<string>? computers, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(computers);
+
+        var request = new DiscoveryRequestMessage();
+        var requestData = serializer.Serialize(request);
+
+        if (!computers.Any())
         {
-            if (serviceCts == null)
-            {
-                return;
-            }
-            await serviceCts.CancelAsync();
-            discoveryTransport.MessageReceived -= OnRequestReceived;
-            await discoveryTransport.StopListeningAsync();
-            serviceCts.Dispose();
-            serviceCts = null;
-            activeRoomIds.Remove(roomId);
+            logger.Log("Список компьютеров был пуст");
+            return;
         }
 
-        async Task IDiscoveryService.DiscoverRoomsAsync(IEnumerable<string>? computers, TimeSpan timeout, CancellationToken cancellationToken)
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        discoveryTransport.MessageReceived += OnResponseReceived;
+
+        logger.Log("[DEBUG]: starting discovery");
+
+        try
         {
-            ArgumentNullException.ThrowIfNull(computers);
-
-            var request = new DiscoveryRequestMessage();
-            var requestData = serializer.Serialize(request);
-
-            if (!computers.Any())
+            var tasks = computers
+            .Select(async computer =>
             {
-                logger.Log("No remote computers to discover");
-                return;
-            }
-
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            discoveryTransport.MessageReceived += OnResponseReceived;
-
-            logger.Log("[DEBUG]: starting discovery");
-
-            try
-            {
-                var tasks = computers
-                .Select(async computer =>
+                try
                 {
-                    try
+                    using var perComputerCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
+                    perComputerCts.CancelAfter(timeout);
+                    await discoveryTransport.SendAsync(requestData, computer, timeout, perComputerCts.Token);
+                    return eventBus.PublishAsync(new EndpointCheckedEvent()
                     {
-                        using var perComputerCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
-                        perComputerCts.CancelAfter(timeout);
-                        await discoveryTransport.SendAsync(requestData, computer, timeout, perComputerCts.Token);
-                        return eventBus.PublishAsync(new EndpointCheckedEvent()
-                        {
-                            Endpoint = computer
-                        }, CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Log($"Не удалось отправить запрос на обнаружение компу {computer}: {ex.Message}");
-                        return Task.CompletedTask;
-                    }
-                });
-
-                await Task.WhenAll(tasks);
-            }
-            catch (DiscoveryException ex)
-            {
-                logger.Log($"[DEBUG]: discovery failed at discoveryException: {ex.Message}");
-            }
-            catch (OperationCanceledException ex)
-            {
-                logger.Log($"[DEBUG]: discovery failed at OperationCanceledException: {ex.Message}");
-            }
-            finally
-            {
-                discoveryTransport.MessageReceived -= OnResponseReceived;
-                logger.Log("[DEBUG]: discovery ended");
-            }
-        }
-
-        private void OnResponseReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e)
-        {
-            try
-            {
-                var message = serializer.Deserialize(e.Data);
-                if (message is DiscoveryResponseMessage response)
-                {
-                    logger.Log($"Нашёл +{response.RoomDiscoveryInfos.Count} комнат");
-                    eventBus.PublishAsync(new RoomDiscoveredEvent()
-                    {
-                        MachineName = e.MachineName,
-                        RoomDiscoveryInfos = response.RoomDiscoveryInfos,
-                    });
+                        Endpoint = computer
+                    }, serviceCts.Token);
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.Log($"Error parsing discovery response: {ex.Message}");
-            }
-        }
-
-        private void OnRequestReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e)
-        {
-            try
-            {
-                var message = serializer.Deserialize(e.Data);
-
-                if (message is not DiscoveryRequestMessage _)
+                catch (Exception ex)
                 {
+                    logger.Log($"Не удалось отправить запрос на обнаружение компу {computer}: {ex.Message}");
+                    return Task.CompletedTask;
+                }
+            });
+
+            await Task.WhenAll(tasks);
+        }
+        catch (DiscoveryException ex)
+        {
+            logger.Log($"[DEBUG]: discovery failed at discoveryException: {ex.Message}");
+        }
+        catch (OperationCanceledException ex)
+        {
+            logger.Log($"[DEBUG]: discovery failed at OperationCanceledException: {ex.Message}");
+        }
+        finally
+        {
+            discoveryTransport.MessageReceived -= OnResponseReceived;
+            logger.Log("[DEBUG]: discovery ended");
+        }
+    }
+
+    private void OnResponseReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e)
+    {
+        try
+        {
+            var message = serializer.Deserialize(e.Data);
+            if (message is not DiscoveryResponseMessage response)
+            {
+                return;
+            }
+
+            logger.Log($"Нашёл +{response.RoomDiscoveryInfos.Count} комнат");
+            eventBus.PublishAsync(new RoomDiscoveredEvent()
+            {
+                MachineName = e.MachineName,
+                RoomDiscoveryInfos = response.RoomDiscoveryInfos,
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Error parsing discovery response: {ex.Message}");
+        }
+    }
+
+    private async void OnRequestReceived(object? sender, DiscoveryRawMessageReceivedEventArgs e)
+    {
+        try
+        {
+            var message = serializer.Deserialize(e.Data);
+
+            if (message is not DiscoveryRequestMessage _)
+            {
+                return;
+            }
+
+            var discoveryResponse = new DiscoveryResponseMessage();
+
+            foreach (var roomId in activeRoomIds)
+            {
+                var room = roomStore.GetRoom(roomId);
+
+                if (room == null)
+                {
+                    logger.Log($"Получил запрос на обнаружение, но комната не была установлена", LogLevel.Warning);
                     return;
                 }
 
-                var discoveryResponse = new DiscoveryResponseMessage();
-
-                foreach (var roomId in activeRoomIds)
+                discoveryResponse.RoomDiscoveryInfos.Add(new RoomDiscoveryInfo()
                 {
-                    var room = roomStore.GetRoom(roomId);
-
-                    if (room == null)
-                    {
-                        logger.Log($"Получил запрос на обнаружение, но комната не была установлена", LogLevel.Warning);
-                        return;
-                    }
-
-                    var roomInfo = new RoomInfo(room)
-                    {
-                        ParticipantCount = roomFactory.GetOrCreateContext(roomId).Participants.GetParticipants().Count()
-                    };
-
-                    discoveryResponse.RoomDiscoveryInfos.Add(new RoomDiscoveryInfo()
-                    {
-                        Room = roomInfo,
-                        Endpoint = transport.GetEndpoint(roomId),
-                    });
-                }
-
-                var data = serializer.Serialize(discoveryResponse);
-
-                discoveryTransport.ResponseWithData(data, e.ConnectionId, serviceCts!.Token);
+                    Room = new RoomInfo(room),
+                    Endpoint = transport.GetEndpoint(roomId),
+                });
             }
-            catch (Exception ex)
-            {
-                logger.Log($"Ошибка во время обработки запроса на обнаружение: {ex.Message}");
-            }
+
+            var data = serializer.Serialize(discoveryResponse);
+
+            await discoveryTransport.ResponseWithData(data, e.ConnectionId, serviceCts.Token);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Ошибка во время обработки запроса на обнаружение: {ex.Message}");
+        }
+    }
+
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
+    public async ValueTask DisposeAsync()
+    {
+        if (activeRoomIds.Count > 0)
+        {
+            await discoveryTransport.StopListeningAsync();
         }
     }
 }

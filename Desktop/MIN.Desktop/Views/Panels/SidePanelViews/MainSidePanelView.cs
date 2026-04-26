@@ -44,7 +44,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         this.ctsProvider = ctsProvider;
         this.navigationService = navigationService;
 
-        SubscribeToEvents();
+        //SubscribeToEvents();
     }
 
     private void SubscribeToEvents()
@@ -138,7 +138,6 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
 
         activeChatPanels[roomId] = panel;
         var card = new RecentRoomCard(featureCollection.Core.EventBus, context,
-            featureCollection.Helper.IdentityService.SelfPartcipant.ToParticipantInfo(),
             featureCollection.Core.RoomStore.GetRoom(roomId))
         {
             Width = flowLayoutPanelRooms.Width - flowLayoutPanelRooms.Margin.Horizontal * 2,

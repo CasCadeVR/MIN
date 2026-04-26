@@ -17,6 +17,7 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
 {
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, NamedPipeServerStream> connections = new();
+    private readonly ConcurrentDictionary<Guid, TaskCompletionSource<byte[]>> responseWaiters = new();
     private readonly string pipeName;
 
     private CancellationTokenSource? cts;
@@ -97,27 +98,25 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
     /// </summary>
     public async Task ResponseWithData(byte[] responseData, Guid? connectionId, CancellationToken cancellationToken)
     {
-        Guid? targetId;
-        NamedPipeServerStream? targetPipe;
-
-        if (connectionId.HasValue && connections.TryGetValue(connectionId.Value, out var p) && p.IsConnected)
+        if (connectionId.HasValue && connections.TryGetValue(connectionId.Value, out var pipe) && pipe.IsConnected)
         {
-            targetPipe = p;
-            targetId = connectionId.Value;
-        }
-        else
-        {
-            logger.Log("Сервер обнаружение не был подключен при передаче данных", LogLevel.Error);
-            return;
-        }
+            try
+            {
+                await pipe.WriteAsync(responseData.AsMemory(), cancellationToken);
+                await pipe.FlushAsync(cancellationToken);
 
-        await targetPipe.WriteAsync(responseData.AsMemory(), cancellationToken);
-        await targetPipe.FlushAsync(cancellationToken);
-        await targetPipe.DisposeAsync();
-
-        if (targetId.HasValue)
-        {
-            connections.TryRemove(targetId.Value, out _);
+                if (responseWaiters.TryGetValue(connectionId.Value, out var tcs))
+                {
+                    tcs.SetResult(responseData);
+                }
+            }
+            catch
+            {
+                if (responseWaiters.TryGetValue(connectionId.Value, out var tcs))
+                {
+                    tcs.SetException(new TimeoutException());
+                }
+            }
         }
     }
 
@@ -142,17 +141,34 @@ internal sealed class NamedPipeDiscoveryServer : IAsyncDisposable
     private async Task AcceptRequest(Guid connectionId, CancellationToken cancellationToken)
     {
         var buffer = new byte[DiscoveryConstants.DiscoveryBufferSize];
-        if (!connections.TryGetValue(connectionId, out var currentPipe) || currentPipe == null)
-        {
-            return;
-        }
-        var bytesRead = await currentPipe.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
+        var pipe = connections[connectionId];
+        var bytesRead = await pipe.ReadAsync(buffer.AsMemory(), cancellationToken);
+
         if (bytesRead > 0)
         {
             var data = new byte[bytesRead];
             Array.Copy(buffer, data, bytesRead);
+
+            var tcs = new TaskCompletionSource<byte[]>();
+            responseWaiters[connectionId] = tcs;
+
             MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(data, pipeName, connectionId));
+
+            // Wait for response but with timeout
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(5));
+
+            try
+            {
+                await tcs.Task.WaitAsync(timeoutCts.Token);
+            }
+            catch (TimeoutException) { }
         }
+
+        // Cleanup
+        responseWaiters.TryRemove(connectionId, out _);
+        await pipe.DisposeAsync();
+        connections.TryRemove(connectionId, out _);
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
