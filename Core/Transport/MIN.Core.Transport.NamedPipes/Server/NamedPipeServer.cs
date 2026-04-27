@@ -78,6 +78,9 @@ internal sealed class NamedPipeServer : IAsyncDisposable
             return;
         }
 
+        RawMessageReceived = null;
+        ConnectionDisconnected = null;
+
         isRunning = false;
         cts?.Cancel();
 

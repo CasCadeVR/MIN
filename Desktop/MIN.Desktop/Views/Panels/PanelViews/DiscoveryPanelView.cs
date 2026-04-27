@@ -76,6 +76,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         {
             discoveryCts?.Cancel();
             isDiscovering = false;
+            discoverRooms.Enabled = false;
         }
         else
         {
@@ -120,6 +121,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         }
         finally
         {
+            discoverRooms.Enabled = true;
             discoverRooms.Text = "Найти комнаты";
             splitContainerDiscoverRoom.Panel2Collapsed = true;
             var roomsCount = flowLayoutPanelDiscoveredRooms.Controls.Count;

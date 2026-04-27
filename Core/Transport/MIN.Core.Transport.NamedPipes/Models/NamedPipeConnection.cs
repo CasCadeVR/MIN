@@ -112,6 +112,9 @@ internal sealed class NamedPipeConnection : BaseConnection, IAsyncDisposable
             return;
         }
 
+        RawMessageReceived = null;
+        Disconnected = null;
+
         disposed = true;
         cancellationTokenSource.Cancel();
 

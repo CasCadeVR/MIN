@@ -170,7 +170,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     {
         if (eventMessage.RoomId == roomId && eventMessage.NeedToDisconnect)
         {
-            uiContext.Post(_ =>
+            uiContext.Post(async _ =>
             {
                 if (!string.IsNullOrEmpty(eventMessage.LeavingMessage))
                 {
@@ -178,8 +178,8 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                        "Подключение разорвано",
                        MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
+                await DisposeAsync();
             }, null);
-            await DisposeAsync();
             navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
         }
     }
@@ -616,8 +616,8 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     {
         if (isHost)
         {
-            await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
             await featureCollection.Core.RoomHoster.StopHostingAsync(roomId);
+            await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
         }
         else
         {

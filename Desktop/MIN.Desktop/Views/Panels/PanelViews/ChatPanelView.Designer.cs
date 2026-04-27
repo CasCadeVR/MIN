@@ -30,9 +30,6 @@
         {
             splitContainerSideBar = new SplitContainer();
             chatFlow = new MIN.Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView();
-            tableLayoutPanel1 = new TableLayoutPanel();
-            disconnectButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
-            aboutButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             tableLayoutPanelButtons = new TableLayoutPanel();
             fileButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             sendButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
@@ -53,6 +50,8 @@
             computer = new MIN.Desktop.Components.Labels.Heading3Label();
             captionLabel2 = new MIN.Desktop.Components.Labels.CaptionLabel();
             classroom = new MIN.Desktop.Components.Labels.Heading3Label();
+            disconnectButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
+            aboutButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             tableLayoutPanelHeader = new TableLayoutPanel();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
@@ -63,7 +62,6 @@
             splitContainerSideBar.Panel1.SuspendLayout();
             splitContainerSideBar.Panel2.SuspendLayout();
             splitContainerSideBar.SuspendLayout();
-            tableLayoutPanel1.SuspendLayout();
             tableLayoutPanelButtons.SuspendLayout();
             tableLayoutPanelStats.SuspendLayout();
             tableLayoutPanelHeader.SuspendLayout();
@@ -92,7 +90,6 @@
             // splitContainerSideBar.Panel1
             // 
             splitContainerSideBar.Panel1.Controls.Add(chatFlow);
-            splitContainerSideBar.Panel1.Controls.Add(tableLayoutPanel1);
             splitContainerSideBar.Panel1.Controls.Add(tableLayoutPanelButtons);
             // 
             // splitContainerSideBar.Panel2
@@ -110,64 +107,12 @@
             chatFlow.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             chatFlow.Dock = DockStyle.Fill;
             chatFlow.FlowDirection = FlowDirection.BottomUp;
-            chatFlow.Location = new Point(0, 48);
+            chatFlow.Location = new Point(0, 0);
             chatFlow.Name = "chatFlow";
-            chatFlow.Size = new Size(630, 546);
+            chatFlow.Size = new Size(630, 594);
             chatFlow.TabIndex = 6;
             chatFlow.WrapContents = false;
             chatFlow.Resize += chatFlow_Resize;
-            // 
-            // tableLayoutPanel1
-            // 
-            tableLayoutPanel1.ColumnCount = 2;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Controls.Add(disconnectButton, 0, 0);
-            tableLayoutPanel1.Controls.Add(aboutButton, 1, 0);
-            tableLayoutPanel1.Dock = DockStyle.Top;
-            tableLayoutPanel1.Location = new Point(0, 0);
-            tableLayoutPanel1.Margin = new Padding(0);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 1;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanel1.Size = new Size(630, 48);
-            tableLayoutPanel1.TabIndex = 4;
-            // 
-            // disconnectButton
-            // 
-            disconnectButton.BackColor = Color.FromArgb(248, 249, 255);
-            disconnectButton.DialogResult = DialogResult.Cancel;
-            disconnectButton.Dock = DockStyle.Left;
-            disconnectButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
-            disconnectButton.FlatAppearance.BorderSize = 2;
-            disconnectButton.FlatStyle = FlatStyle.Flat;
-            disconnectButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
-            disconnectButton.ForeColor = Color.FromArgb(167, 157, 255);
-            disconnectButton.Location = new Point(3, 3);
-            disconnectButton.Name = "disconnectButton";
-            disconnectButton.Padding = new Padding(8, 4, 8, 4);
-            disconnectButton.Size = new Size(104, 42);
-            disconnectButton.TabIndex = 3;
-            disconnectButton.Text = "Выйти";
-            disconnectButton.UseVisualStyleBackColor = false;
-            disconnectButton.Click += disconnectButton_Click;
-            // 
-            // aboutButton
-            // 
-            aboutButton.BackColor = Color.FromArgb(167, 157, 255);
-            aboutButton.Dock = DockStyle.Right;
-            aboutButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
-            aboutButton.FlatStyle = FlatStyle.Flat;
-            aboutButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
-            aboutButton.ForeColor = Color.FromArgb(248, 249, 255);
-            aboutButton.Location = new Point(515, 3);
-            aboutButton.Name = "aboutButton";
-            aboutButton.Padding = new Padding(8, 4, 8, 4);
-            aboutButton.Size = new Size(112, 42);
-            aboutButton.TabIndex = 4;
-            aboutButton.Text = "О комнате";
-            aboutButton.UseVisualStyleBackColor = false;
-            aboutButton.Click += aboutButton_Click;
             // 
             // tableLayoutPanelButtons
             // 
@@ -337,16 +282,18 @@
             // editButton
             // 
             editButton.BackColor = Color.FromArgb(167, 157, 255);
+            editButton.BackgroundImage = Properties.Resources.pencil;
+            editButton.BackgroundImageLayout = ImageLayout.Zoom;
             editButton.Dock = DockStyle.Right;
             editButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             editButton.FlatStyle = FlatStyle.Flat;
             editButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             editButton.ForeColor = Color.FromArgb(248, 249, 255);
-            editButton.Location = new Point(127, 3);
+            editButton.Location = new Point(153, 3);
             editButton.Name = "editButton";
-            editButton.Size = new Size(57, 31);
+            editButton.Size = new Size(31, 31);
             editButton.TabIndex = 17;
-            editButton.Text = ". . .";
+            editButton.UseMnemonic = false;
             editButton.UseVisualStyleBackColor = false;
             editButton.Click += editButton_Click;
             // 
@@ -472,12 +419,51 @@
             classroom.TabIndex = 12;
             classroom.Text = "Загрузка...";
             // 
+            // disconnectButton
+            // 
+            disconnectButton.BackColor = Color.FromArgb(248, 249, 255);
+            disconnectButton.DialogResult = DialogResult.Cancel;
+            disconnectButton.Dock = DockStyle.Fill;
+            disconnectButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
+            disconnectButton.FlatAppearance.BorderSize = 2;
+            disconnectButton.FlatStyle = FlatStyle.Flat;
+            disconnectButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            disconnectButton.ForeColor = Color.FromArgb(167, 157, 255);
+            disconnectButton.Location = new Point(3, 3);
+            disconnectButton.Name = "disconnectButton";
+            disconnectButton.Padding = new Padding(8, 4, 8, 4);
+            disconnectButton.Size = new Size(104, 42);
+            disconnectButton.TabIndex = 3;
+            disconnectButton.Text = "Выйти";
+            disconnectButton.UseVisualStyleBackColor = false;
+            disconnectButton.Click += disconnectButton_Click;
+            // 
+            // aboutButton
+            // 
+            aboutButton.BackColor = Color.FromArgb(167, 157, 255);
+            aboutButton.Dock = DockStyle.Fill;
+            aboutButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            aboutButton.FlatStyle = FlatStyle.Flat;
+            aboutButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            aboutButton.ForeColor = Color.FromArgb(248, 249, 255);
+            aboutButton.Location = new Point(776, 3);
+            aboutButton.Name = "aboutButton";
+            aboutButton.Size = new Size(42, 42);
+            aboutButton.TabIndex = 4;
+            aboutButton.Text = ". . .";
+            aboutButton.UseVisualStyleBackColor = false;
+            aboutButton.Click += aboutButton_Click;
+            // 
             // tableLayoutPanelHeader
             // 
             tableLayoutPanelHeader.BackColor = Color.FromArgb(167, 157, 255);
-            tableLayoutPanelHeader.ColumnCount = 1;
-            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanelHeader.Controls.Add(Title, 0, 0);
+            tableLayoutPanelHeader.ColumnCount = 3;
+            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110F));
+            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelHeader.Controls.Add(aboutButton, 2, 0);
+            tableLayoutPanelHeader.Controls.Add(disconnectButton, 0, 0);
+            tableLayoutPanelHeader.Controls.Add(Title, 1, 0);
             tableLayoutPanelHeader.Dock = DockStyle.Fill;
             tableLayoutPanelHeader.Location = new Point(0, 0);
             tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
@@ -488,11 +474,11 @@
             // 
             // Title
             // 
-            Title.Anchor = AnchorStyles.None;
+            Title.Anchor = AnchorStyles.Left;
             Title.AutoSize = true;
             Title.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             Title.ForeColor = Color.FromArgb(248, 249, 255);
-            Title.Location = new Point(358, 9);
+            Title.Location = new Point(113, 9);
             Title.Name = "Title";
             Title.Size = new Size(104, 30);
             Title.TabIndex = 0;
@@ -513,7 +499,6 @@
             splitContainerSideBar.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainerSideBar).EndInit();
             splitContainerSideBar.ResumeLayout(false);
-            tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanelButtons.ResumeLayout(false);
             tableLayoutPanelButtons.PerformLayout();
             tableLayoutPanelStats.ResumeLayout(false);
@@ -545,7 +530,6 @@
         private Desktop.Components.Labels.CaptionLabel captionLabel2;
         private Desktop.Components.Labels.Heading3Label classroom;
         private Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView chatFlow;
-        private TableLayoutPanel tableLayoutPanel1;
         private Desktop.Components.Controls.Buttons.InvertedButton disconnectButton;
         private Desktop.Components.Controls.Buttons.CommonButton aboutButton;
         private TableLayoutPanel tableLayoutPanelButtons;

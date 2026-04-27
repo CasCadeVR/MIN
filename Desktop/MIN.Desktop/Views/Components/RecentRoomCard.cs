@@ -20,6 +20,8 @@ public partial class RecentRoomCard : UserControl, IDisposable
     private readonly SynchronizationContext uiContext;
 
     private HashSet<IDisposable> eventTokens = null!;
+    private int currentAmount;
+    private int maximumAmount;
 
     /// <summary>
     /// Событие по нажатию
@@ -41,6 +43,8 @@ public partial class RecentRoomCard : UserControl, IDisposable
         this.roomContext = roomContext;
         this.room = room;
         RoomName = room.Name;
+        currentAmount = room.CurrentParticipants.Count;
+        maximumAmount = room.MaximumParticipants;
 
         uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -67,7 +71,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
             return;
         }
 
-        room.AddParticipant(eventMessage.Message.Participant);
+        currentAmount++;
 
         uiContext.Post(_ =>
         {
@@ -83,7 +87,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
             return;
         }
 
-        room.RemoveParticipantById(eventMessage.Message.Participant.Id);
+        currentAmount--;
 
         uiContext.Post(_ =>
         {
@@ -111,7 +115,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
     private void UpdateStats()
     {
         Title.Text = $"Комната {room.Name}";
-        participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
+        participantsInfo.Text = $"{currentAmount}/{maximumAmount}";
 
         var lastMessage = room.ChatHistory.LastOrDefault();
 

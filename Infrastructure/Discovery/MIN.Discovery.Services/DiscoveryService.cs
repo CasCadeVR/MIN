@@ -25,7 +25,6 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
     private readonly HashSet<Guid> activeRoomIds = [];
-    private readonly Dictionary<Guid, CancellationTokenSource> roomIdByCts = [];
     private readonly CancellationTokenSource serviceCts = null!;
 
     /// <summary>
@@ -53,29 +52,18 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
     async Task IDiscoveryService.StartDiscoveryAsync(Guid roomId, CancellationToken cancellationToken)
     {
         activeRoomIds.Add(roomId);
-
-        if (roomIdByCts.ContainsKey(roomId))
-        {
-            return;
-        }
-
-        roomIdByCts[roomId] = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        await discoveryTransport.StartListeningAsync(roomIdByCts[roomId].Token);
+        await discoveryTransport.StartListeningAsync(serviceCts.Token);
     }
 
     /// <inheritdoc />
     public async Task StopDiscoveryAsync(Guid roomId)
     {
-        if (!roomIdByCts.TryGetValue(roomId, out var cts))
-        {
-            return;
-        }
-
-        await cts.CancelAsync();
-        cts.Dispose();
-
-        roomIdByCts.Remove(roomId);
         activeRoomIds.Remove(roomId);
+
+        if (activeRoomIds.Count == 0)
+        {
+            await discoveryTransport.StopListeningAsync();
+        }
     }
 
     async Task IDiscoveryService.DiscoverRoomsAsync(IEnumerable<string>? computers, TimeSpan timeout, CancellationToken cancellationToken)
@@ -201,9 +189,6 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
     public async ValueTask DisposeAsync()
     {
-        if (activeRoomIds.Count > 0)
-        {
-            await discoveryTransport.StopListeningAsync();
-        }
+        await discoveryTransport.StopListeningAsync();
     }
 }

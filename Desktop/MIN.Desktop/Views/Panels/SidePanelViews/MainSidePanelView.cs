@@ -44,7 +44,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         this.ctsProvider = ctsProvider;
         this.navigationService = navigationService;
 
-        //SubscribeToEvents();
+        SubscribeToEvents();
     }
 
     private void SubscribeToEvents()
