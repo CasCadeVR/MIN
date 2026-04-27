@@ -1,5 +1,7 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -20,6 +22,7 @@ public sealed class RoomConnector : IRoomConnector
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
     private readonly IRoomFactory roomFactory;
+    private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
     private readonly HashSet<Guid> activeConnections = [];
 
@@ -31,6 +34,7 @@ public sealed class RoomConnector : IRoomConnector
         IIdentityService identityService,
         IMessageEncryptor encryptor,
         IRoomFactory roomFactory,
+        IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.transport = transport;
@@ -38,7 +42,28 @@ public sealed class RoomConnector : IRoomConnector
         this.identityService = identityService;
         this.encryptor = encryptor;
         this.roomFactory = roomFactory;
+        this.eventBus = eventBus;
         this.logger = logger;
+
+        SubscribeToEvents();
+    }
+
+    private void SubscribeToEvents()
+    {
+        eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChangedEvent);
+    }
+
+    private Task OnConnectionStatusChangedEvent(ConnectionStatusChangedEvent e, CancellationToken cancellationToken)
+    {
+        if (!activeConnections.Contains(e.RoomId))
+        {
+            return Task.CompletedTask;
+        }
+
+        activeConnections.Remove(e.RoomId);
+        logger.Log($"Отключились от комнаты с id {e.RoomId}, соединение было с id {e.ConnectionId}");
+
+        return Task.CompletedTask;
     }
 
     async Task<Guid> IRoomConnector.ConnectAsync(RoomInfo room, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)

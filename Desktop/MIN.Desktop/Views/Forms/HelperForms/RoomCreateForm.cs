@@ -1,4 +1,4 @@
-using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 
@@ -14,16 +14,20 @@ public partial class RoomCreateForm : StyledForm
     /// <summary>
     /// Редактируемая комната
     /// </summary>
-    public Room Room { get; set; }
-
+    public RoomInfo Room { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomCreateForm"/>
     /// </summary>
-    public RoomCreateForm(Room? room = null)
+    public RoomCreateForm(RoomInfo? room = null)
     {
         isNew = room == null;
-        Room = room ?? new Room();
+        Room = new RoomInfo();
+
+        if (!isNew)
+        {
+            Room = new RoomInfo(room!);
+        }
 
         InitializeComponent();
 
@@ -79,7 +83,6 @@ public partial class RoomCreateForm : StyledForm
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Exclamation
             );
-
             return;
         }
 

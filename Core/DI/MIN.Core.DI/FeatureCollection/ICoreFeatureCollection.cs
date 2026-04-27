@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Events.Contracts;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 
@@ -23,4 +24,7 @@ public interface ICoreFeatureCollection
 
     /// <inheritdoc cref="IEventBus"/>
     IEventBus EventBus { get; }
+
+    /// <inheritdoc cref="IMessageRouter"/>
+    IMessageRouter MessageRouter { get; }
 }

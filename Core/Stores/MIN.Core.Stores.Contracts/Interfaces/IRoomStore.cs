@@ -40,7 +40,7 @@ public interface IRoomStore
     /// <summary>
     /// Добавить комнату 
     /// </summary>
-    void Add(Room room);
+    void Register(Room room);
 
     /// <summary>
     /// Удалить комнату

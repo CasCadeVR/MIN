@@ -22,4 +22,9 @@ public sealed class RoomJoinResponseMessage : BaseMessage
     /// Разрешение на вход
     /// </summary>
     public bool Allow { get; set; }
+
+    /// <summary>
+    /// Сообщение, на случай отказа
+    /// </summary>
+    public string? Reason { get; set; }
 }

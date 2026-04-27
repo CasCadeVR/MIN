@@ -130,9 +130,9 @@ public enum MessageTypeTag : byte
     RoomCreateRequest = 96,
 
     /// <summary>
-    /// Ответ на создание комнаты.
+    /// Обновление информации о комнате.
     /// </summary>
-    RoomCreateResponse = 97,
+    RoomInfoUpdated = 97,
 
     /// <summary>
     /// Запрос на присоединение к комнате.
@@ -145,34 +145,39 @@ public enum MessageTypeTag : byte
     RoomJoinResponse = 99,
 
     /// <summary>
+    /// Подробная информация о комнате.
+    /// </summary>
+    RoomJoinRejectAck = 100,
+
+    /// <summary>
     /// Уведомление о присоединении нового участника.
     /// </summary>
-    ParticipantJoined = 100,
+    ParticipantJoined = 101,
 
     /// <summary>
     /// Подтверждение о присоединении нового участника.
     /// </summary>
-    ParticipantAccepted = 101,
+    ParticipantAccepted = 102,
 
     /// <summary>
     /// Уведомление о выходе участника.
     /// </summary>
-    ParticipantLeft = 102,
+    ParticipantLeft = 103,
 
     /// <summary>
     /// Обновление информации об участнике.
     /// </summary>
-    ParticipantUpdated = 103,
+    ParticipantUpdated = 104,
 
     /// <summary>
     /// Сообщение о миграции хоста.
     /// </summary>
-    HostMigration = 104,
+    HostMigration = 105,
 
     /// <summary>
     /// Изменение состояния комнаты.
     /// </summary>
-    RoomStateChanged = 105,
+    RoomStateChanged = 106,
 
     // ===== Сообщения для передачи файлов (128-159) =====
 

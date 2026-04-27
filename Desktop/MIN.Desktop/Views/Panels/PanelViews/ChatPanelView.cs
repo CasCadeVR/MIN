@@ -7,6 +7,7 @@ using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
+using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
@@ -41,6 +42,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     private readonly System.Windows.Forms.Timer resizeTimer = new() { Interval = 150 };
 
     private readonly ParticipantInfo localParticipant;
+    private string lastRoomName = string.Empty;
     private Guid roomId;
     private Guid connectionId;
     private Room room = null!;
@@ -59,7 +61,10 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         INavigationService navigationService)
     {
         InitializeComponent();
-        SendLoadingMessage();
+        SendSystemMessage(new SystemTextMessage
+        {
+            Content = "Загрузка...",
+        });
 
         this.featureCollection = featureCollection;
         this.navigationService = navigationService;
@@ -86,9 +91,14 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Room передаётся по ссылке прямо из store, так что его обновление повлияет на room ui,
+    /// но придётся ещё и обновить данные
+    /// </remarks>
     public void Initialize((Room room, Guid connectionId, IEndpoint endpoint) parameters)
     {
         room = parameters.room;
+        lastRoomName = room.Name;
         connectionId = parameters.connectionId;
         roomId = room.Id;
         endpoint = parameters.endpoint;
@@ -103,6 +113,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         eventTokens =
         [
             eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived),
+            eventBus.Subscribe<RoomInfoChangedEvent>(OnRoomInfoChangedEvent),
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
             eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
@@ -121,6 +132,28 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         {
             AddMessageToChatFlow(eventMessage.Message);
             NotifyIfNeeded(eventMessage.Message.Content, eventMessage.Sender.Name);
+        }, null);
+        await Task.CompletedTask;
+    }
+
+    private async Task OnRoomInfoChangedEvent(RoomInfoChangedEvent eventMessage, CancellationToken ct)
+    {
+        if (eventMessage.Room.Id != roomId)
+        {
+            return;
+        }
+
+        uiContext.Post(_ =>
+        {
+            if (lastRoomName != eventMessage.Room.Name)
+            {
+                SendSystemMessage(new SystemTextMessage
+                {
+                    Content = $"Хост поменял название комнаты с {lastRoomName} на {eventMessage.Room.Name}",
+                }, needsToNotify: true);
+                lastRoomName = eventMessage.Room.Name;
+            }
+            UpdateStats();
         }, null);
         await Task.CompletedTask;
     }
@@ -180,7 +213,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                 }
                 await DisposeAsync();
             }, null);
-            navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
+            navigationService.NavigateTo<DiscoveryPanelView>();
         }
     }
 
@@ -196,7 +229,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         if (e.NeedToDisconnect)
         {
             await DisposeAsync();
-            navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
+            navigationService.NavigateTo<DiscoveryPanelView>();
         }
     }
 
@@ -277,12 +310,15 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         }
     }
 
-    private void SendLoadingMessage()
+    private void SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false)
     {
-        AddMessageToChatFlow(new SystemTextMessage
+        AddMessageToChatFlow(systemMessage);
+
+        if (needsToNotify)
         {
-            Content = "Загрузка...",
-        });
+            featureCollection.Helper.NotificationService
+                .Notify(systemMessage.Content, room.Name);
+        }
     }
 
     private void NotifyIfNeeded(string content, string? senderName = null)
@@ -291,7 +327,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
             && (navigationService.Parent.WindowState == FormWindowState.Minimized || !ContainsFocus))
         {
             featureCollection.Helper.NotificationService
-                .Notify(content, room?.Name ?? "Комната", senderName);
+                .Notify(content, room.Name, senderName);
         }
     }
 
@@ -348,7 +384,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                         var sender = room?.CurrentParticipants.First(x => x.Id == chatTextMessage.SenderId);
                         var recipient = room?.CurrentParticipants.First(x => x.Id == chatTextMessage.RecipientId);
 
-                        AddMessageToChatFlow(new SystemTextMessage
+                        SendSystemMessage(new SystemTextMessage
                         {
                             Content = recipient?.Id != localParticipant.Id
                                 ? $"Это начало приватного общения с {recipient?.Name}"
@@ -496,27 +532,22 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
             return;
         }
 
-        var editForm = new RoomCreateForm(room);
+        var editForm = new RoomCreateForm(new RoomInfo(room));
         var result = editForm.ShowDialog();
 
         if (result == DialogResult.Abort)
         {
             await DisposeAsync();
-            navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
+            navigationService.NavigateTo<DiscoveryPanelView>();
         }
         else if (result == DialogResult.OK
             && (editForm.Room.Name != room.Name
             || editForm.Room.MaximumParticipants != room.MaximumParticipants))
         {
-            // TODO: Исправить
-
-            //var requestMessage = new RoomInfoRequestMessage
-            //{
-            //    RoomId = roomId,
-            //    RoomName = editForm.RoomData.Name,
-            //    MaxParticipants = editForm.RoomData.MaximumParticipants
-            //};
-            //await messageSender.SendAsync(requestMessage, roomId, connectionId, formCts.Token);
+            await featureCollection.Core.MessageRouter.RouteAsync(new RoomInfoUpdatedMessage
+            {
+                Room = editForm.Room
+            }, roomId, localParticipant.Id, formCts.Token);
         }
     }
 
@@ -525,7 +556,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     private async void disconnectButton_Click(object sender, EventArgs e)
     {
         await DisposeAsync();
-        navigationService.NavigateTo<DiscoveryPanelView>(); // TODO: maybe make some placeholder page
+        navigationService.NavigateTo<DiscoveryPanelView>();
     }
 
     private void closeButton_Click(object sender, EventArgs e)

@@ -36,6 +36,9 @@ public partial class RecentRoomCard : UserControl, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
     /// </summary>
+    /// <remarks>
+    /// Room нужно получить по ссылке из store
+    /// </remarks>
     public RecentRoomCard(IEventBus eventBus, RoomContext roomContext, Room room)
     {
         InitializeComponent();
@@ -60,6 +63,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
         [
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
+            eventBus.Subscribe<RoomInfoChangedEvent>(OnRoomInfoChangedEvent),
             eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
         ];
     }
@@ -104,6 +108,23 @@ public partial class RecentRoomCard : UserControl, IDisposable
         }
 
         Dispose();
+        await Task.CompletedTask;
+    }
+
+    private async Task OnRoomInfoChangedEvent(RoomInfoChangedEvent eventMessage, CancellationToken ct)
+    {
+        if (eventMessage.Room.Id != room.Id)
+        {
+            return;
+        }
+
+        room.Name = eventMessage.Room.Name;
+        maximumAmount = eventMessage.Room.MaximumParticipants;
+
+        uiContext.Post(_ =>
+        {
+            UpdateStats();
+        }, null);
         await Task.CompletedTask;
     }
 

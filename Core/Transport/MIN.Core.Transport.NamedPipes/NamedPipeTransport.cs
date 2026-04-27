@@ -113,6 +113,14 @@ public sealed class NamedPipeTransport : ITransport
         return connectionId;
     }
 
+    async Task ITransport.DisconnectClientAsync(Guid roomId, Guid connectionId, string reason)
+    {
+        if (servers.TryGetValue(roomId, out var server))
+        {
+            await server.DisconnectClient(connectionId, reason);
+        }
+    }
+
     async Task ITransport.DisconnectAsync(Guid roomId, Guid connectionId)
     {
         if (clients.TryGetValue(roomId, out var client) && client.ConnectionId == connectionId)

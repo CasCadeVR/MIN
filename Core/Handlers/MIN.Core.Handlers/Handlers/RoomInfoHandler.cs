@@ -11,7 +11,9 @@ using MIN.Helpers.Contracts.Interfaces;
 namespace MIN.Core.Handlers.Handlers;
 
 /// <summary>
-/// Обработчик для сообщений <see cref="RoomInfoRequestMessage"/> и <see cref="RoomInfoResponseMessage"/>
+/// Обработчик для сообщений <see cref="RoomInfoRequestMessage"/>,
+/// <see cref="RoomInfoResponseMessage"/>,
+/// <see cref="RoomInfoUpdatedMessage"/>
 /// </summary>
 internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
 {
@@ -32,7 +34,7 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
     }
 
     IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
-        => [MessageTypeTag.RoomInfoRequest, MessageTypeTag.RoomInfoResponse];
+        => [MessageTypeTag.RoomInfoRequest, MessageTypeTag.RoomInfoResponse, MessageTypeTag.RoomInfoUpdated];
 
     int IMessageHandler.Priority => 1;
 
@@ -53,7 +55,7 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
         }
         else if (message is RoomInfoResponseMessage roomInfoResponse)
         {
-            roomStore.Add(roomInfoResponse.Room);
+            roomStore.Register(roomInfoResponse.Room);
             foreach (var roomMessage in roomInfoResponse.Room.ChatHistory)
             {
                 context.RoomContext.Messages.AddMessage(message);
@@ -69,6 +71,19 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
             await eventBus.PublishAsync(new RoomStateChangedEvent()
             {
                 Room = roomInfoResponse.Room,
+            }, context.CancellationToken);
+
+            return HandlerResult.Success();
+        }
+        else if (message is RoomInfoUpdatedMessage roomInfoUpdated)
+        {
+            var existingRoom = roomStore.GetRoom(context.RoomContext.RoomId);
+            existingRoom.Name = roomInfoUpdated.Room.Name;
+            existingRoom.MaximumParticipants = roomInfoUpdated.Room.MaximumParticipants;
+
+            await eventBus.PublishAsync(new RoomInfoChangedEvent()
+            {
+                Room = roomInfoUpdated.Room,
             }, context.CancellationToken);
 
             return HandlerResult.Success();

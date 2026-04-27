@@ -51,6 +51,7 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
         [
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
+            eventBus.Subscribe<RoomInfoChangedEvent>(OnRoomInfoChangedEvent),
             eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
             eventBus.Subscribe<RoomJoinedEvent>(OnRoomJoined),
         ];
@@ -118,6 +119,23 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
         }
 
         room.ParticipantCount++;
+
+        uiContext.Post(_ =>
+        {
+            UpdateStats();
+        }, null);
+        await Task.CompletedTask;
+    }
+
+    private async Task OnRoomInfoChangedEvent(RoomInfoChangedEvent eventMessage, CancellationToken ct)
+    {
+        if (eventMessage.Room.Id != room.Id)
+        {
+            return;
+        }
+
+        room.Name = eventMessage.Room.Name;
+        room.MaximumParticipants = eventMessage.Room.MaximumParticipants;
 
         uiContext.Post(_ =>
         {

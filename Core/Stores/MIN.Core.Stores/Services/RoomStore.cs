@@ -66,7 +66,7 @@ public sealed class RoomStore : IRoomStore
     Guid IRoomStore.GetRoomHostParticipantId(Guid roomId)
         => roomsById.TryGetValue(roomId, out var room) ? room.HostParticipant.Id : throw new KeyNotFoundException();
 
-    void IRoomStore.Add(Room room)
+    void IRoomStore.Register(Room room)
     {
         roomsById[room.Id] = room;
     }

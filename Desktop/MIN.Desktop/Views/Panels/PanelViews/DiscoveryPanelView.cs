@@ -189,7 +189,7 @@ public partial class DiscoveryPanelView : StyledPanelView
 
         try
         {
-            featureCollection.Core.RoomStore.Add(new Room(roomInfo));
+            featureCollection.Core.RoomStore.Register(new Room(roomInfo));
 
             var connectionId = Guid.Empty;
             var connectCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);

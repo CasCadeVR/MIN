@@ -14,9 +14,10 @@ public partial class LoadingForm : StyledForm
     private readonly Guid roomId;
     private readonly Action<Room?> onRoomReady;
     private readonly SynchronizationContext uiContext;
-    private IDisposable roomInfoReceivedSubscriptionToken = null!;
     private readonly System.Windows.Forms.Timer timeoutTimer;
     private readonly CancellationTokenSource cts;
+
+    private HashSet<IDisposable> eventTokens = null!;
 
     private bool gotRoom;
 
@@ -56,7 +57,28 @@ public partial class LoadingForm : StyledForm
 
     private void SubscribeToEvents()
     {
-        roomInfoReceivedSubscriptionToken = eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived);
+        eventTokens = [
+            eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived),
+            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccurredEvent),
+        ];
+    }
+
+    private async Task OnErrorOccurredEvent(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != roomId)
+        {
+            return;
+        }
+
+        uiContext.Post(_ =>
+        {
+            MessageBox.Show(eventMessage.ErrorMessage, "Ошибка",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            onRoomReady.Invoke(null!);
+            Close();
+        }, this);
+
+        await Task.CompletedTask;
     }
 
     private async Task OnRoomStateChangedEventReceived(RoomStateChangedEvent eventMessage, CancellationToken cancellationToken)
@@ -78,6 +100,11 @@ public partial class LoadingForm : StyledForm
 
     private void LoadingForm_FormClosing(object sender, FormClosingEventArgs e)
     {
+        foreach (var token in eventTokens)
+        {
+            token.Dispose();
+        }
+
         if (!gotRoom)
         {
             cts.Cancel();
@@ -85,6 +112,5 @@ public partial class LoadingForm : StyledForm
 
         timeoutTimer.Stop();
         timeoutTimer.Dispose();
-        roomInfoReceivedSubscriptionToken.Dispose();
     }
 }

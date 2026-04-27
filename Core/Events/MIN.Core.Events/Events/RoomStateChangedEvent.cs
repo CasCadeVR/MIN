@@ -4,7 +4,7 @@ using MIN.Core.Events.Contracts;
 namespace MIN.Core.Events.Events;
 
 /// <summary>
-/// Событие, возникающее при изменении состояния комнаты
+/// Событие, возникающее при получении детальной информации о комнате
 /// </summary>
 public sealed class RoomStateChangedEvent : BaseEvent
 {
@@ -12,9 +12,4 @@ public sealed class RoomStateChangedEvent : BaseEvent
     /// Информация о комнате
     /// </summary>
     public Room Room { get; init; } = null!;
-
-    /// <summary>
-    /// Предыдущее состояние активности
-    /// </summary>
-    public bool WasActive { get; init; }
 }

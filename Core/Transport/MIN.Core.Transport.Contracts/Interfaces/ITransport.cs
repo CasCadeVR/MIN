@@ -48,6 +48,11 @@ public interface ITransport
     Task<Guid> ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Разорвать соединение с указанным соединением
+    /// </summary>
+    Task DisconnectClientAsync(Guid roomId, Guid connectionId, string reason);
+
+    /// <summary>
     /// Отключиться от указанной комнаты
     /// </summary>
     Task DisconnectAsync(Guid roomId, Guid connectionId);

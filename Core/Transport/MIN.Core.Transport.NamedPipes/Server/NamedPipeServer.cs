@@ -120,6 +120,16 @@ internal sealed class NamedPipeServer : IAsyncDisposable
         await Task.WhenAll(tasks);
     }
 
+    public Task DisconnectClient(Guid connectionId, string reason, CancellationToken cancellationToken = default)
+    {
+        if (connections.TryGetValue(connectionId, out var connection))
+        {
+            OnConnectionDisconnected(connection, reason);
+        }
+
+        return Task.CompletedTask;
+    }
+
     private async Task AcceptClientsAsync(CancellationToken cancellationToken)
     {
         if (!OperatingSystem.IsWindows())
