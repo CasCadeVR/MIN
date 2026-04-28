@@ -106,7 +106,6 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         }
 
         var roomInfo = roomCreateForm.Room;
-        roomInfo.ParticipantCount = 1;
         var roomId = roomInfo.Id;
 
         if (!ResolveParticipant())

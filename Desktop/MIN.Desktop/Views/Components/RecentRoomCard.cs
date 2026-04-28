@@ -56,7 +56,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
         this.roomInfo = roomInfo;
 
         RoomName = roomInfo.Name;
-        currentAmount = roomInfo.ParticipantCount;
+        currentAmount = roomInfo.ParticipantCount + 1;
         maximumAmount = roomInfo.MaximumParticipants;
 
         uiContext = SynchronizationContext.Current
