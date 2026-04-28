@@ -1,4 +1,5 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 
 namespace MIN.Core.Messaging.RoomRelated.ParticipantRelated;
@@ -6,7 +7,7 @@ namespace MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 /// <summary>
 /// Уведомление о выходе участника из комнаты
 /// </summary>
-public sealed class ParticipantLeftMessage : BaseMessage
+public sealed class ParticipantLeftMessage : BaseMessage, IDescribable
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.ParticipantLeft;
@@ -23,4 +24,6 @@ public sealed class ParticipantLeftMessage : BaseMessage
     /// Информация о покинувшем участнике
     /// </summary>
     public ParticipantInfo Participant { get; set; } = null!;
+
+    string IDescribable.GetDescription() => $"Участник {Participant.Name} покинул комнату";
 }

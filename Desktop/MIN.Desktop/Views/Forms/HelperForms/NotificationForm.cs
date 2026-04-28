@@ -1,4 +1,5 @@
-﻿using MIN.Desktop.Contracts;
+﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 
@@ -9,9 +10,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
     /// </summary>
     public partial class NotificationForm : StyledForm
     {
-        private readonly string message;
-        private readonly string messageRoomName;
-        private readonly string? sender;
+        private readonly IDescribable describable;
+        private readonly string roomName;
         private System.Windows.Forms.Timer appearTimer = null!;
         private System.Windows.Forms.Timer disappearTimer = null!;
         private System.Windows.Forms.Timer closeTimer = null!;
@@ -39,12 +39,11 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="NotificationForm"/>
         /// </summary>
-        public NotificationForm(string message, string messageRoomName, string? sender)
+        public NotificationForm(IDescribable describable, string roomName)
         {
             InitializeComponent();
-            this.message = message;
-            this.messageRoomName = messageRoomName;
-            this.sender = sender;
+            this.describable = describable;
+            this.roomName = roomName;
 
             SetupNotificationProperties();
             FillFields();
@@ -64,7 +63,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private void InitializeEvents()
         {
             tableLayoutPanel.MouseClick += (_, _) => OnClicked();
-            roomName.MouseClick += (_, _) => OnClicked();
+            roomNameLabel.MouseClick += (_, _) => OnClicked();
             senderAndContent.MouseClick += (_, _) => OnClicked();
         }
 
@@ -88,8 +87,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
 
         private void FillFields()
         {
-            roomName.Text = $"Комната {messageRoomName}";
-            senderAndContent.Text = (!string.IsNullOrEmpty(sender) ? $"{sender}: " : string.Empty) + message;
+            roomNameLabel.Text = $"Комната {roomName}";
+            senderAndContent.Text = describable.GetDescription();
         }
 
         /// <inheritdoc />
@@ -97,7 +96,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         {
             tableLayoutPanel.BackColor = ColorScheme.IncomingMessageBackground;
             senderAndContent.Font = FontScheme.Monospace;
-            roomName.Font = FontScheme.Caption;
+            roomNameLabel.Font = FontScheme.Caption;
         }
 
         /// <summary>

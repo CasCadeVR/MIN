@@ -1,4 +1,5 @@
-﻿using MIN.Desktop.Views.Forms.HelperForms;
+﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Desktop.Infrastructure.Services
@@ -19,7 +20,7 @@ namespace MIN.Desktop.Infrastructure.Services
         /// </summary>
         public event Action? NotificationTurnOffClicked;
 
-        void INotificationService.Notify(string message, string roomName, string? sender)
+        void INotificationService.Notify(IDescribable message, string roomName)
         {
             if (Application.OpenForms.Count == 0)
             {
@@ -30,19 +31,19 @@ namespace MIN.Desktop.Infrastructure.Services
 
             if (mainForm!.InvokeRequired)
             {
-                mainForm.Invoke(new Action(() => CreateAndShow(message, roomName, sender)));
+                mainForm.Invoke(new Action(() => CreateAndShow(message, roomName)));
             }
             else
             {
-                CreateAndShow(message, roomName, sender);
+                CreateAndShow(message, roomName);
             }
         }
 
-        private void CreateAndShow(string message, string roomName, string? sender)
+        private void CreateAndShow(IDescribable message, string roomName)
         {
             lock (@lock)
             {
-                var notification = new NotificationForm(message, roomName, sender);
+                var notification = new NotificationForm(message, roomName);
                 notification.NotificationTurnOffClicked += NotificationTurnOffClicked;
                 notification.NotificationClicked += OnNotificationClick;
 

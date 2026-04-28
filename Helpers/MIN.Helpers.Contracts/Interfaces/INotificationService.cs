@@ -1,4 +1,6 @@
-﻿namespace MIN.Helpers.Contracts.Interfaces;
+﻿using MIN.Common.Core.Contracts.Interfaces;
+
+namespace MIN.Helpers.Contracts.Interfaces;
 
 /// <summary>
 /// Сервис для уведомлений
@@ -18,5 +20,5 @@ public interface INotificationService
     /// <summary>
     /// Отправить уведомление
     /// </summary>
-    void Notify(string message, string roomName, string? sender = null);
+    void Notify(IDescribable describable, string roomName);
 }

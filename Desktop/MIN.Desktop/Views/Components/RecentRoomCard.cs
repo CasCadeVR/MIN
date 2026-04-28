@@ -1,4 +1,5 @@
 ﻿using MIN.Chat.Messaging;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
@@ -71,24 +72,9 @@ public partial class RecentRoomCard : UserControl, IDisposable
     private void GetLastMessage()
     {
         var lastMessage = roomContext.Messages.GetLastMessage();
-
-        switch (lastMessage)
+        if (lastMessage is IDescribable describable)
         {
-            case ChatTextMessage chatTextMessage:
-                lastMessageContent = $"{chatTextMessage.Sender.Name}: {chatTextMessage.Content}";
-                return;
-
-            case ParticipantJoinedMessage participantJoinedMessage:
-                lastMessageContent = $"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату";
-                return;
-
-            case ParticipantLeftMessage participantLeftMessage:
-                lastMessageContent = $"Участник {participantLeftMessage.Participant.Name} покинул комнату";
-                return;
-
-            case SystemTextMessage systemTextMessage:
-                lastMessageContent = systemTextMessage.Content;
-                return;
+            lastMessageContent = describable.GetDescription();
         }
     }
 
@@ -109,7 +95,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
             eventBus.Subscribe<RoomInfoChangedEvent>(OnRoomInfoChangedEvent),
-            eventBus.Subscribe<ChatMessageReceivedEvent>(OnChatMessageReceivedEvent),
+            eventBus.Subscribe<DescribableMessageReceivedEvent>(OnChatMessageReceivedEvent),
             eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
         ];
     }
@@ -157,7 +143,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
         return Task.CompletedTask;
     }
 
-    private Task OnChatMessageReceivedEvent(ChatMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnChatMessageReceivedEvent(DescribableMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.RoomId != roomInfo.Id)
         {
@@ -171,9 +157,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
                 missedMessagesCount++;
             }
             lastMessageReceivedAt = DateTime.Now;
-            lastMessageContent = eventMessage.Sender == null
-                ? eventMessage.Content
-                : $"{eventMessage.Sender}: {eventMessage.Content}";
+            lastMessageContent = eventMessage.DescribableMessage.GetDescription();
             UpdateStats();
         }, null);
 

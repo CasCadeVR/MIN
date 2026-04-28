@@ -1,5 +1,6 @@
 ﻿using MIN.Chat.Events;
 using MIN.Chat.Messaging;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
@@ -131,13 +132,12 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         uiContext.Post(_ =>
         {
             AddMessageToChatFlow(eventMessage.Message);
-            featureCollection.Core.EventBus.PublishAsync(new ChatMessageReceivedEvent()
+            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
             {
                 RoomId = roomId,
-                Content = eventMessage.Message.Content,
-                Sender = eventMessage.Sender.Name
+                DescribableMessage = eventMessage.Message
             });
-            NotifyIfNeeded(eventMessage.Message.Content, eventMessage.Sender.Name);
+            NotifyIfNeeded(eventMessage.Message);
         }, null);
         await Task.CompletedTask;
     }
@@ -176,13 +176,12 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         uiContext.Post(_ =>
         {
             AddMessageToChatFlow(eventMessage.Message);
-            var content = $"Участник {eventMessage.Message.Participant.Name} зашёл в комнату";
-            featureCollection.Core.EventBus.PublishAsync(new ChatMessageReceivedEvent()
+            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
             {
                 RoomId = roomId,
-                Content = $"Участник {eventMessage.Message.Participant.Name} зашёл в комнату",
+                DescribableMessage = eventMessage.Message
             });
-            NotifyIfNeeded(content);
+            NotifyIfNeeded(eventMessage.Message);
             UpdateStats();
         }, null);
         await Task.CompletedTask;
@@ -205,13 +204,12 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         uiContext.Post(_ =>
         {
             AddMessageToChatFlow(eventMessage.Message);
-            var content = $"Участник {eventMessage.Message.Participant.Name} вышел из комнаты";
-            featureCollection.Core.EventBus.PublishAsync(new ChatMessageReceivedEvent()
+            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
             {
                 RoomId = roomId,
-                Content = $"Участник {eventMessage.Message.Participant.Name} вышел из комнаты",
+                DescribableMessage = eventMessage.Message,
             });
-            NotifyIfNeeded(content);
+            NotifyIfNeeded(eventMessage.Message);
             UpdateStats();
         }, null);
         await Task.CompletedTask;
@@ -335,22 +333,22 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
         if (needsToNotify)
         {
-            featureCollection.Core.EventBus.PublishAsync(new ChatMessageReceivedEvent()
+            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
             {
                 RoomId = roomId,
-                Content = systemMessage.Content,
+                DescribableMessage = systemMessage,
             });
-            NotifyIfNeeded(systemMessage.Content);
+            NotifyIfNeeded(systemMessage);
         }
     }
 
-    private void NotifyIfNeeded(string content, string? senderName = null)
+    private void NotifyIfNeeded(IDescribable describable)
     {
         if (notificationComboBox.Checked
             && (navigationService.Parent.WindowState == FormWindowState.Minimized || !ContainsFocus))
         {
             featureCollection.Helper.NotificationService
-                .Notify(content, room.Name, senderName);
+                .Notify(describable, room.Name);
         }
     }
 
@@ -429,30 +427,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     lastTextMessage = chatTextMessage;
                     break;
 
-                case ParticipantJoinedMessage joined:
-                    var joinedText = $"Участник {joined.Participant.Name} зашёл в комнату";
-                    rowControl = new PrimaryLabel
-                    {
-                        Text = joinedText,
-                        Anchor = AnchorStyles.None,
-                        AutoSize = true
-                    };
-
-                    row.Height = rowControl.Height;
-                    break;
-
-                case ParticipantLeftMessage left:
-                    var leftText = $"Участник {left.Participant.Name} покинул комнату";
-                    rowControl = new PrimaryLabel
-                    {
-                        Text = leftText,
-                        Anchor = AnchorStyles.None,
-                        AutoSize = true
-                    };
-
-                    row.Height = rowControl.Height;
-                    break;
-
                 case SystemTextMessage systemTextMessage:
                     rowControl = new PrimaryLabel
                     {
@@ -465,6 +439,17 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     {
                         row.BackColor = ColorScheme.PrivateParticipantCardBackground;
                     }
+
+                    row.Height = rowControl.Height;
+                    break;
+
+                case IDescribable describable:
+                    rowControl = new PrimaryLabel
+                    {
+                        Text = describable.GetDescription(),
+                        Anchor = AnchorStyles.None,
+                        AutoSize = true
+                    };
 
                     row.Height = rowControl.Height;
                     break;

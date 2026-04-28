@@ -31,7 +31,7 @@
             tableLayoutPanel = new TableLayoutPanel();
             notificationTurnOff = new MIN.Desktop.Components.Labels.CaptionLabel();
             logoName = new MIN.Desktop.Components.Labels.CaptionLabel();
-            roomName = new MIN.Desktop.Components.Labels.PrimaryLabel();
+            roomNameLabel = new MIN.Desktop.Components.Labels.PrimaryLabel();
             logo = new PictureBox();
             closeButton = new MIN.Desktop.Components.Labels.CaptionLabel();
             senderAndContent = new MIN.Desktop.Components.Labels.PrimaryLabel();
@@ -47,7 +47,7 @@
             tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
             tableLayoutPanel.Controls.Add(notificationTurnOff, 1, 0);
             tableLayoutPanel.Controls.Add(logoName, 0, 0);
-            tableLayoutPanel.Controls.Add(roomName, 0, 1);
+            tableLayoutPanel.Controls.Add(roomNameLabel, 0, 1);
             tableLayoutPanel.Controls.Add(logo, 2, 2);
             tableLayoutPanel.Controls.Add(closeButton, 2, 0);
             tableLayoutPanel.Controls.Add(senderAndContent, 0, 2);
@@ -88,20 +88,20 @@
             logoName.TabIndex = 0;
             logoName.Text = "MIN";
             // 
-            // roomName
+            // roomNameLabel
             // 
-            roomName.AutoEllipsis = true;
-            roomName.AutoSize = true;
-            tableLayoutPanel.SetColumnSpan(roomName, 2);
-            roomName.Cursor = Cursors.Hand;
-            roomName.Dock = DockStyle.Fill;
-            roomName.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            roomName.ForeColor = Color.FromArgb(45, 43, 58);
-            roomName.Location = new Point(3, 15);
-            roomName.Name = "roomName";
-            roomName.Size = new Size(227, 15);
-            roomName.TabIndex = 2;
-            roomName.Text = "Загрузка...";
+            roomNameLabel.AutoEllipsis = true;
+            roomNameLabel.AutoSize = true;
+            tableLayoutPanel.SetColumnSpan(roomNameLabel, 2);
+            roomNameLabel.Cursor = Cursors.Hand;
+            roomNameLabel.Dock = DockStyle.Fill;
+            roomNameLabel.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            roomNameLabel.ForeColor = Color.FromArgb(45, 43, 58);
+            roomNameLabel.Location = new Point(3, 15);
+            roomNameLabel.Name = "roomNameLabel";
+            roomNameLabel.Size = new Size(227, 15);
+            roomNameLabel.TabIndex = 2;
+            roomNameLabel.Text = "Загрузка...";
             // 
             // logo
             // 
@@ -167,7 +167,7 @@
         private TableLayoutPanel tableLayoutPanel;
         private PictureBox logo;
         private Desktop.Components.Labels.CaptionLabel logoName;
-        private Desktop.Components.Labels.PrimaryLabel roomName;
+        private Desktop.Components.Labels.PrimaryLabel roomNameLabel;
         private Desktop.Components.Labels.CaptionLabel closeButton;
         private Desktop.Components.Labels.CaptionLabel notificationTurnOff;
         private Desktop.Components.Labels.PrimaryLabel senderAndContent;
