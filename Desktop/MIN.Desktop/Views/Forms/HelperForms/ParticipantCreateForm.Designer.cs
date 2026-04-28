@@ -1,6 +1,8 @@
 ﻿using MIN.Desktop.Components.Controls.Buttons;
+using MIN.Desktop.Components.Controls.TextBoxes;
+using MIN.Desktop.Components.Labels;
 
-namespace MIN.Desktop
+namespace MIN.Desktop.Views.Forms.HelperForms
 {
     partial class ParticipantCreateForm
     {
@@ -212,10 +214,10 @@ namespace MIN.Desktop
         private SplitContainer splitContainer;
         private TableLayoutPanel tableLayoutPanelHeader;
         private TableLayoutPanel tableLayoutPanel1;
-        private Components.Labels.Heading3Label ClassTitleInput;
-        private Components.Labels.Heading1Label Title;
+        private Heading3Label ClassTitleInput;
+        private Heading1Label Title;
         private CommonButton connectButton;
-        private Components.Controls.TextBoxes.DefaultTextBox participantName;
+        private DefaultTextBox participantName;
         private TableLayoutPanel tableLayoutPanelButtons;
         private InvertedButton cancelButton;
     }

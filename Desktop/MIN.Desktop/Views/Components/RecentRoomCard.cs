@@ -1,10 +1,7 @@
-﻿using MIN.Chat.Messaging;
-using MIN.Common.Core.Contracts.Interfaces;
+﻿using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
-using MIN.Core.Messaging.RoomRelated;
-using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Stores.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
@@ -94,8 +91,8 @@ public partial class RecentRoomCard : UserControl, IDisposable
         [
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
-            eventBus.Subscribe<RoomInfoChangedEvent>(OnRoomInfoChangedEvent),
-            eventBus.Subscribe<DescribableMessageReceivedEvent>(OnChatMessageReceivedEvent),
+            eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent),
+            eventBus.Subscribe<DescribableMessageReceivedEvent>(OnDescribableMessageReceivedEvent),
             eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
         ];
     }
@@ -143,7 +140,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
         return Task.CompletedTask;
     }
 
-    private Task OnChatMessageReceivedEvent(DescribableMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnDescribableMessageReceivedEvent(DescribableMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.RoomId != roomInfo.Id)
         {
@@ -164,7 +161,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
         return Task.CompletedTask;
     }
 
-    private async Task OnRoomInfoChangedEvent(RoomInfoChangedEvent eventMessage, CancellationToken ct)
+    private async Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
         if (eventMessage.Room.Id != roomInfo.Id)
         {

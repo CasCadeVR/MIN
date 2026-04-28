@@ -1,16 +1,15 @@
-﻿namespace MIN.Desktop.Contracts.Views.Forms
+﻿namespace MIN.Desktop.Contracts.Views.Forms;
+
+/// <summary>
+/// Базовая форма
+/// </summary>
+public partial class BaseForm : Form
 {
     /// <summary>
-    /// Базовая форма
+    /// Инициализирует новый экземпляр <see cref="BaseForm"/>
     /// </summary>
-    public partial class BaseForm : Form
+    public BaseForm()
     {
-        /// <summary>
-        /// Инициализирует новый экземпляр <see cref="BaseForm"/>
-        /// </summary>
-        public BaseForm()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

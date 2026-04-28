@@ -6,7 +6,6 @@ using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
@@ -21,7 +20,6 @@ public sealed class MessageDispatcher : IMessageDispatcher
     private readonly IIdentityService identityService;
     private readonly IRoomHoster roomHoster;
     private readonly IEventBus eventBus;
-    private readonly IRoomFactory roomFactory;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -32,7 +30,6 @@ public sealed class MessageDispatcher : IMessageDispatcher
         IIdentityService identityService,
         IRoomHoster roomHoster,
         IEventBus eventBus,
-        IRoomFactory roomFactory,
         ILoggerProvider logger)
     {
         this.handlers = handlers;
@@ -40,7 +37,6 @@ public sealed class MessageDispatcher : IMessageDispatcher
         this.identityService = identityService;
         this.roomHoster = roomHoster;
         this.eventBus = eventBus;
-        this.roomFactory = roomFactory;
         this.logger = logger;
     }
 

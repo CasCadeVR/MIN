@@ -7,7 +7,6 @@ using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
-using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
@@ -17,9 +16,10 @@ using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
-using MIN.Desktop.Contracts.Views.PanelViews.Models;
+using MIN.Desktop.Contracts.Views.PanelViews.Interfaces;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Components;
+using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Desktop.Views.Panels.SidePanelViews;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Extensions;
@@ -114,7 +114,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         eventTokens =
         [
             eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived),
-            eventBus.Subscribe<RoomInfoChangedEvent>(OnRoomInfoChangedEvent),
+            eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoChangedEvent),
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
             eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
@@ -142,7 +142,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         await Task.CompletedTask;
     }
 
-    private async Task OnRoomInfoChangedEvent(RoomInfoChangedEvent eventMessage, CancellationToken ct)
+    private async Task OnRoomInfoChangedEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
         if (eventMessage.Room.Id != roomId)
         {

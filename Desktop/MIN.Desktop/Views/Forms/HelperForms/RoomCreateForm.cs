@@ -2,7 +2,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 
-namespace MIN.Desktop;
+namespace MIN.Desktop.Views.Forms.HelperForms;
 
 /// <summary>
 /// Форма создания комнаты

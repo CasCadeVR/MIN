@@ -1,6 +1,6 @@
 ﻿using MIN.Desktop.Contracts.Enums;
 
-namespace MIN.Desktop.Contracts.Views.PanelViews.Models;
+namespace MIN.Desktop.Contracts.Views.PanelViews.Interfaces;
 
 /// <summary>
 /// Представляет панель на экране

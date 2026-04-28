@@ -3,7 +3,7 @@ using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Views.Panels.SidePanelViews;
 
-namespace MIN.Desktop;
+namespace MIN.Desktop.Views.Forms;
 
 /// <summary>
 /// Главная форма приложения

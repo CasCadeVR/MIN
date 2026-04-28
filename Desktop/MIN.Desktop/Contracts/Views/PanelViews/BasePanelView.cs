@@ -1,5 +1,5 @@
 ﻿using MIN.Desktop.Contracts.Enums;
-using MIN.Desktop.Contracts.Views.PanelViews.Models;
+using MIN.Desktop.Contracts.Views.PanelViews.Interfaces;
 
 namespace MIN.Desktop.Contracts.Views.PanelViews;
 

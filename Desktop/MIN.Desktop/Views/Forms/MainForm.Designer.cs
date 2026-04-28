@@ -1,6 +1,6 @@
 ﻿using MIN.Desktop.Components.Controls.Buttons;
 
-namespace MIN.Desktop
+namespace MIN.Desktop.Views.Forms
 {
     partial class MainForm
     {

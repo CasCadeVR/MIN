@@ -28,9 +28,9 @@ public partial class DiscoveryPanelView : StyledPanelView
     private readonly INavigationService navigationService;
     private readonly IChatPanelManager chatPanelManager;
     private readonly ParticipantInfo localParticipant;
+    private readonly CancellationTokenSource lifeTimeCts;
 
     private Settings Settings => featureCollection.Helper.SettingsProvider.GetSettings();
-    private CancellationTokenSource lifeTimeCts;
     private CancellationTokenSource? discoveryCts;
     private bool isDiscovering;
 

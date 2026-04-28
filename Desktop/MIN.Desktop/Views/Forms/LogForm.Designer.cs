@@ -1,4 +1,7 @@
-﻿namespace MIN.Desktop
+﻿using MIN.Desktop.Components.Controls.ListBoxes;
+using MIN.Desktop.Components.Labels;
+
+namespace MIN.Desktop.Views.Forms
 {
     partial class LogForm
     {
@@ -124,7 +127,7 @@
         #endregion
         private SplitContainer splitContainer;
         private TableLayoutPanel tableLayoutPanelHeader;
-        private Components.Labels.Heading1Label Title;
-        private Components.Controls.ListBoxes.DefaultListBox logListBox;
+        private Heading1Label Title;
+        private DefaultListBox logListBox;
     }
 }

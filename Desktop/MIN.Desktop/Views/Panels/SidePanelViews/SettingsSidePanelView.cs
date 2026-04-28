@@ -2,6 +2,7 @@
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
+using MIN.Desktop.Views.Forms;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Models;
 using MIN.Helpers.Contracts.Models.Enums;

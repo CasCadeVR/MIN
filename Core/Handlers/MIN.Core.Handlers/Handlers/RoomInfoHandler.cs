@@ -81,7 +81,7 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
             existingRoom.Name = roomInfoUpdated.Room.Name;
             existingRoom.MaximumParticipants = roomInfoUpdated.Room.MaximumParticipants;
 
-            await eventBus.PublishAsync(new RoomInfoChangedEvent()
+            await eventBus.PublishAsync(new RoomInfoUpdatedMessageEvent()
             {
                 Room = roomInfoUpdated.Room,
             }, context.CancellationToken);

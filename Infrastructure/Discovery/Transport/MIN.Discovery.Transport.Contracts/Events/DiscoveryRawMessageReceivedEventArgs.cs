@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MIN.Discovery.Transport.Contracts.Events;
+﻿namespace MIN.Discovery.Transport.Contracts.Events;
 
 /// <summary>
 /// Аргументы события получения сырых данных от транспорта обнаружения
@@ -29,7 +27,6 @@ public sealed class DiscoveryRawMessageReceivedEventArgs : EventArgs
     {
         Data = data;
         MachineName = machineName;
-        ConnectionId = Guid.Empty;
     }
 
     /// <summary>

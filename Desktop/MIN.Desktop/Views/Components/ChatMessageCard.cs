@@ -1,6 +1,5 @@
 ﻿using MIN.Chat.Messaging;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Schemes;
 
 namespace MIN.Desktop.Components;

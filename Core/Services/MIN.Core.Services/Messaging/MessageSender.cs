@@ -10,7 +10,6 @@ using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Messaging;
 
@@ -23,7 +22,6 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
     private readonly IHeaderManager headerManager;
     private readonly IRoomFactory roomFactory;
     private readonly IStreamManager streamManager;
-    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инциализирует новый экземпляр <see cref="MessageSender"/>
@@ -33,8 +31,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         IMessageSerializer serializer,
         IHeaderManager headerManager,
         IRoomFactory roomFactory,
-        IStreamManager streamManager,
-        ILoggerProvider logger)
+        IStreamManager streamManager)
     {
         this.transport = transport;
         this.encryptor = encryptor;
@@ -42,7 +39,6 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         this.headerManager = headerManager;
         this.roomFactory = roomFactory;
         this.streamManager = streamManager;
-        this.logger = logger;
     }
 
     /// <inheritdoc />

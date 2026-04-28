@@ -1,5 +1,4 @@
 ﻿using MIN.Desktop.Components.Controls.TextBoxes;
-using MIN.Desktop.Contracts;
 using MIN.Desktop.Contracts.Schemes;
 using System.Runtime.InteropServices;
 

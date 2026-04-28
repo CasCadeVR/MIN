@@ -1,4 +1,4 @@
-﻿namespace MIN.Desktop.Contracts.Views.PanelViews.Models;
+﻿namespace MIN.Desktop.Contracts.Views.PanelViews.Interfaces;
 
 /// <summary>
 /// Инициализатор панели

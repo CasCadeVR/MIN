@@ -1,6 +1,9 @@
 ﻿using MIN.Desktop.Components.Controls.Buttons;
+using MIN.Desktop.Components.Controls.NumericUpDowns;
+using MIN.Desktop.Components.Controls.TextBoxes;
+using MIN.Desktop.Components.Labels;
 
-namespace MIN.Desktop
+namespace MIN.Desktop.Views.Forms.HelperForms
 {
     partial class RoomCreateForm
     {
@@ -247,12 +250,12 @@ namespace MIN.Desktop
         private SplitContainer splitContainer;
         private TableLayoutPanel tableLayoutPanelHeader;
         private TableLayoutPanel tableLayoutPanel1;
-        private Components.Labels.Heading3Label ClassTitleInput;
-        private Components.Labels.Heading1Label Title;
+        private Heading3Label ClassTitleInput;
+        private Heading1Label Title;
         private CommonButton createButton;
-        private Components.Labels.Heading3Label heading3Label1;
-        private Components.Controls.NumericUpDowns.DefaultNumericUpDown roomMaximumCount;
-        private Components.Controls.TextBoxes.DefaultTextBox roomName;
+        private Heading3Label heading3Label1;
+        private DefaultNumericUpDown roomMaximumCount;
+        private DefaultTextBox roomName;
         private TableLayoutPanel tableLayoutPanelButtons;
         private InvertedButton cancelButton;
     }

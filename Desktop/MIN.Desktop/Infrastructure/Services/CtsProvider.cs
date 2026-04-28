@@ -5,6 +5,7 @@ namespace MIN.Desktop.Infrastructure.Services;
 /// <inheritdoc cref="ICtsProvider"/>
 public class CtsProvider : ICtsProvider
 {
-    private CancellationTokenSource cts = new();
+    private readonly CancellationTokenSource cts = new();
+
     CancellationTokenSource ICtsProvider.AppCts => cts;
 }

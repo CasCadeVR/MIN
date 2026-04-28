@@ -2,7 +2,7 @@
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Desktop.Contracts.Views.PanelViews;
-using MIN.Desktop.Contracts.Views.PanelViews.Models;
+using MIN.Desktop.Contracts.Views.PanelViews.Interfaces;
 
 namespace MIN.Desktop.Infrastructure.Services;
 
