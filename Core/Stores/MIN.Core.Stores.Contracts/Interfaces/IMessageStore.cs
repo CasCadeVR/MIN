@@ -18,6 +18,11 @@ public interface IMessageStore
     IEnumerable<IMessage> GetHistory(int? page = 1, int? pageSize = 100);
 
     /// <summary>
+    /// Получить последнее сообщение
+    /// </summary>
+    IMessage GetLastMessage();
+
+    /// <summary>
     /// Очистить сообщения из комнаты
     /// </summary>
     void ClearMessages();

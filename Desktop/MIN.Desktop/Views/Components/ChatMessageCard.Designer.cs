@@ -1,6 +1,6 @@
 ﻿namespace MIN.Desktop.Components
 {
-    partial class ChatMessageCard
+    partial class ChatTextMessageCard
     {
         /// <summary> 
         /// Обязательная переменная конструктора.

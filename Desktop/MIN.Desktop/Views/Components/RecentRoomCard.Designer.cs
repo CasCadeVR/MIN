@@ -31,10 +31,11 @@ namespace MIN.Desktop.Components
         private void InitializeComponent()
         {
             backgroundPanel = new TableLayoutPanel();
-            Title = new MIN.Desktop.Components.Labels.Heading1Label();
-            lastMessageTime = new MIN.Desktop.Components.Labels.CaptionLabel();
-            participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
-            lastMessageSenderAndContent = new MIN.Desktop.Components.Labels.CaptionLabel();
+            Title = new Labels.Heading1Label();
+            lastMessageTime = new Labels.CaptionLabel();
+            lastMessageSenderAndContent = new Labels.CaptionLabel();
+            participantsInfo = new Labels.Heading3Label();
+            missedMessagesCountLabel = new Labels.Heading3Label();
             backgroundPanel.SuspendLayout();
             SuspendLayout();
             // 
@@ -43,13 +44,14 @@ namespace MIN.Desktop.Components
             backgroundPanel.BackColor = Color.Transparent;
             backgroundPanel.ColumnCount = 4;
             backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 87F));
-            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 54.36893F));
-            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45.63107F));
+            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 79.02439F));
+            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20.9756088F));
             backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50F));
             backgroundPanel.Controls.Add(Title, 0, 0);
             backgroundPanel.Controls.Add(lastMessageTime, 3, 0);
-            backgroundPanel.Controls.Add(participantsInfo, 3, 1);
             backgroundPanel.Controls.Add(lastMessageSenderAndContent, 0, 1);
+            backgroundPanel.Controls.Add(participantsInfo, 2, 0);
+            backgroundPanel.Controls.Add(missedMessagesCountLabel, 3, 1);
             backgroundPanel.Dock = DockStyle.Fill;
             backgroundPanel.Location = new Point(0, 0);
             backgroundPanel.Margin = new Padding(0);
@@ -57,6 +59,7 @@ namespace MIN.Desktop.Components
             backgroundPanel.RowCount = 2;
             backgroundPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50.0003166F));
             backgroundPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 49.99968F));
+            backgroundPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             backgroundPanel.Size = new Size(343, 50);
             backgroundPanel.TabIndex = 2;
             backgroundPanel.Click += RecentRoomCard_Click;
@@ -66,7 +69,7 @@ namespace MIN.Desktop.Components
             Title.Anchor = AnchorStyles.Left;
             Title.AutoEllipsis = true;
             Title.AutoSize = true;
-            backgroundPanel.SetColumnSpan(Title, 3);
+            backgroundPanel.SetColumnSpan(Title, 2);
             Title.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 204);
             Title.ForeColor = Color.Black;
             Title.Location = new Point(10, 2);
@@ -91,19 +94,6 @@ namespace MIN.Desktop.Components
             lastMessageTime.Text = "Время";
             lastMessageTime.Click += RecentRoomCard_Click;
             // 
-            // participantsInfo
-            // 
-            participantsInfo.Anchor = AnchorStyles.Right;
-            participantsInfo.AutoSize = true;
-            participantsInfo.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(316, 30);
-            participantsInfo.Name = "participantsInfo";
-            participantsInfo.Size = new Size(24, 15);
-            participantsInfo.TabIndex = 7;
-            participantsInfo.Text = "0/0";
-            participantsInfo.Click += RecentRoomCard_Click;
-            // 
             // lastMessageSenderAndContent
             // 
             lastMessageSenderAndContent.Anchor = AnchorStyles.Left;
@@ -119,6 +109,31 @@ namespace MIN.Desktop.Components
             lastMessageSenderAndContent.Text = "Отправитель и содержимое";
             lastMessageSenderAndContent.Click += RecentRoomCard_Click;
             // 
+            // participantsInfo
+            // 
+            participantsInfo.Anchor = AnchorStyles.Right;
+            participantsInfo.AutoSize = true;
+            participantsInfo.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
+            participantsInfo.Location = new Point(265, 5);
+            participantsInfo.Name = "participantsInfo";
+            participantsInfo.Size = new Size(24, 15);
+            participantsInfo.TabIndex = 7;
+            participantsInfo.Text = "0/0";
+            participantsInfo.Click += RecentRoomCard_Click;
+            // 
+            // missedMessagesCountLabel
+            // 
+            missedMessagesCountLabel.Anchor = AnchorStyles.Right;
+            missedMessagesCountLabel.AutoSize = true;
+            missedMessagesCountLabel.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            missedMessagesCountLabel.ForeColor = Color.FromArgb(0, 0, 0);
+            missedMessagesCountLabel.Location = new Point(321, 27);
+            missedMessagesCountLabel.Name = "missedMessagesCountLabel";
+            missedMessagesCountLabel.Size = new Size(19, 21);
+            missedMessagesCountLabel.TabIndex = 14;
+            missedMessagesCountLabel.Text = "0";
+            // 
             // RecentRoomCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -132,7 +147,6 @@ namespace MIN.Desktop.Components
             backgroundPanel.ResumeLayout(false);
             backgroundPanel.PerformLayout();
             ResumeLayout(false);
-
         }
 
         #endregion
@@ -142,5 +156,6 @@ namespace MIN.Desktop.Components
         private Labels.CaptionLabel lastMessageSenderAndContent;
         private Labels.Heading3Label participantsInfo;
         private TableLayoutPanel backgroundPanel;
+        private Labels.Heading3Label missedMessagesCountLabel;
     }
 }

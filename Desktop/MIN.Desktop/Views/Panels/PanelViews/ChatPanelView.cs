@@ -131,6 +131,12 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         uiContext.Post(_ =>
         {
             AddMessageToChatFlow(eventMessage.Message);
+            featureCollection.Core.EventBus.PublishAsync(new ChatMessageReceivedEvent()
+            {
+                RoomId = roomId,
+                Content = eventMessage.Message.Content,
+                Sender = eventMessage.Sender.Name
+            });
             NotifyIfNeeded(eventMessage.Message.Content, eventMessage.Sender.Name);
         }, null);
         await Task.CompletedTask;
@@ -170,7 +176,13 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         uiContext.Post(_ =>
         {
             AddMessageToChatFlow(eventMessage.Message);
-            NotifyIfNeeded($"Участник {eventMessage.Message.Participant.Name} зашёл в комнату");
+            var content = $"Участник {eventMessage.Message.Participant.Name} зашёл в комнату";
+            featureCollection.Core.EventBus.PublishAsync(new ChatMessageReceivedEvent()
+            {
+                RoomId = roomId,
+                Content = $"Участник {eventMessage.Message.Participant.Name} зашёл в комнату",
+            });
+            NotifyIfNeeded(content);
             UpdateStats();
         }, null);
         await Task.CompletedTask;
@@ -193,13 +205,19 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         uiContext.Post(_ =>
         {
             AddMessageToChatFlow(eventMessage.Message);
-            NotifyIfNeeded($"Участник {eventMessage.Message.Participant.Name} вышел из комнаты");
+            var content = $"Участник {eventMessage.Message.Participant.Name} вышел из комнаты";
+            featureCollection.Core.EventBus.PublishAsync(new ChatMessageReceivedEvent()
+            {
+                RoomId = roomId,
+                Content = $"Участник {eventMessage.Message.Participant.Name} вышел из комнаты",
+            });
+            NotifyIfNeeded(content);
             UpdateStats();
         }, null);
         await Task.CompletedTask;
     }
 
-    private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.RoomId == roomId && eventMessage.NeedToDisconnect)
         {
@@ -215,6 +233,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
             }, null);
             navigationService.NavigateTo<DiscoveryPanelView>();
         }
+        return Task.CompletedTask;
     }
 
     private async Task OnErrorOccured(ErrorOccurredEvent e, CancellationToken cancellationToken)
@@ -316,8 +335,12 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
         if (needsToNotify)
         {
-            featureCollection.Helper.NotificationService
-                .Notify(systemMessage.Content, room.Name);
+            featureCollection.Core.EventBus.PublishAsync(new ChatMessageReceivedEvent()
+            {
+                RoomId = roomId,
+                Content = systemMessage.Content,
+            });
+            NotifyIfNeeded(systemMessage.Content);
         }
     }
 
@@ -358,7 +381,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                         minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
                     }
 
-                    rowControl = new ChatMessageCard(chatTextMessage,
+                    rowControl = new ChatTextMessageCard(chatTextMessage,
                         localParticipant,
                         isHostMessage,
                         removeHeaders: isSelfMessage || lastTextMessage?.Sender.Id == chatTextMessage.Sender.Id)
@@ -455,7 +478,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
             chatFlow.Controls.Add(row);
             chatFlow.Controls.SetChildIndex(chatFlow.Controls[chatFlow.Controls.Count - 1], 0);
 
-            if (rowControl is ChatMessageCard card)
+            if (rowControl is ChatTextMessageCard card)
             {
                 row.Height = card.ResizeOutOfPrefferedSize();
             }
@@ -603,7 +626,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
             {
                 row.Width = chatFlow.Width - row.Margin.Horizontal;
                 var child = row.container.Controls[0];
-                if (child is ChatMessageCard card)
+                if (child is ChatTextMessageCard card)
                 {
                     row.Height = card.ResizeOutOfPrefferedSize();
                 }

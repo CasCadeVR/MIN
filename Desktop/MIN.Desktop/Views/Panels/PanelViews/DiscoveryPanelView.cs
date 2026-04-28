@@ -200,7 +200,7 @@ public partial class DiscoveryPanelView : StyledPanelView
                 {
                     return;
                 }
-                chatPanelManager.RegisterChat(room.Id,
+                chatPanelManager.RegisterChat(roomInfo,
                     navigationService
                     .NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>((room, connectionId, endpoint)));
                 await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent() { RoomId = room.Id });

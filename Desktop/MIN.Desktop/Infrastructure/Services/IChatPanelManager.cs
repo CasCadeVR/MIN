@@ -1,4 +1,5 @@
-﻿using MIN.Desktop.Views.Panels.PanelViews;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Desktop.Views.Panels.PanelViews;
 
 namespace MIN.Desktop.Infrastructure.Services;
 
@@ -10,7 +11,7 @@ public interface IChatPanelManager
     /// <summary>
     /// Зарегистрировать панель чата
     /// </summary>
-    void RegisterChat(Guid roomId, ChatPanelView panel);
+    void RegisterChat(RoomInfo roomInfo, ChatPanelView panel);
 
     /// <summary>
     /// Удалить связь панели чата

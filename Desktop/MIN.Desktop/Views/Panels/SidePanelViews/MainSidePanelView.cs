@@ -27,7 +27,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
     private readonly INavigationService navigationService;
     private readonly Dictionary<Guid, RecentRoomCard> activeRecentRoomCards = [];
     private readonly Dictionary<Guid, ChatPanelView> activeChatPanels = [];
-    private Guid selectedChatPanelRoomId;
+    private RecentRoomCard? selectedRecentRoomCard;
 
     /// <inheritdoc />
     public override PanelType PanelType => PanelType.Side;
@@ -106,6 +106,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         }
 
         var roomInfo = roomCreateForm.Room;
+        roomInfo.ParticipantCount = 1;
         var roomId = roomInfo.Id;
 
         if (!ResolveParticipant())
@@ -131,7 +132,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
 
             await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, ctsProvider.AppCts.Token);
 
-            RegisterChat(roomId, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>(
+            RegisterChat(roomInfo, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>(
                 (featureCollection.Core.RoomStore.GetRoom(roomId),
                 CoreRegistryConstants.LocalConnectionId,
                 new NamedPipeEndpoint()
@@ -149,46 +150,49 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
     }
 
     /// <inheritdoc />
-    public void RegisterChat(Guid roomId, ChatPanelView panel)
+    public void RegisterChat(RoomInfo roomInfo, ChatPanelView panel)
     {
+        var roomId = roomInfo.Id;
         var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
 
         activeChatPanels[roomId] = panel;
-        var card = new RecentRoomCard(featureCollection.Core.EventBus, context,
-            featureCollection.Core.RoomStore.GetRoom(roomId))
+        var card = new RecentRoomCard(featureCollection.Core.EventBus,
+            context,
+            roomInfo)
         {
             Width = flowLayoutPanelRooms.Width - flowLayoutPanelRooms.Margin.Horizontal * 2,
         };
 
         card.Clicked += () =>
         {
-            if (selectedChatPanelRoomId != roomId)
+            if (selectedRecentRoomCard != card)
             {
-                SelectChatCard(roomId, card);
+                SelectChatCard(card);
                 navigationService.NavigateToExisting(panel);
             }
         };
         flowLayoutPanelRooms.Controls.Add(card);
         activeRecentRoomCards[roomId] = card;
-        SelectChatCard(roomId, card);
+        SelectChatCard(card);
     }
 
-    private void UnselectAllChatCards()
+    private void UnselectRecentRoomCard()
     {
-        foreach (var otherCard in activeRecentRoomCards.Values)
+        if (selectedRecentRoomCard != null)
         {
-            otherCard.BackColor = ColorScheme.Transparent;
+            selectedRecentRoomCard.IsSelected = false;
+            selectedRecentRoomCard.BackColor = ColorScheme.Transparent;
         }
 
-        selectedChatPanelRoomId = Guid.Empty;
+        selectedRecentRoomCard = null;
     }
 
-    private void SelectChatCard(Guid roomId, RecentRoomCard card)
+    private void SelectChatCard(RecentRoomCard card)
     {
-        UnselectAllChatCards();
-
+        UnselectRecentRoomCard();
+        selectedRecentRoomCard = card;
         card.BackColor = ColorScheme.SecondaryAccent;
-        selectedChatPanelRoomId = roomId;
+        card.SelectCard();
     }
 
     /// <inheritdoc />
@@ -218,7 +222,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
 
     private void discoveryButton_Click(object sender, EventArgs e)
     {
-        UnselectAllChatCards();
+        UnselectRecentRoomCard();
         navigationService.NavigateTo<DiscoveryPanelView>();
     }
 

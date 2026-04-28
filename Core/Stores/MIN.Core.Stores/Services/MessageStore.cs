@@ -36,6 +36,14 @@ public sealed class MessageStore : IMessageStore
         }
     }
 
+    IMessage IMessageStore.GetLastMessage()
+    {
+        lock (messages)
+        {
+            return messages.Last();
+        }
+    }
+
     void IMessageStore.ClearMessages()
     {
         messages.Clear();
