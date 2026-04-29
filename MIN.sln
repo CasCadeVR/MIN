@@ -146,6 +146,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Core.Headers", "Core\He
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Common.Core.Contracts", "Common\MIN.Common.Core.Contracts\MIN.Common.Core.Contracts.csproj", "{407EB28C-5377-4942-96D6-49BABF5507D3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileTransfer", "FileTransfer", "{F02B6426-F46E-4034-914A-469816357EEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.FileTransfer.DI", "Infrastructure\FileTransfer\MIN.FileTransfer.DI\MIN.FileTransfer.DI.csproj", "{E23F09DB-81B5-4CFB-A6F0-91C8F00254FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -336,6 +340,10 @@ Global
 		{407EB28C-5377-4942-96D6-49BABF5507D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{407EB28C-5377-4942-96D6-49BABF5507D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{407EB28C-5377-4942-96D6-49BABF5507D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E23F09DB-81B5-4CFB-A6F0-91C8F00254FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E23F09DB-81B5-4CFB-A6F0-91C8F00254FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E23F09DB-81B5-4CFB-A6F0-91C8F00254FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E23F09DB-81B5-4CFB-A6F0-91C8F00254FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -403,6 +411,8 @@ Global
 		{07899D51-153A-4A98-B4ED-59B66C068357} = {D6E27639-F7FC-44B1-9D3B-D3F559B52554}
 		{8543FBE6-F2B3-4E14-BB74-4C96566D30B9} = {D6E27639-F7FC-44B1-9D3B-D3F559B52554}
 		{407EB28C-5377-4942-96D6-49BABF5507D3} = {DF928243-9876-418D-BD29-7A9A399B4758}
+		{F02B6426-F46E-4034-914A-469816357EEE} = {EB06CFFA-D1EC-4B74-9D96-5B9B197E9B0A}
+		{E23F09DB-81B5-4CFB-A6F0-91C8F00254FE} = {F02B6426-F46E-4034-914A-469816357EEE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57E9A443-C4F6-4D77-AEA8-F7D953811002}
