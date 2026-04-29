@@ -31,11 +31,11 @@ namespace MIN.Desktop.Components
         private void InitializeComponent()
         {
             backgroundPanel = new TableLayoutPanel();
-            Title = new Labels.Heading1Label();
-            lastMessageTime = new Labels.CaptionLabel();
-            lastMessageSenderAndContent = new Labels.CaptionLabel();
-            participantsInfo = new Labels.Heading3Label();
-            missedMessagesCountLabel = new Labels.Heading3Label();
+            Title = new MIN.Desktop.Components.Labels.Heading1Label();
+            lastMessageTime = new MIN.Desktop.Components.Labels.CaptionLabel();
+            lastMessageSenderAndContent = new MIN.Desktop.Components.Labels.CaptionLabel();
+            participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
+            missedMessagesCountLabel = new MIN.Desktop.Components.Labels.Heading3Label();
             backgroundPanel.SuspendLayout();
             SuspendLayout();
             // 
@@ -44,8 +44,8 @@ namespace MIN.Desktop.Components
             backgroundPanel.BackColor = Color.Transparent;
             backgroundPanel.ColumnCount = 4;
             backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 87F));
-            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 79.02439F));
-            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20.9756088F));
+            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 24F));
             backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50F));
             backgroundPanel.Controls.Add(Title, 0, 0);
             backgroundPanel.Controls.Add(lastMessageTime, 3, 0);
@@ -59,7 +59,6 @@ namespace MIN.Desktop.Components
             backgroundPanel.RowCount = 2;
             backgroundPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50.0003166F));
             backgroundPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 49.99968F));
-            backgroundPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             backgroundPanel.Size = new Size(343, 50);
             backgroundPanel.TabIndex = 2;
             backgroundPanel.Click += RecentRoomCard_Click;
@@ -115,7 +114,8 @@ namespace MIN.Desktop.Components
             participantsInfo.AutoSize = true;
             participantsInfo.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(265, 5);
+            participantsInfo.Location = new Point(269, 5);
+            participantsInfo.Margin = new Padding(0);
             participantsInfo.Name = "participantsInfo";
             participantsInfo.Size = new Size(24, 15);
             participantsInfo.TabIndex = 7;

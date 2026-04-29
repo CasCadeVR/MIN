@@ -119,14 +119,14 @@
             sendMessage.TabIndex = 5;
             sendMessage.Text = "Сообщение";
             // 
-            // ChatMessageCard
+            // ChatTextMessageCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(tableLayoutPanelLabels);
             Margin = new Padding(0);
             MinimumSize = new Size(0, 22);
-            Name = "ChatMessageCard";
+            Name = "ChatTextMessageCard";
             Size = new Size(311, 70);
             tableLayoutPanelLabels.ResumeLayout(false);
             tableLayoutPanelLabels.PerformLayout();

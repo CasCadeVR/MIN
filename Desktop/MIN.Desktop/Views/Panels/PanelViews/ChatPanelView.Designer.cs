@@ -37,18 +37,18 @@
             participantsFlow = new MIN.Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView();
             tableLayoutPanelStats = new TableLayoutPanel();
             createdAt = new MIN.Desktop.Components.Labels.Heading3Label();
-            labelCreatedAt = new MIN.Desktop.Components.Labels.CaptionLabel();
+            createdAtLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             closeButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             editButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
-            captionLabel1 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            hostNameLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             hostName = new MIN.Desktop.Components.Labels.Heading3Label();
             notificationComboBox = new MIN.Desktop.Components.Controls.CheckBoxes.DefaultCheckBox();
-            heading3Label4 = new MIN.Desktop.Components.Labels.Heading3Label();
-            captionLabel4 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            participantsLabel = new MIN.Desktop.Components.Labels.Heading3Label();
+            onlineLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             participantsInfo = new MIN.Desktop.Components.Labels.Heading3Label();
-            captionLabel3 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            computerLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             computer = new MIN.Desktop.Components.Labels.Heading3Label();
-            captionLabel2 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            classroomLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             classroom = new MIN.Desktop.Components.Labels.Heading3Label();
             disconnectButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             aboutButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
@@ -69,7 +69,7 @@
             // 
             // splitContainer
             // 
-            splitContainer.BackColor = Color.FromArgb(240, 242, 255);
+            splitContainer.BackColor = Color.Transparent;
             splitContainer.ForeColor = Color.FromArgb(45, 43, 58);
             // 
             // splitContainer.Panel1
@@ -79,6 +79,7 @@
             // splitContainer.Panel2
             // 
             splitContainer.Panel2.Controls.Add(splitContainerSideBar);
+            splitContainer.SplitterWidth = 1;
             // 
             // splitContainerSideBar
             // 
@@ -97,7 +98,7 @@
             splitContainerSideBar.Panel2.Controls.Add(participantsFlow);
             splitContainerSideBar.Panel2.Controls.Add(tableLayoutPanelStats);
             splitContainerSideBar.Panel2MinSize = 100;
-            splitContainerSideBar.Size = new Size(821, 642);
+            splitContainerSideBar.Size = new Size(821, 643);
             splitContainerSideBar.SplitterDistance = 630;
             splitContainerSideBar.TabIndex = 1;
             // 
@@ -109,7 +110,7 @@
             chatFlow.FlowDirection = FlowDirection.BottomUp;
             chatFlow.Location = new Point(0, 0);
             chatFlow.Name = "chatFlow";
-            chatFlow.Size = new Size(630, 594);
+            chatFlow.Size = new Size(630, 595);
             chatFlow.TabIndex = 6;
             chatFlow.WrapContents = false;
             chatFlow.Resize += chatFlow_Resize;
@@ -124,7 +125,7 @@
             tableLayoutPanelButtons.Controls.Add(sendButton, 2, 0);
             tableLayoutPanelButtons.Controls.Add(messageTextBox, 1, 0);
             tableLayoutPanelButtons.Dock = DockStyle.Bottom;
-            tableLayoutPanelButtons.Location = new Point(0, 594);
+            tableLayoutPanelButtons.Location = new Point(0, 595);
             tableLayoutPanelButtons.Margin = new Padding(0);
             tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
             tableLayoutPanelButtons.RowCount = 1;
@@ -197,7 +198,7 @@
             participantsFlow.FlowDirection = FlowDirection.TopDown;
             participantsFlow.Location = new Point(0, 276);
             participantsFlow.Name = "participantsFlow";
-            participantsFlow.Size = new Size(187, 366);
+            participantsFlow.Size = new Size(187, 367);
             participantsFlow.TabIndex = 5;
             participantsFlow.WrapContents = false;
             participantsFlow.Resize += participantsFlow_Resize;
@@ -208,18 +209,18 @@
             tableLayoutPanelStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelStats.Controls.Add(createdAt, 1, 3);
-            tableLayoutPanelStats.Controls.Add(labelCreatedAt, 0, 3);
+            tableLayoutPanelStats.Controls.Add(createdAtLabel, 0, 3);
             tableLayoutPanelStats.Controls.Add(closeButton, 0, 0);
             tableLayoutPanelStats.Controls.Add(editButton, 1, 0);
-            tableLayoutPanelStats.Controls.Add(captionLabel1, 0, 2);
+            tableLayoutPanelStats.Controls.Add(hostNameLabel, 0, 2);
             tableLayoutPanelStats.Controls.Add(hostName, 1, 2);
             tableLayoutPanelStats.Controls.Add(notificationComboBox, 0, 1);
-            tableLayoutPanelStats.Controls.Add(heading3Label4, 0, 7);
-            tableLayoutPanelStats.Controls.Add(captionLabel4, 0, 6);
+            tableLayoutPanelStats.Controls.Add(participantsLabel, 0, 7);
+            tableLayoutPanelStats.Controls.Add(onlineLabel, 0, 6);
             tableLayoutPanelStats.Controls.Add(participantsInfo, 1, 6);
-            tableLayoutPanelStats.Controls.Add(captionLabel3, 0, 5);
+            tableLayoutPanelStats.Controls.Add(computerLabel, 0, 5);
             tableLayoutPanelStats.Controls.Add(computer, 1, 5);
-            tableLayoutPanelStats.Controls.Add(captionLabel2, 0, 4);
+            tableLayoutPanelStats.Controls.Add(classroomLabel, 0, 4);
             tableLayoutPanelStats.Controls.Add(classroom, 1, 4);
             tableLayoutPanelStats.Dock = DockStyle.Top;
             tableLayoutPanelStats.Location = new Point(0, 0);
@@ -249,17 +250,17 @@
             createdAt.TabIndex = 24;
             createdAt.Text = "Загрузка...";
             // 
-            // labelCreatedAt
+            // createdAtLabel
             // 
-            labelCreatedAt.Anchor = AnchorStyles.Right;
-            labelCreatedAt.AutoSize = true;
-            labelCreatedAt.Font = new Font("Segoe UI", 8.25F);
-            labelCreatedAt.ForeColor = Color.Black;
-            labelCreatedAt.Location = new Point(36, 123);
-            labelCreatedAt.Name = "labelCreatedAt";
-            labelCreatedAt.Size = new Size(54, 13);
-            labelCreatedAt.TabIndex = 23;
-            labelCreatedAt.Text = "Создана:";
+            createdAtLabel.Anchor = AnchorStyles.Right;
+            createdAtLabel.AutoSize = true;
+            createdAtLabel.Font = new Font("Segoe UI", 8.25F);
+            createdAtLabel.ForeColor = Color.Black;
+            createdAtLabel.Location = new Point(36, 123);
+            createdAtLabel.Name = "createdAtLabel";
+            createdAtLabel.Size = new Size(54, 13);
+            createdAtLabel.TabIndex = 23;
+            createdAtLabel.Text = "Создана:";
             // 
             // closeButton
             // 
@@ -297,17 +298,17 @@
             editButton.UseVisualStyleBackColor = false;
             editButton.Click += editButton_Click;
             // 
-            // captionLabel1
+            // hostNameLabel
             // 
-            captionLabel1.Anchor = AnchorStyles.Right;
-            captionLabel1.AutoSize = true;
-            captionLabel1.Font = new Font("Segoe UI", 8.25F);
-            captionLabel1.ForeColor = Color.Black;
-            captionLabel1.Location = new Point(57, 86);
-            captionLabel1.Name = "captionLabel1";
-            captionLabel1.Size = new Size(33, 13);
-            captionLabel1.TabIndex = 18;
-            captionLabel1.Text = "Хост:";
+            hostNameLabel.Anchor = AnchorStyles.Right;
+            hostNameLabel.AutoSize = true;
+            hostNameLabel.Font = new Font("Segoe UI", 8.25F);
+            hostNameLabel.ForeColor = Color.Black;
+            hostNameLabel.Location = new Point(57, 86);
+            hostNameLabel.Name = "hostNameLabel";
+            hostNameLabel.Size = new Size(33, 13);
+            hostNameLabel.TabIndex = 18;
+            hostNameLabel.Text = "Хост:";
             // 
             // hostName
             // 
@@ -334,30 +335,30 @@
             notificationComboBox.Text = "Уведомления";
             notificationComboBox.UseVisualStyleBackColor = false;
             // 
-            // heading3Label4
+            // participantsLabel
             // 
-            heading3Label4.Anchor = AnchorStyles.Bottom;
-            heading3Label4.AutoSize = true;
-            tableLayoutPanelStats.SetColumnSpan(heading3Label4, 2);
-            heading3Label4.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            heading3Label4.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label4.Location = new Point(54, 259);
-            heading3Label4.Name = "heading3Label4";
-            heading3Label4.Size = new Size(78, 17);
-            heading3Label4.TabIndex = 16;
-            heading3Label4.Text = "Участники:";
+            participantsLabel.Anchor = AnchorStyles.Bottom;
+            participantsLabel.AutoSize = true;
+            tableLayoutPanelStats.SetColumnSpan(participantsLabel, 2);
+            participantsLabel.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            participantsLabel.ForeColor = Color.FromArgb(0, 0, 0);
+            participantsLabel.Location = new Point(54, 259);
+            participantsLabel.Name = "participantsLabel";
+            participantsLabel.Size = new Size(78, 17);
+            participantsLabel.TabIndex = 16;
+            participantsLabel.Text = "Участники:";
             // 
-            // captionLabel4
+            // onlineLabel
             // 
-            captionLabel4.Anchor = AnchorStyles.Right;
-            captionLabel4.AutoSize = true;
-            captionLabel4.Font = new Font("Segoe UI", 8.25F);
-            captionLabel4.ForeColor = Color.Black;
-            captionLabel4.Location = new Point(48, 234);
-            captionLabel4.Name = "captionLabel4";
-            captionLabel4.Size = new Size(42, 13);
-            captionLabel4.TabIndex = 21;
-            captionLabel4.Text = "В сети:";
+            onlineLabel.Anchor = AnchorStyles.Right;
+            onlineLabel.AutoSize = true;
+            onlineLabel.Font = new Font("Segoe UI", 8.25F);
+            onlineLabel.ForeColor = Color.Black;
+            onlineLabel.Location = new Point(48, 234);
+            onlineLabel.Name = "onlineLabel";
+            onlineLabel.Size = new Size(42, 13);
+            onlineLabel.TabIndex = 21;
+            onlineLabel.Text = "В сети:";
             // 
             // participantsInfo
             // 
@@ -371,17 +372,17 @@
             participantsInfo.TabIndex = 15;
             participantsInfo.Text = "Загрузка...";
             // 
-            // captionLabel3
+            // computerLabel
             // 
-            captionLabel3.Anchor = AnchorStyles.Right;
-            captionLabel3.AutoSize = true;
-            captionLabel3.Font = new Font("Segoe UI", 8.25F);
-            captionLabel3.ForeColor = Color.Black;
-            captionLabel3.Location = new Point(31, 197);
-            captionLabel3.Name = "captionLabel3";
-            captionLabel3.Size = new Size(59, 13);
-            captionLabel3.TabIndex = 20;
-            captionLabel3.Text = "№ Компа:";
+            computerLabel.Anchor = AnchorStyles.Right;
+            computerLabel.AutoSize = true;
+            computerLabel.Font = new Font("Segoe UI", 8.25F);
+            computerLabel.ForeColor = Color.Black;
+            computerLabel.Location = new Point(31, 197);
+            computerLabel.Name = "computerLabel";
+            computerLabel.Size = new Size(59, 13);
+            computerLabel.TabIndex = 20;
+            computerLabel.Text = "№ Компа:";
             // 
             // computer
             // 
@@ -395,17 +396,17 @@
             computer.TabIndex = 13;
             computer.Text = "Загрузка...";
             // 
-            // captionLabel2
+            // classroomLabel
             // 
-            captionLabel2.Anchor = AnchorStyles.Right;
-            captionLabel2.AutoSize = true;
-            captionLabel2.Font = new Font("Segoe UI", 8.25F);
-            captionLabel2.ForeColor = Color.Black;
-            captionLabel2.Location = new Point(36, 160);
-            captionLabel2.Name = "captionLabel2";
-            captionLabel2.Size = new Size(54, 13);
-            captionLabel2.TabIndex = 19;
-            captionLabel2.Text = "Кабинет:";
+            classroomLabel.Anchor = AnchorStyles.Right;
+            classroomLabel.AutoSize = true;
+            classroomLabel.Font = new Font("Segoe UI", 8.25F);
+            classroomLabel.ForeColor = Color.Black;
+            classroomLabel.Location = new Point(36, 160);
+            classroomLabel.Name = "classroomLabel";
+            classroomLabel.Size = new Size(54, 13);
+            classroomLabel.TabIndex = 19;
+            classroomLabel.Text = "Кабинет:";
             // 
             // classroom
             // 
@@ -456,7 +457,7 @@
             // 
             // tableLayoutPanelHeader
             // 
-            tableLayoutPanelHeader.BackColor = Color.FromArgb(167, 157, 255);
+            tableLayoutPanelHeader.BackColor = Color.Transparent;
             tableLayoutPanelHeader.ColumnCount = 3;
             tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110F));
             tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -477,7 +478,7 @@
             Title.Anchor = AnchorStyles.Left;
             Title.AutoSize = true;
             Title.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            Title.ForeColor = Color.FromArgb(248, 249, 255);
+            Title.ForeColor = Color.Black;
             Title.Location = new Point(113, 9);
             Title.Name = "Title";
             Title.Size = new Size(104, 30);
@@ -516,18 +517,18 @@
         private Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView participantsFlow;
         private TableLayoutPanel tableLayoutPanelStats;
         private Desktop.Components.Labels.Heading3Label createdAt;
-        private Desktop.Components.Labels.CaptionLabel labelCreatedAt;
+        private Desktop.Components.Labels.CaptionLabel createdAtLabel;
         private Desktop.Components.Controls.Buttons.InvertedButton closeButton;
         private Desktop.Components.Controls.Buttons.CommonButton editButton;
-        private Desktop.Components.Labels.CaptionLabel captionLabel1;
+        private Desktop.Components.Labels.CaptionLabel hostNameLabel;
         private Desktop.Components.Labels.Heading3Label hostName;
         private Desktop.Components.Controls.CheckBoxes.DefaultCheckBox notificationComboBox;
-        private Desktop.Components.Labels.Heading3Label heading3Label4;
-        private Desktop.Components.Labels.CaptionLabel captionLabel4;
+        private Desktop.Components.Labels.Heading3Label participantsLabel;
+        private Desktop.Components.Labels.CaptionLabel onlineLabel;
         private Desktop.Components.Labels.Heading3Label participantsInfo;
-        private Desktop.Components.Labels.CaptionLabel captionLabel3;
+        private Desktop.Components.Labels.CaptionLabel computerLabel;
         private Desktop.Components.Labels.Heading3Label computer;
-        private Desktop.Components.Labels.CaptionLabel captionLabel2;
+        private Desktop.Components.Labels.CaptionLabel classroomLabel;
         private Desktop.Components.Labels.Heading3Label classroom;
         private Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView chatFlow;
         private Desktop.Components.Controls.Buttons.InvertedButton disconnectButton;

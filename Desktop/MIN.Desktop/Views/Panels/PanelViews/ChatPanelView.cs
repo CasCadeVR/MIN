@@ -372,6 +372,14 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     var isSelfMessage = chatTextMessage.Sender.Id == localParticipant.Id;
                     var isHostMessage = room?.HostParticipant?.Id == chatTextMessage.Sender.Id;
 
+                    var isCurrentPrivate = chatTextMessage.RecipientId == localParticipant.Id
+                        || (chatTextMessage.SenderId == localParticipant.Id && chatTextMessage.RecipientId != null);
+
+                    var wasLastPrivate = lastTextMessage != null && (
+                        lastTextMessage.RecipientId == localParticipant.Id
+                        || (lastTextMessage.SenderId == localParticipant.Id && lastTextMessage.RecipientId != null)
+                    );
+
                     var minutesPassed = 0;
                     if (lastTextMessage != null)
                     {
@@ -382,26 +390,14 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     rowControl = new ChatTextMessageCard(chatTextMessage,
                         localParticipant,
                         isHostMessage,
-                        removeHeaders: isSelfMessage || lastTextMessage?.Sender.Id == chatTextMessage.Sender.Id)
+                        removeHeaders: isSelfMessage || lastTextMessage?.SenderId == chatTextMessage.SenderId)
                     {
                         Anchor = isSelfMessage ? AnchorStyles.Right : AnchorStyles.Left,
                         Margin = new Padding(20, 0, 20, 0)
                     };
 
-                    var isCurrentPrivate = chatTextMessage.RecipientId == localParticipant.Id
-                        || (chatTextMessage.SenderId == localParticipant.Id && chatTextMessage.RecipientId != null);
-
-                    var wasLastPrivate = lastTextMessage != null && (
-                        lastTextMessage.RecipientId == localParticipant.Id
-                        || (lastTextMessage.SenderId == localParticipant.Id && lastTextMessage.RecipientId != null)
-                    );
-
                     if (isCurrentPrivate && !wasLastPrivate)
                     {
-                        var partner = chatTextMessage.SenderId == localParticipant.Id
-                            ? chatTextMessage.Sender
-                            : localParticipant;
-
                         var sender = room?.CurrentParticipants.First(x => x.Id == chatTextMessage.SenderId);
                         var recipient = room?.CurrentParticipants.First(x => x.Id == chatTextMessage.RecipientId);
 
@@ -417,12 +413,13 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     if (isCurrentPrivate)
                     {
                         row.BackColor = ColorScheme.PrivateParticipantCardBackground;
-                        rowControl.Margin = new Padding(rowControl.Margin.Left, minutesPassed, rowControl.Margin.Right, rowControl.Margin.Bottom);
+                        row.Padding = new Padding(row.Padding.Left, minutesPassed, row.Padding.Right, row.Padding.Bottom);
                     }
                     else
                     {
                         row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
                     }
+
 
                     lastTextMessage = chatTextMessage;
                     break;
@@ -465,7 +462,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
             if (rowControl is ChatTextMessageCard card)
             {
-                row.Height = card.ResizeOutOfPrefferedSize();
+                row.Height = card.ResizeOutOfPrefferedSize() + row.Padding.Top;
             }
         }
         finally
@@ -508,6 +505,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
         splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
         splitContainerSideBar.Panel2.BackColor = ColorScheme.PrimaryAccent;
+        tableLayoutPanelHeader.BackColor = ColorScheme.PrimaryAccent;
         tableLayoutPanelStats.BackColor = ColorScheme.PrimaryAccent;
         notificationComboBox.BackColor = ColorScheme.PrimaryAccent;
 
@@ -517,20 +515,20 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         classroom.ForeColor = ColorScheme.TextOnAccent;
         createdAt.ForeColor = ColorScheme.TextOnAccent;
         notificationComboBox.ForeColor = ColorScheme.TextOnAccent;
+        Title.ForeColor = ColorScheme.TextOnAccent;
 
-        captionLabel1.ForeColor = ColorScheme.TextOnAccent;
-        captionLabel2.ForeColor = ColorScheme.TextOnAccent;
-        captionLabel3.ForeColor = ColorScheme.TextOnAccent;
-        captionLabel4.ForeColor = ColorScheme.TextOnAccent;
-        heading3Label4.ForeColor = ColorScheme.TextOnAccent;
-        labelCreatedAt.ForeColor = ColorScheme.TextOnAccent;
+        hostNameLabel.ForeColor = ColorScheme.TextOnAccent;
+        classroomLabel.ForeColor = ColorScheme.TextOnAccent;
+        computerLabel.ForeColor = ColorScheme.TextOnAccent;
+        onlineLabel.ForeColor = ColorScheme.TextOnAccent;
+        participantsLabel.ForeColor = ColorScheme.TextOnAccent;
+        createdAtLabel.ForeColor = ColorScheme.TextOnAccent;
 
         participantsFlow.BackColor = ColorScheme.DividerColor;
         chatFlow.BackColor = ColorScheme.ChatAreaBackground;
         chatFlow.Padding = new Padding(chatFlow.Padding.Left, chatFlow.Padding.Top, chatFlow.Padding.Right, messageMinPadding);
 
         tableLayoutPanelButtons.RowStyles[0] = new RowStyle(SizeType.AutoSize);
-        //tableLayoutPanel2.RowStyles[1] = new RowStyle(SizeType.AutoSize);
     }
 
     private async void editButton_Click(object sender, EventArgs e)
@@ -613,7 +611,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                 var child = row.container.Controls[0];
                 if (child is ChatTextMessageCard card)
                 {
-                    row.Height = card.ResizeOutOfPrefferedSize();
+                    row.Height = card.ResizeOutOfPrefferedSize() + row.Padding.Top;
                 }
             }
         }

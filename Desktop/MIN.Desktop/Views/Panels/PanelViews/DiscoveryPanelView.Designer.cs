@@ -93,14 +93,14 @@
             // splitContainerDiscoverRoom.Panel1
             // 
             splitContainerDiscoverRoom.Panel1.Controls.Add(discoverRooms);
-            splitContainerDiscoverRoom.Panel1.Padding = new Padding(0, 0, 0, 3);
             // 
             // splitContainerDiscoverRoom.Panel2
             // 
             splitContainerDiscoverRoom.Panel2.Controls.Add(discoveryProgressBar);
             splitContainerDiscoverRoom.Panel2Collapsed = true;
+            splitContainerDiscoverRoom.Panel2MinSize = 8;
             splitContainerDiscoverRoom.Size = new Size(162, 44);
-            splitContainerDiscoverRoom.SplitterDistance = 25;
+            splitContainerDiscoverRoom.SplitterDistance = 32;
             splitContainerDiscoverRoom.TabIndex = 5;
             // 
             // discoverRooms
@@ -114,7 +114,7 @@
             discoverRooms.ForeColor = Color.FromArgb(167, 157, 255);
             discoverRooms.Location = new Point(0, 0);
             discoverRooms.Name = "discoverRooms";
-            discoverRooms.Size = new Size(162, 47);
+            discoverRooms.Size = new Size(162, 44);
             discoverRooms.TabIndex = 0;
             discoverRooms.Text = "Найти комнаты";
             discoverRooms.UseVisualStyleBackColor = false;
@@ -123,10 +123,10 @@
             // discoveryProgressBar
             // 
             discoveryProgressBar.Dock = DockStyle.Bottom;
-            discoveryProgressBar.Location = new Point(0, 38);
+            discoveryProgressBar.Location = new Point(0, 0);
             discoveryProgressBar.Margin = new Padding(0);
             discoveryProgressBar.Name = "discoveryProgressBar";
-            discoveryProgressBar.Size = new Size(150, 8);
+            discoveryProgressBar.Size = new Size(162, 8);
             discoveryProgressBar.TabIndex = 0;
             // 
             // classroomTitleInput

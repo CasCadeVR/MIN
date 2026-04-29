@@ -221,11 +221,11 @@ public partial class DiscoveryPanelView : StyledPanelView
     /// <inheritdoc />
     protected override void ApplyStylings()
     {
-        tableLayoutPanel.BackColor = ColorScheme.SecondaryAccent;
+        tableLayoutPanel.BackColor = ColorScheme.PrimaryAccent;
         classroomTitleInput.ForeColor = ColorScheme.TextOnAccent;
-        classNumber.ForeColor = ColorScheme.SecondaryAccent;
+        classNumber.ForeColor = ColorScheme.PrimaryAccent;
         statusStrip.BackColor = ColorScheme.SecondaryAccent;
         totalRoomsCount.ForeColor = ColorScheme.TextOnAccent;
-        discoveryProgressBar.ForeColor = ColorScheme.SecondaryAccent;
+        discoveryProgressBar.ForeColor = ColorScheme.PrimaryAccent;
     }
 }
