@@ -70,6 +70,7 @@
             roomSearchTextBox.PlaceholderText = "Поиск";
             roomSearchTextBox.Size = new Size(259, 26);
             roomSearchTextBox.TabIndex = 6;
+            roomSearchTextBox.TextChanged += roomSearchTextBox_TextChanged;
             // 
             // searchButton
             // 

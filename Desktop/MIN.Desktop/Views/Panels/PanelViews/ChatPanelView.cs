@@ -583,7 +583,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         {
             if (!splitContainerSideBar.Panel2Collapsed)
             {
-                closeButton_Click(sender, e);
+                splitContainerSideBar.Panel2Collapsed = true;
             }
             aboutButton.Visible = false;
         }

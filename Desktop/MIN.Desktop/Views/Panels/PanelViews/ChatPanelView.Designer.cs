@@ -85,6 +85,7 @@
             // 
             splitContainerSideBar.Dock = DockStyle.Fill;
             splitContainerSideBar.FixedPanel = FixedPanel.Panel2;
+            splitContainerSideBar.IsSplitterFixed = true;
             splitContainerSideBar.Location = new Point(0, 0);
             splitContainerSideBar.Name = "splitContainerSideBar";
             // 
@@ -99,7 +100,8 @@
             splitContainerSideBar.Panel2.Controls.Add(tableLayoutPanelStats);
             splitContainerSideBar.Panel2MinSize = 100;
             splitContainerSideBar.Size = new Size(821, 643);
-            splitContainerSideBar.SplitterDistance = 630;
+            splitContainerSideBar.SplitterDistance = 633;
+            splitContainerSideBar.SplitterWidth = 1;
             splitContainerSideBar.TabIndex = 1;
             // 
             // chatFlow
@@ -110,7 +112,7 @@
             chatFlow.FlowDirection = FlowDirection.BottomUp;
             chatFlow.Location = new Point(0, 0);
             chatFlow.Name = "chatFlow";
-            chatFlow.Size = new Size(630, 595);
+            chatFlow.Size = new Size(633, 595);
             chatFlow.TabIndex = 6;
             chatFlow.WrapContents = false;
             chatFlow.Resize += chatFlow_Resize;
@@ -130,7 +132,7 @@
             tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
             tableLayoutPanelButtons.RowCount = 1;
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelButtons.Size = new Size(630, 48);
+            tableLayoutPanelButtons.Size = new Size(633, 48);
             tableLayoutPanelButtons.TabIndex = 5;
             // 
             // fileButton
@@ -161,7 +163,7 @@
             sendButton.FlatStyle = FlatStyle.Flat;
             sendButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendButton.ForeColor = Color.FromArgb(248, 249, 255);
-            sendButton.Location = new Point(585, 3);
+            sendButton.Location = new Point(588, 3);
             sendButton.Margin = new Padding(3, 3, 3, 6);
             sendButton.Name = "sendButton";
             sendButton.Padding = new Padding(8, 4, 8, 4);
@@ -185,7 +187,7 @@
             messageTextBox.Name = "messageTextBox";
             messageTextBox.PlaceholderText = "Сообщение";
             messageTextBox.ScrollBars = ScrollBars.Vertical;
-            messageTextBox.Size = new Size(528, 39);
+            messageTextBox.Size = new Size(531, 39);
             messageTextBox.TabIndex = 4;
             messageTextBox.TextChanged += messageTextBox_TextChanged;
             messageTextBox.KeyPress += messageTextBox_KeyPress;
@@ -274,7 +276,7 @@
             closeButton.ForeColor = Color.FromArgb(167, 157, 255);
             closeButton.Location = new Point(3, 3);
             closeButton.Name = "closeButton";
-            closeButton.Size = new Size(37, 31);
+            closeButton.Size = new Size(31, 31);
             closeButton.TabIndex = 3;
             closeButton.Text = "X";
             closeButton.UseVisualStyleBackColor = false;

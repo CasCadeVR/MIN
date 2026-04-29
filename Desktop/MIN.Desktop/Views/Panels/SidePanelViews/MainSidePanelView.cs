@@ -234,7 +234,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         }
     }
 
-    private void searchButton_Click(object sender, EventArgs e)
+    private void PerformRecentRoomSearch()
     {
         var lowerQuery = roomSearchTextBox.Text.ToLowerInvariant();
 
@@ -246,5 +246,15 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         {
             flowLayoutPanelRooms.Controls.Add(card);
         }
+    }
+
+    private void searchButton_Click(object sender, EventArgs e)
+    {
+        PerformRecentRoomSearch();
+    }
+
+    private void roomSearchTextBox_TextChanged(object sender, EventArgs e)
+    {
+        PerformRecentRoomSearch();
     }
 }
