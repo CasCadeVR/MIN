@@ -47,7 +47,7 @@ public partial class ParticipantCreateForm : StyledForm
             return;
         }
 
-        var newParticipant = identityService.SelfPartcipant.ToParticipantInfo();
+        var newParticipant = identityService.SelfParticipant.ToParticipantInfo();
         newParticipant.Name = participantName.Text;
 
         identityService.SetParticipant(newParticipant);

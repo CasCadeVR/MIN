@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\Helpers\MIN.Helpers.DI\MIN.Helpers.DI.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Chat\MIN.Chat.DI\MIN.Chat.DI.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Discovery\MIN.Discovery.DI\MIN.Discovery.DI.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\FileTransfer\MIN.FileTransfer.DI\MIN.FileTransfer.DI.csproj" />
   </ItemGroup>
 
 </Project>

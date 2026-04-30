@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Messaging\MIN.Core.Messaging.Contracts\MIN.Core.Messaging.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Services.Contracts\MIN.FileTransfer.Services.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

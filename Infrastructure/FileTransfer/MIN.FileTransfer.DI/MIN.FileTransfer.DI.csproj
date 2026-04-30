@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\MIN.Common.Mvc\MIN.Common.Mvc.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Handlers\MIN.FileTransfer.Handlers.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Services\MIN.FileTransfer.Services.csproj" />
   </ItemGroup>
 
 </Project>

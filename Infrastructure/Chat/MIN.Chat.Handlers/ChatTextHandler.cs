@@ -40,7 +40,7 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
             }
 
             context.RoomContext.Messages.AddMessage(chatTextMessage);
-            var selfId = identityService.SelfPartcipant.Id;
+            var selfId = identityService.SelfParticipant.Id;
 
             if (message.SenderId == selfId || message.RecipientId == selfId || message.IsPublic)
             {

@@ -88,7 +88,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         };
 
         hideSideBarWidth = MinimumSize.Width + splitContainerSideBar.Panel2.Width;
-        localParticipant = featureCollection.Helper.IdentityService.SelfPartcipant.ToParticipantInfo();
+        localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
     }
 
     /// <inheritdoc />

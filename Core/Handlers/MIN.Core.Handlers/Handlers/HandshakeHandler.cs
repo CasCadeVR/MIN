@@ -46,7 +46,7 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 
             var ackMessage = new HandshakeAckMessage()
             {
-                Participant = identityService.SelfPartcipant.ToParticipantInfo(),
+                Participant = identityService.SelfParticipant.ToParticipantInfo(),
                 PublicKey = await encryptor.GetLocalPublicKey(),
             };
 

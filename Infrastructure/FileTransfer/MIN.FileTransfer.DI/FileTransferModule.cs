@@ -1,20 +1,26 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
+using MIN.Core.Handlers.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.FileTransfer.Handlers;
+using MIN.FileTransfer.Messaging;
+using MIN.FileTransfer.Services;
+using MIN.FileTransfer.DI.FeatureCollection;
 
 namespace MIN.FileTransfer.DI;
 
 /// <summary>
-/// Модуль регистрации зависимостей для Chat
+/// Модуль регистрации зависимостей для FileTransfer
 /// </summary>
 public class FileTransferModule : Module
 {
     /// <inheritdoc />
     protected override void Load(IServiceCollection services)
     {
-        services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IChatMessagingAnchor>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<ChatService>(ServiceLifetime.Singleton);
-        services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, IChatHandlerAnchor>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<ChatFeatureCollection>(ServiceLifetime.Singleton);
+        services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IFileTransferMessagingAnchor>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<FileTransferService>(ServiceLifetime.Singleton);
+        services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, IFileTransferHandlerAnchor>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<FileTransferFeatureCollection>(ServiceLifetime.Singleton);
     }
 }

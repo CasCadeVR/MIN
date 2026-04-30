@@ -10,7 +10,7 @@ public interface IIdentityService
     /// <summary>
     /// Текущий пользователь приложения
     /// </summary>
-    IParticipantData SelfPartcipant { get; }
+    IParticipantData SelfParticipant { get; }
 
     /// <summary>
     /// Установить данные пользователя

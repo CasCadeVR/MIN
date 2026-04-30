@@ -12,7 +12,7 @@ public sealed class IdentityService : IIdentityService
         Name = "Ты"
     };
 
-    IParticipantData IIdentityService.SelfPartcipant => currentParticipant;
+    IParticipantData IIdentityService.SelfParticipant => currentParticipant;
 
     /// <inheritdoc />
     void IIdentityService.SetParticipant(IParticipantData participantData)
