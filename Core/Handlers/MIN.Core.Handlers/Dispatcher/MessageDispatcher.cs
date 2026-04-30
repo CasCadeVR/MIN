@@ -78,7 +78,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
                 if (result.Response != null)
                 {
-                    result.Response.SenderId = identityService.SelfPartcipant.Id;
+                    result.Response.SenderId = identityService.SelfParticipant.Id;
                     await messageSender.SendAsync(result.Response, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
                 }
             }

@@ -77,7 +77,7 @@ public sealed class RoomConnector : IRoomConnector
 
             var selfHandshake = new HandshakeMessage()
             {
-                Participant = identityService.SelfPartcipant.ToParticipantInfo(),
+                Participant = identityService.SelfParticipant.ToParticipantInfo(),
                 PublicKey = await encryptor.GetLocalPublicKey(),
             };
 

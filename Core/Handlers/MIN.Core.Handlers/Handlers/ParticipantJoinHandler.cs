@@ -92,13 +92,13 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
                     {
                         RejectionMessageId = roomJoinResponseMessage.Id,
                         Reason = reason,
-                    }, context.RoomContext.RoomId, identityService.SelfPartcipant.Id, context.CancellationToken);
+                    }, context.RoomContext.RoomId, identityService.SelfParticipant.Id, context.CancellationToken);
                     return HandlerResult.Failure(reason, stopPropagation: true);
                 }
 
                 var selfparticipantJoinedMessage = new ParticipantJoinedMessage()
                 {
-                    Participant = identityService.SelfPartcipant.ToParticipantInfo(),
+                    Participant = identityService.SelfParticipant.ToParticipantInfo(),
                     RoomId = context.RoomContext.RoomId
                 };
 

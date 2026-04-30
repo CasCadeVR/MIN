@@ -5,6 +5,7 @@ using MIN.Common.Mvc.Extensions;
 using MIN.Core.DI;
 using MIN.DI.FeatureCollection;
 using MIN.Discovery.DI;
+using MIN.FileTransfer.DI;
 using MIN.Helpers.DI;
 
 namespace MIN.DI;
@@ -23,6 +24,7 @@ public class MinModule : Common.Mvc.Module
         services.RegisterModule<HelpersModule>();
         services.RegisterModule<CoreModule>();
         services.RegisterModule<ChatModule>();
+        services.RegisterModule<FileTransferModule>();
         services.RegisterModule<DiscoveryModule>();
 
         services.RegisterAsImplementedInterfaces<MinFeatureCollection>(ServiceLifetime.Singleton);

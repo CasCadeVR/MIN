@@ -77,7 +77,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
     private bool ResolveParticipant()
     {
         var settings = featureCollection.Helper.SettingsProvider.GetSettings();
-        var localParticipant = featureCollection.Helper.IdentityService.SelfPartcipant.ToParticipantInfo();
+        var localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
 
         if (settings.DefaultParticipantName != string.Empty)
         {
@@ -91,7 +91,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
             {
                 return false;
             }
-            settings.DefaultParticipantName = featureCollection.Helper.IdentityService.SelfPartcipant.Name;
+            settings.DefaultParticipantName = featureCollection.Helper.IdentityService.SelfParticipant.Name;
             featureCollection.Helper.SettingsProvider.SaveSettings(settings);
         }
         return true;
@@ -114,7 +114,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
             return;
         }
 
-        var localParticipant = featureCollection.Helper.IdentityService.SelfPartcipant.ToParticipantInfo();
+        var localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
         var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
 
         context.Connections.RegisterLocalParticipant(localParticipant);

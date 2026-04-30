@@ -47,7 +47,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         this.chatPanelManager = chatPanelManager;
         this.navigationService = navigationService;
 
-        localParticipant = featureCollection.Helper.IdentityService.SelfPartcipant.ToParticipantInfo();
+        localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
 
         lifeTimeCts = new CancellationTokenSource();
         uiContext = SynchronizationContext.Current
@@ -170,7 +170,7 @@ public partial class DiscoveryPanelView : StyledPanelView
             {
                 return false;
             }
-            Settings.DefaultParticipantName = featureCollection.Helper.IdentityService.SelfPartcipant.Name;
+            Settings.DefaultParticipantName = featureCollection.Helper.IdentityService.SelfParticipant.Name;
             featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         }
         return true;

@@ -1,6 +1,7 @@
 ﻿using MIN.Chat.DI.FeatureCollection;
 using MIN.Core.DI.FeatureCollection;
 using MIN.Discovery.DI.FeatureCollection;
+using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.Helpers.DI.FeatureCollection;
 
 namespace MIN.DI.FeatureCollection;
@@ -18,6 +19,9 @@ public interface IMinFeatureCollection
 
     /// <inheritdoc cref="IDiscoveryFeatureCollection"/>
     IDiscoveryFeatureCollection Discovery { get; }
+
+    /// <inheritdoc cref="IFileTransferFeatureCollection"/>
+    IFileTransferFeatureCollection FileTransfer { get; }
 
     /// <inheritdoc cref="IHelperFeatureCollection"/>
     IHelperFeatureCollection Helper { get; }

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Events\MIN.Core.Events.Contracts\MIN.Core.Events.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Messaging\MIN.Core.Messaging.Contracts\MIN.Core.Messaging.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Services\MIN.Core.Services.Contracts\MIN.Core.Services.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Streaming\MIN.Core.Streaming.Contracts\MIN.Core.Streaming.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Stores\MIN.Core.Stores.Contracts\MIN.Core.Stores.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Handlers\MIN.Core.Handlers.Contracts\MIN.Core.Handlers.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Messaging\MIN.FileTransfer.Messaging.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Events\MIN.FileTransfer.Events.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Services.Contracts\MIN.FileTransfer.Services.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Services\MIN.Core.Services.Contracts\MIN.Core.Services.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Streaming\MIN.Core.Streaming.Contracts\MIN.Core.Streaming.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Stores\MIN.Core.Stores.Contracts\MIN.Core.Stores.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Core\Entities\MIN.Core.Entities.Contracts\MIN.Core.Entities.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Services.Contracts\MIN.FileTransfer.Services.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Messaging\MIN.FileTransfer.Messaging.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Events\MIN.FileTransfer.Events.csproj" />
+  </ItemGroup>
+
+</Project>

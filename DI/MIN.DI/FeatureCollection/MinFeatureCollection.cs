@@ -1,6 +1,7 @@
 ﻿using MIN.Chat.DI.FeatureCollection;
 using MIN.Core.DI.FeatureCollection;
 using MIN.Discovery.DI.FeatureCollection;
+using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.Helpers.DI.FeatureCollection;
 
 namespace MIN.DI.FeatureCollection;
@@ -9,16 +10,19 @@ namespace MIN.DI.FeatureCollection;
 public class MinFeatureCollection : IMinFeatureCollection
 {
     /// <inheritdoc />
-    public IChatFeatureCollection Chat { get; }
+    public IHelperFeatureCollection Helper { get; }
 
     /// <inheritdoc />
     public ICoreFeatureCollection Core { get; }
 
     /// <inheritdoc />
-    public IDiscoveryFeatureCollection Discovery { get; }
+    public IChatFeatureCollection Chat { get; }
 
     /// <inheritdoc />
-    public IHelperFeatureCollection Helper { get; }
+    public IFileTransferFeatureCollection FileTransfer { get; }
+
+    /// <inheritdoc />
+    public IDiscoveryFeatureCollection Discovery { get; }
 
     /// <inheritdoc />
     public Version Version { get; }
@@ -26,16 +30,18 @@ public class MinFeatureCollection : IMinFeatureCollection
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MinFeatureCollection"/>
     /// </summary>
-    public MinFeatureCollection(IChatFeatureCollection chat,
+    public MinFeatureCollection(IHelperFeatureCollection helper,
         ICoreFeatureCollection core,
+        IChatFeatureCollection chat,
+        IFileTransferFeatureCollection fileTransfer,
         IDiscoveryFeatureCollection discovery,
-        IHelperFeatureCollection helper,
         Version version)
     {
-        Chat = chat;
-        Core = core;
-        Discovery = discovery;
         Helper = helper;
+        Core = core;
+        Chat = chat;
+        FileTransfer = fileTransfer;
+        Discovery = discovery;
         Version = version;
     }
 }
