@@ -1,4 +1,4 @@
-﻿namespace MIN.FileTransfer.DI
+﻿namespace MIN.FileTransfer.Handlers
 {
     public class Class1
     {
