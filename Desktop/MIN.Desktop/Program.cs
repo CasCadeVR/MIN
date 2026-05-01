@@ -19,7 +19,7 @@ static internal class Program
     /// ¬ходной метод программы
     /// </summary>
     [STAThread]
-    public static async Task Main()
+    public static void Main()
     {
         ApplicationConfiguration.Initialize();
 
@@ -33,7 +33,7 @@ static internal class Program
 
         foreach (var hostedService in serviceProvider.GetServices<IHostedService>())
         {
-            await hostedService.StartAsync(appLifeTimeCts.Token);
+            Task.Run(() => hostedService.StartAsync(appLifeTimeCts.Token));
         }
 
         var mainForm = serviceProvider.GetRequiredService<MainForm>();

@@ -34,6 +34,7 @@
             fileButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             sendButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             messageTextBox = new MIN.Desktop.Components.Controls.TextBoxes.MessageTextBox();
+            multiFileAttachmentUploader = new MIN.Desktop.Components.ComplexControls.MultiFileAttachmentUploader();
             participantsFlow = new MIN.Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView();
             tableLayoutPanelStats = new TableLayoutPanel();
             createdAt = new MIN.Desktop.Components.Labels.Heading3Label();
@@ -54,6 +55,7 @@
             aboutButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             tableLayoutPanelHeader = new TableLayoutPanel();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
+            openFileDialog = new OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -100,7 +102,7 @@
             splitContainerSideBar.Panel2.Controls.Add(tableLayoutPanelStats);
             splitContainerSideBar.Panel2MinSize = 100;
             splitContainerSideBar.Size = new Size(821, 643);
-            splitContainerSideBar.SplitterDistance = 633;
+            splitContainerSideBar.SplitterDistance = 654;
             splitContainerSideBar.SplitterWidth = 1;
             splitContainerSideBar.TabIndex = 1;
             // 
@@ -112,7 +114,7 @@
             chatFlow.FlowDirection = FlowDirection.BottomUp;
             chatFlow.Location = new Point(0, 0);
             chatFlow.Name = "chatFlow";
-            chatFlow.Size = new Size(633, 595);
+            chatFlow.Size = new Size(654, 519);
             chatFlow.TabIndex = 6;
             chatFlow.WrapContents = false;
             chatFlow.Resize += chatFlow_Resize;
@@ -120,19 +122,22 @@
             // tableLayoutPanelButtons
             // 
             tableLayoutPanelButtons.ColumnCount = 3;
-            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 45F));
             tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
-            tableLayoutPanelButtons.Controls.Add(fileButton, 0, 0);
-            tableLayoutPanelButtons.Controls.Add(sendButton, 2, 0);
-            tableLayoutPanelButtons.Controls.Add(messageTextBox, 1, 0);
+            tableLayoutPanelButtons.Controls.Add(fileButton, 0, 1);
+            tableLayoutPanelButtons.Controls.Add(sendButton, 2, 1);
+            tableLayoutPanelButtons.Controls.Add(messageTextBox, 1, 1);
+            tableLayoutPanelButtons.Controls.Add(multiFileAttachmentUploader, 0, 0);
             tableLayoutPanelButtons.Dock = DockStyle.Bottom;
-            tableLayoutPanelButtons.Location = new Point(0, 595);
+            tableLayoutPanelButtons.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
+            tableLayoutPanelButtons.Location = new Point(0, 519);
             tableLayoutPanelButtons.Margin = new Padding(0);
             tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
-            tableLayoutPanelButtons.RowCount = 1;
-            tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelButtons.Size = new Size(633, 48);
+            tableLayoutPanelButtons.RowCount = 2;
+            tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 76F));
+            tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            tableLayoutPanelButtons.Size = new Size(654, 124);
             tableLayoutPanelButtons.TabIndex = 5;
             // 
             // fileButton
@@ -145,13 +150,13 @@
             fileButton.FlatStyle = FlatStyle.Flat;
             fileButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             fileButton.ForeColor = Color.FromArgb(248, 249, 255);
-            fileButton.Location = new Point(3, 3);
-            fileButton.Margin = new Padding(3, 3, 3, 6);
+            fileButton.Location = new Point(3, 79);
             fileButton.Name = "fileButton";
             fileButton.Padding = new Padding(8, 4, 8, 4);
-            fileButton.Size = new Size(42, 39);
+            fileButton.Size = new Size(39, 39);
             fileButton.TabIndex = 3;
             fileButton.UseVisualStyleBackColor = false;
+            fileButton.Click += fileButton_Click;
             // 
             // sendButton
             // 
@@ -163,8 +168,7 @@
             sendButton.FlatStyle = FlatStyle.Flat;
             sendButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendButton.ForeColor = Color.FromArgb(248, 249, 255);
-            sendButton.Location = new Point(588, 3);
-            sendButton.Margin = new Padding(3, 3, 3, 6);
+            sendButton.Location = new Point(609, 79);
             sendButton.Name = "sendButton";
             sendButton.Padding = new Padding(8, 4, 8, 4);
             sendButton.Size = new Size(42, 39);
@@ -180,17 +184,30 @@
             messageTextBox.Dock = DockStyle.Fill;
             messageTextBox.Font = new Font("Segoe UI", 9.75F);
             messageTextBox.ForeColor = Color.FromArgb(122, 119, 143);
-            messageTextBox.Location = new Point(51, 3);
+            messageTextBox.Location = new Point(48, 79);
             messageTextBox.Margin = new Padding(3, 3, 3, 6);
             messageTextBox.MaxLength = 65526;
             messageTextBox.Multiline = true;
             messageTextBox.Name = "messageTextBox";
             messageTextBox.PlaceholderText = "Сообщение";
             messageTextBox.ScrollBars = ScrollBars.Vertical;
-            messageTextBox.Size = new Size(531, 39);
+            messageTextBox.Size = new Size(555, 39);
             messageTextBox.TabIndex = 4;
             messageTextBox.TextChanged += messageTextBox_TextChanged;
             messageTextBox.KeyPress += messageTextBox_KeyPress;
+            // 
+            // multiFileAttachmentUploader
+            // 
+            multiFileAttachmentUploader.AutoScroll = true;
+            multiFileAttachmentUploader.BackColor = SystemColors.Control;
+            tableLayoutPanelButtons.SetColumnSpan(multiFileAttachmentUploader, 3);
+            multiFileAttachmentUploader.Dock = DockStyle.Fill;
+            multiFileAttachmentUploader.Location = new Point(0, 0);
+            multiFileAttachmentUploader.Margin = new Padding(0);
+            multiFileAttachmentUploader.Name = "multiFileAttachmentUploader";
+            multiFileAttachmentUploader.Padding = new Padding(5);
+            multiFileAttachmentUploader.Size = new Size(654, 76);
+            multiFileAttachmentUploader.TabIndex = 5;
             // 
             // participantsFlow
             // 
@@ -200,7 +217,7 @@
             participantsFlow.FlowDirection = FlowDirection.TopDown;
             participantsFlow.Location = new Point(0, 276);
             participantsFlow.Name = "participantsFlow";
-            participantsFlow.Size = new Size(187, 367);
+            participantsFlow.Size = new Size(166, 367);
             participantsFlow.TabIndex = 5;
             participantsFlow.WrapContents = false;
             participantsFlow.Resize += participantsFlow_Resize;
@@ -237,7 +254,7 @@
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.5881348F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.5923424F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 4.890824F));
-            tableLayoutPanelStats.Size = new Size(187, 276);
+            tableLayoutPanelStats.Size = new Size(166, 276);
             tableLayoutPanelStats.TabIndex = 4;
             // 
             // createdAt
@@ -246,7 +263,7 @@
             createdAt.AutoSize = true;
             createdAt.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             createdAt.ForeColor = Color.FromArgb(0, 0, 0);
-            createdAt.Location = new Point(96, 121);
+            createdAt.Location = new Point(86, 121);
             createdAt.Name = "createdAt";
             createdAt.Size = new Size(74, 17);
             createdAt.TabIndex = 24;
@@ -258,7 +275,7 @@
             createdAtLabel.AutoSize = true;
             createdAtLabel.Font = new Font("Segoe UI", 8.25F);
             createdAtLabel.ForeColor = Color.Black;
-            createdAtLabel.Location = new Point(36, 123);
+            createdAtLabel.Location = new Point(26, 123);
             createdAtLabel.Name = "createdAtLabel";
             createdAtLabel.Size = new Size(54, 13);
             createdAtLabel.TabIndex = 23;
@@ -292,7 +309,7 @@
             editButton.FlatStyle = FlatStyle.Flat;
             editButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             editButton.ForeColor = Color.FromArgb(248, 249, 255);
-            editButton.Location = new Point(153, 3);
+            editButton.Location = new Point(132, 3);
             editButton.Name = "editButton";
             editButton.Size = new Size(31, 31);
             editButton.TabIndex = 17;
@@ -306,7 +323,7 @@
             hostNameLabel.AutoSize = true;
             hostNameLabel.Font = new Font("Segoe UI", 8.25F);
             hostNameLabel.ForeColor = Color.Black;
-            hostNameLabel.Location = new Point(57, 86);
+            hostNameLabel.Location = new Point(47, 86);
             hostNameLabel.Name = "hostNameLabel";
             hostNameLabel.Size = new Size(33, 13);
             hostNameLabel.TabIndex = 18;
@@ -318,7 +335,7 @@
             hostName.AutoSize = true;
             hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             hostName.ForeColor = Color.FromArgb(0, 0, 0);
-            hostName.Location = new Point(96, 84);
+            hostName.Location = new Point(86, 84);
             hostName.Name = "hostName";
             hostName.Size = new Size(74, 17);
             hostName.TabIndex = 9;
@@ -330,7 +347,7 @@
             notificationComboBox.AutoSize = true;
             notificationComboBox.BackColor = Color.White;
             tableLayoutPanelStats.SetColumnSpan(notificationComboBox, 2);
-            notificationComboBox.Location = new Point(43, 46);
+            notificationComboBox.Location = new Point(33, 46);
             notificationComboBox.Name = "notificationComboBox";
             notificationComboBox.Size = new Size(100, 19);
             notificationComboBox.TabIndex = 22;
@@ -344,7 +361,7 @@
             tableLayoutPanelStats.SetColumnSpan(participantsLabel, 2);
             participantsLabel.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsLabel.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsLabel.Location = new Point(54, 259);
+            participantsLabel.Location = new Point(44, 259);
             participantsLabel.Name = "participantsLabel";
             participantsLabel.Size = new Size(78, 17);
             participantsLabel.TabIndex = 16;
@@ -356,7 +373,7 @@
             onlineLabel.AutoSize = true;
             onlineLabel.Font = new Font("Segoe UI", 8.25F);
             onlineLabel.ForeColor = Color.Black;
-            onlineLabel.Location = new Point(48, 234);
+            onlineLabel.Location = new Point(38, 234);
             onlineLabel.Name = "onlineLabel";
             onlineLabel.Size = new Size(42, 13);
             onlineLabel.TabIndex = 21;
@@ -368,7 +385,7 @@
             participantsInfo.AutoSize = true;
             participantsInfo.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(96, 232);
+            participantsInfo.Location = new Point(86, 232);
             participantsInfo.Name = "participantsInfo";
             participantsInfo.Size = new Size(74, 17);
             participantsInfo.TabIndex = 15;
@@ -380,7 +397,7 @@
             computerLabel.AutoSize = true;
             computerLabel.Font = new Font("Segoe UI", 8.25F);
             computerLabel.ForeColor = Color.Black;
-            computerLabel.Location = new Point(31, 197);
+            computerLabel.Location = new Point(21, 197);
             computerLabel.Name = "computerLabel";
             computerLabel.Size = new Size(59, 13);
             computerLabel.TabIndex = 20;
@@ -392,7 +409,7 @@
             computer.AutoSize = true;
             computer.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             computer.ForeColor = Color.FromArgb(0, 0, 0);
-            computer.Location = new Point(96, 195);
+            computer.Location = new Point(86, 195);
             computer.Name = "computer";
             computer.Size = new Size(74, 17);
             computer.TabIndex = 13;
@@ -404,7 +421,7 @@
             classroomLabel.AutoSize = true;
             classroomLabel.Font = new Font("Segoe UI", 8.25F);
             classroomLabel.ForeColor = Color.Black;
-            classroomLabel.Location = new Point(36, 160);
+            classroomLabel.Location = new Point(26, 160);
             classroomLabel.Name = "classroomLabel";
             classroomLabel.Size = new Size(54, 13);
             classroomLabel.TabIndex = 19;
@@ -416,7 +433,7 @@
             classroom.AutoSize = true;
             classroom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             classroom.ForeColor = Color.FromArgb(0, 0, 0);
-            classroom.Location = new Point(96, 158);
+            classroom.Location = new Point(86, 158);
             classroom.Name = "classroom";
             classroom.Size = new Size(74, 17);
             classroom.TabIndex = 12;
@@ -487,6 +504,10 @@
             Title.TabIndex = 0;
             Title.Text = "Комната";
             // 
+            // openFileDialog
+            // 
+            openFileDialog.FileName = "openFileDialog";
+            // 
             // ChatPanelView
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -539,5 +560,7 @@
         private Desktop.Components.Controls.Buttons.CommonButton fileButton;
         private Desktop.Components.Controls.Buttons.CommonButton sendButton;
         private Desktop.Components.Controls.TextBoxes.MessageTextBox messageTextBox;
+        private OpenFileDialog openFileDialog;
+        private Desktop.Components.ComplexControls.MultiFileAttachmentUploader multiFileAttachmentUploader;
     }
 }

@@ -11,9 +11,11 @@ using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
+using MIN.Desktop.Components.ComplexControls;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Contracts.Views.PanelViews.Interfaces;
@@ -69,6 +71,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
         this.featureCollection = featureCollection;
         this.navigationService = navigationService;
+        localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
 
         featureCollection.Helper.NotificationService.OnNotificationClick += () =>
         {
@@ -88,7 +91,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         };
 
         hideSideBarWidth = MinimumSize.Width + splitContainerSideBar.Panel2.Width;
-        localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+        HideMultiFileAttachmentUploader();
     }
 
     /// <inheritdoc />
@@ -489,6 +492,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                 privateChatParticipantId,
                 formCts.Token
             );
+            HideMultiFileAttachmentUploader(withClear: true);
             messageTextBox.Text = string.Empty;
             changeMessageBoxSize();
         }
@@ -555,6 +559,60 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                 Room = editForm.Room
             }, roomId, localParticipant.Id, formCts.Token);
         }
+    }
+
+    private void HideMultiFileAttachmentUploader(bool withClear = false)
+    {
+        if (withClear)
+        {
+            multiFileAttachmentUploader.Clear();
+        }
+
+        var row = tableLayoutPanelButtons.GetRow(multiFileAttachmentUploader);
+
+        tableLayoutPanelButtons.SuspendLayout();
+
+        tableLayoutPanelButtons.RowStyles[row].SizeType = SizeType.Absolute;
+        tableLayoutPanelButtons.RowStyles[row].Height = 0;
+
+        multiFileAttachmentUploader.Visible = false;
+        multiFileAttachmentUploader.OnLastFileRemoved = null;
+
+        tableLayoutPanelButtons.ResumeLayout(true);
+        changeMessageBoxSize();
+    }
+
+    private void ShowMultiFileAttachmentUploader()
+    {
+        var row = tableLayoutPanelButtons.GetRow(multiFileAttachmentUploader);
+
+        tableLayoutPanelButtons.SuspendLayout();
+
+        tableLayoutPanelButtons.RowStyles[row].SizeType = SizeType.Absolute;
+        tableLayoutPanelButtons.RowStyles[row].Height = 76;
+        multiFileAttachmentUploader.Dock = DockStyle.Fill;
+
+        multiFileAttachmentUploader.Visible = true;
+
+        tableLayoutPanelButtons.ResumeLayout(true);
+        changeMessageBoxSize();
+    }
+
+    private void fileButton_Click(object sender, EventArgs e)
+    {
+        uiContext.Post(_ =>
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                ShowMultiFileAttachmentUploader();
+                multiFileAttachmentUploader.OnLastFileRemoved
+                    += () => HideMultiFileAttachmentUploader();
+                var fileAttachment = new FileAttachment(openFileDialog.SafeFileName,
+                    openFileDialog.FileName);
+
+                multiFileAttachmentUploader.AddFileAttachment(fileAttachment);
+            }
+        }, this);
     }
 
     private async void sendButton_Click(object sender, EventArgs e) => await SendMessage();
@@ -646,7 +704,11 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
     private void changeMessageBoxSize()
     {
-        tableLayoutPanelButtons.Height = messageTextBox.UpdateHeight() + tableLayoutPanelButtons.Margin.Vertical;
+        var row = tableLayoutPanelButtons.GetRow(multiFileAttachmentUploader);
+
+        tableLayoutPanelButtons.Height = messageTextBox.UpdateHeight()
+            + tableLayoutPanelButtons.Margin.Vertical
+            + Convert.ToInt32(tableLayoutPanelButtons.RowStyles[row].Height);
     }
 
     private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)

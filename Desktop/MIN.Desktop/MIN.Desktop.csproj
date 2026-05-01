@@ -61,13 +61,16 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Update="Views\Components\ChatMessages\ChatFileMessageCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Views\Components\ParticipantCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Views\Components\ChatMessageCard.cs">
+    <Compile Update="Views\Components\ChatMessages\ChatTextMessageCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Views\Components\RecentRoomCard.cs">
+    <Compile Update="Views\Components\RoomRelated\RecentRoomCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Views\Forms\LogForm.cs">
