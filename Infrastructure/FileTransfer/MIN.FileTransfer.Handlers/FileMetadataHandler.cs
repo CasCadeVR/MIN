@@ -4,6 +4,7 @@ using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
@@ -16,17 +17,20 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 {
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
+    private readonly IRoomHoster roomHoster;
     private readonly IFileTransferService fileTransferService;
     private readonly IMessageSender messageSender;
 
     public FileMetadataHandler(
         IIdentityService identityService,
         IEventBus eventBus,
+        IRoomHoster roomHoster,
         IFileTransferService fileTransferService,
         IMessageSender messageSender)
     {
         this.identityService = identityService;
         this.eventBus = eventBus;
+        this.roomHoster = roomHoster;
         this.fileTransferService = fileTransferService;
         this.messageSender = messageSender;
     }
@@ -42,16 +46,27 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(FileMetadataHandler)} - {message.GetType()}");
         }
 
-        var selfId = identityService.SelfParticipant.Id;
-
-        if (metadata.SenderId == selfId)
-        {
-            return HandlerResult.Success();
-        }
-
         if (!context.RoomContext.Participants.TryGetParticipantById(metadata.SenderId, out var sender))
         {
             return HandlerResult.Failure("Получил метаданные файла от неизвестного отправителя", stopPropagation: false);
+        }
+
+        context.RoomContext.Messages.AddMessage(metadata);
+        var selfId = identityService.SelfParticipant.Id;
+
+        if (message.SenderId == selfId || message.RecipientId == selfId || message.IsPublic)
+        {
+            await eventBus.PublishAsync(new FileMetaDataMessageReceivedEvent()
+            {
+                Message = metadata,
+                RoomId = context.RoomContext.RoomId,
+                Sender = sender!,
+            });
+        }
+
+        if (roomHoster.IsHosting(context.RoomContext.RoomId) && message.SenderId == selfId)
+        {
+            return HandlerResult.Success();
         }
 
         fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);

@@ -11,4 +11,9 @@ public interface IChatService
     /// Отправить текстовое сообщение
     /// </summary>
     Task SendMessageAsync(Guid roomId, string content, ParticipantInfo sender, Guid? recipientId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Отправить файл
+    /// </summary>
+    Task SendFileAsync(Guid roomId, string fileName, string filePath, ParticipantInfo sender, Guid? recipientId = null, CancellationToken cancellationToken = default);
 }

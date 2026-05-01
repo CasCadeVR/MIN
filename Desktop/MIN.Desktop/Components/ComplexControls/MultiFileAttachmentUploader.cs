@@ -29,6 +29,11 @@ public partial class MultiFileAttachmentUploader : FlowLayoutPanel
     }
 
     /// <summary>
+    /// Прикреплённые файлы
+    /// </summary>
+    public IEnumerable<FileAttachment> AttachedFiles => attachments;
+
+    /// <summary>
     /// Добавить файл
     /// </summary>
     public void AddFileAttachment(FileAttachment fileAttachment)

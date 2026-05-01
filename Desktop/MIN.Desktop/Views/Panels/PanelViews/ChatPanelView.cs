@@ -11,7 +11,6 @@ using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
-using MIN.Desktop.Components.ComplexControls;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
@@ -24,6 +23,8 @@ using MIN.Desktop.Views.Components;
 using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Desktop.Views.Panels.SidePanelViews;
 using MIN.DI.FeatureCollection;
+using MIN.FileTransfer.Events;
+using MIN.FileTransfer.Messaging;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Services;
 
@@ -52,7 +53,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     private IEndpoint endpoint = null!;
 
     private bool isResizing;
-    private ChatTextMessage? lastTextMessage;
+    private IMessage? lastChatMessage;
     private Guid? privateChatParticipantId;
 
     private HashSet<IDisposable> eventTokens = null!;
@@ -63,15 +64,16 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     public ChatPanelView(IMinFeatureCollection featureCollection,
         INavigationService navigationService)
     {
+        this.featureCollection = featureCollection;
+        this.navigationService = navigationService;
+        localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+
         InitializeComponent();
+
         SendSystemMessage(new SystemTextMessage
         {
             Content = "Загрузка...",
         });
-
-        this.featureCollection = featureCollection;
-        this.navigationService = navigationService;
-        localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
 
         featureCollection.Helper.NotificationService.OnNotificationClick += () =>
         {
@@ -117,6 +119,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         eventTokens =
         [
             eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived),
+            eventBus.Subscribe<FileMetaDataMessageReceivedEvent>(OnFileMetaDataMessageReceivedEvent),
             eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoChangedEvent),
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
@@ -126,6 +129,26 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     }
 
     private async Task OnChatTextMessageReceived(ChatTextMessageReceivedEvent eventMessage, CancellationToken ct)
+    {
+        if (eventMessage.RoomId != roomId)
+        {
+            return;
+        }
+
+        uiContext.Post(_ =>
+        {
+            AddMessageToChatFlow(eventMessage.Message);
+            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
+            {
+                RoomId = roomId,
+                DescribableMessage = eventMessage.Message
+            });
+            NotifyIfNeeded(eventMessage.Message);
+        }, null);
+        await Task.CompletedTask;
+    }
+
+    private async Task OnFileMetaDataMessageReceivedEvent(FileMetaDataMessageReceivedEvent eventMessage, CancellationToken ct)
     {
         if (eventMessage.RoomId != roomId)
         {
@@ -369,31 +392,32 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
             var row = new ChatMessageRow();
             Control rowControl;
 
+            var minutesPassed = 0;
+
+            var isSelfMessage = message.SenderId == localParticipant.Id;
+            var isHostMessage = room?.HostParticipant?.Id == message.SenderId;
+
+            var isCurrentPrivate = message.RecipientId == localParticipant.Id
+                || (message.SenderId == localParticipant.Id && message.RecipientId != null);
+
+            var wasLastPrivate = lastChatMessage != null && (
+                lastChatMessage.RecipientId == localParticipant.Id
+                || (lastChatMessage.SenderId == localParticipant.Id && lastChatMessage.RecipientId != null)
+            );
+
             switch (message)
             {
                 case ChatTextMessage chatTextMessage:
-                    var isSelfMessage = chatTextMessage.Sender.Id == localParticipant.Id;
-                    var isHostMessage = room?.HostParticipant?.Id == chatTextMessage.Sender.Id;
-
-                    var isCurrentPrivate = chatTextMessage.RecipientId == localParticipant.Id
-                        || (chatTextMessage.SenderId == localParticipant.Id && chatTextMessage.RecipientId != null);
-
-                    var wasLastPrivate = lastTextMessage != null && (
-                        lastTextMessage.RecipientId == localParticipant.Id
-                        || (lastTextMessage.SenderId == localParticipant.Id && lastTextMessage.RecipientId != null)
-                    );
-
-                    var minutesPassed = 0;
-                    if (lastTextMessage != null)
+                    if (lastChatMessage != null)
                     {
-                        minutesPassed = (int)(chatTextMessage.Timestamp - lastTextMessage.Timestamp).TotalMinutes;
+                        minutesPassed = (int)(chatTextMessage.Timestamp - lastChatMessage.Timestamp).TotalMinutes;
                         minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
                     }
 
                     rowControl = new ChatTextMessageCard(chatTextMessage,
                         localParticipant,
                         isHostMessage,
-                        removeHeaders: isSelfMessage || lastTextMessage?.SenderId == chatTextMessage.SenderId)
+                        removeHeaders: isSelfMessage || lastChatMessage?.SenderId == chatTextMessage.SenderId)
                     {
                         Anchor = isSelfMessage ? AnchorStyles.Right : AnchorStyles.Left,
                         Margin = new Padding(20, 0, 20, 0)
@@ -424,7 +448,50 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     }
 
 
-                    lastTextMessage = chatTextMessage;
+                    lastChatMessage = chatTextMessage;
+                    break;
+
+                case FileMetadataMessage fileMetadataMessage:
+                    if (lastChatMessage != null)
+                    {
+                        minutesPassed = (int)(fileMetadataMessage.Timestamp - lastChatMessage.Timestamp).TotalMinutes;
+                        minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
+                    }
+
+                    rowControl = new ChatFileMessageCard(fileMetadataMessage,
+                        localParticipant,
+                        isHostMessage,
+                        removeHeaders: isSelfMessage || lastChatMessage?.SenderId == fileMetadataMessage.SenderId)
+                    {
+                        Anchor = isSelfMessage ? AnchorStyles.Right : AnchorStyles.Left,
+                        Margin = new Padding(20, 0, 20, 0)
+                    };
+
+                    if (isCurrentPrivate && !wasLastPrivate)
+                    {
+                        var sender = room?.CurrentParticipants.First(x => x.Id == fileMetadataMessage.SenderId);
+                        var recipient = room?.CurrentParticipants.First(x => x.Id == fileMetadataMessage.RecipientId);
+
+                        SendSystemMessage(new SystemTextMessage
+                        {
+                            Content = recipient?.Id != localParticipant.Id
+                                ? $"Это начало приватного общения с {recipient?.Name}"
+                                : $"{sender?.Name} прислал вам приватное сообщение:",
+                            RecipientId = localParticipant.Id,
+                        });
+                    }
+
+                    if (isCurrentPrivate)
+                    {
+                        row.BackColor = ColorScheme.PrivateParticipantCardBackground;
+                        row.Padding = new Padding(row.Padding.Left, minutesPassed, row.Padding.Right, row.Padding.Bottom);
+                    }
+                    else
+                    {
+                        row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
+                    }
+
+                    lastChatMessage = fileMetadataMessage;
                     break;
 
                 case SystemTextMessage systemTextMessage:
@@ -475,7 +542,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         }
     }
 
-    private bool IsMessageValid() => !string.IsNullOrWhiteSpace(messageTextBox.Text);
+    private bool IsMessageValid() => !string.IsNullOrWhiteSpace(messageTextBox.Text) || multiFileAttachmentUploader.AttachedFiles.Any();
 
     private async Task SendMessage()
     {
@@ -486,12 +553,27 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
         try
         {
-            await featureCollection.Chat.ChatService.SendMessageAsync(roomId,
-                messageTextBox.Text.Trim(),
-                localParticipant,
-                privateChatParticipantId,
-                formCts.Token
-            );
+            if (!string.IsNullOrWhiteSpace(messageTextBox.Text))
+            {
+                await featureCollection.Chat.ChatService.SendMessageAsync(roomId,
+                    messageTextBox.Text.Trim(),
+                    localParticipant,
+                    privateChatParticipantId,
+                    formCts.Token
+                );
+            }
+
+            foreach (var fileAttachement in multiFileAttachmentUploader.AttachedFiles)
+            {
+                await featureCollection.Chat.ChatService.SendFileAsync(roomId,
+                   fileAttachement.FileName,
+                   fileAttachement.FilePath,
+                   localParticipant,
+                   privateChatParticipantId,
+                   formCts.Token
+               );
+            }
+
             HideMultiFileAttachmentUploader(withClear: true);
             messageTextBox.Text = string.Empty;
             changeMessageBoxSize();

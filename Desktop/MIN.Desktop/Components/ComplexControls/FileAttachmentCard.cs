@@ -45,6 +45,7 @@ public class FileAttachmentCard : Label
         {
             Text = "×",
             Size = new Size(24, 24),
+            Padding = new Padding(0),
             Location = new Point(Width - 26, 2),
             Font = FontScheme.Caption,
             BackColor = Color.Red,

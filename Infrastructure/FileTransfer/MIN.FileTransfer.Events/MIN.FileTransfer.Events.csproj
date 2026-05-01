@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\Events\MIN.Core.Events.Contracts\MIN.Core.Events.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.FileTransfer.Messaging\MIN.FileTransfer.Messaging.csproj" />
     <ProjectReference Include="..\MIN.FileTransfer.Services.Contracts\MIN.FileTransfer.Services.Contracts.csproj" />
   </ItemGroup>
 
