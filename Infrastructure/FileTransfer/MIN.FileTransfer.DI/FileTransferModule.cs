@@ -19,8 +19,10 @@ public class FileTransferModule : Module
     protected override void Load(IServiceCollection services)
     {
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IFileTransferMessagingAnchor>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<FileTransferService>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, IFileTransferHandlerAnchor>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<FileTransferService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<FileHelperService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<FileStorageService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<FileTransferFeatureCollection>(ServiceLifetime.Singleton);
     }
 }

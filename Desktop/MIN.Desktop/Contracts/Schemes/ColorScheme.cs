@@ -79,11 +79,6 @@ public static class ColorScheme
     /// </summary>
     public readonly static Color TextOnAccent = ColorTranslator.FromHtml("#FFFFFF");
 
-    /// <summary>
-    /// Инвертированный цвет текста на акцентном фоне (например, чёрный текст на кнопке)
-    /// </summary>
-    public readonly static Color TextOnAccentInverted = ColorTranslator.FromHtml("#000000");
-
     #endregion
 
     #region Other

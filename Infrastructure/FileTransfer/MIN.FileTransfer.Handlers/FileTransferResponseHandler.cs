@@ -17,17 +17,20 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
 {
     private readonly IEventBus eventBus;
     private readonly IFileTransferService fileTransferService;
+    private readonly IFileStorageService fileStorageService;
     private readonly IMessageSender messageSender;
     private readonly IStreamManager streamManager;
 
     public FileTransferResponseHandler(
         IEventBus eventBus,
         IFileTransferService fileTransferService,
+        IFileStorageService fileStorageService,
         IMessageSender messageSender,
         IStreamManager streamManager)
     {
         this.eventBus = eventBus;
         this.fileTransferService = fileTransferService;
+        this.fileStorageService = fileStorageService;
         this.messageSender = messageSender;
         this.streamManager = streamManager;
     }
@@ -67,7 +70,7 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
 
         if (transferInfo.Direction == FileTransferDirection.Upload)
         {
-            var filePath = fileTransferService.GetFilePath(transferInfo.RoomId, transferInfo.FileName);
+            var filePath = fileStorageService.GetFilePath(transferInfo.RoomId, transferInfo.FileName);
             if (filePath == null)
             {
                 var errorResponse = new FileTransferResponseMessage

@@ -1,4 +1,4 @@
-﻿using MIN.FileTransfer.Services.Contracts.Interfaces;
+using MIN.FileTransfer.Services.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.DI.FeatureCollection;
 
@@ -9,4 +9,10 @@ public interface IFileTransferFeatureCollection
 {
     /// <inheritdoc cref="IFileTransferService"/>
     IFileTransferService FileTransferService { get; }
+
+    /// <inheritdoc cref="IFileHelperService"/>
+    IFileHelperService FileHelperService { get; }
+
+    /// <inheritdoc cref="IFileStorageService"/>
+    IFileStorageService FileStorageService { get; }
 }

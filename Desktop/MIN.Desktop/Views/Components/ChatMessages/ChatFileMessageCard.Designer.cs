@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             tableLayoutPanelLabels = new TableLayoutPanel();
+            fileName = new MIN.Desktop.Components.Labels.Heading3Label();
             fileType = new MIN.Desktop.Components.Labels.Heading3Label();
-            fileName = new MIN.Desktop.Components.Textboxes.ReadonlyTextbox();
             fileSize = new MIN.Desktop.Components.Labels.Heading3Label();
             tableLayoutPanel = new TableLayoutPanel();
             sendTime = new MIN.Desktop.Components.Textboxes.ReadonlyTextbox();
@@ -45,8 +45,8 @@
             tableLayoutPanelLabels.ColumnCount = 2;
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70F));
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanelLabels.Controls.Add(fileType, 0, 0);
             tableLayoutPanelLabels.Controls.Add(fileName, 1, 0);
+            tableLayoutPanelLabels.Controls.Add(fileType, 0, 0);
             tableLayoutPanelLabels.Controls.Add(fileSize, 1, 1);
             tableLayoutPanelLabels.Dock = DockStyle.Fill;
             tableLayoutPanelLabels.Location = new Point(0, 22);
@@ -55,38 +55,41 @@
             tableLayoutPanelLabels.RowCount = 2;
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelLabels.Size = new Size(299, 70);
+            tableLayoutPanelLabels.Size = new Size(218, 73);
             tableLayoutPanelLabels.TabIndex = 3;
-            // 
-            // fileType
-            // 
-            fileType.Anchor = AnchorStyles.None;
-            fileType.AutoEllipsis = true;
-            fileType.AutoSize = true;
-            fileType.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            fileType.ForeColor = Color.FromArgb(0, 0, 0);
-            fileType.Location = new Point(3, 28);
-            fileType.Name = "fileType";
-            tableLayoutPanelLabels.SetRowSpan(fileType, 2);
-            fileType.Size = new Size(64, 13);
-            fileType.TabIndex = 2;
-            fileType.Text = "Тип файла";
             // 
             // fileName
             // 
             fileName.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            fileName.BackColor = SystemColors.Control;
-            fileName.BorderStyle = BorderStyle.None;
-            fileName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
+            fileName.AutoEllipsis = true;
+            fileName.AutoSize = true;
+            fileName.Font = new Font("Segoe UI", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
             fileName.ForeColor = Color.FromArgb(0, 0, 0);
-            fileName.Location = new Point(73, 17);
-            fileName.Margin = new Padding(3, 3, 0, 0);
+            fileName.Location = new Point(73, 16);
+            fileName.MaximumSize = new Size(0, 20);
             fileName.Name = "fileName";
-            fileName.ReadOnly = true;
-            fileName.Size = new Size(226, 18);
-            fileName.TabIndex = 0;
+            fileName.Size = new Size(142, 20);
+            fileName.TabIndex = 3;
             fileName.Text = "Имя файла";
-            fileName.WordWrap = false;
+            fileName.TextAlign = ContentAlignment.BottomLeft;
+            // 
+            // fileType
+            // 
+            fileType.AutoEllipsis = true;
+            fileType.AutoSize = true;
+            fileType.BackColor = SystemColors.GradientActiveCaption;
+            fileType.Dock = DockStyle.Fill;
+            fileType.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            fileType.ForeColor = Color.FromArgb(0, 0, 0);
+            fileType.Location = new Point(3, 3);
+            fileType.Margin = new Padding(3);
+            fileType.Name = "fileType";
+            fileType.Padding = new Padding(8);
+            tableLayoutPanelLabels.SetRowSpan(fileType, 2);
+            fileType.Size = new Size(64, 67);
+            fileType.TabIndex = 2;
+            fileType.Text = "Тип файла";
+            fileType.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // fileSize
             // 
@@ -94,7 +97,7 @@
             fileSize.AutoSize = true;
             fileSize.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
             fileSize.ForeColor = Color.FromArgb(0, 0, 0);
-            fileSize.Location = new Point(73, 35);
+            fileSize.Location = new Point(73, 36);
             fileSize.Name = "fileSize";
             fileSize.Size = new Size(85, 13);
             fileSize.TabIndex = 1;
@@ -116,7 +119,7 @@
             tableLayoutPanel.RowCount = 2;
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 22F));
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
-            tableLayoutPanel.Size = new Size(331, 92);
+            tableLayoutPanel.Size = new Size(250, 95);
             tableLayoutPanel.TabIndex = 4;
             // 
             // sendTime
@@ -126,7 +129,7 @@
             sendTime.BorderStyle = BorderStyle.None;
             sendTime.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendTime.ForeColor = Color.FromArgb(0, 0, 0);
-            sendTime.Location = new Point(299, 77);
+            sendTime.Location = new Point(218, 80);
             sendTime.Margin = new Padding(0, 0, 3, 0);
             sendTime.Name = "sendTime";
             sendTime.ReadOnly = true;
@@ -142,7 +145,7 @@
             sendRole.Dock = DockStyle.Right;
             sendRole.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendRole.ForeColor = Color.FromArgb(0, 0, 0);
-            sendRole.Location = new Point(302, 2);
+            sendRole.Location = new Point(221, 2);
             sendRole.Margin = new Padding(3, 2, 3, 2);
             sendRole.Name = "sendRole";
             sendRole.ReadOnly = true;
@@ -162,7 +165,7 @@
             senderName.Margin = new Padding(3, 3, 0, 0);
             senderName.Name = "senderName";
             senderName.ReadOnly = true;
-            senderName.Size = new Size(296, 18);
+            senderName.Size = new Size(215, 18);
             senderName.TabIndex = 0;
             senderName.Text = "Отправитель";
             senderName.WordWrap = false;
@@ -173,9 +176,10 @@
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(tableLayoutPanel);
             Margin = new Padding(0);
-            MinimumSize = new Size(0, 22);
+            MaximumSize = new Size(250, 95);
+            MinimumSize = new Size(179, 22);
             Name = "ChatFileMessageCard";
-            Size = new Size(331, 92);
+            Size = new Size(250, 95);
             tableLayoutPanelLabels.ResumeLayout(false);
             tableLayoutPanelLabels.PerformLayout();
             tableLayoutPanel.ResumeLayout(false);
@@ -187,11 +191,11 @@
 
         private TableLayoutPanel tableLayoutPanelLabels;
         private Labels.Heading3Label fileType;
-        private Textboxes.ReadonlyTextbox fileName;
         private Labels.Heading3Label fileSize;
         private TableLayoutPanel tableLayoutPanel;
         private Textboxes.ReadonlyTextbox sendTime;
         private Textboxes.ReadonlyTextbox sendRole;
         private Textboxes.ReadonlyTextbox senderName;
+        private Labels.Heading3Label fileName;
     }
 }

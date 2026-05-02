@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using MIN.Core.Events.Contracts;
-using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.FileTransfer.Events;
@@ -14,10 +13,9 @@ namespace MIN.FileTransfer.Services;
 /// <inheritdoc cref="IFileTransferService"/>
 public sealed class FileTransferService : IFileTransferService, IDisposable
 {
-    private readonly string baseDirectory;
-    private readonly IRoomStore roomStore;
     private readonly IEventBus eventBus;
     private readonly IChunkBufferAssembler chunkBufferAssembler;
+    private readonly IFileStorageService fileStorageService;
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, TransferInfo> activeTransfers = new();
     private readonly ConcurrentDictionary<Guid, string> pendingMetadata = new();
@@ -26,87 +24,19 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="FileTransferService"/>
     /// </summary>
-    public FileTransferService(IRoomStore roomStore,
+    public FileTransferService(
         IEventBus eventBus,
         IChunkBufferAssembler chunkBufferAssembler,
+        IFileStorageService fileStorageService,
         ILoggerProvider logger)
     {
-        this.roomStore = roomStore;
         this.eventBus = eventBus;
         this.chunkBufferAssembler = chunkBufferAssembler;
+        this.fileStorageService = fileStorageService;
         this.logger = logger;
-        baseDirectory = Path.Combine(AppContext.BaseDirectory, "RoomFiles");
-
-        if (!Directory.Exists(baseDirectory))
-        {
-            Directory.CreateDirectory(baseDirectory);
-        }
 
         chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
         chunkBufferAssembler.ChunkReceived += OnChunkReceived;
-    }
-
-    /// <inheritdoc />
-    public string GetRoomDirectory(Guid roomId)
-    {
-        var room = roomStore.GetRoom(roomId);
-        var roomDir = Path.Combine(baseDirectory, $"Файлы комнаты {room.Name}");
-        if (!Directory.Exists(roomDir))
-        {
-            Directory.CreateDirectory(roomDir);
-        }
-        return roomDir;
-    }
-
-    /// <inheritdoc />
-    public string? GetFilePath(Guid roomId, string fileName)
-    {
-        var filePath = Path.Combine(GetRoomDirectory(roomId), fileName);
-        return File.Exists(filePath) ? filePath : null;
-    }
-
-    /// <inheritdoc />
-    public async Task<string> SaveFileAsync(Guid roomId, string fileName, Stream fileStream, CancellationToken cancellationToken = default)
-    {
-        var roomDir = GetRoomDirectory(roomId);
-        var filePath = Path.Combine(roomDir, fileName);
-
-        await using var fileStreamOut = File.Create(filePath);
-        await fileStream.CopyToAsync(fileStreamOut, cancellationToken);
-
-        return filePath;
-    }
-
-    Task<Stream?> IFileTransferService.OpenFileForReadingAsync(Guid roomId, string fileName, CancellationToken cancellationToken)
-    {
-        var filePath = GetFilePath(roomId, fileName);
-        if (filePath == null)
-        {
-            return Task.FromResult<Stream?>(null);
-        }
-
-        Stream stream = File.OpenRead(filePath);
-        return Task.FromResult<Stream?>(stream);
-    }
-
-    Task IFileTransferService.DeleteRoomFilesAsync(Guid roomId, CancellationToken cancellationToken)
-    {
-        var roomDir = GetRoomDirectory(roomId);
-        if (Directory.Exists(roomDir))
-        {
-            Directory.Delete(roomDir, recursive: true);
-        }
-        return Task.CompletedTask;
-    }
-
-    Task IFileTransferService.DeleteFileAsync(Guid roomId, string fileName, CancellationToken cancellationToken)
-    {
-        var filePath = GetFilePath(roomId, fileName);
-        if (filePath != null)
-        {
-            File.Delete(filePath);
-        }
-        return Task.CompletedTask;
     }
 
     void IFileTransferService.RegisterTransfer(Guid transferId, Guid roomId, FileTransferDirection direction, string fileName)
@@ -135,6 +65,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         pendingMetadata[transferId] = fileName;
     }
 
+
     bool IFileTransferService.TryGetPendingFileName(Guid transferId, out string fileName)
         => pendingMetadata.TryGetValue(transferId, out fileName!);
 
@@ -144,45 +75,48 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         pendingMetadata.TryRemove(transferId, out _);
     }
 
-    private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
+    /// <inheritdoc />
+    public async Task OnFileDataReceivedAsync(Guid transferId, byte[] data, CancellationToken cancellationToken = default)
     {
+        if (!TryGetTransferInfo(transferId, out var info))
+        {
+            return;
+        }
+
         try
         {
-            if (!TryGetTransferInfo(e.StreamId, out var info))
-            {
-                return;
-            }
-
-            await using var ms = new MemoryStream(e.Data);
-            var filePath = await SaveFileAsync(info.RoomId, info.FileName, ms);
+            await using var ms = new MemoryStream(data);
+            var finalFileName = await fileStorageService.SaveFileAsync(info.RoomId, ms, info.FileName, cancellationToken);
 
             await eventBus.PublishAsync(new FileTransferCompletedEvent
             {
                 RoomId = info.RoomId,
-                TransferId = e.StreamId,
-                FileName = info.FileName,
-                FilePath = filePath,
+                TransferId = transferId,
+                FileName = finalFileName,
+                FilePath = fileStorageService.GetFilePath(info.RoomId, finalFileName) ?? string.Empty,
             });
 
-            RemoveTransfer(e.StreamId);
-            RemovePendingMetadata(e.StreamId);
+            RemoveTransfer(transferId);
+            RemovePendingMetadata(transferId);
         }
         catch (Exception ex)
         {
-            logger.Log($"Ошибка при сохранении файла из потока {e.StreamId}: {ex.Message}");
+            logger.Log($"Ошибка при сохранении файла из потока {transferId}: {ex.Message}");
 
-            if (TryGetTransferInfo(e.StreamId, out var info))
+            await eventBus.PublishAsync(new FileTransferFailedEvent
             {
-                await eventBus.PublishAsync(new FileTransferFailedEvent
-                {
-                    RoomId = info.RoomId,
-                    TransferId = e.StreamId,
-                    ErrorMessage = ex.Message,
-                });
+                RoomId = info.RoomId,
+                TransferId = transferId,
+                ErrorMessage = ex.Message,
+            });
 
-                RemoveTransfer(e.StreamId);
-            }
+            RemoveTransfer(transferId);
         }
+    }
+
+    private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
+    {
+        await OnFileDataReceivedAsync(e.StreamId, e.Data);
     }
 
     private async void OnChunkReceived(object? sender, ChunkReceivedEventArgs e)

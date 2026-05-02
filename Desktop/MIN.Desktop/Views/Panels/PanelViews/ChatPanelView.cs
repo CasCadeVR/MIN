@@ -458,7 +458,8 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                         minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
                     }
 
-                    rowControl = new ChatFileMessageCard(fileMetadataMessage,
+                    rowControl = new ChatFileMessageCard(featureCollection.FileTransfer,
+                        fileMetadataMessage,
                         localParticipant,
                         isHostMessage,
                         removeHeaders: isSelfMessage || lastChatMessage?.SenderId == fileMetadataMessage.SenderId)
@@ -490,6 +491,8 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     {
                         row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
                     }
+
+                    row.Height = rowControl.Height;
 
                     lastChatMessage = fileMetadataMessage;
                     break;
