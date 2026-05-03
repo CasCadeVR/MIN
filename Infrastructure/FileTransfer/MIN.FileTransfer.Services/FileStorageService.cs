@@ -9,18 +9,21 @@ public sealed class FileStorageService : IFileStorageService
 {
     private readonly string baseDirectory;
     private readonly IRoomStore roomStore;
+    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="FileStorageService"/>
     /// </summary>
-    public FileStorageService(IRoomStore roomStore)
+    public FileStorageService(IRoomStore roomStore, ILoggerProvider logger)
     {
         this.roomStore = roomStore;
+        this.logger = logger;
         baseDirectory = Path.Combine(AppContext.BaseDirectory, "RoomFiles");
 
         if (!Directory.Exists(baseDirectory))
         {
             Directory.CreateDirectory(baseDirectory);
+            logger.Log($"Создана базовая папка для файлов: {baseDirectory}");
         }
     }
 
@@ -39,6 +42,7 @@ public sealed class FileStorageService : IFileStorageService
         if (!Directory.Exists(roomDir))
         {
             Directory.CreateDirectory(roomDir);
+            logger.Log($"Создана папка для комнаты {roomId}: {roomDir}");
         }
     }
 
@@ -63,9 +67,12 @@ public sealed class FileStorageService : IFileStorageService
         var finalFileName = ResolveUniqueFileName(roomDir, fileName);
         var filePath = Path.Combine(roomDir, finalFileName);
 
+        logger.Log($"Сохраняю файл: {fileName} → {finalFileName} ({source.Length} байт)");
+
         await using var fileStream = File.Create(filePath);
         await source.CopyToAsync(fileStream, cancellationToken);
 
+        logger.Log($"Файл сохранён: {filePath}");
         return finalFileName;
     }
 
@@ -74,9 +81,11 @@ public sealed class FileStorageService : IFileStorageService
         var filePath = GetFilePath(roomId, fileName);
         if (filePath == null)
         {
+            logger.Log($"Файл не найден для чтения: {fileName} (комната {roomId})");
             return Task.FromResult<Stream?>(null);
         }
 
+        logger.Log($"Открываю файл для чтения: {filePath}");
         Stream stream = File.OpenRead(filePath);
         return Task.FromResult<Stream?>(stream);
     }
@@ -86,6 +95,7 @@ public sealed class FileStorageService : IFileStorageService
         var filePath = GetFilePath(roomId, fileName);
         if (filePath != null)
         {
+            logger.Log($"Удаляю файл: {filePath}");
             File.Delete(filePath);
         }
         return Task.CompletedTask;
@@ -96,6 +106,7 @@ public sealed class FileStorageService : IFileStorageService
         var roomDir = GetRoomDirectory(roomId);
         if (Directory.Exists(roomDir))
         {
+            logger.Log($"Удаляю все файлы комнаты {roomId}: {roomDir}");
             Directory.Delete(roomDir, recursive: true);
         }
         return Task.CompletedTask;

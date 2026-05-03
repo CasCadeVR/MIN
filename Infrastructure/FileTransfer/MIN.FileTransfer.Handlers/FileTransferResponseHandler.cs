@@ -10,6 +10,7 @@ using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
@@ -20,19 +21,22 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
     private readonly IFileStorageService fileStorageService;
     private readonly IMessageSender messageSender;
     private readonly IStreamManager streamManager;
+    private readonly ILoggerProvider logger;
 
     public FileTransferResponseHandler(
         IEventBus eventBus,
         IFileTransferService fileTransferService,
         IFileStorageService fileStorageService,
         IMessageSender messageSender,
-        IStreamManager streamManager)
+        IStreamManager streamManager,
+        ILoggerProvider logger)
     {
         this.eventBus = eventBus;
         this.fileTransferService = fileTransferService;
         this.fileStorageService = fileStorageService;
         this.messageSender = messageSender;
         this.streamManager = streamManager;
+        this.logger = logger;
     }
 
     IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.FileTransferResponse];
@@ -43,11 +47,16 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
     {
         if (message is not FileTransferResponseMessage response)
         {
+            logger.Log($"Неизвестный тип сообщения в {nameof(FileTransferResponseHandler)} - {message.GetType()}");
             return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(FileTransferResponseHandler)} - {message.GetType()}");
         }
 
+        logger.Log($"Получен FileTransferResponse: TransferId={response.TransferId}, Success={response.Success}");
+
         if (!response.Success)
         {
+            logger.Log($"Transfer {response.TransferId} завершился ошибкой: {response.ErrorMessage ?? "Unknown error"}");
+
             if (fileTransferService.TryGetTransferInfo(response.TransferId, out var info))
             {
                 await eventBus.PublishAsync(new FileTransferFailedEvent
@@ -65,14 +74,19 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
 
         if (!fileTransferService.TryGetTransferInfo(response.TransferId, out var transferInfo))
         {
+            logger.Log($"Не найдена информация о transfer {response.TransferId}");
             return HandlerResult.Failure($"Не найдена информация о transfer {response.TransferId}", stopPropagation: false);
         }
+
+        logger.Log($"Transfer {response.TransferId}: Direction={transferInfo.Direction}, FileName={transferInfo.FileName}");
 
         if (transferInfo.Direction == FileTransferDirection.Upload)
         {
             var filePath = fileStorageService.GetFilePath(transferInfo.RoomId, transferInfo.FileName);
             if (filePath == null)
             {
+                logger.Log($"Файл не найден на сервере: {transferInfo.FileName} (TransferId: {response.TransferId})");
+
                 var errorResponse = new FileTransferResponseMessage
                 {
                     RoomId = transferInfo.RoomId,
@@ -86,6 +100,8 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
                 return HandlerResult.Failure("File not found on server", stopPropagation: true);
             }
 
+            logger.Log($"Начинаю стриминг файла {transferInfo.FileName} ({new FileInfo(filePath).Length} байт)");
+
             await using var fileStream = File.OpenRead(filePath);
             var fileBytes = new byte[fileStream.Length];
             await fileStream.ReadAsync(fileBytes, context.CancellationToken);
@@ -96,7 +112,12 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
                 RequiresEncryption = true,
             };
 
+            logger.Log($"Отправляю файл через StreamManager: TransferId={response.TransferId}");
             await streamManager.SendAsync(fileBytes, options, transferInfo.RoomId, context.ConnectionId, context.CancellationToken);
+        }
+        else
+        {
+
         }
 
         return HandlerResult.Success(stopPropagation: true);

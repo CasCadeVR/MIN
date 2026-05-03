@@ -1,7 +1,10 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Properties;
 using MIN.FileTransfer.DI.FeatureCollection;
+using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 
 namespace MIN.Desktop.Components;
@@ -9,13 +12,15 @@ namespace MIN.Desktop.Components;
 /// <summary>
 /// Карточка сообщения, представляющая файл от пользователя
 /// </summary>
-public partial class ChatFileMessageCard : UserControl
+public partial class ChatFileMessageCard : UserControl, IDisposable
 {
     private readonly IFileTransferFeatureCollection fileTransferFeatureCollection;
+    private readonly IEventBus eventBus;
     private readonly FileMetadataMessage fileMetadataMessage;
     private readonly ParticipantInfo localParticipant;
     private readonly bool hostMessage;
     private readonly bool removeHeaders;
+    private HashSet<IDisposable> eventTokens = null!;
     private bool downloaded;
     private string savedFileType = string.Empty;
 
@@ -28,6 +33,7 @@ public partial class ChatFileMessageCard : UserControl
     /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
     /// </summary>
     public ChatFileMessageCard(IFileTransferFeatureCollection fileTransferFeatureCollection,
+        IEventBus eventBus,
         FileMetadataMessage fileMetadataMessage,
         ParticipantInfo localParticipant,
         bool hostMessage,
@@ -35,6 +41,7 @@ public partial class ChatFileMessageCard : UserControl
     {
         InitializeComponent();
         this.fileTransferFeatureCollection = fileTransferFeatureCollection;
+        this.eventBus = eventBus;
         this.fileMetadataMessage = fileMetadataMessage;
         this.localParticipant = localParticipant;
         this.hostMessage = hostMessage;
@@ -44,6 +51,27 @@ public partial class ChatFileMessageCard : UserControl
 
         FillLabels();
         ApplyStylings();
+        SubscribeToEvents();
+    }
+
+    private void SubscribeToEvents()
+    {
+        eventTokens = [
+            eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted)
+        ];
+    }
+
+    private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != fileMetadataMessage.RoomId)
+        {
+            return;
+        }
+
+        downloaded = true;
+        fileMetadataMessage.FilePath = eventMessage.FilePath;
+
+        await Task.CompletedTask;
     }
 
     private void ApplyStylings()
@@ -120,6 +148,15 @@ public partial class ChatFileMessageCard : UserControl
         else
         {
             OnDownloadRequested?.Invoke();
+        }
+    }
+
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    void IDisposable.Dispose()
+    {
+        foreach (var token in eventTokens)
+        {
+            token.Dispose();
         }
     }
 }

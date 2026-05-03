@@ -18,16 +18,19 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
     private readonly IEventBus eventBus;
     private readonly IRoomHoster roomHoster;
     private readonly IIdentityService identityService;
+    private readonly ILoggerProvider logger;
 
     public FileMetadataHandler(IFileTransferService fileTransferService,
         IEventBus eventBus,
         IRoomHoster roomHoster,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        ILoggerProvider logger)
     {
         this.fileTransferService = fileTransferService;
         this.eventBus = eventBus;
         this.roomHoster = roomHoster;
         this.identityService = identityService;
+        this.logger = logger;
     }
 
     IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.FileMetadata];
@@ -38,11 +41,15 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
     {
         if (message is not FileMetadataMessage metadata)
         {
+            logger.Log($"Неизвестный тип сообщения в {nameof(FileMetadataHandler)} - {message.GetType()}");
             return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(FileMetadataHandler)} - {message.GetType()}");
         }
 
+        logger.Log($"Получены метаданные файла: {metadata.FileName} ({metadata.FileSize} байт) от {metadata.SenderId}");
+
         if (!context.RoomContext.Participants.TryGetParticipantById(metadata.SenderId, out var sender))
         {
+            logger.Log($"Получил метаданные файла от неизвестного отправителя {metadata.SenderId}");
             return HandlerResult.Failure("Получил метаданные файла от неизвестного отправителя", stopPropagation: false);
         }
 
@@ -51,6 +58,7 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 
         if (message.SenderId != selfId)
         {
+            logger.Log($"Убираю клиентский путь к файлу для получателя: {metadata.FileName}");
             metadata.FilePath = null;
         }
 
@@ -66,9 +74,11 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 
         if (!roomHoster.IsHosting(context.RoomContext.RoomId) || message.SenderId == selfId)
         {
+            logger.Log($"Не являюсь хостом или отправитель — не запрашиваю файл: {metadata.FileName}");
             return HandlerResult.Success();
         }
 
+        logger.Log($"Хост: регистрирую загрузку файла {metadata.FileName} (TransferId: {metadata.TransferId})");
         fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);
         fileTransferService.RegisterTransfer(metadata.TransferId, metadata.RoomId, FileTransferDirection.Upload, metadata.FileName);
 
@@ -79,6 +89,8 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             RecipientId = metadata.SenderId,
             Direction = FileTransferDirection.Upload,
         };
+
+        logger.Log($"Отправляю FileTransferRequest (Upload) участнику {metadata.SenderId} для файла {metadata.FileName}");
 
         await eventBus.PublishAsync(new FileTransferStartedEvent
         {

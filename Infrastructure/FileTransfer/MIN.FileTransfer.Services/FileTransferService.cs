@@ -41,6 +41,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 
     void IFileTransferService.RegisterTransfer(Guid transferId, Guid roomId, FileTransferDirection direction, string fileName)
     {
+        logger.Log($"Регистрирую transfer: TransferId={transferId}, Room={roomId}, Direction={direction}, File={fileName}");
         activeTransfers[transferId] = new TransferInfo
         {
             TransferId = transferId,
@@ -57,11 +58,13 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     /// <inheritdoc />
     public void RemoveTransfer(Guid transferId)
     {
+        logger.Log($"Удаляю transfer {transferId}");
         activeTransfers.TryRemove(transferId, out _);
     }
 
     void IFileTransferService.RegisterPendingMetadata(Guid transferId, string fileName)
     {
+        logger.Log($"Регистрирую pending метаданные: TransferId={transferId}, File={fileName}");
         pendingMetadata[transferId] = fileName;
     }
 
@@ -79,21 +82,27 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     {
         if (!TryGetTransferInfo(transferId, out var info))
         {
+            logger.Log($"Получены данные для неизвестного transfer {transferId}, игнорирую");
             return;
         }
+
+        logger.Log($"Сохраняю файл {info.FileName} ({data.Length} байт) для transfer {transferId}");
 
         try
         {
             await using var ms = new MemoryStream(data);
             var finalFileName = await fileStorageService.SaveFileAsync(info.RoomId, ms, info.FileName, cancellationToken);
 
+            var filePath = fileStorageService.GetFilePath(info.RoomId, finalFileName) ?? string.Empty;
+            logger.Log($"Файл сохранён: {finalFileName} → {filePath}");
+
             await eventBus.PublishAsync(new FileTransferCompletedEvent
             {
                 RoomId = info.RoomId,
                 TransferId = transferId,
                 FileName = finalFileName,
-                FilePath = fileStorageService.GetFilePath(info.RoomId, finalFileName) ?? string.Empty,
-            });
+                FilePath = filePath,
+            }, cancellationToken);
 
             RemoveTransfer(transferId);
             RemovePendingMetadata(transferId);
@@ -115,6 +124,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 
     private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
     {
+        logger.Log($"Сообщение собрано: StreamId={e.StreamId}, Size={e.Data.Length} байт");
         await OnFileDataReceivedAsync(e.StreamId, e.Data);
     }
 
@@ -141,6 +151,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         }
 
         disposed = true;
+        logger.Log("FileTransferService disposed, очищаю активные transfer'ы");
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
         chunkBufferAssembler.ChunkReceived -= OnChunkReceived;
         activeTransfers.Clear();
