@@ -1,13 +1,15 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Messaging.Contracts.Messages;
 
 namespace MIN.Chat.Messaging;
 
 /// <summary>
 /// Текстовое сообщение чата, отправляемое участником в комнату
 /// </summary>
-public sealed class ChatTextMessage : BaseMessage, IDescribable
+public sealed class ChatTextMessage : BaseMessage, IDescribable, IReplyable
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.ChatTextMessage;
@@ -33,9 +35,7 @@ public sealed class ChatTextMessage : BaseMessage, IDescribable
     /// </summary>
     public string Content { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Идентификатор сообщения, на которое дан ответ
-    /// </summary>
+    /// <inheritdoc />
     public Guid? ReplyToMessageId { get; set; }
 
     string IDescribable.GetDescription() => $"{Sender.Name}: {Content}";

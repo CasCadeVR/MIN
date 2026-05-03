@@ -66,7 +66,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
         {
             if (!fileTransferService.TryGetTransferInfo(request.TransferId, out _))
             {
-                fileTransferService.RegisterTransfer(request.TransferId, request.RoomId, FileTransferDirection.Download, "");
+                fileTransferService.RegisterTransfer(request.TransferId, request.RoomId, FileTransferDirection.Download, request.FileName);
             }
 
             var response = new FileTransferResponseMessage

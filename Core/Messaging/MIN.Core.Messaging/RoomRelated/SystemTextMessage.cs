@@ -1,5 +1,6 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Messages;
 
 namespace MIN.Core.Messaging.RoomRelated;
 

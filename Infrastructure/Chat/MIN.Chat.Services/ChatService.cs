@@ -3,6 +3,7 @@ using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.FileTransfer.Messaging;
+using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
 
 namespace MIN.Chat.Services;
@@ -12,14 +13,18 @@ public sealed class ChatService : IChatService
 {
     private readonly IMessageRouter messageRouter;
     private readonly IFileHelperService fileHelperService;
+    private readonly IFileTransferService fileTransferService;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatService"/>
     /// </summary>
-    public ChatService(IMessageRouter messageRouter, IFileHelperService fileHelperService)
+    public ChatService(IMessageRouter messageRouter,
+        IFileHelperService fileHelperService,
+        IFileTransferService fileTransferService)
     {
         this.messageRouter = messageRouter;
         this.fileHelperService = fileHelperService;
+        this.fileTransferService = fileTransferService;
     }
 
     async Task IChatService.SendMessageAsync(Guid roomId, string content, ParticipantInfo sender, Guid? recipientId, CancellationToken cancellationToken)
@@ -56,6 +61,22 @@ public sealed class ChatService : IChatService
             FilePath = filePath,
             FileSize = fileHelperService.GetFileSize(filePath),
             RecipientId = recipientId,
+        };
+
+        await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);
+    }
+
+    async Task IChatService.RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, ParticipantInfo sender, CancellationToken cancellationToken)
+    {
+        var transferId = Guid.NewGuid();
+        fileTransferService.RegisterTransfer(transferId, roomId, FileTransferDirection.Download, fileMessage.FileName);
+
+        var message = new FileTransferRequestMessage
+        {
+            TransferId = transferId,
+            RoomId = roomId,
+            FileName = fileMessage.FileName,
+            Direction = FileTransferDirection.Download,
         };
 
         await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);

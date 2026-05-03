@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
+using MIN.Desktop.Properties;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.FileTransfer.Messaging;
 
@@ -15,6 +16,13 @@ public partial class ChatFileMessageCard : UserControl
     private readonly ParticipantInfo localParticipant;
     private readonly bool hostMessage;
     private readonly bool removeHeaders;
+    private bool downloaded;
+    private string savedFileType = string.Empty;
+
+    /// <summary>
+    /// Событие, возникающее по нажатию на кнопку скачать
+    /// </summary>
+    public event Func<Task>? OnDownloadRequested;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
@@ -31,6 +39,9 @@ public partial class ChatFileMessageCard : UserControl
         this.localParticipant = localParticipant;
         this.hostMessage = hostMessage;
         this.removeHeaders = removeHeaders;
+
+        downloaded = fileMetadataMessage.FilePath != null;
+
         FillLabels();
         ApplyStylings();
     }
@@ -55,15 +66,15 @@ public partial class ChatFileMessageCard : UserControl
         tableLayoutPanel.BackColor = senderColor;
         sendTime.BackColor = senderColor;
         tableLayoutPanelLabels.BackColor = senderColor;
-        fileType.BackColor = ColorScheme.SecondaryAccent;
-        fileType.ForeColor = ColorScheme.TextOnAccent;
+        fileInterractButton.BackColor = ColorScheme.SecondaryAccent;
+        fileInterractButton.ForeColor = ColorScheme.TextOnAccent;
 
         senderName.Font = FontScheme.Monospace;
         sendRole.Font = FontScheme.MicroCaption;
         sendTime.Font = FontScheme.MicroCaption;
         fileName.Font = FontScheme.Default;
         fileSize.Font = FontScheme.Caption;
-        fileType.Font = FontScheme.Monospace;
+        fileInterractButton.Font = FontScheme.Monospace;
     }
 
     private void FillLabels()
@@ -73,9 +84,42 @@ public partial class ChatFileMessageCard : UserControl
         sendTime.Text = fileMetadataMessage.Timestamp.ToShortTimeString();
 
         fileName.Text = fileMetadataMessage.FileName;
+
         fileSize.Text = fileTransferFeatureCollection.FileHelperService
-            .FormatFileSize(fileTransferFeatureCollection.FileHelperService
-            .GetFileSize(fileMetadataMessage.FilePath));
-        fileType.Text = fileTransferFeatureCollection.FileHelperService.GetMimeType(fileMetadataMessage.FileName);
+            .FormatFileSize(fileMetadataMessage.FileSize);
+
+        fileInterractButton.Text = fileTransferFeatureCollection.FileHelperService
+            .GetFileType(fileMetadataMessage.FileName)
+            .Substring(1);
+    }
+
+    private void fileInterractButton_MouseHover(object sender, EventArgs e)
+    {
+        savedFileType = fileInterractButton.Text;
+        fileInterractButton.Text = string.Empty;
+        fileInterractButton.BackgroundImage = downloaded ? Resources.file : Resources.download;
+    }
+
+    private void fileInterractButton_MouseLeave(object sender, EventArgs e)
+    {
+        fileInterractButton.BackgroundImage = null;
+        fileInterractButton.Text = savedFileType;
+    }
+
+    private void fileInterractButton_Click(object sender, EventArgs e)
+    {
+        if (downloaded)
+        {
+            if (!Path.Exists(fileMetadataMessage.FilePath))
+            {
+                MessageBox.Show("Файл не нашёлся");
+                downloaded = false;
+            }
+            MessageBox.Show("Типо открылся файл");
+        }
+        else
+        {
+            OnDownloadRequested?.Invoke();
+        }
     }
 }

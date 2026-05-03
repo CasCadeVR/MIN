@@ -39,7 +39,7 @@ internal sealed class FileTransferCancelHandler : IMessageHandler, IFileTransfer
             {
                 RoomId = info.RoomId,
                 TransferId = cancel.TransferId,
-                ErrorMessage = cancel.Reason ?? "Transfer cancelled",
+                ErrorMessage = cancel.Reason ?? "Передача не удалась",
             });
         }
 

@@ -6,24 +6,28 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
+using MIN.FileTransfer.Services.Contracts.Interfaces;
+using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
 internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandlerAnchor
 {
-    private readonly IIdentityService identityService;
+    private readonly IFileTransferService fileTransferService;
     private readonly IEventBus eventBus;
     private readonly IRoomHoster roomHoster;
+    private readonly IIdentityService identityService;
 
-    public FileMetadataHandler(
-        IIdentityService identityService,
+    public FileMetadataHandler(IFileTransferService fileTransferService,
         IEventBus eventBus,
-        IRoomHoster roomHoster)
+        IRoomHoster roomHoster,
+        IIdentityService identityService)
     {
-        this.identityService = identityService;
+        this.fileTransferService = fileTransferService;
         this.eventBus = eventBus;
         this.roomHoster = roomHoster;
+        this.identityService = identityService;
     }
 
     IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.FileMetadata];
@@ -45,6 +49,11 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
         context.RoomContext.Messages.AddMessage(metadata);
         var selfId = identityService.SelfParticipant.Id;
 
+        if (message.SenderId != selfId)
+        {
+            metadata.FilePath = null;
+        }
+
         if (message.SenderId == selfId || message.RecipientId == selfId || message.IsPublic)
         {
             await eventBus.PublishAsync(new FileMetaDataMessageReceivedEvent()
@@ -55,34 +64,31 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             });
         }
 
-        if (roomHoster.IsHosting(context.RoomContext.RoomId) && message.SenderId == selfId)
+        if (!roomHoster.IsHosting(context.RoomContext.RoomId) || message.SenderId == selfId)
         {
             return HandlerResult.Success();
         }
 
-        //fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);
+        fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);
+        fileTransferService.RegisterTransfer(metadata.TransferId, metadata.RoomId, FileTransferDirection.Upload, metadata.FileName);
 
-        //fileTransferService.RegisterTransfer(metadata.TransferId, metadata.RoomId, FileTransferDirection.Download, metadata.FileName);
+        var requestMessage = new FileTransferRequestMessage
+        {
+            RoomId = metadata.RoomId,
+            TransferId = metadata.TransferId,
+            RecipientId = metadata.SenderId,
+            Direction = FileTransferDirection.Upload,
+        };
 
-        //var requestMessage = new FileTransferRequestMessage
-        //{
-        //    RoomId = metadata.RoomId,
-        //    TransferId = metadata.TransferId,
-        //    Direction = FileTransferDirection.Upload,
-        //    RecipientId = metadata.SenderId,
-        //};
+        await eventBus.PublishAsync(new FileTransferStartedEvent
+        {
+            RoomId = metadata.RoomId,
+            TransferId = metadata.TransferId,
+            FileName = metadata.FileName,
+            FileSize = metadata.FileSize,
+            Direction = FileTransferDirection.Upload,
+        });
 
-        //await messageSender.SendAsync(requestMessage, metadata.RoomId, context.ConnectionId, context.CancellationToken);
-
-        //await eventBus.PublishAsync(new FileTransferStartedEvent
-        //{
-        //    RoomId = metadata.RoomId,
-        //    TransferId = metadata.TransferId,
-        //    FileName = metadata.FileName,
-        //    FileSize = metadata.FileSize,
-        //    Direction = FileTransferDirection.Download,
-        //});
-
-        return HandlerResult.Success(stopPropagation: true);
+        return HandlerResult.WithResponse(requestMessage, stopPropagation: true);
     }
 }

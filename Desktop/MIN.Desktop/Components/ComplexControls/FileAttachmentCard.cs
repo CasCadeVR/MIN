@@ -9,7 +9,7 @@ namespace MIN.Desktop.Components.ComplexControls;
 /// </summary>
 public class FileAttachmentCard : Label
 {
-    private CommonButton? deleteButton;
+    private Button? deleteButton;
 
     /// <summary>
     /// Приложение к файлу
@@ -41,7 +41,7 @@ public class FileAttachmentCard : Label
             return;
         }
 
-        deleteButton = new CommonButton
+        deleteButton = new InvertedButton
         {
             Text = "×",
             Size = new Size(24, 24),

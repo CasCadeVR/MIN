@@ -46,7 +46,7 @@ namespace MIN.Desktop.Views.Forms
             // splitContainer.Panel2
             // 
             splitContainer.Panel2.BackColor = Color.Transparent;
-            splitContainer.Size = new Size(744, 545);
+            splitContainer.Size = new Size(744, 641);
             splitContainer.SplitterDistance = 260;
             splitContainer.SplitterWidth = 6;
             splitContainer.TabIndex = 0;
@@ -55,10 +55,10 @@ namespace MIN.Desktop.Views.Forms
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(744, 545);
+            ClientSize = new Size(744, 641);
             Controls.Add(splitContainer);
             Margin = new Padding(3, 4, 3, 4);
-            MinimumSize = new Size(760, 584);
+            MinimumSize = new Size(760, 680);
             Name = "MainForm";
             Text = "MIN";
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();

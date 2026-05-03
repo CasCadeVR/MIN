@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Messaging.Contracts.Interfaces;
 
-namespace MIN.Core.Messaging.Contracts;
+namespace MIN.Core.Messaging.Contracts.Messages;
 
 /// <summary>
 /// Базовый класс для всех сообщений, передаваемых по сети

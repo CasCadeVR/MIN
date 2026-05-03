@@ -458,7 +458,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                         minutesPassed = minutesPassed > messageMinPadding ? messageMinPadding * 2 : minutesPassed + messageMinPadding;
                     }
 
-                    rowControl = new ChatFileMessageCard(featureCollection.FileTransfer,
+                    var fileCard = new ChatFileMessageCard(featureCollection.FileTransfer,
                         fileMetadataMessage,
                         localParticipant,
                         isHostMessage,
@@ -467,6 +467,9 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                         Anchor = isSelfMessage ? AnchorStyles.Right : AnchorStyles.Left,
                         Margin = new Padding(20, 0, 20, 0)
                     };
+
+                    fileCard.OnDownloadRequested += () => OnDownloadRequested(fileMetadataMessage);
+                    rowControl = fileCard;
 
                     if (isCurrentPrivate && !wasLastPrivate)
                     {
@@ -543,6 +546,15 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
             chatFlow.ResumeLayout(true);
             chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
         }
+    }
+
+    private async Task OnDownloadRequested(FileMetadataMessage fileMetadata)
+    {
+        await featureCollection.Chat.ChatService.RequestFileDownloadAsync(roomId,
+            fileMetadata,
+            localParticipant,
+            formCts.Token
+        );
     }
 
     private bool IsMessageValid() => !string.IsNullOrWhiteSpace(messageTextBox.Text) || multiFileAttachmentUploader.AttachedFiles.Any();

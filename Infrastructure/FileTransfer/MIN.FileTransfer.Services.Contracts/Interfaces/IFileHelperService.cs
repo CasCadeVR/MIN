@@ -11,6 +11,11 @@ public interface IFileHelperService
     string GetMimeType(string fileName);
 
     /// <summary>
+    /// Получить тип файла
+    /// </summary>
+    string GetFileType(string fileName);
+
+    /// <summary>
     /// Получить размер файла в байтах
     /// </summary>
     long GetFileSize(string filePath);

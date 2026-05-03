@@ -1,13 +1,15 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Messaging.Contracts.Messages;
 
 namespace MIN.FileTransfer.Messaging;
 
 /// <summary>
 /// Сообщения мета-данные файла
 /// </summary>
-public class FileMetadataMessage : BaseMessage, IDescribable
+public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.FileMetadata;
@@ -46,11 +48,12 @@ public class FileMetadataMessage : BaseMessage, IDescribable
     /// <summary>
     /// Путь к файлу
     /// </summary>
-    public string FilePath { get; set; } = string.Empty;
+    /// <remarks>
+    /// null, если получен с хоста и не имеется локально
+    /// </remarks>
+    public string? FilePath { get; set; }
 
-    /// <summary>
-    /// Идентификатор сообщения, на которое дан ответ
-    /// </summary>
+    /// <inheritdoc />
     public Guid? ReplyToMessageId { get; set; }
 
     string IDescribable.GetDescription() => $"{Sender.Name}: {FileName}";

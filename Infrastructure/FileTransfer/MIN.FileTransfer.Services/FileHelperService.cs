@@ -58,6 +58,9 @@ public sealed class FileHelperService : IFileHelperService
         return mimeTypes.TryGetValue(extension, out var mime) ? mime : "application/octet-stream";
     }
 
+    string IFileHelperService.GetFileType(string fileName)
+        => Path.GetExtension(fileName);
+
     long IFileHelperService.GetFileSize(string filePath)
     {
         var fileInfo = new FileInfo(filePath);

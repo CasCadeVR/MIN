@@ -73,7 +73,7 @@
             // splitContainer.Panel2
             // 
             splitContainer.Panel2.Controls.Add(tableLayoutPanel1);
-            splitContainer.Size = new Size(331, 620);
+            splitContainer.Size = new Size(331, 622);
             // 
             // tableLayoutPanelHeader
             // 
@@ -393,9 +393,9 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
-            MinimumSize = new Size(331, 584);
+            MinimumSize = new Size(331, 622);
             Name = "SettingsSidePanelView";
-            Size = new Size(331, 620);
+            Size = new Size(331, 622);
             Controls.SetChildIndex(splitContainer, 0);
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);

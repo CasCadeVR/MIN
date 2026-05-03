@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.FileTransfer.Messaging;
 
 namespace MIN.Chat.Services.Contracts.Interfaces;
 
@@ -16,4 +17,9 @@ public interface IChatService
     /// Отправить файл
     /// </summary>
     Task SendFileAsync(Guid roomId, string fileName, string filePath, ParticipantInfo sender, Guid? recipientId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Запросить загрузку файла
+    /// </summary>
+    Task RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, ParticipantInfo sender, CancellationToken cancellationToken = default);
 }

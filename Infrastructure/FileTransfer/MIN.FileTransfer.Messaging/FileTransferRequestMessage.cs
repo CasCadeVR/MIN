@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Messages;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 
 namespace MIN.FileTransfer.Messaging;
@@ -23,6 +24,11 @@ public class FileTransferRequestMessage : BaseMessage
     /// Идентификатор потока, по которому придёт файл
     /// </summary>
     public Guid TransferId { get; set; }
+
+    /// <summary>
+    /// Название файла
+    /// </summary>
+    public string FileName { get; set; } = string.Empty;
 
     /// <summary>
     /// Направление передачи файла

@@ -65,7 +65,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         pendingMetadata[transferId] = fileName;
     }
 
-
     bool IFileTransferService.TryGetPendingFileName(Guid transferId, out string fileName)
         => pendingMetadata.TryGetValue(transferId, out fileName!);
 

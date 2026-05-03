@@ -30,8 +30,8 @@
         {
             tableLayoutPanelLabels = new TableLayoutPanel();
             fileName = new MIN.Desktop.Components.Labels.Heading3Label();
-            fileType = new MIN.Desktop.Components.Labels.Heading3Label();
             fileSize = new MIN.Desktop.Components.Labels.Heading3Label();
+            fileInterractButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             tableLayoutPanel = new TableLayoutPanel();
             sendTime = new MIN.Desktop.Components.Textboxes.ReadonlyTextbox();
             sendRole = new MIN.Desktop.Components.Textboxes.ReadonlyTextbox();
@@ -46,8 +46,8 @@
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 70F));
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanelLabels.Controls.Add(fileName, 1, 0);
-            tableLayoutPanelLabels.Controls.Add(fileType, 0, 0);
             tableLayoutPanelLabels.Controls.Add(fileSize, 1, 1);
+            tableLayoutPanelLabels.Controls.Add(fileInterractButton, 0, 0);
             tableLayoutPanelLabels.Dock = DockStyle.Fill;
             tableLayoutPanelLabels.Location = new Point(0, 22);
             tableLayoutPanelLabels.Margin = new Padding(0);
@@ -73,24 +73,6 @@
             fileName.Text = "Имя файла";
             fileName.TextAlign = ContentAlignment.BottomLeft;
             // 
-            // fileType
-            // 
-            fileType.AutoEllipsis = true;
-            fileType.AutoSize = true;
-            fileType.BackColor = SystemColors.GradientActiveCaption;
-            fileType.Dock = DockStyle.Fill;
-            fileType.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            fileType.ForeColor = Color.FromArgb(0, 0, 0);
-            fileType.Location = new Point(3, 3);
-            fileType.Margin = new Padding(3);
-            fileType.Name = "fileType";
-            fileType.Padding = new Padding(8);
-            tableLayoutPanelLabels.SetRowSpan(fileType, 2);
-            fileType.Size = new Size(64, 67);
-            fileType.TabIndex = 2;
-            fileType.Text = "Тип файла";
-            fileType.TextAlign = ContentAlignment.MiddleCenter;
-            // 
             // fileSize
             // 
             fileSize.AutoEllipsis = true;
@@ -102,6 +84,26 @@
             fileSize.Size = new Size(85, 13);
             fileSize.TabIndex = 1;
             fileSize.Text = "Размер файла";
+            // 
+            // fileInterractButton
+            // 
+            fileInterractButton.BackColor = Color.FromArgb(167, 157, 255);
+            fileInterractButton.BackgroundImageLayout = ImageLayout.Zoom;
+            fileInterractButton.Dock = DockStyle.Fill;
+            fileInterractButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            fileInterractButton.FlatStyle = FlatStyle.Flat;
+            fileInterractButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            fileInterractButton.ForeColor = Color.FromArgb(248, 249, 255);
+            fileInterractButton.Location = new Point(3, 3);
+            fileInterractButton.Name = "fileInterractButton";
+            tableLayoutPanelLabels.SetRowSpan(fileInterractButton, 2);
+            fileInterractButton.Size = new Size(64, 67);
+            fileInterractButton.TabIndex = 4;
+            fileInterractButton.Text = "Тип файла";
+            fileInterractButton.UseVisualStyleBackColor = false;
+            fileInterractButton.Click += fileInterractButton_Click;
+            fileInterractButton.MouseLeave += fileInterractButton_MouseLeave;
+            fileInterractButton.MouseHover += fileInterractButton_MouseHover;
             // 
             // tableLayoutPanel
             // 
@@ -190,12 +192,12 @@
         #endregion
 
         private TableLayoutPanel tableLayoutPanelLabels;
-        private Labels.Heading3Label fileType;
         private Labels.Heading3Label fileSize;
         private TableLayoutPanel tableLayoutPanel;
         private Textboxes.ReadonlyTextbox sendTime;
         private Textboxes.ReadonlyTextbox sendRole;
         private Textboxes.ReadonlyTextbox senderName;
         private Labels.Heading3Label fileName;
+        private Controls.Buttons.CommonButton fileInterractButton;
     }
 }

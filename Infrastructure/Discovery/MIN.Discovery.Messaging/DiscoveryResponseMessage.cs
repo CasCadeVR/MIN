@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Messages;
 using MIN.Discovery.Services.Contracts.Models;
 
 namespace MIN.Discovery.Messaging;
