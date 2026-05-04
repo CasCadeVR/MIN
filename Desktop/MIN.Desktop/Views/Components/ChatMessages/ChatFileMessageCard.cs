@@ -142,6 +142,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
             {
                 MessageBox.Show("Файл не нашёлся");
                 downloaded = false;
+                return;
             }
             MessageBox.Show("Типо открылся файл");
         }
