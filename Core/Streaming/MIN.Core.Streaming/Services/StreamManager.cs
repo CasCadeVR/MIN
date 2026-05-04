@@ -47,7 +47,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
     {
         ObjectDisposedException.ThrowIf(disposed, nameof(StreamManager));
 
-        var streamId = Guid.NewGuid();
+        var streamId = options.StreamId ?? Guid.NewGuid();
         var totalChunks = (int)Math.Ceiling((double)data.Length / StreamingConstants.ChunkDataSize);
 
         logger.Log($"Начало отправки потока {streamId}: {data.Length} байт, {totalChunks} пакетов");
@@ -67,6 +67,10 @@ public sealed class StreamManager : IStreamManager, IDisposable
                 if (options.RequiresAcks)
                 {
                     flags |= StreamChunkFlags.RequiresAcks;
+                }
+                if (options.IsRawPayload)
+                {
+                    flags |= StreamChunkFlags.RawPayload;
                 }
             }
             if (i == totalChunks - 1)

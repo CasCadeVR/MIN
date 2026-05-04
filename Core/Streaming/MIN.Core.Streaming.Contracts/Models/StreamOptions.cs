@@ -1,4 +1,4 @@
-﻿namespace MIN.Core.Streaming.Contracts.Models;
+namespace MIN.Core.Streaming.Contracts.Models;
 
 /// <summary>
 /// Настройки потока
@@ -14,4 +14,16 @@ public sealed class StreamOptions
     /// Нужно ли шифровать чанки
     /// </summary>
     public bool RequiresEncryption { get; init; }
+
+    /// <summary>
+    /// Пользовательский идентификатор потока. Если не задан, генерируется автоматически.
+    /// Используется для связи потока с бизнес-логикой (например, TransferId).
+    /// </summary>
+    public Guid? StreamId { get; init; }
+
+    /// <summary>
+    /// Указывает, что поток содержит сырые байтовые данные (например, файл),
+    /// которые не должны десериализоваться как JSON-сообщение.
+    /// </summary>
+    public bool IsRawPayload { get; init; }
 }

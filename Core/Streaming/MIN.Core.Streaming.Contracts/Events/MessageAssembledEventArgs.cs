@@ -24,4 +24,9 @@ public sealed class MessageAssembledEventArgs : EventArgs
     /// Собранные данные
     /// </summary>
     public required byte[] Data { get; init; }
+
+    /// <summary>
+    /// Указывает, что данные являются сырым байтовым потоком (не JSON-сообщение)
+    /// </summary>
+    public bool IsRawPayload { get; init; }
 }

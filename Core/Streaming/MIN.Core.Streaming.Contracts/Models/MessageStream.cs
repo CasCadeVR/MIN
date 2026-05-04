@@ -33,6 +33,11 @@ public sealed class MessageStream : IDisposable
     public bool RequiresAcks { get; }
 
     /// <summary>
+    /// Содержит ли поток сырые байтовые данные (не JSON)
+    /// </summary>
+    public bool IsRawPayload { get; }
+
+    /// <summary>
     /// Ожидаемое количество пакетов
     /// </summary>
     public int ExpectedChunks { get; }
@@ -55,13 +60,14 @@ public sealed class MessageStream : IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MessageStream"/>
     /// </summary>
-    public MessageStream(Guid streamId, Guid connectionId, Guid roomId, int expectedChunks, bool requiresAcks)
+    public MessageStream(Guid streamId, Guid connectionId, Guid roomId, int expectedChunks, bool requiresAcks, bool isRawPayload = false)
     {
         Id = streamId;
         ConnectionId = connectionId;
         RoomId = roomId;
         ExpectedChunks = expectedChunks;
         RequiresAcks = requiresAcks;
+        IsRawPayload = isRawPayload;
         CreatedAt = DateTime.UtcNow;
         LastChunkReceivedAt = CreatedAt;
         buffer = new MemoryStream();

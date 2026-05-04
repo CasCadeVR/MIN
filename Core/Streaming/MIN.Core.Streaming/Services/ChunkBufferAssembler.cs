@@ -68,7 +68,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
                     await SendAck(chunk.StreamId, chunk.Index, connectionId, roomId, cancellationToken);
                 }
 
-                OnMessageAssembled(chunk.StreamId, connectionId, roomId, chunk.Data.ToArray());
+                OnMessageAssembled(chunk.StreamId, connectionId, roomId, chunk.Data.ToArray(), chunk.Flags.HasFlag(StreamChunkFlags.RawPayload));
                 return;
             }
 
@@ -103,8 +103,9 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             var completeData = stream.AddChunk(chunk);
             if (completeData != null)
             {
+                var isRawPayload = stream.IsRawPayload;
                 RemoveStream(chunk.StreamId);
-                OnMessageAssembled(chunk.StreamId, connectionId, roomId, completeData);
+                OnMessageAssembled(chunk.StreamId, connectionId, roomId, completeData, isRawPayload);
             }
         }
         catch (Exception ex)
@@ -118,7 +119,8 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
     private MessageStream CreateMessageStream(StreamChunk startChunk, Guid connectionId, Guid roomId)
     {
         var requiresAcks = startChunk.Flags.HasFlag(StreamChunkFlags.RequiresAcks);
-        var stream = new MessageStream(startChunk.StreamId, connectionId, roomId, startChunk.Total, requiresAcks);
+        var isRawPayload = startChunk.Flags.HasFlag(StreamChunkFlags.RawPayload);
+        var stream = new MessageStream(startChunk.StreamId, connectionId, roomId, startChunk.Total, requiresAcks, isRawPayload);
         StartStreamTimer(stream);
         return stream;
     }
@@ -184,14 +186,15 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         }
     }
 
-    private void OnMessageAssembled(Guid streamId, Guid connectionId, Guid roomId, byte[] data)
+    private void OnMessageAssembled(Guid streamId, Guid connectionId, Guid roomId, byte[] data, bool isRawPayload)
     {
         var args = new MessageAssembledEventArgs
         {
             StreamId = streamId,
             ConnectionId = connectionId,
             RoomId = roomId,
-            Data = data
+            Data = data,
+            IsRawPayload = isRawPayload,
         };
 
         MessageAssembled?.Invoke(this, args);

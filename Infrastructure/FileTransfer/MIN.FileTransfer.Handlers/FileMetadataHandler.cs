@@ -72,12 +72,27 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             });
         }
 
+        // Хост отправляет файл — регистрируем оригинальный путь
+        if (roomHoster.IsHosting(context.RoomContext.RoomId) && message.SenderId == selfId)
+        {
+            if (!string.IsNullOrEmpty(metadata.FilePath))
+            {
+                logger.Log($"Хост отправляет файл {metadata.FileName}, регистрирую оригинальный путь: {metadata.FilePath}");
+                fileTransferService.RegisterFileMetadata(message.Id, context.RoomContext.RoomId, metadata.FileName, metadata.FilePath);
+            }
+
+            logger.Log($"Хост: не запрашиваю файл у себя");
+            return HandlerResult.Success();
+        }
+
+        // Если ни то ни сё, ничего не делаем
         if (!roomHoster.IsHosting(context.RoomContext.RoomId) || message.SenderId == selfId)
         {
             logger.Log($"Не являюсь хостом или отправитель — не запрашиваю файл: {metadata.FileName}");
             return HandlerResult.Success();
         }
 
+        // Хост получает файл от клиента — запрашиваем загрузку
         logger.Log($"Хост: регистрирую загрузку файла {metadata.FileName} (TransferId: {metadata.TransferId})");
         fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);
         fileTransferService.RegisterTransfer(metadata.TransferId, metadata.RoomId, FileTransferDirection.Upload, metadata.FileName);

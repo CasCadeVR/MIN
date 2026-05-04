@@ -39,6 +39,16 @@ public interface IFileTransferService
     void RemovePendingMetadata(Guid transferId);
 
     /// <summary>
+    /// Зарегистрировать информацию о файле по Id сообщения метаданных
+    /// </summary>
+    void RegisterFileMetadata(Guid fileMetadataId, Guid roomId, string fileName, string? originalFilePath = null);
+
+    /// <summary>
+    /// Получить информацию о файле по Id сообщения метаданных
+    /// </summary>
+    bool TryGetFileMetadata(Guid fileMetadataId, out FileMetadataInfo info);
+
+    /// <summary>
     /// Начать приём файла из потока (вызывается при сборке чанков)
     /// </summary>
     Task OnFileDataReceivedAsync(Guid transferId, byte[] data, CancellationToken cancellationToken = default);

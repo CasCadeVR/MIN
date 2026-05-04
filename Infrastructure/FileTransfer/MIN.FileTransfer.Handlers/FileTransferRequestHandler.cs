@@ -55,89 +55,146 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
 
         if (request.Direction == FileTransferDirection.Upload)
         {
-            if (request.RecipientId != selfId)
-            {
-                logger.Log($"Запрос на загрузку файла адресован не мне (мне: {selfId}, запрос: {request.RecipientId})");
-                return HandlerResult.Failure("Запрос на загрузку файла адресован не мне", stopPropagation: false);
-            }
-
-            if (!fileTransferService.TryGetTransferInfo(request.TransferId, out var info))
-            {
-                logger.Log($"Не найдена информация о transfer {request.TransferId}");
-                return HandlerResult.Failure($"Не найдена информация о transfer {request.TransferId}", stopPropagation: false);
-            }
-
-            logger.Log($"Начинаю загрузку файла {info.FileName} на сервер (TransferId: {request.TransferId})");
-
-            var response = new FileTransferResponseMessage
-            {
-                RoomId = request.RoomId,
-                TransferId = request.TransferId,
-                Success = true,
-            };
-
-            await messageSender.SendAsync(response, request.RoomId, context.ConnectionId, context.CancellationToken);
-
-            return HandlerResult.Success(stopPropagation: true);
+            return await HandleUpload(request, selfId, context);
         }
         else
         {
-            if (!fileTransferService.TryGetTransferInfo(request.TransferId, out _))
-            {
-                logger.Log($"Регистрирую новый download transfer для файла {request.FileName} (TransferId: {request.TransferId})");
-                fileTransferService.RegisterTransfer(request.TransferId, request.RoomId, FileTransferDirection.Download, request.FileName);
-            }
-            else
-            {
-                logger.Log($"Transfer {request.TransferId} уже зарегистрирован, начинаю download");
-            }
+            return await HandleDownload(request, selfId, context);
+        }
+    }
 
-            var response = new FileTransferResponseMessage
+    private async Task<HandlerResult> HandleUpload(FileTransferRequestMessage request, Guid selfId, MessageContext context)
+    {
+        if (request.RecipientId != selfId)
+        {
+            logger.Log($"Запрос на загрузку файла адресован не мне (мне: {selfId}, запрос: {request.RecipientId})");
+            return HandlerResult.Failure("Запрос на загрузку файла адресован не мне", stopPropagation: false);
+        }
+
+        if (!fileTransferService.TryGetTransferInfo(request.TransferId, out var info))
+        {
+            logger.Log($"Не найдена информация о transfer {request.TransferId}");
+            return HandlerResult.Failure($"Не найдена информация о transfer {request.TransferId}", stopPropagation: false);
+        }
+
+        var filePath = ResolveFilePath(request.FileMetadataId, info.RoomId, info.FileName);
+        if (filePath == null)
+        {
+            logger.Log($"Файл не найден для upload: {info.FileName} (TransferId: {request.TransferId})");
+            var errorResponse = new FileTransferResponseMessage
             {
                 RoomId = request.RoomId,
                 TransferId = request.TransferId,
-                Success = true,
+                Success = false,
+                ErrorMessage = "File not found",
             };
 
-            fileTransferService.TryGetTransferInfo(request.TransferId, out var transferInfo);
-
-            logger.Log($"Отправляю FileTransferResponse (Success) для TransferId={request.TransferId}");
-            await messageSender.SendAsync(response, request.RoomId, context.ConnectionId, context.CancellationToken);
-
-            var filePath = fileStorageService.GetFilePath(transferInfo.RoomId, transferInfo.FileName);
-            if (filePath == null)
-            {
-                logger.Log($"Файл не найден на сервере: {transferInfo.FileName} (TransferId: {response.TransferId})");
-
-                var errorResponse = new FileTransferResponseMessage
-                {
-                    RoomId = transferInfo.RoomId,
-                    TransferId = response.TransferId,
-                    Success = false,
-                    ErrorMessage = "File not found on server",
-                };
-
-                await messageSender.SendAsync(errorResponse, transferInfo.RoomId, context.ConnectionId, context.CancellationToken);
-
-                return HandlerResult.Failure("File not found on server", stopPropagation: false);
-            }
-
-            logger.Log($"Начинаю стриминг файла {transferInfo.FileName} ({new FileInfo(filePath).Length} байт)");
-
-            await using var fileStream = File.OpenRead(filePath);
-            var fileBytes = new byte[fileStream.Length];
-            await fileStream.ReadAsync(fileBytes, context.CancellationToken);
-
-            var options = new StreamOptions
-            {
-                RequiresAcks = true,
-                RequiresEncryption = true,
-            };
-
-            logger.Log($"Отправляю файл через StreamManager: TransferId={response.TransferId}");
-            await streamManager.SendAsync(fileBytes, options, transferInfo.RoomId, context.ConnectionId, context.CancellationToken);
-
-            return HandlerResult.Success(stopPropagation: true);
+            await messageSender.SendAsync(errorResponse, request.RoomId, context.ConnectionId, context.CancellationToken);
+            return HandlerResult.Failure("File not found", stopPropagation: true);
         }
+
+        logger.Log($"Начинаю загрузку файла {info.FileName} на сервер из: {filePath}");
+
+        var response = new FileTransferResponseMessage
+        {
+            RoomId = request.RoomId,
+            TransferId = request.TransferId,
+            Success = true,
+        };
+
+        await messageSender.SendAsync(response, request.RoomId, context.ConnectionId, context.CancellationToken);
+
+        await StreamFileAsync(filePath, request, context);
+
+        return HandlerResult.Success(stopPropagation: true);
+    }
+
+    private async Task<HandlerResult> HandleDownload(FileTransferRequestMessage request, Guid selfId, MessageContext context)
+    {
+        if (!fileTransferService.TryGetTransferInfo(request.TransferId, out _))
+        {
+            logger.Log($"Регистрирую новый download transfer для файла {request.FileName} (TransferId: {request.TransferId})");
+            fileTransferService.RegisterTransfer(request.TransferId, request.RoomId, FileTransferDirection.Download, request.FileName);
+        }
+        else
+        {
+            logger.Log($"Transfer {request.TransferId} уже зарегистрирован, начинаю download");
+        }
+
+        var filePath = ResolveFilePath(request.FileMetadataId, request.RoomId, request.FileName);
+        if (filePath == null)
+        {
+            logger.Log($"Файл не найден для download: {request.FileName} (TransferId: {request.TransferId})");
+            var errorResponse = new FileTransferResponseMessage
+            {
+                RoomId = request.RoomId,
+                TransferId = request.TransferId,
+                Success = false,
+                ErrorMessage = "File not found on server",
+            };
+
+            await messageSender.SendAsync(errorResponse, request.RoomId, context.ConnectionId, context.CancellationToken);
+            return HandlerResult.Failure("File not found on server", stopPropagation: false);
+        }
+
+        logger.Log($"Начинаю download файла {request.FileName} из: {filePath}");
+
+        var response = new FileTransferResponseMessage
+        {
+            RoomId = request.RoomId,
+            TransferId = request.TransferId,
+            Success = true,
+        };
+
+        await messageSender.SendAsync(response, request.RoomId, context.ConnectionId, context.CancellationToken);
+
+        await StreamFileAsync(filePath, request, context);
+
+        return HandlerResult.Success(stopPropagation: true);
+    }
+
+    private string? ResolveFilePath(Guid fileMetadataId, Guid roomId, string fileName)
+    {
+        fileTransferService.TryGetFileMetadata(fileMetadataId, out var fileMetadataInfo);
+
+        if (fileMetadataInfo.IsStoredOnServer)
+        {
+            var filePath = fileStorageService.GetFilePath(roomId, fileName);
+            if (filePath != null)
+            {
+                logger.Log($"Файл найден в хранилище: {filePath}");
+                return filePath;
+            }
+        }
+
+        var originalPath = fileMetadataInfo.OriginalPath;
+
+        if (originalPath != null && File.Exists(originalPath))
+        {
+            logger.Log($"Файл найден по оригинальному пути: {originalPath}");
+            return originalPath;
+        }
+
+        return null;
+    }
+
+    private async Task StreamFileAsync(string filePath, FileTransferRequestMessage request, MessageContext context)
+    {
+        logger.Log($"Начинаю стриминг файла {Path.GetFileName(filePath)} ({new FileInfo(filePath).Length} байт)");
+
+        await using var fileStream = File.OpenRead(filePath);
+        var fileBytes = new byte[fileStream.Length];
+        await fileStream.ReadAsync(fileBytes, context.CancellationToken);
+
+        var options = new StreamOptions
+        {
+            RequiresAcks = true,
+            RequiresEncryption = true,
+            StreamId = request.TransferId,
+            IsRawPayload = true,
+        };
+
+        logger.Log($"Отправляю файл через StreamManager: StreamId={request.TransferId}");
+        await streamManager.SendAsync(fileBytes, options, request.RoomId, context.ConnectionId, context.CancellationToken);
     }
 }

@@ -21,9 +21,14 @@ public class FileTransferRequestMessage : BaseMessage
     public Guid RoomId { get; set; }
 
     /// <summary>
-    /// Идентификатор потока, по которому придёт файл
+    /// Идентификатор потока, по которому мы ожидаем, что придёт файл
     /// </summary>
     public Guid TransferId { get; set; }
+
+    /// <summary>
+    /// Идентификатор сообщения метаданных, на которое ссылается запрос
+    /// </summary>
+    public Guid FileMetadataId { get; set; }
 
     /// <summary>
     /// Название файла

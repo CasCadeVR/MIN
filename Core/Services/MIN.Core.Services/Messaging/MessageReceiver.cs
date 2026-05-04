@@ -82,6 +82,11 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     {
         try
         {
+            if (e.IsRawPayload)
+            {
+                return;
+            }
+
             var context = roomFactory.GetOrCreateContext(e.RoomId);
             var message = serializer.Deserialize(e.Data);
             await dispatcher.DispatchAsync(message, new MessageContext(context,

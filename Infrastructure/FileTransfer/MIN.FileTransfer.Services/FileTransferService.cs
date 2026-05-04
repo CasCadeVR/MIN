@@ -19,6 +19,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, TransferInfo> activeTransfers = new();
     private readonly ConcurrentDictionary<Guid, string> pendingMetadata = new();
+    private readonly ConcurrentDictionary<Guid, FileMetadataInfo> fileMetadataRegistry = new();
     private bool disposed;
 
     /// <summary>
@@ -76,6 +77,22 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     {
         pendingMetadata.TryRemove(transferId, out _);
     }
+
+    void IFileTransferService.RegisterFileMetadata(Guid fileMetadataId, Guid roomId, string fileName, string? originalFilePath)
+    {
+        logger.Log($"Регистрирую метаданные файла: FileId={fileMetadataId}, Room={roomId}, File={fileName}, Path={originalFilePath ?? "RoomFiles"}");
+        fileMetadataRegistry[fileMetadataId] = new FileMetadataInfo
+        {
+            FileMetadataId = fileMetadataId,
+            RoomId = roomId,
+            FileName = fileName,
+            OriginalPath = originalFilePath,
+            IsStoredOnServer = originalFilePath == null,
+        };
+    }
+
+    bool IFileTransferService.TryGetFileMetadata(Guid fileMetadataId, out FileMetadataInfo info)
+        => fileMetadataRegistry.TryGetValue(fileMetadataId, out info!);
 
     /// <inheritdoc />
     public async Task OnFileDataReceivedAsync(Guid transferId, byte[] data, CancellationToken cancellationToken = default)
@@ -156,5 +173,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         chunkBufferAssembler.ChunkReceived -= OnChunkReceived;
         activeTransfers.Clear();
         pendingMetadata.Clear();
+        fileMetadataRegistry.Clear();
     }
 }

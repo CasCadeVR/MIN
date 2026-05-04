@@ -76,6 +76,7 @@ public sealed class ChatService : IChatService
             TransferId = transferId,
             RoomId = roomId,
             FileName = fileMessage.FileName,
+            FileMetadataId = fileMessage.Id,
             Direction = FileTransferDirection.Download,
         };
 
