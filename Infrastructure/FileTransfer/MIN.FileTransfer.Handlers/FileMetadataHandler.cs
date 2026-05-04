@@ -55,14 +55,15 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 
         context.RoomContext.Messages.AddMessage(metadata);
         var selfId = identityService.SelfParticipant.Id;
+        var isSelf = message.SenderId == selfId;
 
-        if (message.SenderId != selfId)
+        if (!isSelf)
         {
             logger.Log($"Убираю клиентский путь к файлу для получателя: {metadata.FileName}");
             metadata.FilePath = null;
         }
 
-        if (message.SenderId == selfId || message.RecipientId == selfId || message.IsPublic)
+        if (isSelf || message.RecipientId == selfId || message.IsPublic)
         {
             await eventBus.PublishAsync(new FileMetaDataMessageReceivedEvent()
             {
@@ -72,21 +73,17 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             });
         }
 
-        // Хост отправляет файл — регистрируем оригинальный путь
-        if (roomHoster.IsHosting(context.RoomContext.RoomId) && message.SenderId == selfId)
-        {
-            if (!string.IsNullOrEmpty(metadata.FilePath))
-            {
-                logger.Log($"Хост отправляет файл {metadata.FileName}, регистрирую оригинальный путь: {metadata.FilePath}");
-                fileTransferService.RegisterFileMetadata(message.Id, context.RoomContext.RoomId, metadata.FileName, metadata.FilePath);
-            }
+        fileTransferService.RegisterFileMetadata(message.Id, context.RoomContext.RoomId, metadata.FileName, metadata.FilePath);
 
+        var isHosting = roomHoster.IsHosting(context.RoomContext.RoomId);
+
+        if (isHosting && isSelf)
+        {
             logger.Log($"Хост: не запрашиваю файл у себя");
             return HandlerResult.Success();
         }
 
-        // Если ни то ни сё, ничего не делаем
-        if (!roomHoster.IsHosting(context.RoomContext.RoomId) || message.SenderId == selfId)
+        if (!isHosting || isSelf)
         {
             logger.Log($"Не являюсь хостом или отправитель — не запрашиваю файл: {metadata.FileName}");
             return HandlerResult.Success();
@@ -102,6 +99,7 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             RoomId = metadata.RoomId,
             TransferId = metadata.TransferId,
             RecipientId = metadata.SenderId,
+            FileMetadataId = message.Id,
             Direction = FileTransferDirection.Upload,
         };
 
@@ -116,6 +114,6 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             Direction = FileTransferDirection.Upload,
         });
 
-        return HandlerResult.WithResponse(requestMessage, stopPropagation: true);
+        return HandlerResult.WithResponse(requestMessage);
     }
 }

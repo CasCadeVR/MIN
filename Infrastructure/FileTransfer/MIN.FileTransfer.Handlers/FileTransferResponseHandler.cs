@@ -61,11 +61,11 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
 
         if (!fileTransferService.TryGetTransferInfo(response.TransferId, out _))
         {
-            logger.Log($"Не найдена информация о transfer {response.TransferId}, но Response успешен — ожидаю чанки");
+            logger.Log($"Не найдена информация о transfer {response.TransferId}, но Response успешен — ожидаю пакеты");
         }
         else
         {
-            logger.Log($"Transfer {response.TransferId} подтверждён, ожидаю чанки файла");
+            logger.Log($"Transfer {response.TransferId} подтверждён, ожидаю пакеты файла");
         }
 
         return HandlerResult.Success(stopPropagation: true);

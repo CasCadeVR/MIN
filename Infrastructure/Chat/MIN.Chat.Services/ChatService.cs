@@ -5,6 +5,7 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 
 namespace MIN.Chat.Services;
 
@@ -12,6 +13,7 @@ namespace MIN.Chat.Services;
 public sealed class ChatService : IChatService
 {
     private readonly IMessageRouter messageRouter;
+    private readonly IRoomHoster roomHoster;
     private readonly IFileHelperService fileHelperService;
     private readonly IFileTransferService fileTransferService;
 
@@ -19,10 +21,12 @@ public sealed class ChatService : IChatService
     /// Инициализирует новый экземпляр <see cref="ChatService"/>
     /// </summary>
     public ChatService(IMessageRouter messageRouter,
+        IRoomHoster roomHoster,
         IFileHelperService fileHelperService,
         IFileTransferService fileTransferService)
     {
         this.messageRouter = messageRouter;
+        this.roomHoster = roomHoster;
         this.fileHelperService = fileHelperService;
         this.fileTransferService = fileTransferService;
     }
@@ -52,9 +56,17 @@ public sealed class ChatService : IChatService
             throw new ArgumentException("Файл не найден", nameof(filePath));
         }
 
+        var transferId = Guid.NewGuid();
+
+        if (!roomHoster.IsHosting(roomId))
+        {
+            // Ожидаем, что хост запросит с нас файл
+            fileTransferService.RegisterTransfer(transferId, roomId, FileTransferDirection.Upload, fileName);
+        }
+
         var message = new FileMetadataMessage
         {
-            TransferId = Guid.NewGuid(),
+            TransferId = transferId,
             RoomId = roomId,
             Sender = sender,
             FileName = fileName,
