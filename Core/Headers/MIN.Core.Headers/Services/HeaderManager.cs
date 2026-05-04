@@ -46,7 +46,7 @@ public class HeaderManager : IHeaderManager
         {
             return StreamChunkFlags.None;
         }
-        return (StreamChunkFlags)(data[0] & 0x0F);
+        return (StreamChunkFlags)(data[0] & 0xFF);
     }
 
     byte[] IHeaderManager.BuildStreamChunkHeader(StreamChunkFlags flags, Guid streamId, int index, int total)

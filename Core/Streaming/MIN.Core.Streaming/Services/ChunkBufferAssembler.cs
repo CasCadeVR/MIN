@@ -103,9 +103,8 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             var completeData = stream.AddChunk(chunk);
             if (completeData != null)
             {
-                var isRawPayload = stream.IsRawPayload;
                 RemoveStream(chunk.StreamId);
-                OnMessageAssembled(chunk.StreamId, connectionId, roomId, completeData, isRawPayload);
+                OnMessageAssembled(chunk.StreamId, connectionId, roomId, completeData, stream.IsRawPayload);
             }
         }
         catch (Exception ex)

@@ -34,5 +34,5 @@ public enum StreamChunkFlags : byte
     /// <summary>
     /// Сырые байтовые данные, не подлежащие десериализации (например, файлы)
     /// </summary>
-    RawPayload = 0x10,
+    RawPayload = 0x20,
 }
