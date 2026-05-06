@@ -21,9 +21,14 @@ public sealed class MessageAssembledEventArgs : EventArgs
     public required Guid RoomId { get; init; }
 
     /// <summary>
-    /// Собранные данные
+    /// Собранные данные (для не-raw потоков)
     /// </summary>
-    public required byte[] Data { get; init; }
+    public byte[]? Data { get; init; }
+
+    /// <summary>
+    /// Путь к временному файлу с собранными данными (для raw payload)
+    /// </summary>
+    public string? FilePath { get; init; }
 
     /// <summary>
     /// Указывает, что данные являются сырым байтовым потоком (не JSON-сообщение)

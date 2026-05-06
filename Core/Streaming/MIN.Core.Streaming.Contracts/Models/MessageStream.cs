@@ -1,4 +1,6 @@
+using System.IO;
 using MIN.Core.Headers.Contracts.Enums;
+using MIN.Core.Streaming.Contracts.Constants;
 
 namespace MIN.Core.Streaming.Contracts.Models;
 
@@ -7,9 +9,12 @@ namespace MIN.Core.Streaming.Contracts.Models;
 /// </summary>
 public sealed class MessageStream : IDisposable
 {
-    private readonly MemoryStream buffer;
+    private readonly byte[]? memoryBuffer;
+    private readonly FileStream? fileStream;
+    private readonly string? tempFilePath;
     private readonly HashSet<int> receivedIndices = [];
     private readonly object lockObj = new();
+    private long totalDataSize;
     private bool disposed;
 
     /// <summary>
@@ -75,7 +80,19 @@ public sealed class MessageStream : IDisposable
         IsRawPayload = isRawPayload;
         CreatedAt = DateTime.UtcNow;
         LastChunkReceivedAt = CreatedAt;
-        buffer = new MemoryStream();
+
+        if (isRawPayload)
+        {
+            tempFilePath = Path.Combine(Path.GetTempPath(), $"min_stream_{Guid.NewGuid()}");
+            var bufferSize = (long)expectedChunks * StreamingConstants.ChunkDataSize;
+            fileStream = new FileStream(tempFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: 81920);
+            fileStream.SetLength(bufferSize);
+            totalDataSize = 0;
+        }
+        else
+        {
+            memoryBuffer = new byte[ExpectedChunks * StreamingConstants.ChunkDataSize];
+        }
     }
 
     /// <summary>
@@ -96,8 +113,19 @@ public sealed class MessageStream : IDisposable
             }
 
             receivedIndices.Add(chunk.Index);
-            buffer.Position = buffer.Length;
-            buffer.Write(chunk.Data.Span);
+
+            var offset = chunk.Index * StreamingConstants.ChunkDataSize;
+            if (IsRawPayload && fileStream != null)
+            {
+                fileStream.Position = offset;
+                fileStream.Write(chunk.Data.Span);
+                totalDataSize += chunk.Data.Length;
+            }
+            else if (memoryBuffer != null)
+            {
+                chunk.Data.Span.CopyTo(memoryBuffer.AsSpan(offset));
+            }
+
             LastChunkReceivedAt = DateTime.UtcNow;
             GottenChunks++;
 
@@ -110,12 +138,25 @@ public sealed class MessageStream : IDisposable
                 }
 
                 IsComplete = true;
-                return buffer.ToArray();
+
+                if (IsRawPayload && fileStream != null)
+                {
+                    fileStream.SetLength(totalDataSize);
+                    fileStream?.Dispose();
+                    return Array.Empty<byte>();
+                }
+
+                return memoryBuffer!.ToArray();
             }
 
             return null;
         }
     }
+
+    /// <summary>
+    /// Получить путь к временному файлу (только для raw payload)
+    /// </summary>
+    public string? GetTempFilePath() => tempFilePath;
 
     /// <inheritdoc/>
     public void Dispose()
@@ -124,8 +165,7 @@ public sealed class MessageStream : IDisposable
         {
             return;
         }
-
         disposed = true;
-        buffer.Dispose();
+        fileStream?.Dispose();
     }
 }

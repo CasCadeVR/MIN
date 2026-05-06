@@ -143,8 +143,66 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 
     private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
     {
-        logger.Log($"Сообщение собрано: StreamId={e.StreamId}, Size={e.Data.Length} байт");
-        await OnFileDataReceivedAsync(e.StreamId, e.Data);
+        if (e.IsRawPayload)
+        {
+            if (e.FilePath != null)
+            {
+                await OnRawFileReceivedAsync(e.StreamId, e.FilePath);
+            }
+            else
+            {
+                await OnFileDataReceivedAsync(e.StreamId, e.Data ?? []);
+            }
+            return;
+        }
+
+        logger.Log($"Сообщение собрано: StreamId={e.StreamId}, Size={e.Data?.Length ?? 0} байт");
+    }
+
+    private async Task OnRawFileReceivedAsync(Guid transferId, string tempFilePath)
+    {
+        if (!TryGetTransferInfo(transferId, out var info))
+        {
+            logger.Log($"Получены данные для неизвестного transfer {transferId}, игнорирую");
+            File.Delete(tempFilePath);
+            return;
+        }
+
+        var fileSize = new FileInfo(tempFilePath).Length;
+        logger.Log($"Перемещаю файл {info.FileName} ({fileSize} байт) из временного пути для transfer {transferId}");
+
+        try
+        {
+            var finalFileName = await fileStorageService.MoveTempFileToRoomAsync(info.RoomId, tempFilePath, info.FileName);
+            var filePath = fileStorageService.GetFilePath(info.RoomId, finalFileName) ?? string.Empty;
+            logger.Log($"Файл сохранён: {finalFileName} → {filePath}");
+
+            await eventBus.PublishAsync(new FileTransferCompletedEvent
+            {
+                RoomId = info.RoomId,
+                TransferId = transferId,
+                FileMetadataId = info.FileMetadataId,
+                FileName = finalFileName,
+                FilePath = filePath,
+            });
+
+            RemoveTransfer(transferId);
+            await RemovePendingMetadata(transferId);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Ошибка при перемещении файла из временного пути {transferId}: {ex.Message}");
+
+            await eventBus.PublishAsync(new FileTransferFailedEvent
+            {
+                RoomId = info.RoomId,
+                TransferId = transferId,
+                SenderId = info.SenderId,
+                ErrorMessage = ex.Message,
+            });
+
+            RemoveTransfer(transferId);
+        }
     }
 
     private async void OnChunkReceived(object? sender, ChunkReceivedEventArgs e)

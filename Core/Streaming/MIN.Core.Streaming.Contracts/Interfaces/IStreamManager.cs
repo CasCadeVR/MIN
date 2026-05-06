@@ -18,6 +18,16 @@ public interface IStreamManager
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Отправляет данные через поток, читая из Stream порциями (не загружает всё в память)
+    /// </summary>
+    Task SendAsync(
+        Stream source,
+        StreamOptions options,
+        Guid roomId,
+        Guid recipientConnectionId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Обрабатывает входящие данные (проверяет ACK)
     /// </summary>
     void ProcessAck(byte[] data);

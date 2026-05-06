@@ -48,4 +48,10 @@ public interface IFileStorageService
     /// Удалить все файлы комнаты
     /// </summary>
     Task DeleteRoomFilesAsync(Guid roomId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Переместить временный файл (собранный из потока) в папку комнаты
+    /// </summary>
+    /// <returns>Итоговое имя файла</returns>
+    Task<string> MoveTempFileToRoomAsync(Guid roomId, string tempFilePath, string fileName, CancellationToken cancellationToken = default);
 }

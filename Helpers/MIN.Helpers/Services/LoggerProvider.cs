@@ -29,7 +29,7 @@ public class LoggerProvider : ILoggerProvider
     {
         if (page.HasValue && pageSize.HasValue)
         {
-            return messages.Skip(page.Value).Take(pageSize.Value);
+            return messages.Skip(page.Value * pageSize.Value).Take(pageSize.Value);
         }
         else
         {

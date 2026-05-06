@@ -1,4 +1,5 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using System.Diagnostics;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Properties;
@@ -20,10 +21,10 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
     private readonly ParticipantInfo localParticipant;
     private readonly bool removeHeaders;
     private readonly bool hostMessage;
+    private readonly string cachedFormat;
     private HashSet<IDisposable> eventTokens = null!;
     private bool isDownloading;
     private bool downloaded;
-    private string savedFileType = string.Empty;
     private IDisposable fileTransferProgressSubsciptionToken = null!;
 
     /// <summary>
@@ -53,6 +54,10 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
         this.removeHeaders = removeHeaders;
         this.hostMessage = hostMessage;
         this.localParticipant = localParticipant;
+
+        cachedFormat = fileInterractButton.Text = fileTransferFeatureCollection.FileHelperService
+            .GetFileType(fileMetadataMessage.FileName)
+            .Substring(1);
 
         downloaded = fileMetadataMessage.FilePath != null || fileMetadataMessage.AsDownloaded;
 
@@ -102,6 +107,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
 
         uiContext.Post(_ =>
         {
+            UpdateIconOutOfState();
             fileSize.Text = $"0 / {fileTransferFeatureCollection.FileHelperService.FormatFileSize(eventMessage.FileSize)}";
             splitContainerDownload.Panel2Collapsed = false;
         }, this);
@@ -118,15 +124,16 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
             return;
         }
 
+        isDownloading = false;
+
         uiContext.Post(_ =>
         {
+            UpdateIconOutOfState();
             fileSize.Text = $"Ошибка: {eventMessage.ErrorMessage}";
             splitContainerDownload.Panel2Collapsed = true;
         }, this);
 
         fileTransferProgressSubsciptionToken.Dispose();
-
-        isDownloading = false;
 
         await Task.CompletedTask;
     }
@@ -138,18 +145,19 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
             return;
         }
 
-        uiContext.Post(_ =>
-        {
-            splitContainerDownload.Panel2Collapsed = true;
-            fileSize.Text = fileTransferFeatureCollection.FileHelperService
-                .FormatFileSize(fileMetadataMessage.FileSize);
-        }, this);
-
         downloaded = true;
         fileMetadataMessage.FilePath = eventMessage.FilePath;
         fileTransferProgressSubsciptionToken?.Dispose();
 
         isDownloading = false;
+
+        uiContext.Post(_ =>
+        {
+            UpdateIconOutOfState();
+            splitContainerDownload.Panel2Collapsed = true;
+            fileSize.Text = fileTransferFeatureCollection.FileHelperService
+                .FormatFileSize(fileMetadataMessage.FileSize);
+        }, this);
 
         await Task.CompletedTask;
     }
@@ -198,19 +206,23 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
             .Substring(1);
     }
 
-    private void fileInterractButton_MouseHover(object sender, EventArgs e)
+    private void fileInterractButton_MouseEnter(object sender, EventArgs e)
     {
-        savedFileType = fileInterractButton.Text;
+        UpdateIconOutOfState();
+    }
+
+    private void UpdateIconOutOfState()
+    {
         fileInterractButton.Text = string.Empty;
         fileInterractButton.BackgroundImage = isDownloading
-            ? Resources.close
-            : downloaded ? Resources.file : Resources.download;
+            ? Resources.close : downloaded
+            ? Resources.file : Resources.download;
     }
 
     private void fileInterractButton_MouseLeave(object sender, EventArgs e)
     {
         fileInterractButton.BackgroundImage = null;
-        fileInterractButton.Text = savedFileType;
+        fileInterractButton.Text = cachedFormat;
     }
 
     private void fileInterractButton_Click(object sender, EventArgs e)
@@ -224,13 +236,26 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
 
         if (downloaded)
         {
-            if (!Path.Exists(fileMetadataMessage.FilePath))
+            var path = fileMetadataMessage.FilePath;
+
+            if (!Path.Exists(path))
             {
                 MessageBox.Show("Файл не нашёлся");
                 downloaded = false;
                 return;
             }
-            MessageBox.Show("Типо открылся файл");
+
+            try
+            {
+                Process.Start(new ProcessStartInfo(path)
+                {
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось открыть файл: {ex.Message}");
+            }
         }
         else
         {

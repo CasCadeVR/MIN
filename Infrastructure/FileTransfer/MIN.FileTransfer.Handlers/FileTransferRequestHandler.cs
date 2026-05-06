@@ -202,11 +202,8 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
 
         info.CancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
 
-        logger.Log($"Начинаю стриминг файла {Path.GetFileName(filePath)} ({new FileInfo(filePath).Length} байт)");
-
-        await using var fileStream = File.OpenRead(filePath);
-        var fileBytes = new byte[fileStream.Length];
-        await fileStream.ReadAsync(fileBytes, context.CancellationToken);
+        var fileSize = new FileInfo(filePath).Length;
+        logger.Log($"Начинаю стриминг файла {Path.GetFileName(filePath)} ({fileSize} байт)");
 
         var options = new StreamOptions
         {
@@ -217,6 +214,8 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
         };
 
         logger.Log($"Отправляю файл через StreamManager: StreamId={request.TransferId}");
-        await streamManager.SendAsync(fileBytes, options, request.RoomId, context.ConnectionId, info.CancellationTokenSource.Token);
+
+        await using var fileStream = File.OpenRead(filePath);
+        await streamManager.SendAsync(fileStream, options, request.RoomId, context.ConnectionId, info.CancellationTokenSource.Token);
     }
 }

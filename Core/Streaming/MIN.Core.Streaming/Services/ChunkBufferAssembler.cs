@@ -69,7 +69,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
                     await SendAck(chunk.StreamId, chunk.Index, connectionId, roomId, cancellationToken);
                 }
 
-                OnMessageAssembled(chunk.StreamId, connectionId, roomId, chunk.Data.ToArray(), chunk.Flags.HasFlag(StreamChunkFlags.RawPayload));
+                OnMessageAssembled(chunk.StreamId, connectionId, roomId, chunk.Data.ToArray(), null, chunk.Flags.HasFlag(StreamChunkFlags.RawPayload));
                 return;
             }
 
@@ -101,11 +101,12 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
                 RoomId = roomId
             });
 
-            var completeData = stream.AddChunk(chunk);
-            if (completeData != null)
+            var result = stream.AddChunk(chunk);
+            if (result != null)
             {
+                var filePath = stream.GetTempFilePath();
+                OnMessageAssembled(chunk.StreamId, connectionId, roomId, result, filePath, stream.IsRawPayload);
                 TryRemoveStream(chunk.StreamId);
-                OnMessageAssembled(chunk.StreamId, connectionId, roomId, completeData, stream.IsRawPayload);
             }
         }
         catch (Exception ex)
@@ -187,7 +188,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         }
     }
 
-    private void OnMessageAssembled(Guid streamId, Guid connectionId, Guid roomId, byte[] data, bool isRawPayload)
+    private void OnMessageAssembled(Guid streamId, Guid connectionId, Guid roomId, byte[] data, string? filePath, bool isRawPayload)
     {
         var args = new MessageAssembledEventArgs
         {
@@ -195,6 +196,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             ConnectionId = connectionId,
             RoomId = roomId,
             Data = data,
+            FilePath = filePath,
             IsRawPayload = isRawPayload,
         };
 

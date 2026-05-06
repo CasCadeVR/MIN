@@ -81,8 +81,8 @@
             fileInterractButton.Text = "Тип файла";
             fileInterractButton.UseVisualStyleBackColor = false;
             fileInterractButton.Click += fileInterractButton_Click;
+            fileInterractButton.MouseEnter += fileInterractButton_MouseEnter;
             fileInterractButton.MouseLeave += fileInterractButton_MouseLeave;
-            fileInterractButton.MouseHover += fileInterractButton_MouseHover;
             // 
             // fileName
             // 

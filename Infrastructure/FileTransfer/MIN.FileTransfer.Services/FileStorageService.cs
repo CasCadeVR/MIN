@@ -115,6 +115,27 @@ public sealed class FileStorageService : IFileStorageService
         return Task.CompletedTask;
     }
 
+    async Task<string> IFileStorageService.MoveTempFileToRoomAsync(Guid roomId, string tempFilePath, string fileName, CancellationToken cancellationToken)
+    {
+        EnsureRoomDirectoryExists(roomId);
+        var roomDir = GetRoomDirectory(roomId);
+
+        var finalFileName = ResolveUniqueFileName(roomDir, fileName);
+        var finalPath = Path.Combine(roomDir, finalFileName);
+
+        logger.Log($"Перемещаю временный файл: {tempFilePath} → {finalPath} ({new FileInfo(tempFilePath).Length} байт)");
+
+        await using (var source = File.OpenRead(tempFilePath))
+        await using (var destination = File.Create(finalPath))
+        {
+            await source.CopyToAsync(destination, cancellationToken);
+        }
+
+        File.Delete(tempFilePath);
+        logger.Log($"Временный файл удалён: {tempFilePath}");
+        return finalFileName;
+    }
+
     private static string ResolveUniqueFileName(string directory, string fileName)
     {
         var nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);

@@ -88,7 +88,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
             }
 
             var context = roomFactory.GetOrCreateContext(e.RoomId);
-            var message = serializer.Deserialize(e.Data);
+            var message = serializer.Deserialize(e.Data!); // Потому-что это не RawPayload
             await dispatcher.DispatchAsync(message, new MessageContext(context,
                 e.ConnectionId,
                 cts.Token));
