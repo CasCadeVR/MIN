@@ -104,14 +104,14 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             var completeData = stream.AddChunk(chunk);
             if (completeData != null)
             {
-                RemoveStream(chunk.StreamId);
+                TryRemoveStream(chunk.StreamId);
                 OnMessageAssembled(chunk.StreamId, connectionId, roomId, completeData, stream.IsRawPayload);
             }
         }
         catch (Exception ex)
         {
             logger.Log($"Ошибка при добавлении пакета: {ex.Message}");
-            RemoveStream(chunk.StreamId);
+            TryRemoveStream(chunk.StreamId);
             throw;
         }
     }
@@ -151,7 +151,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         if (state is Guid streamId)
         {
             logger.Log($"Поток {streamId} превысил время жизни");
-            RemoveStream(streamId);
+            TryRemoveStream(streamId);
         }
     }
 
@@ -173,7 +173,8 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         }
     }
 
-    private void RemoveStream(Guid streamId)
+    /// <inheritdoc />
+    public void TryRemoveStream(Guid streamId)
     {
         if (activeStreams.TryRemove(streamId, out var stream))
         {

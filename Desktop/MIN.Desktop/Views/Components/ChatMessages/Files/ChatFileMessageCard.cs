@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Properties;
 using MIN.FileTransfer.DI.FeatureCollection;
@@ -16,7 +17,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
     private readonly IEventBus eventBus;
     private readonly FileMetadataMessage fileMetadataMessage;
     private readonly SynchronizationContext uiContext;
-    private readonly bool isLocal;
+    private readonly ParticipantInfo localParticipant;
     private readonly bool removeHeaders;
     private readonly bool hostMessage;
     private HashSet<IDisposable> eventTokens = null!;
@@ -41,7 +42,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
     public ChatFileMessageCard(IFileTransferFeatureCollection fileTransferFeatureCollection,
         IEventBus eventBus,
         FileMetadataMessage fileMetadataMessage,
-        bool isLocal,
+        ParticipantInfo localParticipant,
         bool hostMessage,
         bool removeHeaders)
     {
@@ -51,7 +52,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
         this.fileMetadataMessage = fileMetadataMessage;
         this.removeHeaders = removeHeaders;
         this.hostMessage = hostMessage;
-        this.isLocal = isLocal;
+        this.localParticipant = localParticipant;
 
         downloaded = fileMetadataMessage.FilePath != null;
 
@@ -88,7 +89,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
                 return;
             }
 
-            var progress = 100 * (double)e.BytesReceived / fileMetadataMessage.FileSize;
+            var progress = 100 * e.BytesReceived / fileMetadataMessage.FileSize;
             uiContext.Post(_ =>
             {
                 downloadProgressBar.Value = (int)Math.Min(progress, 100);
@@ -110,7 +111,9 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
 
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+        if (eventMessage.RoomId != fileMetadataMessage.RoomId
+            || eventMessage.FileMetadataId != fileMetadataMessage.Id
+            || eventMessage.SenderId != localParticipant.Id)
         {
             return;
         }
@@ -128,7 +131,6 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
         await Task.CompletedTask;
     }
 
-
     private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
@@ -139,8 +141,9 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
         uiContext.Post(_ =>
         {
             splitContainerDownload.Panel2Collapsed = true;
+            fileSize.Text = fileTransferFeatureCollection.FileHelperService
+                .FormatFileSize(fileMetadataMessage.FileSize);
         }, this);
-
 
         downloaded = true;
         fileMetadataMessage.FilePath = eventMessage.FilePath;
@@ -162,7 +165,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
             sendRole.Visible = false;
         }
 
-        var senderColor = isLocal
+        var senderColor = localParticipant.Id == fileMetadataMessage.SenderId
             ? ColorScheme.OutgoingMessageBackground
             : ColorScheme.IncomingMessageBackground;
 
@@ -200,7 +203,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
         savedFileType = fileInterractButton.Text;
         fileInterractButton.Text = string.Empty;
         fileInterractButton.BackgroundImage = isDownloading
-            ? Resources.compass
+            ? Resources.close
             : downloaded ? Resources.file : Resources.download;
     }
 

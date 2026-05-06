@@ -12,6 +12,9 @@ public class FileTransferCancelMessage : BaseMessage
     public override MessageTypeTag TypeTag => MessageTypeTag.FileTransferCancel;
 
     /// <inheritdoc />
+    public override bool RequiresLocalDuplication => true;
+
+    /// <inheritdoc />
     public override bool IsPublic => false;
 
     /// <summary>

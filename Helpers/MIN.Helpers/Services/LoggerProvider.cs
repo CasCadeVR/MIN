@@ -25,5 +25,15 @@ public class LoggerProvider : ILoggerProvider
         OnLogReceived?.Invoke(this, result);
     }
 
-    IEnumerable<string> ILoggerProvider.GetLogHistory() => messages;
+    IEnumerable<string> ILoggerProvider.GetLogHistory(int? page, int? pageSize)
+    {
+        if (page.HasValue && pageSize.HasValue)
+        {
+            return messages.Skip(page.Value).Take(pageSize.Value);
+        }
+        else
+        {
+            return messages;
+        }
+    }
 }

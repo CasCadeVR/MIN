@@ -1,3 +1,4 @@
+using MIN.Core.Entities;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
@@ -7,6 +8,7 @@ using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
+using MIN.FileTransfer.Services.Contracts.Models;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -91,7 +93,18 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
         // Хост получает файл от клиента — запрашиваем загрузку на сервер у клиента
         logger.Log($"Хост: регистрирую загрузку файла {metadata.FileName} (TransferId: {metadata.TransferId})");
         fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);
-        fileTransferService.RegisterTransfer(metadata.TransferId, metadata.Id, metadata.RoomId, FileTransferDirection.Upload, metadata.FileName);
+
+        var info = new TransferInfo
+        {
+            TransferId = metadata.TransferId,
+            FileMetadataId = metadata.Id,
+            RoomId = metadata.RoomId,
+            SenderId = selfId,
+            Direction = FileTransferDirection.Upload,
+            FileName = metadata.FileName,
+        };
+
+        fileTransferService.RegisterTransfer(info);
 
         var requestMessage = new FileTransferRequestMessage
         {

@@ -50,6 +50,7 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
                 {
                     RoomId = info.RoomId,
                     TransferId = response.TransferId,
+                    SenderId = message.SenderId,
                     ErrorMessage = response.ErrorMessage ?? "Unknown error",
                 });
 

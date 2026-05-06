@@ -11,6 +11,7 @@ public partial class LogForm : StyledForm
 {
     private readonly ILoggerProvider loggerProvider;
     private readonly SynchronizationContext uiContext;
+    private int currentPage;
 
     /// <summary>
     /// »нициализирует новый экземпл€р <see cref="LogForm"/>
@@ -52,17 +53,30 @@ public partial class LogForm : StyledForm
     private void LogForm_Load(object sender, EventArgs e)
     {
         logListBox.Items.Clear();
+        LoadLogs();
+    }
 
-        var history = loggerProvider.GetLogHistory();
+    private void LoadLogs()
+    {
+        var history = loggerProvider.GetLogHistory(currentPage, 100);
 
         foreach (var message in history)
         {
-            AddLogMessage(message);
+            logListBox.Items.Add(message);
         }
+
+        logListBox.TopIndex = 0;
+        logListBox.Update();
     }
 
     private void LogForm_FormClosing(object sender, FormClosingEventArgs e)
     {
         loggerProvider.OnLogReceived -= OnLogReceived;
+    }
+
+    private void loadMoreButton_Click(object sender, EventArgs e)
+    {
+        currentPage++;
+        LoadLogs();
     }
 }

@@ -7,6 +7,7 @@ using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
+using MIN.FileTransfer.Services.Contracts.Models;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 
 namespace MIN.Chat.Services;
@@ -77,7 +78,16 @@ public sealed class ChatService : IChatService
         if (!roomHoster.IsHosting(roomId))
         {
             // Ожидаем, что хост запросит с нас файл
-            fileTransferService.RegisterTransfer(transferId, message.Id, roomId, FileTransferDirection.Upload, fileName);
+            var info = new TransferInfo
+            {
+                TransferId = transferId,
+                FileMetadataId = message.Id,
+                RoomId = roomId,
+                SenderId = sender.Id,
+                Direction = FileTransferDirection.Upload,
+                FileName = fileName,
+            };
+            fileTransferService.RegisterTransfer(info);
         }
 
         await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);
@@ -86,7 +96,19 @@ public sealed class ChatService : IChatService
     async Task IChatService.RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, ParticipantInfo sender, CancellationToken cancellationToken)
     {
         var transferId = Guid.NewGuid();
-        fileTransferService.RegisterTransfer(transferId, fileMessage.Id, roomId, FileTransferDirection.Download, fileMessage.FileName);
+        fileMessage.TransferId = transferId;
+
+        var info = new TransferInfo
+        {
+            TransferId = transferId,
+            FileMetadataId = fileMessage.Id,
+            RoomId = roomId,
+            SenderId = sender.Id,
+            Direction = FileTransferDirection.Download,
+            FileName = fileMessage.FileName,
+        };
+
+        fileTransferService.RegisterTransfer(info);
 
         await eventBus.PublishAsync(new FileTransferStartedEvent
         {

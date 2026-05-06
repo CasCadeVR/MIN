@@ -23,6 +23,11 @@ public sealed class TransferInfo
     public Guid FileMetadataId { get; init; }
 
     /// <summary>
+    /// Идентификатор инициатора передачи файла
+    /// </summary>
+    public Guid SenderId { get; init; }
+
+    /// <summary>
     /// Направление передачи файла
     /// </summary>
     public FileTransferDirection Direction { get; init; }
@@ -31,4 +36,9 @@ public sealed class TransferInfo
     /// Имя файла
     /// </summary>
     public string FileName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Источник токена отмены для остановки передачи
+    /// </summary>
+    public CancellationTokenSource? CancellationTokenSource { get; set; }
 }

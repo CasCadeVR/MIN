@@ -461,7 +461,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     var fileCard = new ChatFileMessageCard(featureCollection.FileTransfer,
                         featureCollection.Core.EventBus,
                         fileMetadataMessage,
-                        localParticipant.Id == fileMetadataMessage.SenderId,
+                        localParticipant,
                         isHostMessage,
                         removeHeaders: isSelfMessage || lastChatMessage?.SenderId == fileMetadataMessage.SenderId)
                     {

@@ -5,7 +5,6 @@ using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
 using MIN.FileTransfer.Services.Contracts.Models;
-using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Services;
@@ -40,17 +39,10 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         chunkBufferAssembler.ChunkReceived += OnChunkReceived;
     }
 
-    void IFileTransferService.RegisterTransfer(Guid transferId, Guid fileMetadataId, Guid roomId, FileTransferDirection direction, string fileName)
+    void IFileTransferService.RegisterTransfer(TransferInfo info)
     {
-        logger.Log($"Регистрирую transfer: TransferId={transferId}, Room={roomId}, Direction={direction}, File={fileName}");
-        activeTransfers[transferId] = new TransferInfo
-        {
-            TransferId = transferId,
-            FileMetadataId = fileMetadataId,
-            RoomId = roomId,
-            Direction = direction,
-            FileName = fileName,
-        };
+        logger.Log($"Регистрирую transfer: TransferId={info.TransferId}, Room={info.RoomId}, Direction={info.Direction}, File={info.FileName}");
+        activeTransfers[info.TransferId] = info;
     }
 
     /// <inheritdoc />
@@ -61,7 +53,11 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     public void RemoveTransfer(Guid transferId)
     {
         logger.Log($"Удаляю transfer {transferId}");
-        activeTransfers.TryRemove(transferId, out _);
+        if (activeTransfers.TryRemove(transferId, out var info))
+        {
+            chunkBufferAssembler.TryRemoveStream(transferId);
+            info.CancellationTokenSource?.Cancel();
+        }
     }
 
     void IFileTransferService.RegisterPendingMetadata(Guid transferId, string fileName)
@@ -134,6 +130,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             {
                 RoomId = info.RoomId,
                 TransferId = transferId,
+                SenderId = info.SenderId,
                 ErrorMessage = ex.Message,
             });
 

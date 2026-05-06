@@ -33,8 +33,9 @@ namespace MIN.Desktop.Views.Forms
         {
             splitContainer = new SplitContainer();
             tableLayoutPanelHeader = new TableLayoutPanel();
-            Title = new MIN.Desktop.Components.Labels.Heading1Label();
-            logListBox = new MIN.Desktop.Components.Controls.ListBoxes.DefaultListBox();
+            Title = new Heading1Label();
+            logListBox = new DefaultListBox();
+            loadMoreButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -64,9 +65,11 @@ namespace MIN.Desktop.Views.Forms
             // 
             // tableLayoutPanelHeader
             // 
-            tableLayoutPanelHeader.ColumnCount = 1;
-            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelHeader.ColumnCount = 2;
+            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 55F));
             tableLayoutPanelHeader.Controls.Add(Title, 0, 0);
+            tableLayoutPanelHeader.Controls.Add(loadMoreButton, 1, 0);
             tableLayoutPanelHeader.Dock = DockStyle.Fill;
             tableLayoutPanelHeader.Location = new Point(0, 0);
             tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
@@ -81,7 +84,7 @@ namespace MIN.Desktop.Views.Forms
             Title.AutoSize = true;
             Title.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             Title.ForeColor = Color.Black;
-            Title.Location = new Point(175, 12);
+            Title.Location = new Point(148, 12);
             Title.Name = "Title";
             Title.Size = new Size(65, 30);
             Title.TabIndex = 0;
@@ -101,6 +104,23 @@ namespace MIN.Desktop.Views.Forms
             logListBox.Name = "logListBox";
             logListBox.Size = new Size(416, 259);
             logListBox.TabIndex = 0;
+            // 
+            // loadMoreButton
+            // 
+            loadMoreButton.BackColor = Color.FromArgb(167, 157, 255);
+            loadMoreButton.BackgroundImage = Properties.Resources.download;
+            loadMoreButton.BackgroundImageLayout = ImageLayout.Zoom;
+            loadMoreButton.Dock = DockStyle.Fill;
+            loadMoreButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            loadMoreButton.FlatStyle = FlatStyle.Flat;
+            loadMoreButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            loadMoreButton.ForeColor = Color.FromArgb(248, 249, 255);
+            loadMoreButton.Location = new Point(364, 3);
+            loadMoreButton.Name = "loadMoreButton";
+            loadMoreButton.Size = new Size(49, 49);
+            loadMoreButton.TabIndex = 1;
+            loadMoreButton.UseVisualStyleBackColor = false;
+            loadMoreButton.Click += loadMoreButton_Click;
             // 
             // LogForm
             // 
@@ -129,5 +149,6 @@ namespace MIN.Desktop.Views.Forms
         private TableLayoutPanel tableLayoutPanelHeader;
         private Heading1Label Title;
         private DefaultListBox logListBox;
+        private Desktop.Components.Controls.Buttons.CommonButton loadMoreButton;
     }
 }

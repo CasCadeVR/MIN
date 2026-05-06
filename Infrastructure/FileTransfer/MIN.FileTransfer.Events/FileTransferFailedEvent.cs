@@ -23,6 +23,11 @@ public sealed class FileTransferFailedEvent : BaseEvent
     public Guid FileMetadataId { get; set; }
 
     /// <summary>
+    /// Идентификатор отправителя запроса на скачивание
+    /// </summary>
+    public Guid SenderId { get; set; }
+
+    /// <summary>
     /// Сообщение об ошибке
     /// </summary>
     public string? ErrorMessage { get; set; }

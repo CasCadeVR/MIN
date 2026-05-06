@@ -52,58 +52,85 @@ public sealed class StreamManager : IStreamManager, IDisposable
 
         logger.Log($"Начало отправки потока {streamId}: {data.Length} байт, {totalChunks} пакетов");
 
-        for (var i = 0; i < totalChunks; i++)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
 
-            var chunkStart = i * StreamingConstants.ChunkDataSize;
-            var chunkLength = Math.Min(StreamingConstants.ChunkDataSize, data.Length - chunkStart);
-            var chunkData = data.Slice(chunkStart, chunkLength);
-
-            var flags = StreamChunkFlags.Mid;
-            if (i == 0)
+            for (var i = 0; i < totalChunks; i++)
             {
-                flags |= StreamChunkFlags.Start;
+                var chunkStart = i * StreamingConstants.ChunkDataSize;
+                var chunkLength = Math.Min(StreamingConstants.ChunkDataSize, data.Length - chunkStart);
+                var chunkData = data.Slice(chunkStart, chunkLength);
+
+                var flags = StreamChunkFlags.Mid;
+                if (i == 0)
+                {
+                    flags |= StreamChunkFlags.Start;
+                    if (options.RequiresAcks)
+                    {
+                        flags |= StreamChunkFlags.RequiresAcks;
+                    }
+                    if (options.IsRawPayload)
+                    {
+                        flags |= StreamChunkFlags.RawPayload;
+                    }
+                }
+                if (i == totalChunks - 1)
+                {
+                    flags |= StreamChunkFlags.End;
+                }
+
+                var chunk = new StreamChunk
+                {
+                    StreamId = streamId,
+                    Flags = flags,
+                    Index = i,
+                    Total = totalChunks,
+                    Data = chunkData
+                };
+
+                var package = SerializeChunk(chunk);
+                var encrypted = EncryptChunkIfNeeded(package, roomId, recipientConnectionId, options);
+
                 if (options.RequiresAcks)
                 {
-                    flags |= StreamChunkFlags.RequiresAcks;
+                    var ackKey = new ChunkAckKey { StreamId = streamId, ChunkIndex = i };
+                    pendingChunks.TryAdd(ackKey, new PendingChunk()
+                    {
+                        LastAcknowledgedIndex = i,
+                        TotalChunks = totalChunks,
+                    });
+                    StartAckTimer(ackKey);
                 }
-                if (options.IsRawPayload)
-                {
-                    flags |= StreamChunkFlags.RawPayload;
-                }
-            }
-            if (i == totalChunks - 1)
-            {
-                flags |= StreamChunkFlags.End;
+
+                logger.Log($"Отправлен пакет {i + 1}/{totalChunks} для потока {streamId}");
+
+                await Task.Delay(100);
+
+                await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
             }
 
-            var chunk = new StreamChunk
-            {
-                StreamId = streamId,
-                Flags = flags,
-                Index = i,
-                Total = totalChunks,
-                Data = chunkData
-            };
+            CleanForStream(streamId);
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.Log($"Передача пакетов была отменена: {ex.Message}");
+            CleanForStream(streamId);
+        }
+    }
 
-            var package = SerializeChunk(chunk);
-            var encrypted = EncryptChunkIfNeeded(package, roomId, recipientConnectionId, options);
+    private void CleanForStream(Guid streamId)
+    {
+        foreach (var key in pendingChunks.Keys.Where(x => x.StreamId == streamId).ToList())
+        {
+            pendingChunks.TryRemove(key, out var pendingChunk);
+        }
 
-            if (options.RequiresAcks)
+        foreach (var key in ackTimers.Keys.Where(x => x.StreamId == streamId).ToList())
+        {
+            if (ackTimers.TryRemove(key, out var timer))
             {
-                var ackKey = new ChunkAckKey { StreamId = streamId, ChunkIndex = i };
-                pendingChunks.TryAdd(ackKey, new PendingChunk()
-                {
-                    LastAcknowledgedIndex = i,
-                    TotalChunks = totalChunks,
-                });
-                StartAckTimer(ackKey);
+                timer?.Dispose();
             }
-
-            logger.Log($"Отправлен пакет {i + 1}/{totalChunks} для потока {streamId}");
-
-            await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
         }
     }
 

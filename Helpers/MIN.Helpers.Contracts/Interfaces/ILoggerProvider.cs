@@ -20,5 +20,5 @@ public interface ILoggerProvider
     /// <summary>
     /// Получить историю логов
     /// </summary>
-    IEnumerable<string> GetLogHistory();
+    IEnumerable<string> GetLogHistory(int? page, int? pageSize);
 }

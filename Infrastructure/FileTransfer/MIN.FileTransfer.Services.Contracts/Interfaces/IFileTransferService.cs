@@ -1,5 +1,4 @@
 using MIN.FileTransfer.Services.Contracts.Models;
-using MIN.FileTransfer.Services.Contracts.Models.Enums;
 
 namespace MIN.FileTransfer.Services.Contracts.Interfaces;
 
@@ -11,7 +10,7 @@ public interface IFileTransferService
     /// <summary>
     /// Зарегистрировать информацию о передаче файла
     /// </summary>
-    void RegisterTransfer(Guid transferId, Guid fileMetadataId, Guid roomId, FileTransferDirection direction, string fileName);
+    void RegisterTransfer(TransferInfo info);
 
     /// <summary>
     /// Попытаться получить информацию о передаче файла

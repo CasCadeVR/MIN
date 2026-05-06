@@ -1,3 +1,5 @@
+using System.Reflection;
+using MIN.Core.Entities;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
@@ -7,6 +9,7 @@ using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
+using MIN.FileTransfer.Services.Contracts.Models;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -114,7 +117,18 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
         if (!fileTransferService.TryGetTransferInfo(request.TransferId, out _))
         {
             logger.Log($"Регистрирую новый download transfer для файла {request.FileName} (TransferId: {request.TransferId})");
-            fileTransferService.RegisterTransfer(request.TransferId, request.FileMetadataId, request.RoomId, FileTransferDirection.Download, request.FileName);
+
+            var info = new TransferInfo
+            {
+                TransferId = request.TransferId,
+                FileMetadataId = request.FileMetadataId,
+                RoomId = request.RoomId,
+                SenderId = selfId,
+                Direction = FileTransferDirection.Download,
+                FileName = request.FileName,
+            };
+
+            fileTransferService.RegisterTransfer(info);
         }
         else
         {
@@ -180,6 +194,14 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
 
     private async Task StreamFileAsync(string filePath, FileTransferRequestMessage request, MessageContext context)
     {
+        if (!fileTransferService.TryGetTransferInfo(request.TransferId, out var info))
+        {
+            logger.Log($"Не найдена информация о передаче {request.TransferId} во время стриминга файла");
+            return;
+        }
+
+        info.CancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
+
         logger.Log($"Начинаю стриминг файла {Path.GetFileName(filePath)} ({new FileInfo(filePath).Length} байт)");
 
         await using var fileStream = File.OpenRead(filePath);
@@ -195,6 +217,6 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
         };
 
         logger.Log($"Отправляю файл через StreamManager: StreamId={request.TransferId}");
-        await streamManager.SendAsync(fileBytes, options, request.RoomId, context.ConnectionId, context.CancellationToken);
+        await streamManager.SendAsync(fileBytes, options, request.RoomId, context.ConnectionId, info.CancellationTokenSource.Token);
     }
 }
