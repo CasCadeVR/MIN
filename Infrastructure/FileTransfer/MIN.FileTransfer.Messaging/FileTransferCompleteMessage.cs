@@ -23,4 +23,9 @@ public class FileTransferCompleteMessage : BaseMessage
     /// Идентификатор потока, по которому придёт файл
     /// </summary>
     public Guid TransferId { get; set; }
+
+    /// <summary>
+    /// Идентификатор сообщения метаданных
+    /// </summary>
+    public Guid FileMetadataId { get; set; }
 }

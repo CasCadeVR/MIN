@@ -123,10 +123,10 @@
             // discoveryProgressBar
             // 
             discoveryProgressBar.Dock = DockStyle.Bottom;
-            discoveryProgressBar.Location = new Point(0, 38);
+            discoveryProgressBar.Location = new Point(0, 7);
             discoveryProgressBar.Margin = new Padding(0);
             discoveryProgressBar.Name = "discoveryProgressBar";
-            discoveryProgressBar.Size = new Size(150, 8);
+            discoveryProgressBar.Size = new Size(162, 8);
             discoveryProgressBar.TabIndex = 0;
             // 
             // classroomTitleInput

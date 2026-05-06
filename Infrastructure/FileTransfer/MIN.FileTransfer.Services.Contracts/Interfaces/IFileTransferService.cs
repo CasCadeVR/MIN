@@ -11,7 +11,7 @@ public interface IFileTransferService
     /// <summary>
     /// Зарегистрировать информацию о передаче файла
     /// </summary>
-    void RegisterTransfer(Guid transferId, Guid roomId, FileTransferDirection direction, string fileName);
+    void RegisterTransfer(Guid transferId, Guid fileMetadataId, Guid roomId, FileTransferDirection direction, string fileName);
 
     /// <summary>
     /// Попытаться получить информацию о передаче файла

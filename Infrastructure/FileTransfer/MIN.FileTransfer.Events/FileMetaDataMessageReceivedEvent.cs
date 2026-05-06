@@ -1,5 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts;
 using MIN.FileTransfer.Messaging;
 
 namespace MIN.FileTransfer.Events;
@@ -18,9 +17,4 @@ public sealed class FileMetaDataMessageReceivedEvent : BaseEvent
     /// Полученная информация о файле
     /// </summary>
     public FileMetadataMessage Message { get; init; } = null!;
-
-    /// <summary>
-    /// Отправитель сообщения
-    /// </summary>
-    public ParticipantInfo Sender { get; init; } = null!;
 }

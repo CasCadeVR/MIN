@@ -18,6 +18,11 @@ public sealed class FileTransferCompletedEvent : BaseEvent
     public Guid TransferId { get; set; }
 
     /// <summary>
+    /// Идентификатор сообщения метаданных
+    /// </summary>
+    public Guid FileMetadataId { get; set; }
+
+    /// <summary>
     /// Название файла
     /// </summary>
     public string FileName { get; set; } = string.Empty;

@@ -1,5 +1,5 @@
 ﻿using MIN.Chat.Messaging;
-using MIN.Core.Entities.Contracts.Models;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 
 namespace MIN.Desktop.Components;
@@ -7,31 +7,34 @@ namespace MIN.Desktop.Components;
 /// <summary>
 /// Карточка сообщения от пользователя
 /// </summary>
-public partial class ChatTextMessageCard : UserControl
+public partial class ChatTextMessageCard : UserControl, IStyled
 {
     private readonly ChatTextMessage chatMessage;
-    private readonly ParticipantInfo localParticipant;
     private readonly bool hostMessage;
+    private readonly bool isLocal;
     private readonly bool removeHeaders;
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
+    /// Инициализирует новый экземпляр <see cref="ChatTextMessageCard"/>
     /// </summary>
     public ChatTextMessageCard(ChatTextMessage chatMessage,
-        ParticipantInfo localParticipant,
+        bool isLocal,
         bool hostMessage,
         bool removeHeaders)
     {
         InitializeComponent();
+
         this.chatMessage = chatMessage;
-        this.localParticipant = localParticipant;
         this.hostMessage = hostMessage;
+        this.isLocal = isLocal;
         this.removeHeaders = removeHeaders;
-        FillLabels();
+
         ApplyStylings();
+        FillLabels();
     }
 
-    private void ApplyStylings()
+    /// <inheritdoc />
+    public void ApplyStylings()
     {
         if (removeHeaders)
         {
@@ -40,15 +43,15 @@ public partial class ChatTextMessageCard : UserControl
             sendRole.Visible = false;
         }
 
-        var senderColor = chatMessage.Sender.Id == localParticipant.Id
+        var senderColor = isLocal
             ? ColorScheme.OutgoingMessageBackground
             : ColorScheme.IncomingMessageBackground;
 
         senderName.BackColor = senderColor;
         sendRole.BackColor = senderColor;
-        sendMessage.BackColor = senderColor;
         sendTime.BackColor = senderColor;
         tableLayoutPanelLabels.BackColor = senderColor;
+        sendMessage.BackColor = senderColor;
 
         senderName.Font = FontScheme.Monospace;
         sendRole.Font = FontScheme.MicroCaption;
@@ -66,7 +69,7 @@ public partial class ChatTextMessageCard : UserControl
     {
         var wantedWidth = Math.Min(Convert.ToInt32(Parent!.Width * 0.85),
             Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
-            + Math.Max(sendMessage.PreferredSize.Width, removeHeaders ? 0 : senderName.PreferredSize.Width)
+            + Math.Max(sendMessage.PreferredSize.Width, removeHeaders ? 0 : sendMessage.PreferredSize.Width)
             + sendMessage.Margin.Horizontal * 2);
 
         if (Width == wantedWidth)

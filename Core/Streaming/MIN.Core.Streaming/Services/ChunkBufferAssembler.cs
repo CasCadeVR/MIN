@@ -6,6 +6,7 @@ using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
+using MIN.Core.Transport.Contracts.Constants;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -95,7 +96,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             ChunkReceived?.Invoke(this, new ChunkReceivedEventArgs
             {
                 StreamId = stream.Id,
-                ChunkIndex = chunk.Index,
+                ReceivedBytes = stream.GottenChunks * TransportConstants.MessageBufferSize,
                 ConnectionId = connectionId,
                 RoomId = roomId
             });

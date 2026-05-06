@@ -1,11 +1,13 @@
 ﻿using MIN.Chat.Messaging;
 using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.FileTransfer.Messaging;
-using MIN.FileTransfer.Services.Contracts.Models.Enums;
-using MIN.FileTransfer.Services.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.FileTransfer.Events;
+using MIN.FileTransfer.Messaging;
+using MIN.FileTransfer.Services.Contracts.Interfaces;
+using MIN.FileTransfer.Services.Contracts.Models.Enums;
 
 namespace MIN.Chat.Services;
 
@@ -14,6 +16,7 @@ public sealed class ChatService : IChatService
 {
     private readonly IMessageRouter messageRouter;
     private readonly IRoomHoster roomHoster;
+    private readonly IEventBus eventBus;
     private readonly IFileHelperService fileHelperService;
     private readonly IFileTransferService fileTransferService;
 
@@ -22,11 +25,13 @@ public sealed class ChatService : IChatService
     /// </summary>
     public ChatService(IMessageRouter messageRouter,
         IRoomHoster roomHoster,
+        IEventBus eventBus,
         IFileHelperService fileHelperService,
         IFileTransferService fileTransferService)
     {
         this.messageRouter = messageRouter;
         this.roomHoster = roomHoster;
+        this.eventBus = eventBus;
         this.fileHelperService = fileHelperService;
         this.fileTransferService = fileTransferService;
     }
@@ -58,12 +63,6 @@ public sealed class ChatService : IChatService
 
         var transferId = Guid.NewGuid();
 
-        if (!roomHoster.IsHosting(roomId))
-        {
-            // Ожидаем, что хост запросит с нас файл
-            fileTransferService.RegisterTransfer(transferId, roomId, FileTransferDirection.Upload, fileName);
-        }
-
         var message = new FileMetadataMessage
         {
             TransferId = transferId,
@@ -75,13 +74,29 @@ public sealed class ChatService : IChatService
             RecipientId = recipientId,
         };
 
+        if (!roomHoster.IsHosting(roomId))
+        {
+            // Ожидаем, что хост запросит с нас файл
+            fileTransferService.RegisterTransfer(transferId, message.Id, roomId, FileTransferDirection.Upload, fileName);
+        }
+
         await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);
     }
 
     async Task IChatService.RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, ParticipantInfo sender, CancellationToken cancellationToken)
     {
         var transferId = Guid.NewGuid();
-        fileTransferService.RegisterTransfer(transferId, roomId, FileTransferDirection.Download, fileMessage.FileName);
+        fileTransferService.RegisterTransfer(transferId, fileMessage.Id, roomId, FileTransferDirection.Download, fileMessage.FileName);
+
+        await eventBus.PublishAsync(new FileTransferStartedEvent
+        {
+            RoomId = fileMessage.RoomId,
+            TransferId = fileMessage.TransferId,
+            FileMetadataId = fileMessage.Id,
+            FileName = fileMessage.FileName,
+            FileSize = fileMessage.FileSize,
+            Direction = FileTransferDirection.Download,
+        });
 
         var message = new FileTransferRequestMessage
         {
@@ -90,6 +105,18 @@ public sealed class ChatService : IChatService
             FileName = fileMessage.FileName,
             FileMetadataId = fileMessage.Id,
             Direction = FileTransferDirection.Download,
+        };
+
+        await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);
+    }
+
+    async Task IChatService.CancelFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, ParticipantInfo sender, CancellationToken cancellationToken)
+    {
+        var message = new FileTransferCancelMessage
+        {
+            TransferId = fileMessage.TransferId,
+            RoomId = roomId,
+            FileMetadataId = fileMessage.Id,
         };
 
         await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);

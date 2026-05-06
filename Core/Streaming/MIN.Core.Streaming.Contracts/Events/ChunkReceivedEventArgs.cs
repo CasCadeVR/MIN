@@ -8,20 +8,20 @@ public sealed class ChunkReceivedEventArgs : EventArgs
     /// <summary>
     /// Идентификатор потока
     /// </summary>
-    public required Guid StreamId { get; init; }
+    public Guid StreamId { get; init; }
 
     /// <summary>
     /// Идентификатор соединения
     /// </summary>
-    public required Guid ConnectionId { get; init; }
+    public Guid ConnectionId { get; init; }
 
     /// <summary>
     /// Идентфикатор комнаты
     /// </summary>
-    public required Guid RoomId { get; init; }
+    public Guid RoomId { get; init; }
 
     /// <summary>
-    /// Номер пакета
+    /// Сколько уже загрузилось
     /// </summary>
-    public required int ChunkIndex { get; init; }
+    public long ReceivedBytes { get; init; }
 }

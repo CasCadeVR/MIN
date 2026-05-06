@@ -50,8 +50,6 @@ public partial class DiscoveryPanelView : StyledPanelView
         localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
 
         lifeTimeCts = new CancellationTokenSource();
-        uiContext = SynchronizationContext.Current
-            ?? throw new InvalidOperationException("");
 
         ParseMachineName();
         SubscribeToEvents();

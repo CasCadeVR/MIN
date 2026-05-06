@@ -10,6 +10,7 @@ public sealed class FileStorageService : IFileStorageService
     private readonly string baseDirectory;
     private readonly IRoomStore roomStore;
     private readonly ILoggerProvider logger;
+    private string? roomName;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="FileStorageService"/>
@@ -18,6 +19,8 @@ public sealed class FileStorageService : IFileStorageService
     {
         this.roomStore = roomStore;
         this.logger = logger;
+
+
         baseDirectory = Path.Combine(AppContext.BaseDirectory, "RoomFiles");
 
         if (!Directory.Exists(baseDirectory))
@@ -30,8 +33,8 @@ public sealed class FileStorageService : IFileStorageService
     /// <inheritdoc />
     public string GetRoomDirectory(Guid roomId)
     {
-        var room = roomStore.GetRoom(roomId);
-        var roomDir = Path.Combine(baseDirectory, $"Файлы комнаты {room.Name}");
+        roomName ??= roomStore.GetRoom(roomId).Name;
+        var roomDir = Path.Combine(baseDirectory, $"Файлы комнаты {roomName}");
         return roomDir;
     }
 

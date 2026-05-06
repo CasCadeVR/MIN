@@ -114,7 +114,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
         if (!fileTransferService.TryGetTransferInfo(request.TransferId, out _))
         {
             logger.Log($"Регистрирую новый download transfer для файла {request.FileName} (TransferId: {request.TransferId})");
-            fileTransferService.RegisterTransfer(request.TransferId, request.RoomId, FileTransferDirection.Download, request.FileName);
+            fileTransferService.RegisterTransfer(request.TransferId, request.FileMetadataId, request.RoomId, FileTransferDirection.Download, request.FileName);
         }
         else
         {

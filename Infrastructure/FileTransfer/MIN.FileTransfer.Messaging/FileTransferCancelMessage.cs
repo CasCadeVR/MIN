@@ -25,6 +25,11 @@ public class FileTransferCancelMessage : BaseMessage
     public Guid TransferId { get; set; }
 
     /// <summary>
+    /// Идентификатор сообщения метаданных
+    /// </summary>
+    public Guid FileMetadataId { get; set; }
+
+    /// <summary>
     /// Причина отмены
     /// </summary>
     public string? Reason { get; set; }

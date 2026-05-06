@@ -18,6 +18,11 @@ public sealed class FileTransferFailedEvent : BaseEvent
     public Guid TransferId { get; set; }
 
     /// <summary>
+    /// Идентификатор сообщения метаданных
+    /// </summary>
+    public Guid FileMetadataId { get; set; }
+
+    /// <summary>
     /// Сообщение об ошибке
     /// </summary>
     public string? ErrorMessage { get; set; }

@@ -40,12 +40,13 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         chunkBufferAssembler.ChunkReceived += OnChunkReceived;
     }
 
-    void IFileTransferService.RegisterTransfer(Guid transferId, Guid roomId, FileTransferDirection direction, string fileName)
+    void IFileTransferService.RegisterTransfer(Guid transferId, Guid fileMetadataId, Guid roomId, FileTransferDirection direction, string fileName)
     {
         logger.Log($"Регистрирую transfer: TransferId={transferId}, Room={roomId}, Direction={direction}, File={fileName}");
         activeTransfers[transferId] = new TransferInfo
         {
             TransferId = transferId,
+            FileMetadataId = fileMetadataId,
             RoomId = roomId,
             Direction = direction,
             FileName = fileName,
@@ -117,6 +118,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             {
                 RoomId = info.RoomId,
                 TransferId = transferId,
+                FileMetadataId = info.FileMetadataId,
                 FileName = finalFileName,
                 FilePath = filePath,
             }, cancellationToken);
@@ -147,16 +149,12 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 
     private async void OnChunkReceived(object? sender, ChunkReceivedEventArgs e)
     {
-        if (TryGetTransferInfo(e.StreamId, out var info))
+        await eventBus.PublishAsync(new FileTransferProgressEvent
         {
-            await eventBus.PublishAsync(new FileTransferProgressEvent
-            {
-                RoomId = info.RoomId,
-                TransferId = e.StreamId,
-                BytesReceived = 0,
-                TotalBytes = 0,
-            });
-        }
+            RoomId = e.RoomId,
+            TransferId = e.StreamId,
+            BytesReceived = e.ReceivedBytes,
+        });
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

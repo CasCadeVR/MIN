@@ -415,7 +415,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     }
 
                     rowControl = new ChatTextMessageCard(chatTextMessage,
-                        localParticipant,
+                        localParticipant.Id == chatTextMessage.SenderId,
                         isHostMessage,
                         removeHeaders: isSelfMessage || lastChatMessage?.SenderId == chatTextMessage.SenderId)
                     {
@@ -461,7 +461,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     var fileCard = new ChatFileMessageCard(featureCollection.FileTransfer,
                         featureCollection.Core.EventBus,
                         fileMetadataMessage,
-                        localParticipant,
+                        localParticipant.Id == fileMetadataMessage.SenderId,
                         isHostMessage,
                         removeHeaders: isSelfMessage || lastChatMessage?.SenderId == fileMetadataMessage.SenderId)
                     {
@@ -470,6 +470,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                     };
 
                     fileCard.OnDownloadRequested += () => OnDownloadRequested(fileMetadataMessage);
+                    fileCard.OnCancelRequested += () => OnCancelRequested(fileMetadataMessage);
                     rowControl = fileCard;
 
                     if (isCurrentPrivate && !wasLastPrivate)
@@ -552,6 +553,15 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     private async Task OnDownloadRequested(FileMetadataMessage fileMetadata)
     {
         await featureCollection.Chat.ChatService.RequestFileDownloadAsync(roomId,
+            fileMetadata,
+            localParticipant,
+            formCts.Token
+        );
+    }
+
+    private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
+    {
+        await featureCollection.Chat.ChatService.CancelFileDownloadAsync(roomId,
             fileMetadata,
             localParticipant,
             formCts.Token

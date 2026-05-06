@@ -67,9 +67,8 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
         {
             await eventBus.PublishAsync(new FileMetaDataMessageReceivedEvent()
             {
-                Message = metadata,
                 RoomId = context.RoomContext.RoomId,
-                Sender = sender!,
+                Message = metadata,
             });
         }
 
@@ -89,10 +88,10 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             return HandlerResult.Success();
         }
 
-        // Хост получает файл от клиента — запрашиваем загрузку
+        // Хост получает файл от клиента — запрашиваем загрузку на сервер у клиента
         logger.Log($"Хост: регистрирую загрузку файла {metadata.FileName} (TransferId: {metadata.TransferId})");
         fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);
-        fileTransferService.RegisterTransfer(metadata.TransferId, metadata.RoomId, FileTransferDirection.Upload, metadata.FileName);
+        fileTransferService.RegisterTransfer(metadata.TransferId, metadata.Id, metadata.RoomId, FileTransferDirection.Upload, metadata.FileName);
 
         var requestMessage = new FileTransferRequestMessage
         {
@@ -109,6 +108,7 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
         {
             RoomId = metadata.RoomId,
             TransferId = metadata.TransferId,
+            FileMetadataId = metadata.Id,
             FileName = metadata.FileName,
             FileSize = metadata.FileSize,
             Direction = FileTransferDirection.Upload,

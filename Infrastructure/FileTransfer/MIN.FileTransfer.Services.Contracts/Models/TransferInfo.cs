@@ -18,6 +18,11 @@ public sealed class TransferInfo
     public Guid TransferId { get; init; }
 
     /// <summary>
+    /// Идентификатор сообщения файла
+    /// </summary>
+    public Guid FileMetadataId { get; init; }
+
+    /// <summary>
     /// Направление передачи файла
     /// </summary>
     public FileTransferDirection Direction { get; init; }

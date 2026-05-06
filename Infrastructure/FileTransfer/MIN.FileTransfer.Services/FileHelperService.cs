@@ -48,9 +48,7 @@ public sealed class FileHelperService : IFileHelperService
     };
 
     private readonly static HashSet<string> blockedExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".bat", ".cmd", ".com", ".scr", ".vbs", ".ps1", ".wsf", ".reg", ".inf",
-    };
+        { ".bat", ".cmd", ".com", ".scr", ".vbs", ".ps1", ".wsf", ".reg", ".inf", };
 
     string IFileHelperService.GetMimeType(string fileName)
     {

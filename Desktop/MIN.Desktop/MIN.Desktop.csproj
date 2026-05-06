@@ -61,7 +61,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Update="Views\Components\ChatMessages\ChatFileMessageCard.cs">
+    <Compile Update="Views\Components\ChatMessages\Files\ChatFileMessageCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\Components\ChatMessages\Files\ChatImagePreviewMessageCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Views\Components\ParticipantCard.cs">

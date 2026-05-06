@@ -18,12 +18,12 @@ public sealed class FileTransferProgressEvent : BaseEvent
     public Guid TransferId { get; set; }
 
     /// <summary>
-    /// Получено байтов
+    /// Идентификатор сообщения метаданных
     /// </summary>
-    public long BytesReceived { get; set; }
+    public Guid FileMetadataId { get; set; }
 
     /// <summary>
-    /// Всего байтов
+    /// Уже получено байтов
     /// </summary>
-    public long TotalBytes { get; set; }
+    public long BytesReceived { get; set; }
 }

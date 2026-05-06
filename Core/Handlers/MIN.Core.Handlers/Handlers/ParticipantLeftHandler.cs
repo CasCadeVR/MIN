@@ -33,21 +33,22 @@ internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnch
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is ParticipantLeftMessage participantLeftMessage)
+        if (message is not ParticipantLeftMessage participantLeftMessage)
         {
-            context.RoomContext.Messages.AddMessage(message);
-            context.RoomContext.Participants.RemoveParticipant(participantLeftMessage.Participant.Id);
-
-            logger.Log($"Участник {participantLeftMessage.Participant.Name} вышел из комнаты");
-
-            await eventBus.PublishAsync(new ParticipantLeftEvent()
-            {
-                Message = participantLeftMessage,
-            }, context.CancellationToken);
-
-            return HandlerResult.Success();
+            logger.Log($"Неизвестный тип сообщения в {nameof(ParticipantLeftHandler)} - {message.GetType()}");
+            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ParticipantLeftHandler)} - {message.GetType()}");
         }
 
-        return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ParticipantLeftHandler)} - {message.GetType()}");
+        context.RoomContext.Messages.AddMessage(message);
+        context.RoomContext.Participants.RemoveParticipant(participantLeftMessage.Participant.Id);
+
+        logger.Log($"Участник {participantLeftMessage.Participant.Name} вышел из комнаты");
+
+        await eventBus.PublishAsync(new ParticipantLeftEvent()
+        {
+            Message = participantLeftMessage,
+        }, context.CancellationToken);
+
+        return HandlerResult.Success();
     }
 }

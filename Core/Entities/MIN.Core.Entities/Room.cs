@@ -67,6 +67,9 @@ public class Room : IRoomData
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="Room"/>
     /// </summary>
+    /// <remarks>
+    /// Нужен для сериализации
+    /// </remarks>
     public Room() { }
 
     /// <summary>

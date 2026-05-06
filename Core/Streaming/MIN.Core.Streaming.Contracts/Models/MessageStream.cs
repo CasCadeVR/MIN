@@ -43,6 +43,11 @@ public sealed class MessageStream : IDisposable
     public int ExpectedChunks { get; }
 
     /// <summary>
+    /// Уже получено пакетов
+    /// </summary>
+    public int GottenChunks { get; private set; }
+
+    /// <summary>
     /// Время создания потока
     /// </summary>
     public DateTime CreatedAt { get; }
@@ -94,6 +99,7 @@ public sealed class MessageStream : IDisposable
             buffer.Position = buffer.Length;
             buffer.Write(chunk.Data.Span);
             LastChunkReceivedAt = DateTime.UtcNow;
+            GottenChunks++;
 
             if (chunk.Flags.HasFlag(StreamChunkFlags.End))
             {

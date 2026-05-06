@@ -22,4 +22,9 @@ public interface IChatService
     /// Запросить загрузку файла
     /// </summary>
     Task RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, ParticipantInfo sender, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Отменить загрузку файла
+    /// </summary>
+    Task CancelFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, ParticipantInfo sender, CancellationToken cancellationToken = default);
 }
