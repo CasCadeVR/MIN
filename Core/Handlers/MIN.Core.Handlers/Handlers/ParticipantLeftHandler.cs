@@ -9,9 +9,6 @@ using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 
 namespace MIN.Core.Handlers.Handlers;
 
-/// <summary>
-/// Обработчик для сообщений <see cref="ParticipantLeftMessage"/>
-/// </summary>
 internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnchor
 {
     private readonly IEventBus eventBus;

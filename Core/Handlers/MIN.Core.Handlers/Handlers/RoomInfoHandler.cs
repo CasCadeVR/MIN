@@ -10,11 +10,6 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-/// <summary>
-/// Обработчик для сообщений <see cref="RoomInfoRequestMessage"/>,
-/// <see cref="RoomInfoResponseMessage"/>,
-/// <see cref="RoomInfoUpdatedMessage"/>
-/// </summary>
 internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
 {
     private readonly IRoomStore roomStore;

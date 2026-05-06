@@ -9,9 +9,6 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Handlers;
 
-/// <summary>
-/// Обработчик для сообщений <see cref="ChatTextMessage"/>
-/// </summary>
 internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
 {
     private readonly IIdentityService identityService;

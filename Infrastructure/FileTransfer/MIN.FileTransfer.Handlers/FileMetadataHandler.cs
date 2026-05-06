@@ -1,9 +1,9 @@
-using MIN.Core.Entities;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
@@ -18,18 +18,21 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 {
     private readonly IFileTransferService fileTransferService;
     private readonly IEventBus eventBus;
+    private readonly IMessageRouter messageRouter;
     private readonly IRoomHoster roomHoster;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     public FileMetadataHandler(IFileTransferService fileTransferService,
         IEventBus eventBus,
+        IMessageRouter messageRouter,
         IRoomHoster roomHoster,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.fileTransferService = fileTransferService;
         this.eventBus = eventBus;
+        this.messageRouter = messageRouter;
         this.roomHoster = roomHoster;
         this.identityService = identityService;
         this.logger = logger;
@@ -56,27 +59,37 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
         }
 
         context.RoomContext.Messages.AddMessage(metadata);
+
+        var isHosting = roomHoster.IsHosting(context.RoomContext.RoomId);
         var selfId = identityService.SelfParticipant.Id;
         var isSelf = message.SenderId == selfId;
 
-        if (!isSelf)
+        if (!isSelf && !isHosting)
         {
             logger.Log($"Убираю клиентский путь к файлу для получателя: {metadata.FileName}");
             metadata.FilePath = null;
         }
 
-        if (isSelf || message.RecipientId == selfId || message.IsPublic)
+        var hasAccess = isSelf || message.RecipientId == selfId || message.IsPublic;
+        var isHostDownload = !isHosting
+            || metadata.AsDownloaded
+            || (isHosting && isSelf);
+
+        if (hasAccess && isHostDownload)
         {
             await eventBus.PublishAsync(new FileMetaDataMessageReceivedEvent()
             {
                 RoomId = context.RoomContext.RoomId,
                 Message = metadata,
             });
+
+            if (isHosting && metadata.AsDownloaded)
+            {
+                return HandlerResult.Success();
+            }
         }
 
         fileTransferService.RegisterFileMetadata(message.Id, context.RoomContext.RoomId, metadata.FileName, metadata.FilePath);
-
-        var isHosting = roomHoster.IsHosting(context.RoomContext.RoomId);
 
         if (isHosting && isSelf)
         {
@@ -93,6 +106,17 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
         // Хост получает файл от клиента — запрашиваем загрузку на сервер у клиента
         logger.Log($"Хост: регистрирую загрузку файла {metadata.FileName} (TransferId: {metadata.TransferId})");
         fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);
+        eventBus.Subscribe(
+            async (FilePendingMetaDataReceivedEvent e, CancellationToken _) =>
+        {
+            if (e.TransferId != metadata.TransferId)
+            {
+                return;
+            }
+
+            metadata.AsDownloaded = true;
+            await messageRouter.RouteAsync(metadata, context.RoomContext.RoomId, metadata.SenderId, context.CancellationToken);
+        });
 
         var info = new TransferInfo
         {
@@ -127,6 +151,6 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             Direction = FileTransferDirection.Upload,
         });
 
-        return HandlerResult.WithResponse(requestMessage);
+        return HandlerResult.WithResponse(requestMessage, stopPropagation: true);
     }
 }

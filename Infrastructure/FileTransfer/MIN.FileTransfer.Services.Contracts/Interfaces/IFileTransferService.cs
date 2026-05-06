@@ -35,7 +35,7 @@ public interface IFileTransferService
     /// <summary>
     /// Удалить зарегистрированные метаданные
     /// </summary>
-    void RemovePendingMetadata(Guid transferId);
+    Task RemovePendingMetadata(Guid transferId);
 
     /// <summary>
     /// Зарегистрировать информацию о файле по Id сообщения метаданных

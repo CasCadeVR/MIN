@@ -24,8 +24,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="FileTransferService"/>
     /// </summary>
-    public FileTransferService(
-        IEventBus eventBus,
+    public FileTransferService(IEventBus eventBus,
         IChunkBufferAssembler chunkBufferAssembler,
         IFileStorageService fileStorageService,
         ILoggerProvider logger)
@@ -70,9 +69,13 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         => pendingMetadata.TryGetValue(transferId, out fileName!);
 
     /// <inheritdoc />
-    public void RemovePendingMetadata(Guid transferId)
+    public async Task RemovePendingMetadata(Guid transferId)
     {
         pendingMetadata.TryRemove(transferId, out _);
+        await eventBus.PublishAsync(new FilePendingMetaDataReceivedEvent()
+        {
+            TransferId = transferId,
+        });
     }
 
     void IFileTransferService.RegisterFileMetadata(Guid fileMetadataId, Guid roomId, string fileName, string? originalFilePath)
@@ -120,7 +123,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             }, cancellationToken);
 
             RemoveTransfer(transferId);
-            RemovePendingMetadata(transferId);
+            await RemovePendingMetadata(transferId);
         }
         catch (Exception ex)
         {

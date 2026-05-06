@@ -53,6 +53,15 @@ public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable
     /// </remarks>
     public string? FilePath { get; set; }
 
+    /// <summary>
+    /// Можно ли отправлять дальше
+    /// </summary>
+    /// <remarks>
+    /// true - если он загружен на сервер и может быть передан дальше
+    /// false - если ещё ожидается его загрузка и даже сам хост не получает информацию о нём
+    /// </remarks>
+    public bool AsDownloaded { get; set; }
+
     /// <inheritdoc />
     public Guid? ReplyToMessageId { get; set; }
 

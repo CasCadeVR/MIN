@@ -16,13 +16,6 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-/// <summary>
-/// Обработчик для сообщений <see cref="RoomJoinRequestMessage"/>,
-/// <see cref="RoomJoinResponseMessage"/>,
-/// <see cref="RoomJoinRejectedAckMessage"/>,
-/// <see cref="ParticipantAcceptedMessage"/>, 
-/// <see cref="ParticipantJoinedMessage"/>
-/// </summary>
 internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnchor
 {
     private const int TimeoutUponReceivingRejectionAck = 5000;

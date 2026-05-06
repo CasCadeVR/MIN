@@ -66,6 +66,12 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     break;
                 }
 
+                if (result.Response != null)
+                {
+                    result.Response.SenderId = identityService.SelfParticipant.Id;
+                    await messageSender.SendAsync(result.Response, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
+                }
+
                 if (result.StopPropagation)
                 {
                     break;
@@ -74,12 +80,6 @@ public sealed class MessageDispatcher : IMessageDispatcher
                 if (roomHoster.IsHosting(context.RoomContext.RoomId))
                 {
                     await HandleServerMessageRouting(message, context);
-                }
-
-                if (result.Response != null)
-                {
-                    result.Response.SenderId = identityService.SelfParticipant.Id;
-                    await messageSender.SendAsync(result.Response, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
                 }
             }
             catch (Exception ex)

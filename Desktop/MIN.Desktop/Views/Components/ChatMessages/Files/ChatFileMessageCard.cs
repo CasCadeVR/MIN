@@ -54,7 +54,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
         this.hostMessage = hostMessage;
         this.localParticipant = localParticipant;
 
-        downloaded = fileMetadataMessage.FilePath != null;
+        downloaded = fileMetadataMessage.FilePath != null || fileMetadataMessage.AsDownloaded;
 
         uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("");

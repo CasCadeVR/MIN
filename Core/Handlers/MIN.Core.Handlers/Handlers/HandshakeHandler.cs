@@ -10,9 +10,6 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-/// <summary>
-/// Обработчик для сообщений <see cref="HandshakeMessage"/>
-/// </summary>
 internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 {
     private readonly IMessageEncryptor encryptor;
