@@ -14,15 +14,17 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
 {
     private readonly IEventBus eventBus;
     private readonly IFileTransferService fileTransferService;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
-    public FileTransferResponseHandler(
-        IEventBus eventBus,
+    public FileTransferResponseHandler(IEventBus eventBus,
         IFileTransferService fileTransferService,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
         this.fileTransferService = fileTransferService;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
@@ -50,7 +52,8 @@ internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransf
                 {
                     RoomId = info.RoomId,
                     TransferId = response.TransferId,
-                    SenderId = message.SenderId,
+                    SenderId = identityService.SelfParticipant.Id,
+                    FileMetadataId = info.FileMetadataId,
                     ErrorMessage = response.ErrorMessage ?? "Unknown error",
                 });
 

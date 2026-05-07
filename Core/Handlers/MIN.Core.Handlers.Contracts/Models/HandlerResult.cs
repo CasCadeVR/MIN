@@ -18,6 +18,16 @@ public sealed class HandlerResult
     public bool StopPropagation { get; init; }
 
     /// <summary>
+    /// Флаг, указывающий, настолько ли критична ли ошибка, чтобы продолжать работу
+    /// </summary>
+    public bool CriticalError { get; init; }
+
+    /// <summary>
+    /// Флаг, указывающий, надо ли публиковать ErrorOccurredEvent, или обработчик сам обработает
+    /// </summary>
+    public bool ShowErrorMessage { get; init; }
+
+    /// <summary>
     /// Ответное сообщение (если требуется)
     /// </summary>
     public IMessage? Response { get; init; }
@@ -40,12 +50,14 @@ public sealed class HandlerResult
     /// <summary>
     /// Создаёт результат с ошибкой
     /// </summary>
-    public static HandlerResult Failure(string errorMessage, bool stopPropagation = true)
+    public static HandlerResult Failure(string errorMessage, bool stopPropagation = true, bool showErrorMessage = true, bool critical = false)
         => new()
         {
             IsSuccess = false,
             StopPropagation = stopPropagation,
-            ErrorMessage = errorMessage
+            ShowErrorMessage = showErrorMessage,
+            ErrorMessage = errorMessage,
+            CriticalError = critical
         };
 
     /// <summary>

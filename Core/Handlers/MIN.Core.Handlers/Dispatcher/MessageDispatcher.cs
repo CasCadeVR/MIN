@@ -62,7 +62,10 @@ public sealed class MessageDispatcher : IMessageDispatcher
                 if (!result.IsSuccess)
                 {
                     logger.Log($"Обработчик {handler.GetType().Name} провалился: {result.ErrorMessage}");
-                    await PublishErrorEvent(result.ErrorMessage!, result.StopPropagation, context);
+                    if (result.ShowErrorMessage)
+                    {
+                        await PublishErrorEvent(result.ErrorMessage!, result.CriticalError, context);
+                    }
                     break;
                 }
 

@@ -9,7 +9,7 @@ namespace MIN.FileTransfer.Messaging;
 /// <summary>
 /// Сообщения мета-данные файла
 /// </summary>
-public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable
+public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable, IMessageWithSecuredFields
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.FileMetadata;
@@ -66,4 +66,32 @@ public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable
     public Guid? ReplyToMessageId { get; set; }
 
     string IDescribable.GetDescription() => $"{Sender.Name}: {FileName}";
+
+    void IMessageWithSecuredFields.Sanitize()
+    {
+        FilePath = null;
+    }
+
+    /// <summary>
+    /// Инициализирует новый экзмемпляр <see cref="FileMetadataMessage"/>
+    /// </summary>
+    public FileMetadataMessage() { }
+
+    /// <summary>
+    /// Делает копию
+    /// </summary>
+    public FileMetadataMessage(FileMetadataMessage metadata)
+    {
+        Id = metadata.Id;
+        SenderId = metadata.SenderId;
+        Sender = metadata.Sender;
+        FileSize = metadata.FileSize;
+        FileName = metadata.FileName;
+        FilePath = metadata.FilePath;
+        RecipientId = metadata.RecipientId;
+        ReplyToMessageId = metadata.ReplyToMessageId;
+        RoomId = metadata.RoomId;
+        TransferId = metadata.TransferId;
+        AsDownloaded = metadata.AsDownloaded;
+    }
 }

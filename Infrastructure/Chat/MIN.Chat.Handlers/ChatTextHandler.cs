@@ -41,7 +41,7 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
 
         if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
         {
-            return HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false);
+            return HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false, critical: true);
         }
 
         context.RoomContext.Messages.AddMessage(chatTextMessage);

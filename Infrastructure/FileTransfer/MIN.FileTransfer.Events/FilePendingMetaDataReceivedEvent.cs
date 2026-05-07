@@ -11,4 +11,9 @@ public sealed class FilePendingMetaDataReceivedEvent : BaseEvent
     /// Идентификатор потока, по которому придёт файл
     /// </summary>
     public Guid TransferId { get; set; }
+
+    /// <summary>
+    /// Путь к скаченному файлу
+    /// </summary>
+    public string FilePath { get; set; } = string.Empty;
 }

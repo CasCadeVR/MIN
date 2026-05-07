@@ -1,12 +1,13 @@
-using System.Reflection;
-using MIN.Core.Entities;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
+using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
 using MIN.FileTransfer.Services.Contracts.Models;
@@ -22,6 +23,8 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
     private readonly IFileStorageService fileStorageService;
     private readonly IStreamManager streamManager;
     private readonly IMessageSender messageSender;
+    private readonly IRoomHoster roomHoster;
+    private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
     public FileTransferRequestHandler(
@@ -30,6 +33,8 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
         IFileStorageService fileStorageService,
         IStreamManager streamManager,
         IMessageSender messageSender,
+        IRoomHoster roomHoster,
+        IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.identityService = identityService;
@@ -37,6 +42,8 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
         this.fileStorageService = fileStorageService;
         this.streamManager = streamManager;
         this.messageSender = messageSender;
+        this.roomHoster = roomHoster;
+        this.eventBus = eventBus;
         this.logger = logger;
     }
 
@@ -55,6 +62,41 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
         logger.Log($"Получен FileTransferRequest: TransferId={request.TransferId}, Direction={request.Direction}, FileName={request.FileName}");
 
         var selfId = identityService.SelfParticipant.Id;
+
+        if (message.SenderId == selfId && roomHoster.IsHosting(context.RoomContext.RoomId))
+        {
+            if (!fileTransferService.TryGetTransferInfo(request.TransferId, out var info))
+            {
+                logger.Log($"Не найдена информация о transfer {request.TransferId}");
+                return HandlerResult.Failure($"Не найдена информация о transfer {request.TransferId}", stopPropagation: false);
+            }
+
+            var filePath = ResolveFilePath(request.FileMetadataId, context.RoomContext.RoomId, request.FileName);
+            if (filePath != null)
+            {
+                await eventBus.PublishAsync(new FileTransferCompletedEvent
+                {
+                    RoomId = info.RoomId,
+                    TransferId = info.TransferId,
+                    FilePath = filePath,
+                    FileName = info.FileName,
+                    FileMetadataId = info.FileMetadataId,
+                });
+
+                return HandlerResult.Success(stopPropagation: true);
+            }
+
+            await eventBus.PublishAsync(new FileTransferFailedEvent
+            {
+                RoomId = info.RoomId,
+                TransferId = request.TransferId,
+                SenderId = message.SenderId,
+                FileMetadataId = info.FileMetadataId,
+                ErrorMessage = "Файл был утерян",
+            });
+
+            return HandlerResult.Failure("Файл был утерян", stopPropagation: true, showErrorMessage: false);
+        }
 
         if (request.Direction == FileTransferDirection.Upload)
         {
@@ -89,11 +131,11 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
                 RoomId = request.RoomId,
                 TransferId = request.TransferId,
                 Success = false,
-                ErrorMessage = "File not found",
+                ErrorMessage = "Файл не найден во время загрузки",
             };
 
             await messageSender.SendAsync(errorResponse, request.RoomId, context.ConnectionId, context.CancellationToken);
-            return HandlerResult.Failure("File not found", stopPropagation: true);
+            return HandlerResult.Failure("Файл не найден во время загрузки", stopPropagation: true);
         }
 
         logger.Log($"Начинаю загрузку файла {info.FileName} на сервер из: {filePath}");
@@ -144,11 +186,11 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
                 RoomId = request.RoomId,
                 TransferId = request.TransferId,
                 Success = false,
-                ErrorMessage = "File not found on server",
+                ErrorMessage = "Файл не найден у хоста",
             };
 
             await messageSender.SendAsync(errorResponse, request.RoomId, context.ConnectionId, context.CancellationToken);
-            return HandlerResult.Failure("File not found on server", stopPropagation: false);
+            return HandlerResult.Failure("Файл не найден у хоста", stopPropagation: false, showErrorMessage: false);
         }
 
         logger.Log($"Начинаю download файла {request.FileName} из: {filePath}");
@@ -169,7 +211,10 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
 
     private string? ResolveFilePath(Guid fileMetadataId, Guid roomId, string fileName)
     {
-        fileTransferService.TryGetFileMetadata(fileMetadataId, out var fileMetadataInfo);
+        if (!fileTransferService.TryGetFileMetadata(fileMetadataId, out var fileMetadataInfo))
+        {
+            return null;
+        }
 
         if (fileMetadataInfo.IsStoredOnServer)
         {

@@ -33,11 +33,6 @@ public interface IFileTransferService
     bool TryGetPendingFileName(Guid transferId, out string fileName);
 
     /// <summary>
-    /// Удалить зарегистрированные метаданные
-    /// </summary>
-    Task RemovePendingMetadata(Guid transferId);
-
-    /// <summary>
     /// Зарегистрировать информацию о файле по Id сообщения метаданных
     /// </summary>
     void RegisterFileMetadata(Guid fileMetadataId, Guid roomId, string fileName, string? originalFilePath = null);

@@ -44,6 +44,11 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
     /// <inheritdoc />
     public async Task SendAsync(IMessage message, Guid roomId, Guid recipientConnectionId, CancellationToken cancellationToken)
     {
+        if (message is IMessageWithSecuredFields messageWithSecured)
+        {
+            messageWithSecured.Sanitize();
+        }
+
         var serialized = serializer.Serialize(message);
 
         if (serialized.Length > StreamingConstants.ChunkDataSize)
@@ -64,6 +69,11 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
 
     async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken)
     {
+        if (message is IMessageWithSecuredFields messageWithSecured)
+        {
+            messageWithSecured.Sanitize();
+        }
+
         var serialized = serializer.Serialize(message);
         var context = roomFactory.GetOrCreateContext(roomId);
         var participants = context.Participants.GetParticipants();

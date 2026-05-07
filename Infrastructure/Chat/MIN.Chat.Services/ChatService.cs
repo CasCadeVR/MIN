@@ -1,6 +1,5 @@
 ﻿using MIN.Chat.Messaging;
 using MIN.Chat.Services.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -9,6 +8,8 @@ using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
 using MIN.FileTransfer.Services.Contracts.Models;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
+using MIN.Helpers.Contracts.Extensions;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Services;
 
@@ -20,6 +21,7 @@ public sealed class ChatService : IChatService
     private readonly IEventBus eventBus;
     private readonly IFileHelperService fileHelperService;
     private readonly IFileTransferService fileTransferService;
+    private readonly IIdentityService identityService;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatService"/>
@@ -28,16 +30,18 @@ public sealed class ChatService : IChatService
         IRoomHoster roomHoster,
         IEventBus eventBus,
         IFileHelperService fileHelperService,
-        IFileTransferService fileTransferService)
+        IFileTransferService fileTransferService,
+        IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
         this.roomHoster = roomHoster;
         this.eventBus = eventBus;
         this.fileHelperService = fileHelperService;
         this.fileTransferService = fileTransferService;
+        this.identityService = identityService;
     }
 
-    async Task IChatService.SendMessageAsync(Guid roomId, string content, ParticipantInfo sender, Guid? recipientId, CancellationToken cancellationToken)
+    async Task IChatService.SendMessageAsync(Guid roomId, string content, Guid? recipientId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(content))
         {
@@ -47,17 +51,17 @@ public sealed class ChatService : IChatService
         var message = new ChatTextMessage
         {
             RoomId = roomId,
-            Sender = sender,
+            Sender = identityService.SelfParticipant.ToParticipantInfo(),
             Content = content,
             RecipientId = recipientId,
         };
 
-        await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);
+        await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);
     }
 
-    async Task IChatService.SendFileAsync(Guid roomId, string fileName, string filePath, ParticipantInfo sender, Guid? recipientId, CancellationToken cancellationToken)
+    async Task IChatService.SendFileAsync(Guid roomId, string fileName, string filePath, Guid? recipientId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(filePath))
+        if (string.IsNullOrWhiteSpace(filePath) || !Path.Exists(filePath))
         {
             throw new ArgumentException("Файл не найден", nameof(filePath));
         }
@@ -68,8 +72,9 @@ public sealed class ChatService : IChatService
         {
             TransferId = transferId,
             RoomId = roomId,
-            Sender = sender,
+            Sender = identityService.SelfParticipant.ToParticipantInfo(),
             FileName = fileName,
+            SenderId = identityService.SelfParticipant.Id,
             FilePath = filePath,
             FileSize = fileHelperService.GetFileSize(filePath),
             RecipientId = recipientId,
@@ -83,17 +88,17 @@ public sealed class ChatService : IChatService
                 TransferId = transferId,
                 FileMetadataId = message.Id,
                 RoomId = roomId,
-                SenderId = sender.Id,
+                SenderId = identityService.SelfParticipant.Id,
                 Direction = FileTransferDirection.Upload,
                 FileName = fileName,
             };
             fileTransferService.RegisterTransfer(info);
         }
 
-        await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);
+        await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);
     }
 
-    async Task IChatService.RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, ParticipantInfo sender, CancellationToken cancellationToken)
+    async Task IChatService.RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, CancellationToken cancellationToken)
     {
         var transferId = Guid.NewGuid();
         fileMessage.TransferId = transferId;
@@ -103,7 +108,7 @@ public sealed class ChatService : IChatService
             TransferId = transferId,
             FileMetadataId = fileMessage.Id,
             RoomId = roomId,
-            SenderId = sender.Id,
+            SenderId = identityService.SelfParticipant.Id,
             Direction = FileTransferDirection.Download,
             FileName = fileMessage.FileName,
         };
@@ -118,7 +123,7 @@ public sealed class ChatService : IChatService
             FileName = fileMessage.FileName,
             FileSize = fileMessage.FileSize,
             Direction = FileTransferDirection.Download,
-        });
+        }, cancellationToken);
 
         var message = new FileTransferRequestMessage
         {
@@ -129,10 +134,10 @@ public sealed class ChatService : IChatService
             Direction = FileTransferDirection.Download,
         };
 
-        await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);
+        await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);
     }
 
-    async Task IChatService.CancelFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, ParticipantInfo sender, CancellationToken cancellationToken)
+    async Task IChatService.CancelFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, CancellationToken cancellationToken)
     {
         var message = new FileTransferCancelMessage
         {
@@ -141,6 +146,6 @@ public sealed class ChatService : IChatService
             FileMetadataId = fileMessage.Id,
         };
 
-        await messageRouter.RouteAsync(message, roomId, sender.Id, cancellationToken);
+        await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);
     }
 }

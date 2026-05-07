@@ -86,7 +86,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
                         RejectionMessageId = roomJoinResponseMessage.Id,
                         Reason = reason,
                     }, context.RoomContext.RoomId, identityService.SelfParticipant.Id, context.CancellationToken);
-                    return HandlerResult.Failure(reason, stopPropagation: true);
+                    return HandlerResult.Failure(reason, stopPropagation: true, critical: true);
                 }
 
                 var selfparticipantJoinedMessage = new ParticipantJoinedMessage()

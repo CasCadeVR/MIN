@@ -110,13 +110,15 @@
             // splitContainerDownload.Panel1
             // 
             splitContainerDownload.Panel1.Controls.Add(fileSize);
+            splitContainerDownload.Panel1MinSize = 8;
             // 
             // splitContainerDownload.Panel2
             // 
             splitContainerDownload.Panel2.Controls.Add(downloadProgressBar);
             splitContainerDownload.Panel2Collapsed = true;
+            splitContainerDownload.Panel2MinSize = 8;
             splitContainerDownload.Size = new Size(148, 37);
-            splitContainerDownload.SplitterDistance = 25;
+            splitContainerDownload.SplitterDistance = 8;
             splitContainerDownload.TabIndex = 5;
             // 
             // fileSize
@@ -137,7 +139,7 @@
             downloadProgressBar.Location = new Point(0, 0);
             downloadProgressBar.Margin = new Padding(0);
             downloadProgressBar.Name = "downloadProgressBar";
-            downloadProgressBar.Size = new Size(148, 8);
+            downloadProgressBar.Size = new Size(150, 8);
             downloadProgressBar.Step = 1;
             downloadProgressBar.TabIndex = 1;
             // 

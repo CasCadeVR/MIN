@@ -55,32 +55,35 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
         if (!context.RoomContext.Participants.TryGetParticipantById(metadata.SenderId, out var sender))
         {
             logger.Log($"Получил метаданные файла от неизвестного отправителя {metadata.SenderId}");
-            return HandlerResult.Failure("Получил метаданные файла от неизвестного отправителя", stopPropagation: false);
+            return HandlerResult.Failure("Получил метаданные файла от неизвестного отправителя", stopPropagation: false, critical: true);
         }
 
-        context.RoomContext.Messages.AddMessage(metadata);
+        if (!metadata.AsDownloaded)
+        {
+            var storageCopy = new FileMetadataMessage(metadata)
+            {
+                FilePath = null
+            };
+            context.RoomContext.Messages.AddMessage(storageCopy);
+        }
 
         var isHosting = roomHoster.IsHosting(context.RoomContext.RoomId);
         var selfId = identityService.SelfParticipant.Id;
         var isSelf = message.SenderId == selfId;
-
-        if (!isSelf && !isHosting)
-        {
-            logger.Log($"Убираю клиентский путь к файлу для получателя: {metadata.FileName}");
-            metadata.FilePath = null;
-        }
 
         var hasAccess = isSelf || message.RecipientId == selfId || message.IsPublic;
         var isHostDownload = !isHosting
             || metadata.AsDownloaded
             || (isHosting && isSelf);
 
+        var copy = new FileMetadataMessage(metadata);
+
         if (hasAccess && isHostDownload)
         {
             await eventBus.PublishAsync(new FileMetaDataMessageReceivedEvent()
             {
                 RoomId = context.RoomContext.RoomId,
-                Message = metadata,
+                Message = copy,
             });
 
             if (isHosting && metadata.AsDownloaded)
@@ -89,7 +92,9 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             }
         }
 
-        fileTransferService.RegisterFileMetadata(message.Id, context.RoomContext.RoomId, metadata.FileName, metadata.FilePath);
+        fileTransferService.RegisterFileMetadata(message.Id, context.RoomContext.RoomId, metadata.FileName, !metadata.AsDownloaded
+            ? copy.FilePath
+            : null);
 
         if (isHosting && isSelf)
         {
@@ -105,6 +110,7 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 
         // Хост получает файл от клиента — запрашиваем загрузку на сервер у клиента
         logger.Log($"Хост: регистрирую загрузку файла {metadata.FileName} (TransferId: {metadata.TransferId})");
+
         fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);
         eventBus.Subscribe(
             async (FilePendingMetaDataReceivedEvent e, CancellationToken _) =>
@@ -115,6 +121,8 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             }
 
             metadata.AsDownloaded = true;
+            metadata.FilePath = e.FilePath;
+            fileTransferService.RegisterFileMetadata(message.Id, context.RoomContext.RoomId, metadata.FileName);
             await messageRouter.RouteAsync(metadata, context.RoomContext.RoomId, metadata.SenderId, context.CancellationToken);
         });
 

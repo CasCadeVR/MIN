@@ -262,13 +262,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
     private async Task OnErrorOccured(ErrorOccurredEvent e, CancellationToken cancellationToken)
     {
-        uiContext.Post(_ =>
-        {
-            MessageBox.Show(e.ErrorMessage,
-                "Ошибка",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }, null);
-
         if (e.NeedToDisconnect)
         {
             await DisposeAsync();
@@ -554,7 +547,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     {
         await featureCollection.Chat.ChatService.RequestFileDownloadAsync(roomId,
             fileMetadata,
-            localParticipant,
             formCts.Token
         );
     }
@@ -563,7 +555,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     {
         await featureCollection.Chat.ChatService.CancelFileDownloadAsync(roomId,
             fileMetadata,
-            localParticipant,
             formCts.Token
         );
     }
@@ -583,7 +574,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
             {
                 await featureCollection.Chat.ChatService.SendMessageAsync(roomId,
                     messageTextBox.Text.Trim(),
-                    localParticipant,
                     privateChatParticipantId,
                     formCts.Token
                 );
@@ -594,7 +584,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
                 await featureCollection.Chat.ChatService.SendFileAsync(roomId,
                    fileAttachement.FileName,
                    fileAttachement.FilePath,
-                   localParticipant,
                    privateChatParticipantId,
                    formCts.Token
                );

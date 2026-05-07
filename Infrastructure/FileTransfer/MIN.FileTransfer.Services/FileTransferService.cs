@@ -68,16 +68,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     bool IFileTransferService.TryGetPendingFileName(Guid transferId, out string fileName)
         => pendingMetadata.TryGetValue(transferId, out fileName!);
 
-    /// <inheritdoc />
-    public async Task RemovePendingMetadata(Guid transferId)
-    {
-        pendingMetadata.TryRemove(transferId, out _);
-        await eventBus.PublishAsync(new FilePendingMetaDataReceivedEvent()
-        {
-            TransferId = transferId,
-        });
-    }
-
     void IFileTransferService.RegisterFileMetadata(Guid fileMetadataId, Guid roomId, string fileName, string? originalFilePath)
     {
         logger.Log($"Регистрирую метаданные файла: FileId={fileMetadataId}, Room={roomId}, File={fileName}, Path={originalFilePath ?? "RoomFiles"}");
@@ -123,7 +113,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             }, cancellationToken);
 
             RemoveTransfer(transferId);
-            await RemovePendingMetadata(transferId);
+            await RemovePendingMetadata(transferId, filePath);
         }
         catch (Exception ex)
         {
@@ -187,7 +177,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             });
 
             RemoveTransfer(transferId);
-            await RemovePendingMetadata(transferId);
+            await RemovePendingMetadata(transferId, filePath);
         }
         catch (Exception ex)
         {
@@ -203,6 +193,16 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 
             RemoveTransfer(transferId);
         }
+    }
+
+    private async Task RemovePendingMetadata(Guid transferId, string filePath)
+    {
+        pendingMetadata.TryRemove(transferId, out _);
+        await eventBus.PublishAsync(new FilePendingMetaDataReceivedEvent()
+        {
+            TransferId = transferId,
+            FilePath = filePath,
+        });
     }
 
     private async void OnChunkReceived(object? sender, ChunkReceivedEventArgs e)

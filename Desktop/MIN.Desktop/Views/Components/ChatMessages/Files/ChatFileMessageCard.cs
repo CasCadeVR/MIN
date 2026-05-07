@@ -59,7 +59,7 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
             .GetFileType(fileMetadataMessage.FileName)
             .Substring(1);
 
-        downloaded = fileMetadataMessage.FilePath != null || fileMetadataMessage.AsDownloaded;
+        downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
         uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("");
