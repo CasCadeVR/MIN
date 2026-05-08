@@ -7,6 +7,9 @@ namespace MIN.Chat.DI.FeatureCollection;
 /// </summary>
 public interface IChatFeatureCollection
 {
-    /// <inheritdoc cref="IChatService"/>
-    IChatService ChatService { get; }
+    /// <inheritdoc cref="IChatTextService"/>
+    IChatTextService ChatTextService { get; }
+
+    /// <inheritdoc cref="IChatFileService"/>
+    IChatFileService ChatFileService { get; }
 }

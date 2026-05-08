@@ -5,14 +5,19 @@ namespace MIN.Chat.DI.FeatureCollection;
 /// <inheritdoc cref="IChatFeatureCollection"/>
 public class ChatFeatureCollection : IChatFeatureCollection
 {
-    /// <inheritdoc />
-    public IChatService ChatService { get; }
+    /// <inheritdoc cref="IChatTextService"/>
+    public IChatTextService ChatTextService { get; }
+
+    /// <inheritdoc cref="IChatFileService"/>
+    public IChatFileService ChatFileService { get; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatFeatureCollection"/>
     /// </summary>
-    public ChatFeatureCollection(IChatService chatService)
+    public ChatFeatureCollection(IChatTextService chatTextService,
+        IChatFileService chatFileService)
     {
-        ChatService = chatService;
+        ChatTextService = chatTextService;
+        ChatFileService = chatFileService;
     }
 }

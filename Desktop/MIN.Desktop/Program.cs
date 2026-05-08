@@ -4,7 +4,7 @@ using MIN.Common.Mvc.Extensions;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Forms;
-using MIN.Desktop.Views.Panels.PanelViews;
+using MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 using MIN.Desktop.Views.Panels.SidePanelViews;
 using MIN.DI;
 

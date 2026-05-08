@@ -156,6 +156,7 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             FileMetadataId = metadata.Id,
             FileName = metadata.FileName,
             FileSize = metadata.FileSize,
+            Sender = metadata.Sender,
             Direction = FileTransferDirection.Upload,
         });
 

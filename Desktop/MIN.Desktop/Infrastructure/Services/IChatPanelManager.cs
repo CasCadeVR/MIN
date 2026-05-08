@@ -1,5 +1,5 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Desktop.Views.Panels.PanelViews;
+using MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
 namespace MIN.Desktop.Infrastructure.Services;
 

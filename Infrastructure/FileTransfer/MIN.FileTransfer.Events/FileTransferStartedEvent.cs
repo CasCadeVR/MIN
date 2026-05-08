@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 
 namespace MIN.FileTransfer.Events;
@@ -32,6 +33,11 @@ public sealed class FileTransferStartedEvent : BaseEvent
     /// Размер файла
     /// </summary>
     public long FileSize { get; set; }
+
+    /// <summary>
+    /// Инициатор отправления сообщения
+    /// </summary>
+    public ParticipantInfo Sender { get; set; } = null!;
 
     /// <summary>
     /// Направление передачи файла

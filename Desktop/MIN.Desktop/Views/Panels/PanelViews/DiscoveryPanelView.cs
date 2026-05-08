@@ -9,7 +9,7 @@ using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Forms.HelperForms;
-using MIN.Desktop.Views.Panels.PanelViews;
+using MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 using MIN.DI.FeatureCollection;
 using MIN.Discovery.Events;
 using MIN.Helpers.Contracts.Extensions;

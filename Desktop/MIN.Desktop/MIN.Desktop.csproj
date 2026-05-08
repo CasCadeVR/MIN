@@ -85,6 +85,15 @@
     <Compile Update="Views\Forms\HelperForms\RoomCreateForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Views\Panels\PanelViews\ChatPanel\ChatPanelView.Events.UI.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\Panels\PanelViews\ChatPanel\ChatPanelView.Services.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Views\Panels\PanelViews\ChatPanel\ChatPanelView.Messages.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

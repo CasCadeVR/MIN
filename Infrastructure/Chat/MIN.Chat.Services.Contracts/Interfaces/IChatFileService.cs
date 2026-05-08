@@ -3,15 +3,10 @@
 namespace MIN.Chat.Services.Contracts.Interfaces;
 
 /// <summary>
-/// Сервис для работы с чатом
+/// Сервис для работы с файлами в чате
 /// </summary>
-public interface IChatService
+public interface IChatFileService
 {
-    /// <summary>
-    /// Отправить текстовое сообщение
-    /// </summary>
-    Task SendMessageAsync(Guid roomId, string content, Guid? recipientId = null, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Отправить файл
     /// </summary>

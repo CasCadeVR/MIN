@@ -1,5 +1,4 @@
-﻿using MIN.Chat.Messaging;
-using MIN.Chat.Services.Contracts.Interfaces;
+﻿using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -13,8 +12,8 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Services;
 
-/// <inheritdoc cref="IChatService"/>
-public sealed class ChatService : IChatService
+/// <inheritdoc cref="IChatFileService"/>
+public sealed class ChatFileService : IChatFileService
 {
     private readonly IMessageRouter messageRouter;
     private readonly IRoomHoster roomHoster;
@@ -24,9 +23,9 @@ public sealed class ChatService : IChatService
     private readonly IIdentityService identityService;
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="ChatService"/>
+    /// Инициализирует новый экземпляр <see cref="ChatFileService"/>
     /// </summary>
-    public ChatService(IMessageRouter messageRouter,
+    public ChatFileService(IMessageRouter messageRouter,
         IRoomHoster roomHoster,
         IEventBus eventBus,
         IFileHelperService fileHelperService,
@@ -41,25 +40,7 @@ public sealed class ChatService : IChatService
         this.identityService = identityService;
     }
 
-    async Task IChatService.SendMessageAsync(Guid roomId, string content, Guid? recipientId, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            throw new ArgumentException("Сообщение не должно быть пустым", nameof(content));
-        }
-
-        var message = new ChatTextMessage
-        {
-            RoomId = roomId,
-            Sender = identityService.SelfParticipant.ToParticipantInfo(),
-            Content = content,
-            RecipientId = recipientId,
-        };
-
-        await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);
-    }
-
-    async Task IChatService.SendFileAsync(Guid roomId, string fileName, string filePath, Guid? recipientId, CancellationToken cancellationToken)
+    async Task IChatFileService.SendFileAsync(Guid roomId, string fileName, string filePath, Guid? recipientId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(filePath) || !Path.Exists(filePath))
         {
@@ -98,30 +79,31 @@ public sealed class ChatService : IChatService
         await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);
     }
 
-    async Task IChatService.RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, CancellationToken cancellationToken)
+    async Task IChatFileService.RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMetadataMessage, CancellationToken cancellationToken)
     {
         var transferId = Guid.NewGuid();
-        fileMessage.TransferId = transferId;
+        fileMetadataMessage.TransferId = transferId;
 
         var info = new TransferInfo
         {
             TransferId = transferId,
-            FileMetadataId = fileMessage.Id,
+            FileMetadataId = fileMetadataMessage.Id,
             RoomId = roomId,
             SenderId = identityService.SelfParticipant.Id,
             Direction = FileTransferDirection.Download,
-            FileName = fileMessage.FileName,
+            FileName = fileMetadataMessage.FileName,
         };
 
         fileTransferService.RegisterTransfer(info);
 
         await eventBus.PublishAsync(new FileTransferStartedEvent
         {
-            RoomId = fileMessage.RoomId,
-            TransferId = fileMessage.TransferId,
-            FileMetadataId = fileMessage.Id,
-            FileName = fileMessage.FileName,
-            FileSize = fileMessage.FileSize,
+            RoomId = fileMetadataMessage.RoomId,
+            TransferId = fileMetadataMessage.TransferId,
+            FileMetadataId = fileMetadataMessage.Id,
+            FileName = fileMetadataMessage.FileName,
+            FileSize = fileMetadataMessage.FileSize,
+            Sender = fileMetadataMessage.Sender,
             Direction = FileTransferDirection.Download,
         }, cancellationToken);
 
@@ -129,15 +111,15 @@ public sealed class ChatService : IChatService
         {
             TransferId = transferId,
             RoomId = roomId,
-            FileName = fileMessage.FileName,
-            FileMetadataId = fileMessage.Id,
+            FileName = fileMetadataMessage.FileName,
+            FileMetadataId = fileMetadataMessage.Id,
             Direction = FileTransferDirection.Download,
         };
 
         await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);
     }
 
-    async Task IChatService.CancelFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, CancellationToken cancellationToken)
+    async Task IChatFileService.CancelFileDownloadAsync(Guid roomId, FileMetadataMessage fileMessage, CancellationToken cancellationToken)
     {
         var message = new FileTransferCancelMessage
         {
