@@ -4,6 +4,7 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Views.Components;
 using MIN.FileTransfer.Messaging;
@@ -44,7 +45,9 @@ public partial class ChatPanelView
                     rowControl = CreateTextMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate);
                     break;
                 case FileMetadataMessage m:
-                    rowControl = CreateFileMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate);
+                    rowControl = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
+                        ? CreateChatImagePreviewMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate)
+                        : CreateFileMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate);
                     break;
                 case SystemTextMessage m:
                     rowControl = CreateSystemMessageLabel(m, row);
@@ -61,9 +64,10 @@ public partial class ChatPanelView
             chatFlow.Controls.Add(row);
             chatFlow.Controls.SetChildIndex(chatFlow.Controls[^1], 0);
 
-            if (rowControl is ChatTextMessageCard card)
+            if (rowControl is IResizableComponent resizableComponent)
             {
-                row.Height = card.ResizeOutOfPrefferedSize() + row.Padding.Top;
+                row.Height = resizableComponent.ResizeOutOfPrefferedSize() + row.Padding.Top;
+                resizableComponent.AskParentForResize += PerformResize;
             }
         }
         finally
@@ -98,6 +102,30 @@ public partial class ChatPanelView
         var minutesPassed = CalculateTimePadding(msg.Timestamp);
 
         var card = new ChatFileMessageCard(featureCollection.FileTransfer,
+            featureCollection.Core.EventBus,
+            msg, localParticipant, isHost, removeHeaders)
+        {
+            Anchor = isSelf ? AnchorStyles.Right : AnchorStyles.Left,
+            Margin = new Padding(20, 0, 20, 0),
+        };
+
+        card.OnDownloadRequested += () => OnDownloadRequested(msg);
+        card.OnCancelRequested += () => OnCancelRequested(msg);
+
+        InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate, wasLastPrivate);
+        ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
+        row.Height = card.Height;
+        lastChatMessage = msg;
+        return card;
+    }
+
+    private ChatImagePreviewMessageCard CreateChatImagePreviewMessageCard(FileMetadataMessage msg, ChatMessageRow row,
+    bool isSelf, bool isHost, bool isCurrentPrivate, bool wasLastPrivate)
+    {
+        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
+        var minutesPassed = CalculateTimePadding(msg.Timestamp);
+
+        var card = new ChatImagePreviewMessageCard(featureCollection.FileTransfer,
             featureCollection.Core.EventBus,
             msg, localParticipant, isHost, removeHeaders)
         {

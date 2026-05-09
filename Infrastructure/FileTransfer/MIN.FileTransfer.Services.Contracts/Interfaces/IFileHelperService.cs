@@ -31,6 +31,11 @@ public interface IFileHelperService
     bool IsExtensionAllowed(string fileName);
 
     /// <summary>
+    /// Проверить, является ли файл - изображением
+    /// </summary>
+    bool IsFileImage(string fileName);
+
+    /// <summary>
     /// Очистить имя файла от опасных символов
     /// </summary>
     string SanitizeFileName(string fileName);

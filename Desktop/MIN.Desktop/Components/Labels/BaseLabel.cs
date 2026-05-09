@@ -10,6 +10,5 @@ public class BaseLabel : Label
     /// </summary>
     public BaseLabel()
     {
-        AutoSize = true;
     }
 }

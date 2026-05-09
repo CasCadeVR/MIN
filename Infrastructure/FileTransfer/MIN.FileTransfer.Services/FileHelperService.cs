@@ -50,6 +50,15 @@ public sealed class FileHelperService : IFileHelperService
     private readonly static HashSet<string> blockedExtensions = new(StringComparer.OrdinalIgnoreCase)
         { ".bat", ".cmd", ".com", ".scr", ".vbs", ".ps1", ".wsf", ".reg", ".inf", };
 
+    private readonly static HashSet<string> imageExtensions = new(StringComparer.OrdinalIgnoreCase)
+        { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".ico"};
+
+    bool IFileHelperService.IsFileImage(string fileName)
+    {
+        var extension = Path.GetExtension(fileName);
+        return !string.IsNullOrEmpty(extension) && imageExtensions.Contains(extension);
+    }
+
     string IFileHelperService.GetMimeType(string fileName)
     {
         var extension = Path.GetExtension(fileName);

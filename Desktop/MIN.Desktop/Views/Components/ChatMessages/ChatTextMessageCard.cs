@@ -1,4 +1,5 @@
 ﻿using MIN.Chat.Messaging;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Views.Components.ChatMessages;
 
@@ -7,9 +8,12 @@ namespace MIN.Desktop.Components;
 /// <summary>
 /// Карточка сообщения от пользователя
 /// </summary>
-public partial class ChatTextMessageCard : BaseChatMessageCard
+public partial class ChatTextMessageCard : BaseChatMessageCard, IResizableComponent
 {
     private readonly ChatTextMessage chatMessage = null!;
+
+    /// <inheritdoc />
+    public Action? AskParentForResize { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatTextMessageCard"/>
@@ -54,7 +58,7 @@ public partial class ChatTextMessageCard : BaseChatMessageCard
     /// <returns>
     /// Вычисленную высоту, исходя из содержимого
     /// </returns>
-    public int ResizeOutOfPrefferedSize()
+    int IResizableComponent.ResizeOutOfPrefferedSize()
     {
         var wantedWidth = Math.Min(Convert.ToInt32(Parent!.Width * 0.85),
             Convert.ToInt32(TableLayoutPanel.ColumnStyles[1].Width)

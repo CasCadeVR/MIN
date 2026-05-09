@@ -1,6 +1,7 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless.RoomRelated;
 using MIN.Desktop.Components;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Views.Components;
 using MIN.Desktop.Views.Forms.HelperForms;
@@ -35,9 +36,9 @@ public partial class ChatPanelView
             {
                 row.Width = chatFlow.Width - row.Margin.Horizontal;
                 var child = row.container.Controls[0];
-                if (child is ChatTextMessageCard card)
+                if (child is IResizableComponent resizableComponent)
                 {
-                    row.Height = card.ResizeOutOfPrefferedSize() + row.Padding.Top;
+                    row.Height = resizableComponent.ResizeOutOfPrefferedSize() + row.Padding.Top;
                 }
             }
         }
