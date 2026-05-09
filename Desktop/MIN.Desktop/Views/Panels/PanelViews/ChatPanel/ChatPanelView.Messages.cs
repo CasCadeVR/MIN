@@ -73,7 +73,7 @@ public partial class ChatPanelView
         }
     }
 
-    private Control CreateTextMessageCard(ChatTextMessage msg, ChatMessageRow row,
+    private ChatTextMessageCard CreateTextMessageCard(ChatTextMessage msg, ChatMessageRow row,
             bool isSelf, bool isHost, bool isCurrentPrivate, bool wasLastPrivate)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
@@ -91,7 +91,7 @@ public partial class ChatPanelView
         return card;
     }
 
-    private Control CreateFileMessageCard(FileMetadataMessage msg, ChatMessageRow row,
+    private ChatFileMessageCard CreateFileMessageCard(FileMetadataMessage msg, ChatMessageRow row,
         bool isSelf, bool isHost, bool isCurrentPrivate, bool wasLastPrivate)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
@@ -115,7 +115,7 @@ public partial class ChatPanelView
         return card;
     }
 
-    private static Control CreateSystemMessageLabel(SystemTextMessage msg, ChatMessageRow row)
+    private static PrimaryLabel CreateSystemMessageLabel(SystemTextMessage msg, ChatMessageRow row)
     {
         if (msg.RecipientId != null)
         {
@@ -133,7 +133,7 @@ public partial class ChatPanelView
         return label;
     }
 
-    private static Control CreateDescribableLabel(IDescribable describable, ChatMessageRow row)
+    private static PrimaryLabel CreateDescribableLabel(IDescribable describable, ChatMessageRow row)
     {
         var label = new PrimaryLabel
         {

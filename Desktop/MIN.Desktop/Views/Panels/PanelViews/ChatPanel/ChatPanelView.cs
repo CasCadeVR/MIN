@@ -1,5 +1,4 @@
-﻿using MIN.Common.Core.Contracts.Interfaces;
-using MIN.Core.Entities;
+﻿using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Transport.Contracts.Interfaces;
@@ -50,17 +49,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         HideStatusRow();
     }
 
-    private void InitializeNotifications()
-    {
-        featureCollection.Helper.NotificationService.OnNotificationClick += () =>
-        {
-            navigationService.Parent.WindowState = FormWindowState.Normal;
-            Focus();
-        };
-        featureCollection.Helper.NotificationService.NotificationTurnOffClicked += ()
-            => notificationComboBox.Checked = false;
-    }
-
     /// <inheritdoc />
     /// <remarks>
     /// Room передаётся по ссылке прямо из store, так что его обновление повлияет на room ui,
@@ -77,16 +65,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         SubscribeToEvents(featureCollection.Core.EventBus);
         UpdateStats();
         UpdateChatFlow();
-    }
-
-    private void NotifyIfNeeded(IDescribable describable)
-    {
-        if (notificationComboBox.Checked
-            && (navigationService.Parent.WindowState == FormWindowState.Minimized || !ContainsFocus))
-        {
-            featureCollection.Helper.NotificationService
-                .Notify(describable, room.Name);
-        }
     }
 
     private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)

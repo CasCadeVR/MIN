@@ -3,6 +3,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Properties;
+using MIN.Desktop.Views.Components.ChatMessages;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
@@ -12,16 +13,14 @@ namespace MIN.Desktop.Components;
 /// <summary>
 /// Карточка сообщения, представляющая файл от пользователя
 /// </summary>
-public partial class ChatFileMessageCard : UserControl, IDisposable
+public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 {
-    private readonly IFileTransferFeatureCollection fileTransferFeatureCollection;
-    private readonly IEventBus eventBus;
-    private readonly FileMetadataMessage fileMetadataMessage;
-    private readonly SynchronizationContext uiContext;
-    private readonly ParticipantInfo localParticipant;
-    private readonly bool removeHeaders;
-    private readonly bool hostMessage;
-    private readonly string cachedFormat;
+    private readonly IFileTransferFeatureCollection fileTransferFeatureCollection = null!;
+    private readonly IEventBus eventBus = null!;
+    private readonly FileMetadataMessage fileMetadataMessage = null!;
+    private readonly SynchronizationContext uiContext = null!;
+    private readonly ParticipantInfo localParticipant = null!;
+    private readonly string cachedFormat = string.Empty;
     private HashSet<IDisposable> eventTokens = null!;
     private bool isDownloading;
     private bool downloaded;
@@ -40,19 +39,30 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatFileMessageCard"/>
     /// </summary>
+    public ChatFileMessageCard() : base()
+    {
+        InitializeComponent();
+    }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="ChatFileMessageCard"/>
+    /// </summary>
     public ChatFileMessageCard(IFileTransferFeatureCollection fileTransferFeatureCollection,
         IEventBus eventBus,
         FileMetadataMessage fileMetadataMessage,
         ParticipantInfo localParticipant,
-        bool hostMessage,
+        bool isHostMessage,
         bool removeHeaders)
+        : base(fileMetadataMessage.Sender.Name,
+            fileMetadataMessage.Timestamp,
+            localParticipant.Id == fileMetadataMessage.SenderId,
+            isHostMessage,
+            removeHeaders)
     {
         InitializeComponent();
         this.fileTransferFeatureCollection = fileTransferFeatureCollection;
         this.eventBus = eventBus;
         this.fileMetadataMessage = fileMetadataMessage;
-        this.removeHeaders = removeHeaders;
-        this.hostMessage = hostMessage;
         this.localParticipant = localParticipant;
 
         cachedFormat = fileInterractButton.Text = fileTransferFeatureCollection.FileHelperService
@@ -66,12 +76,14 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
 
         FillLabels();
         ApplyStylings();
+        PerformLayout();   // ← force layout cascade
         SubscribeToEvents();
     }
 
     private void SubscribeToEvents()
     {
-        eventTokens = [
+        eventTokens =
+        [
             eventBus.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted),
             eventBus.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed),
             eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted)
@@ -163,41 +175,25 @@ public partial class ChatFileMessageCard : UserControl, IDisposable
     }
 
     ///<inheritdoc />
-    public void ApplyStylings()
+    public override void ApplyStylings()
     {
         if (removeHeaders)
         {
-            Height -= Convert.ToInt32(tableLayoutPanel.RowStyles[0].Height);
-            tableLayoutPanel.RowStyles[0].Height = 0;
-            senderName.Visible = false;
-            sendRole.Visible = false;
+            Height -= Convert.ToInt32(TableLayoutPanel.RowStyles[0].Height);
         }
+        base.ApplyStylings();
 
-        var senderColor = localParticipant.Id == fileMetadataMessage.SenderId
-            ? ColorScheme.OutgoingMessageBackground
-            : ColorScheme.IncomingMessageBackground;
-
-        senderName.BackColor = senderColor;
-        sendRole.BackColor = senderColor;
-        sendTime.BackColor = senderColor;
-        tableLayoutPanelLabels.BackColor = senderColor;
-        tableLayoutPanel.BackColor = senderColor;
+        tableLayoutPanelLabels.BackColor = SenderColor;
         fileInterractButton.BackColor = ColorScheme.SecondaryAccent;
         fileInterractButton.ForeColor = ColorScheme.TextOnAccent;
 
         fileName.Font = FontScheme.Default;
         fileSize.Font = FontScheme.Caption;
         fileInterractButton.Font = FontScheme.Monospace;
-        senderName.Font = FontScheme.Monospace;
-        sendRole.Font = FontScheme.MicroCaption;
-        sendTime.Font = FontScheme.MicroCaption;
     }
 
     private void FillLabels()
     {
-        senderName.Text = fileMetadataMessage.Sender.Name;
-        sendRole.Text = hostMessage ? "Хост" : string.Empty;
-        sendTime.Text = fileMetadataMessage.Timestamp.ToShortTimeString();
         fileName.Text = fileMetadataMessage.FileName;
         fileSize.Text = fileTransferFeatureCollection.FileHelperService
             .FormatFileSize(fileMetadataMessage.FileSize);

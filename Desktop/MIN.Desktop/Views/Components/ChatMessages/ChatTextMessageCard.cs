@@ -1,61 +1,50 @@
 ﻿using MIN.Chat.Messaging;
-using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
+using MIN.Desktop.Views.Components.ChatMessages;
 
 namespace MIN.Desktop.Components;
 
 /// <summary>
 /// Карточка сообщения от пользователя
 /// </summary>
-public partial class ChatTextMessageCard : UserControl, IStyled
+public partial class ChatTextMessageCard : BaseChatMessageCard
 {
-    private readonly ChatTextMessage chatMessage;
-    private readonly bool hostMessage;
-    private readonly bool isLocal;
-    private readonly bool removeHeaders;
+    private readonly ChatTextMessage chatMessage = null!;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="ChatTextMessageCard"/>
+    /// </summary>
+    public ChatTextMessageCard() : base()
+    {
+        InitializeComponent();
+    }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatTextMessageCard"/>
     /// </summary>
     public ChatTextMessageCard(ChatTextMessage chatMessage,
         bool isLocal,
-        bool hostMessage,
+        bool isHostMessage,
         bool removeHeaders)
+        : base(chatMessage.Sender.Name,
+            chatMessage.Timestamp,
+            isLocal,
+            isHostMessage,
+            removeHeaders)
     {
         InitializeComponent();
 
         this.chatMessage = chatMessage;
-        this.hostMessage = hostMessage;
-        this.isLocal = isLocal;
-        this.removeHeaders = removeHeaders;
 
         ApplyStylings();
         FillLabels();
     }
 
     /// <inheritdoc />
-    public void ApplyStylings()
+    public override void ApplyStylings()
     {
-        if (removeHeaders)
-        {
-            tableLayoutPanelLabels.RowStyles[0].Height = 0;
-            senderName.Visible = false;
-            sendRole.Visible = false;
-        }
-
-        var senderColor = isLocal
-            ? ColorScheme.OutgoingMessageBackground
-            : ColorScheme.IncomingMessageBackground;
-
-        senderName.BackColor = senderColor;
-        sendRole.BackColor = senderColor;
-        sendTime.BackColor = senderColor;
-        tableLayoutPanelLabels.BackColor = senderColor;
-        sendMessage.BackColor = senderColor;
-
-        senderName.Font = FontScheme.Monospace;
-        sendRole.Font = FontScheme.MicroCaption;
-        sendTime.Font = FontScheme.MicroCaption;
+        base.ApplyStylings();
+        sendMessage.BackColor = SenderColor;
         sendMessage.Font = FontScheme.Default;
     }
 
@@ -68,7 +57,7 @@ public partial class ChatTextMessageCard : UserControl, IStyled
     public int ResizeOutOfPrefferedSize()
     {
         var wantedWidth = Math.Min(Convert.ToInt32(Parent!.Width * 0.85),
-            Convert.ToInt32(tableLayoutPanelLabels.ColumnStyles[1].Width)
+            Convert.ToInt32(TableLayoutPanel.ColumnStyles[1].Width)
             + Math.Max(sendMessage.PreferredSize.Width, removeHeaders ? 0 : sendMessage.PreferredSize.Width)
             + sendMessage.Margin.Horizontal * 2);
 
@@ -81,7 +70,7 @@ public partial class ChatTextMessageCard : UserControl, IStyled
 
         var lineCount = CalculateLineCount();
 
-        var gottenHeight = Convert.ToInt32(tableLayoutPanelLabels.RowStyles[0].Height)
+        var gottenHeight = Convert.ToInt32(TableLayoutPanel.RowStyles[0].Height)
             + (lineCount * (sendMessage.Font.Height - 1))
             + sendMessage.Margin.Vertical * 2;
 
@@ -98,9 +87,6 @@ public partial class ChatTextMessageCard : UserControl, IStyled
 
     private void FillLabels()
     {
-        senderName.Text = chatMessage.Sender.Name;
-        sendRole.Text = hostMessage ? "Хост" : string.Empty;
-        sendTime.Text = chatMessage.Timestamp.ToShortTimeString();
         sendMessage.Text = chatMessage.Content;
     }
 }

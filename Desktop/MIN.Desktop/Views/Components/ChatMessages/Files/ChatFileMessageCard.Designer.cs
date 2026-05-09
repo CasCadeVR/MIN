@@ -34,17 +34,17 @@
             splitContainerDownload = new SplitContainer();
             fileSize = new MIN.Desktop.Components.Labels.Heading3Label();
             downloadProgressBar = new ProgressBar();
-            tableLayoutPanel = new TableLayoutPanel();
-            senderName = new MIN.Desktop.Components.Textboxes.ReadonlyTextbox();
-            sendRole = new MIN.Desktop.Components.Textboxes.ReadonlyTextbox();
-            sendTime = new MIN.Desktop.Components.Textboxes.ReadonlyTextbox();
+            ContentPanel.SuspendLayout();
             tableLayoutPanelLabels.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerDownload).BeginInit();
             splitContainerDownload.Panel1.SuspendLayout();
             splitContainerDownload.Panel2.SuspendLayout();
             splitContainerDownload.SuspendLayout();
-            tableLayoutPanel.SuspendLayout();
             SuspendLayout();
+            // 
+            // ContentPanel
+            // 
+            ContentPanel.Controls.Add(tableLayoutPanelLabels);
             // 
             // tableLayoutPanelLabels
             // 
@@ -55,7 +55,7 @@
             tableLayoutPanelLabels.Controls.Add(fileName, 1, 0);
             tableLayoutPanelLabels.Controls.Add(splitContainerDownload, 1, 1);
             tableLayoutPanelLabels.Dock = DockStyle.Fill;
-            tableLayoutPanelLabels.Location = new Point(0, 22);
+            tableLayoutPanelLabels.Location = new Point(0, 0);
             tableLayoutPanelLabels.Margin = new Padding(0);
             tableLayoutPanelLabels.Name = "tableLayoutPanelLabels";
             tableLayoutPanelLabels.RowCount = 2;
@@ -129,7 +129,8 @@
             fileSize.ForeColor = Color.FromArgb(0, 0, 0);
             fileSize.Location = new Point(0, 0);
             fileSize.Name = "fileSize";
-            fileSize.Size = new Size(85, 13);
+            fileSize.Padding = new Padding(6, 0, 0, 0);
+            fileSize.Size = new Size(91, 13);
             fileSize.TabIndex = 1;
             fileSize.Text = "Размер файла";
             // 
@@ -143,82 +144,15 @@
             downloadProgressBar.Step = 1;
             downloadProgressBar.TabIndex = 1;
             // 
-            // tableLayoutPanel
-            // 
-            tableLayoutPanel.ColumnCount = 2;
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 32F));
-            tableLayoutPanel.Controls.Add(tableLayoutPanelLabels, 0, 1);
-            tableLayoutPanel.Controls.Add(senderName, 0, 0);
-            tableLayoutPanel.Controls.Add(sendRole, 1, 0);
-            tableLayoutPanel.Controls.Add(sendTime, 1, 1);
-            tableLayoutPanel.Dock = DockStyle.Fill;
-            tableLayoutPanel.Location = new Point(0, 0);
-            tableLayoutPanel.Margin = new Padding(0);
-            tableLayoutPanel.Name = "tableLayoutPanel";
-            tableLayoutPanel.RowCount = 2;
-            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 22F));
-            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
-            tableLayoutPanel.Size = new Size(250, 95);
-            tableLayoutPanel.TabIndex = 4;
-            // 
-            // senderName
-            // 
-            senderName.BackColor = Color.FromArgb(248, 249, 255);
-            senderName.BorderStyle = BorderStyle.None;
-            senderName.Dock = DockStyle.Fill;
-            senderName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
-            senderName.ForeColor = Color.FromArgb(0, 0, 0);
-            senderName.Location = new Point(3, 3);
-            senderName.Margin = new Padding(3, 3, 0, 0);
-            senderName.Name = "senderName";
-            senderName.ReadOnly = true;
-            senderName.Size = new Size(215, 18);
-            senderName.TabIndex = 0;
-            senderName.Text = "Отправитель";
-            senderName.WordWrap = false;
-            // 
-            // sendRole
-            // 
-            sendRole.BackColor = Color.FromArgb(248, 249, 255);
-            sendRole.BorderStyle = BorderStyle.None;
-            sendRole.Dock = DockStyle.Right;
-            sendRole.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            sendRole.ForeColor = Color.FromArgb(0, 0, 0);
-            sendRole.Location = new Point(221, 2);
-            sendRole.Margin = new Padding(3, 2, 3, 2);
-            sendRole.Name = "sendRole";
-            sendRole.ReadOnly = true;
-            sendRole.Size = new Size(26, 15);
-            sendRole.TabIndex = 1;
-            sendRole.Text = "Роль";
-            sendRole.TextAlign = HorizontalAlignment.Right;
-            // 
-            // sendTime
-            // 
-            sendTime.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            sendTime.BackColor = Color.FromArgb(248, 249, 255);
-            sendTime.BorderStyle = BorderStyle.None;
-            sendTime.Font = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            sendTime.ForeColor = Color.FromArgb(0, 0, 0);
-            sendTime.Location = new Point(218, 80);
-            sendTime.Margin = new Padding(0, 0, 3, 0);
-            sendTime.Name = "sendTime";
-            sendTime.ReadOnly = true;
-            sendTime.Size = new Size(29, 15);
-            sendTime.TabIndex = 4;
-            sendTime.Text = "Время";
-            sendTime.TextAlign = HorizontalAlignment.Right;
-            // 
             // ChatFileMessageCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(tableLayoutPanel);
             MaximumSize = new Size(250, 95);
             MinimumSize = new Size(179, 22);
             Name = "ChatFileMessageCard";
             Size = new Size(250, 95);
+            ContentPanel.ResumeLayout(false);
             tableLayoutPanelLabels.ResumeLayout(false);
             tableLayoutPanelLabels.PerformLayout();
             splitContainerDownload.Panel1.ResumeLayout(false);
@@ -226,19 +160,13 @@
             splitContainerDownload.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainerDownload).EndInit();
             splitContainerDownload.ResumeLayout(false);
-            tableLayoutPanel.ResumeLayout(false);
-            tableLayoutPanel.PerformLayout();
             ResumeLayout(false);
         }
 
         #endregion
 
         private Labels.Heading3Label fileSize;
-        private TableLayoutPanel tableLayoutPanel;
         private TableLayoutPanel tableLayoutPanelLabels;
-        private Textboxes.ReadonlyTextbox sendTime;
-        private Textboxes.ReadonlyTextbox sendRole;
-        private Textboxes.ReadonlyTextbox senderName;
         private Labels.Heading3Label fileName;
         private Controls.Buttons.CommonButton fileInterractButton;
         private SplitContainer splitContainerDownload;

@@ -1,9 +1,31 @@
-﻿using MIN.FileTransfer.Messaging;
+﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.FileTransfer.Messaging;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
 public partial class ChatPanelView
 {
+    private void InitializeNotifications()
+    {
+        featureCollection.Helper.NotificationService.OnNotificationClick += () =>
+        {
+            navigationService.Parent.WindowState = FormWindowState.Normal;
+            Focus();
+        };
+        featureCollection.Helper.NotificationService.NotificationTurnOffClicked += ()
+            => notificationComboBox.Checked = false;
+    }
+
+    private void NotifyIfNeeded(IDescribable describable)
+    {
+        if (notificationComboBox.Checked
+            && (navigationService.Parent.WindowState == FormWindowState.Minimized || !ContainsFocus))
+        {
+            featureCollection.Helper.NotificationService
+                .Notify(describable, room.Name);
+        }
+    }
+
     private async Task OnDownloadRequested(FileMetadataMessage fileMetadata)
     {
         await featureCollection.Chat.ChatFileService.RequestFileDownloadAsync(roomId,
