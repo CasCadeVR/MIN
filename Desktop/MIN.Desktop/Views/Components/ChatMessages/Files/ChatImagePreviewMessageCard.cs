@@ -103,9 +103,9 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
 
     private void InitializeContextMenu()
     {
-        var pictureBoxContextMenuStrip = new ParticipantCardContextMenuStrip();
+        var pictureBoxContextMenuStrip = new FileMessageContextMenuStrip();
         pictureBoxContextMenuStrip.OnItemClick += () => OnCardContextMenuStripClicked?.Invoke();
-        pictureBoxContextMenuStrip.Items[0].Text = "Сохранить как...";
+        pictureBoxContextMenuStrip.Items[0].Text = "Показать в проводнике";
         ContextMenuStrip = pictureBoxContextMenuStrip;
     }
 

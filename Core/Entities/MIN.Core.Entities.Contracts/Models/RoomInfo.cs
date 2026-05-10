@@ -17,6 +17,9 @@ public record RoomInfo : IRoomData
     public int ParticipantCount { get; set; }
 
     /// <inheritdoc />
+    public int TotalMessageCount { get; set; }
+
+    /// <inheritdoc />
     public int MaximumParticipants { get; set; }
 
     /// <inheritdoc />
@@ -37,6 +40,7 @@ public record RoomInfo : IRoomData
         Name = room.Name;
         HostParticipant = room.HostParticipant;
         ParticipantCount = room.ParticipantCount;
+        TotalMessageCount = room.TotalMessageCount;
         MaximumParticipants = room.MaximumParticipants;
         IsActive = room.IsActive;
         CreatedAt = room.CreatedAt;

@@ -1,15 +1,15 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 
-namespace MIN.Core.Messaging.Stateless.RoomRelated;
+namespace MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
 
 /// <summary>
-/// Запрос на присоединения к комнате
+/// Запрос информации о комнате
 /// </summary>
-public sealed class RoomJoinRequestMessage : BaseMessage
+public sealed class RoomInfoRequestMessage : BaseMessage
 {
     /// <inheritdoc />
-    public override MessageTypeTag TypeTag => MessageTypeTag.RoomJoinRequest;
+    public override MessageTypeTag TypeTag => MessageTypeTag.RoomInfoRequest;
 
     /// <inheritdoc />
     public override bool IsPublic => false;

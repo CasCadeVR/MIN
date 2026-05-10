@@ -16,20 +16,36 @@ public sealed class MessageStore : IMessageStore
         }
     }
 
+    int IMessageStore.GetMessageCount()
+    {
+        lock (messages)
+        {
+            return messages.Count;
+        }
+    }
+
+    IEnumerable<IMessage> IMessageStore.GetRecentHistory(int page, int pageSize)
+    {
+        lock (messages)
+        {
+            return messages
+                .AsEnumerable()
+                .Reverse()
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
+    }
+
     IEnumerable<IMessage> IMessageStore.GetHistory(int? page, int? pageSize)
     {
         lock (messages)
         {
-            var resultMessages = messages.ToList();
+            var resultMessages = messages.AsEnumerable();
 
-            if (page.HasValue)
+            if (page.HasValue && pageSize.HasValue)
             {
-                resultMessages = messages.Skip((int)page).ToList();
-            }
-
-            if (pageSize.HasValue)
-            {
-                resultMessages = messages.Take((int)pageSize).ToList();
+                resultMessages = messages.Skip(page.Value * pageSize.Value).Take((int)pageSize);
             }
 
             return resultMessages;

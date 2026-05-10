@@ -33,6 +33,11 @@ public interface IRoomData
     int ParticipantCount { get; }
 
     /// <summary>
+    /// Всего количество сообщений
+    /// </summary>
+    int TotalMessageCount { get; }
+
+    /// <summary>
     /// Активна ли комната
     /// </summary>
     bool IsActive { get; }

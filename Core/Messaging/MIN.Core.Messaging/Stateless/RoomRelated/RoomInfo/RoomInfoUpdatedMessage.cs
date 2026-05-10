@@ -1,8 +1,7 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Messaging.Contracts;
+﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 
-namespace MIN.Core.Messaging.Stateless.RoomRelated;
+namespace MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
 
 /// <summary>
 /// Обновление информации о комнате
@@ -18,5 +17,5 @@ public sealed class RoomInfoUpdatedMessage : BaseMessage
     /// <summary>
     /// Информация о комнате
     /// </summary>
-    public RoomInfo Room { get; set; } = null!;
+    public Entities.Contracts.Models.RoomInfo Room { get; set; } = null!;
 }

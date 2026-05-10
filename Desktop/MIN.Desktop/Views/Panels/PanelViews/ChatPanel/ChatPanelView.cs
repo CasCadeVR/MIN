@@ -3,7 +3,6 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Interfaces;
-using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Contracts.Views.PanelViews.Interfaces;
 using MIN.Desktop.Infrastructure.Events;
@@ -95,35 +94,5 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         formCts.Cancel();
         formCts.Dispose();
         await CleanUpAsync(roomId, connectionId, isHost: localParticipant.Id == room.HostParticipant.Id);
-    }
-
-    private void chatFlow_DragEnter(object sender, DragEventArgs e)
-    {
-        e.Effect = DragDropEffects.Move;
-        splitContainerSideBar.Panel1.Padding = new Padding(8);
-        splitContainerSideBar.Panel1.BackColor = ColorScheme.ChatPanelFileDropBackground;
-    }
-
-    private void chatFlow_DragLeave(object sender, EventArgs e)
-    {
-        splitContainerSideBar.Panel1.Padding = new Padding(0);
-    }
-
-    private void chatFlow_DragDrop(object sender, DragEventArgs e)
-    {
-        if (e.Data == null || e.Data?.GetData(DataFormats.FileDrop) == null)
-        {
-            return;
-        }
-
-        if (e.Data.GetDataPresent(DataFormats.FileDrop))
-        {
-            var files = (string[])e.Data!.GetData(DataFormats.FileDrop)!;
-            foreach (var filePath in files)
-            {
-                UploadFile(filePath);
-            }
-        }
-        splitContainerSideBar.Panel1.Padding = new Padding(0);
     }
 }

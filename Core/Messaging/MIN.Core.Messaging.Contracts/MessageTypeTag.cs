@@ -95,12 +95,12 @@ public enum MessageTypeTag : byte
     /// <summary>
     /// Запрос истории сообщений.
     /// </summary>
-    HistoryRequest = 66,
+    ChatHistoryRequest = 66,
 
     /// <summary>
     /// Ответ с историей сообщений.
     /// </summary>
-    HistoryResponse = 67,
+    ChatHistoryResponse = 67,
 
     /// <summary>
     /// Удаление сообщения.

@@ -1,4 +1,5 @@
-﻿using MIN.Core.Messaging.RoomRelated;
+﻿using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
@@ -119,14 +120,22 @@ public partial class ChatPanelView
     {
         chatFlow.Controls.Clear();
 
-        if (room == null)
-        {
-            return;
-        }
+        totalMessagesCount = room.TotalMessageCount;
+        var messages = room.ChatHistory; // уже содержит GetRecentHistory(1, 25), newest-first
+        RenderMessages(messages);
 
-        foreach (var storedMessage in room.ChatHistory)
+        if (totalMessagesCount > PageSize)
         {
-            AddMessageToChatFlow(storedMessage);
+            ShowLoadMoreLabel();
+        }
+    }
+
+    private void RenderMessages(List<IMessage> messages, bool appendOnTop = false)
+    {
+        for (var i = messages.Count - 1; i >= 0; i--)
+        {
+            var index = appendOnTop ? (messages.Count - 1) - i : i;
+            AddMessageToChatFlow(messages[index], appendOnTop);
         }
     }
 
@@ -183,19 +192,6 @@ public partial class ChatPanelView
             filePath);
 
         multiFileAttachmentUploader.AddFileAttachment(fileAttachment);
-    }
-
-
-    private void OnSaveAsCLicked(string? filePath)
-    {
-        if (!Path.Exists(filePath))
-        {
-            return;
-        }
-
-        using var saveFileDialog = new SaveFileDialog();
-        saveFileDialog.FileName = filePath;
-        saveFileDialog.ShowDialog();
     }
 
     #endregion

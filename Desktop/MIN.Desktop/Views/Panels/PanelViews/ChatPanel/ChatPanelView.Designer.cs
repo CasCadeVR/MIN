@@ -103,7 +103,7 @@
             splitContainerSideBar.Panel2.Controls.Add(tableLayoutPanelStats);
             splitContainerSideBar.Panel2MinSize = 100;
             splitContainerSideBar.Size = new Size(821, 643);
-            splitContainerSideBar.SplitterDistance = 678;
+            splitContainerSideBar.SplitterDistance = 681;
             splitContainerSideBar.SplitterWidth = 1;
             splitContainerSideBar.TabIndex = 1;
             // 
@@ -116,7 +116,7 @@
             chatFlow.FlowDirection = FlowDirection.BottomUp;
             chatFlow.Location = new Point(0, 0);
             chatFlow.Name = "chatFlow";
-            chatFlow.Size = new Size(678, 468);
+            chatFlow.Size = new Size(681, 468);
             chatFlow.TabIndex = 6;
             chatFlow.WrapContents = false;
             chatFlow.DragDrop += chatFlow_DragDrop;
@@ -144,7 +144,7 @@
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 16F));
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 115F));
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 8F));
-            tableLayoutPanelButtons.Size = new Size(678, 175);
+            tableLayoutPanelButtons.Size = new Size(681, 175);
             tableLayoutPanelButtons.TabIndex = 5;
             // 
             // fileButton
@@ -175,7 +175,7 @@
             sendButton.FlatStyle = FlatStyle.Flat;
             sendButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendButton.ForeColor = Color.FromArgb(248, 249, 255);
-            sendButton.Location = new Point(633, 134);
+            sendButton.Location = new Point(636, 134);
             sendButton.Name = "sendButton";
             sendButton.Padding = new Padding(8, 4, 8, 4);
             sendButton.Size = new Size(42, 38);
@@ -198,7 +198,7 @@
             messageTextBox.Name = "messageTextBox";
             messageTextBox.PlaceholderText = "Сообщение";
             messageTextBox.ScrollBars = ScrollBars.Vertical;
-            messageTextBox.Size = new Size(579, 35);
+            messageTextBox.Size = new Size(582, 35);
             messageTextBox.TabIndex = 4;
             messageTextBox.TextChanged += messageTextBox_TextChanged;
             messageTextBox.KeyPress += messageTextBox_KeyPress;
@@ -214,7 +214,7 @@
             multiFileAttachmentUploader.Name = "multiFileAttachmentUploader";
             multiFileAttachmentUploader.OnLastFileRemoved = null;
             multiFileAttachmentUploader.Padding = new Padding(5);
-            multiFileAttachmentUploader.Size = new Size(678, 115);
+            multiFileAttachmentUploader.Size = new Size(681, 115);
             multiFileAttachmentUploader.TabIndex = 5;
             // 
             // statusLabel
@@ -227,7 +227,7 @@
             statusLabel.ForeColor = Color.Black;
             statusLabel.Location = new Point(3, 0);
             statusLabel.Name = "statusLabel";
-            statusLabel.Size = new Size(672, 16);
+            statusLabel.Size = new Size(675, 16);
             statusLabel.TabIndex = 6;
             statusLabel.Text = "statusLabel";
             statusLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -240,7 +240,7 @@
             participantsFlow.FlowDirection = FlowDirection.TopDown;
             participantsFlow.Location = new Point(0, 276);
             participantsFlow.Name = "participantsFlow";
-            participantsFlow.Size = new Size(142, 367);
+            participantsFlow.Size = new Size(139, 367);
             participantsFlow.TabIndex = 5;
             participantsFlow.WrapContents = false;
             participantsFlow.Resize += participantsFlow_Resize;
@@ -277,7 +277,7 @@
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.5881348F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 13.5923424F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 4.890824F));
-            tableLayoutPanelStats.Size = new Size(142, 276);
+            tableLayoutPanelStats.Size = new Size(139, 276);
             tableLayoutPanelStats.TabIndex = 4;
             // 
             // createdAt
@@ -286,7 +286,7 @@
             createdAt.AutoSize = true;
             createdAt.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             createdAt.ForeColor = Color.FromArgb(0, 0, 0);
-            createdAt.Location = new Point(74, 112);
+            createdAt.Location = new Point(72, 112);
             createdAt.Name = "createdAt";
             createdAt.Size = new Size(62, 34);
             createdAt.TabIndex = 24;
@@ -298,7 +298,7 @@
             createdAtLabel.AutoSize = true;
             createdAtLabel.Font = new Font("Segoe UI", 8.25F);
             createdAtLabel.ForeColor = Color.Black;
-            createdAtLabel.Location = new Point(14, 123);
+            createdAtLabel.Location = new Point(12, 123);
             createdAtLabel.Name = "createdAtLabel";
             createdAtLabel.Size = new Size(54, 13);
             createdAtLabel.TabIndex = 23;
@@ -332,7 +332,7 @@
             editButton.FlatStyle = FlatStyle.Flat;
             editButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             editButton.ForeColor = Color.FromArgb(248, 249, 255);
-            editButton.Location = new Point(108, 3);
+            editButton.Location = new Point(105, 3);
             editButton.Name = "editButton";
             editButton.Size = new Size(31, 31);
             editButton.TabIndex = 17;
@@ -346,7 +346,7 @@
             hostNameLabel.AutoSize = true;
             hostNameLabel.Font = new Font("Segoe UI", 8.25F);
             hostNameLabel.ForeColor = Color.Black;
-            hostNameLabel.Location = new Point(35, 86);
+            hostNameLabel.Location = new Point(33, 86);
             hostNameLabel.Name = "hostNameLabel";
             hostNameLabel.Size = new Size(33, 13);
             hostNameLabel.TabIndex = 18;
@@ -358,7 +358,7 @@
             hostName.AutoSize = true;
             hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             hostName.ForeColor = Color.FromArgb(0, 0, 0);
-            hostName.Location = new Point(74, 75);
+            hostName.Location = new Point(72, 75);
             hostName.Name = "hostName";
             hostName.Size = new Size(62, 34);
             hostName.TabIndex = 9;
@@ -370,7 +370,7 @@
             notificationComboBox.AutoSize = true;
             notificationComboBox.BackColor = Color.White;
             tableLayoutPanelStats.SetColumnSpan(notificationComboBox, 2);
-            notificationComboBox.Location = new Point(21, 46);
+            notificationComboBox.Location = new Point(19, 46);
             notificationComboBox.Name = "notificationComboBox";
             notificationComboBox.Size = new Size(100, 19);
             notificationComboBox.TabIndex = 22;
@@ -384,7 +384,7 @@
             tableLayoutPanelStats.SetColumnSpan(participantsLabel, 2);
             participantsLabel.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsLabel.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsLabel.Location = new Point(32, 259);
+            participantsLabel.Location = new Point(30, 259);
             participantsLabel.Name = "participantsLabel";
             participantsLabel.Size = new Size(78, 17);
             participantsLabel.TabIndex = 16;
@@ -396,9 +396,9 @@
             onlineLabel.AutoSize = true;
             onlineLabel.Font = new Font("Segoe UI", 8.25F);
             onlineLabel.ForeColor = Color.Black;
-            onlineLabel.Location = new Point(25, 234);
+            onlineLabel.Location = new Point(24, 234);
             onlineLabel.Name = "onlineLabel";
-            onlineLabel.Size = new Size(43, 13);
+            onlineLabel.Size = new Size(42, 13);
             onlineLabel.TabIndex = 21;
             onlineLabel.Text = "В сети:";
             // 
@@ -408,7 +408,7 @@
             participantsInfo.AutoSize = true;
             participantsInfo.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(74, 223);
+            participantsInfo.Location = new Point(72, 223);
             participantsInfo.Name = "participantsInfo";
             participantsInfo.Size = new Size(62, 34);
             participantsInfo.TabIndex = 15;
@@ -420,7 +420,7 @@
             computerLabel.AutoSize = true;
             computerLabel.Font = new Font("Segoe UI", 8.25F);
             computerLabel.ForeColor = Color.Black;
-            computerLabel.Location = new Point(9, 197);
+            computerLabel.Location = new Point(7, 197);
             computerLabel.Name = "computerLabel";
             computerLabel.Size = new Size(59, 13);
             computerLabel.TabIndex = 20;
@@ -432,7 +432,7 @@
             computer.AutoSize = true;
             computer.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             computer.ForeColor = Color.FromArgb(0, 0, 0);
-            computer.Location = new Point(74, 186);
+            computer.Location = new Point(72, 186);
             computer.Name = "computer";
             computer.Size = new Size(62, 34);
             computer.TabIndex = 13;
@@ -444,7 +444,7 @@
             classroomLabel.AutoSize = true;
             classroomLabel.Font = new Font("Segoe UI", 8.25F);
             classroomLabel.ForeColor = Color.Black;
-            classroomLabel.Location = new Point(14, 160);
+            classroomLabel.Location = new Point(12, 160);
             classroomLabel.Name = "classroomLabel";
             classroomLabel.Size = new Size(54, 13);
             classroomLabel.TabIndex = 19;
@@ -456,7 +456,7 @@
             classroom.AutoSize = true;
             classroom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             classroom.ForeColor = Color.FromArgb(0, 0, 0);
-            classroom.Location = new Point(74, 149);
+            classroom.Location = new Point(72, 149);
             classroom.Name = "classroom";
             classroom.Size = new Size(62, 34);
             classroom.TabIndex = 12;
@@ -530,6 +530,8 @@
             // openFileDialog
             // 
             openFileDialog.FileName = "openFileDialog";
+            openFileDialog.Multiselect = true;
+            openFileDialog.ShowPreview = true;
             // 
             // ChatPanelView
             // 

@@ -2,6 +2,7 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
+using MIN.Core.Messaging.Stateless.RoomRelated.History;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts.Interfaces;
@@ -13,12 +14,17 @@ namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
 public partial class ChatPanelView
 {
+    private const int PageSize = 25;
+
     private readonly int messageMinPadding = 4;
 
     private Guid? privateChatParticipantId;
     private IMessage? lastChatMessage;
+    private int loadedPage = 1;
+    private int totalMessagesCount;
+    private PrimaryLabel? loadMoreLabel;
 
-    private void AddMessageToChatFlow(IMessage message)
+    private void AddMessageToChatFlow(IMessage message, bool appendOnTop = false)
     {
         if (InvokeRequired)
         {
@@ -61,8 +67,18 @@ public partial class ChatPanelView
 
             row.Width = chatFlow.Width;
             row.container.Controls.Add(rowControl);
+
+            if (ShouldTrimExcessMessages())
+            {
+                ReplaceOldestWithLoadMore();
+            }
+
             chatFlow.Controls.Add(row);
-            chatFlow.Controls.SetChildIndex(chatFlow.Controls[^1], 0);
+
+            if (!appendOnTop)
+            {
+                chatFlow.Controls.SetChildIndex(chatFlow.Controls[^1], 0);
+            }
 
             if (rowControl is IResizableComponent resizableComponent)
             {
@@ -75,6 +91,73 @@ public partial class ChatPanelView
             chatFlow.ResumeLayout(true);
             chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
         }
+    }
+
+    private void ShowLoadMoreLabel()
+    {
+        if (loadMoreLabel != null)
+        {
+            return;
+        }
+
+        var row = new ChatMessageRow();
+
+        loadMoreLabel = new PrimaryLabel
+        {
+            Text = "+ Загрузить ещё",
+            Anchor = AnchorStyles.None,
+            AutoSize = true,
+            Cursor = Cursors.Hand,
+        };
+
+        loadMoreLabel.Click += OnLoadMoreClicked;
+
+        row.Height = loadMoreLabel.Height;
+        row.Width = chatFlow.Width;
+        row.container.Controls.Add(loadMoreLabel);
+
+        chatFlow.Controls.Add(row);
+    }
+
+    private void RemoveLoadMoreLabel()
+    {
+        if (loadMoreLabel == null)
+        {
+            return;
+        }
+
+        loadMoreLabel.Click -= OnLoadMoreClicked;
+        chatFlow.Controls.Remove(loadMoreLabel.Parent?.Parent);
+        loadMoreLabel.Dispose();
+        loadMoreLabel = null;
+    }
+
+    async void OnLoadMoreClicked(object? sender, EventArgs e)
+    {
+        var request = new ChatHistoryRequestMessage
+        {
+            RoomId = roomId,
+            Page = loadedPage + 1,
+            PageSize = PageSize,
+        };
+
+        await featureCollection.Core.MessageRouter.RouteAsync(request,
+            roomId,
+            localParticipant.Id,
+            formCts.Token);
+    }
+
+    private bool ShouldTrimExcessMessages()
+    {
+        var messageCount = chatFlow.Controls.Count - (loadMoreLabel != null ? 1 : 0);
+        var maxVisible = loadedPage * PageSize;
+        return messageCount >= maxVisible;
+    }
+
+    private void ReplaceOldestWithLoadMore()
+    {
+        chatFlow.Controls.RemoveAt(PageSize - 1);
+        ShowLoadMoreLabel();
     }
 
     private ChatTextMessageCard CreateTextMessageCard(ChatTextMessage msg, ChatMessageRow row,
@@ -111,7 +194,7 @@ public partial class ChatPanelView
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
-        card.OnCardContextMenuStripClicked += () => OnSaveAsCLicked(msg.FilePath);
+        card.OnCardContextMenuStripClicked += () => OnShowFileClicked(msg.FilePath);
 
         InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate, wasLastPrivate);
         ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
@@ -136,7 +219,7 @@ public partial class ChatPanelView
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
-        card.OnCardContextMenuStripClicked += () => OnSaveAsCLicked(msg.FilePath);
+        card.OnCardContextMenuStripClicked += () => OnShowFileClicked(msg.FilePath);
 
         InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate, wasLastPrivate);
         ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);

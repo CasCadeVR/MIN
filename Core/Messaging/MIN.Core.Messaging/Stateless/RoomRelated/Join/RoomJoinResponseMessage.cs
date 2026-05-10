@@ -1,7 +1,7 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 
-namespace MIN.Core.Messaging.Stateless.RoomRelated;
+namespace MIN.Core.Messaging.Stateless.RoomRelated.Join;
 
 /// <summary>
 /// Ответ на запрос о присоединения к комнате

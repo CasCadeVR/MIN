@@ -4,6 +4,7 @@ using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Registries.Models;
@@ -72,7 +73,14 @@ public sealed class MessageDispatcher : IMessageDispatcher
                 if (result.Response != null)
                 {
                     result.Response.SenderId = identityService.SelfParticipant.Id;
-                    await messageSender.SendAsync(result.Response, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
+                    if (context.ConnectionId == CoreRegistryConstants.LocalConnectionId)
+                    {
+                        await eventBus.PublishAsync(new LocalMessageRecievedEvent(result.Response, context.RoomContext.RoomId), context.CancellationToken);
+                    }
+                    else
+                    {
+                        await messageSender.SendAsync(result.Response, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
+                    }
                 }
 
                 if (result.StopPropagation)

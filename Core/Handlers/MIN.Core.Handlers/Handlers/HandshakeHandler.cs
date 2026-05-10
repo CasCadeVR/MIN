@@ -4,7 +4,7 @@ using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
-using MIN.Core.Messaging.Stateless.RoomRelated;
+using MIN.Core.Messaging.Stateless.RoomRelated.Join;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -35,7 +35,6 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
-
         if (message is HandshakeMessage handshakeMessage)
         {
             await encryptor.InitializeSessionWithPartnerAsync(handshakeMessage.Participant.Id, handshakeMessage.PublicKey);

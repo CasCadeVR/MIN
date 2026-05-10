@@ -53,7 +53,7 @@ public sealed class RoomStore : IRoomStore
         {
             var context = roomFactory.GetOrCreateContext(roomId);
             room.CurrentParticipants = context.Participants.GetParticipants().ToList();
-            room.ChatHistory = context.Messages.GetHistory()
+            room.ChatHistory = context.Messages.GetRecentHistory()
                 .Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId)
                 .ToList();
             return room;
@@ -61,7 +61,6 @@ public sealed class RoomStore : IRoomStore
 
         throw new InvalidOperationException($"Комнаты с {roomId} не нашлось");
     }
-
 
     Guid IRoomStore.GetRoomHostParticipantId(Guid roomId)
         => roomsById.TryGetValue(roomId, out var room) ? room.HostParticipant.Id : throw new KeyNotFoundException();

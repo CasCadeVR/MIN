@@ -13,9 +13,19 @@ public interface IMessageStore
     void AddMessage(IMessage message);
 
     /// <summary>
+    /// Получить количество сохранённых сообщений
+    /// </summary>
+    int GetMessageCount();
+
+    /// <summary>
+    /// Получить историю последних сообщений
+    /// </summary>
+    IEnumerable<IMessage> GetRecentHistory(int page = 1, int pageSize = 25);
+
+    /// <summary>
     /// Получить историю сообщений
     /// </summary>
-    IEnumerable<IMessage> GetHistory(int? page = 1, int? pageSize = 100);
+    IEnumerable<IMessage> GetHistory(int? page = null, int? pageSize = null);
 
     /// <summary>
     /// Получить последнее сообщение

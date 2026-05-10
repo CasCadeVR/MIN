@@ -25,6 +25,7 @@ public partial class ChatPanelView
             eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted),
             eventBus.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed),
             eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoChanged),
+            eventBus.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated),
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
             eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
@@ -204,6 +205,29 @@ public partial class ChatPanelView
         await Task.CompletedTask;
     }
 
+    private async Task OnChatHistoryUpdated(ChatHistoryUpdatedEvent eventMessage, CancellationToken ct)
+    {
+        if (eventMessage.RoomId != roomId)
+        {
+            return;
+        }
+
+        uiContext.Post(_ =>
+        {
+            var e = eventMessage.Message;
+
+            loadedPage = e.Page;
+            totalMessagesCount = e.TotalCount;
+            RemoveLoadMoreLabel();
+            RenderMessages(e.Messages, appendOnTop: true);
+
+            if (loadedPage * PageSize < totalMessagesCount)
+            {
+                ShowLoadMoreLabel();
+            }
+        }, null);
+        await Task.CompletedTask;
+    }
 
     private Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
     {

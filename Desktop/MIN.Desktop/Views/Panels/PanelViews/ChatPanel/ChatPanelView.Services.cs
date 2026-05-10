@@ -1,4 +1,5 @@
-﻿using MIN.Common.Core.Contracts.Interfaces;
+﻿using System.Diagnostics;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.FileTransfer.Messaging;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
@@ -42,6 +43,16 @@ public partial class ChatPanelView
         );
     }
 
+    private void OnShowFileClicked(string? filePath)
+    {
+        if (!Path.Exists(filePath))
+        {
+            return;
+        }
+
+        Process.Start("explorer.exe", $"/select,\"{filePath}\"");
+    }
+
     private bool IsMessageValid() => !string.IsNullOrWhiteSpace(messageTextBox.Text)
         || multiFileAttachmentUploader.AttachedFiles.Any();
 
@@ -65,6 +76,20 @@ public partial class ChatPanelView
 
             foreach (var fileAttachement in multiFileAttachmentUploader.AttachedFiles)
             {
+                if (featureCollection.FileTransfer.FileHelperService.IsFileImage(fileAttachement.FileName))
+                {
+                    try
+                    {
+                        using var img = Image.FromFile(fileAttachement.FilePath);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        MessageBox.Show($"Не удалось загрузить файл {fileAttachement.FileName}: {ex.Message}",
+                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
+
                 await featureCollection.Chat.ChatFileService.SendFileAsync(roomId,
                    fileAttachement.FileName,
                    fileAttachement.FilePath,
