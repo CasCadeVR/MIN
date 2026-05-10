@@ -3,6 +3,7 @@ using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Helpers.Services;
@@ -12,16 +13,20 @@ namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 public partial class ChatPanelView
 {
     private readonly List<IDescribableStatus> currentStatuses = [];
+    private const int StatsLabelHeight = 15;
+    private const int MultiFileAttachmentUploaderHeight = 115;
 
     /// <inheritdoc />
     protected override void ApplyStylings()
     {
         splitContainer.Panel1.BackColor = ColorScheme.PrimaryAccent;
         splitContainer.Panel2.BackColor = ColorScheme.MainPanelBackground;
+        splitContainerSideBar.Panel1.BackColor = ColorScheme.ChatPanelFileDropBackground;
         splitContainerSideBar.Panel2.BackColor = ColorScheme.PrimaryAccent;
         tableLayoutPanelHeader.BackColor = ColorScheme.PrimaryAccent;
         tableLayoutPanelStats.BackColor = ColorScheme.PrimaryAccent;
         notificationComboBox.BackColor = ColorScheme.PrimaryAccent;
+        tableLayoutPanelButtons.BackColor = ColorScheme.DividerColor;
 
         participantsInfo.ForeColor = ColorScheme.TextOnAccent;
         hostName.ForeColor = ColorScheme.TextOnAccent;
@@ -169,6 +174,30 @@ public partial class ChatPanelView
         }
     }
 
+    private void UploadFile(string filePath)
+    {
+        ShowMultiFileAttachmentUploader();
+        multiFileAttachmentUploader.OnLastFileRemoved
+            += () => HideMultiFileAttachmentUploader();
+        var fileAttachment = new FileAttachment(Path.GetFileName(filePath),
+            filePath);
+
+        multiFileAttachmentUploader.AddFileAttachment(fileAttachment);
+    }
+
+
+    private void OnSaveAsCLicked(string? filePath)
+    {
+        if (!Path.Exists(filePath))
+        {
+            return;
+        }
+
+        using var saveFileDialog = new SaveFileDialog();
+        saveFileDialog.FileName = filePath;
+        saveFileDialog.ShowDialog();
+    }
+
     #endregion
 
     #region Extra rows
@@ -199,7 +228,7 @@ public partial class ChatPanelView
 
         tableLayoutPanelButtons.SuspendLayout();
 
-        tableLayoutPanelButtons.RowStyles[row].Height = 76;
+        tableLayoutPanelButtons.RowStyles[row].Height = MultiFileAttachmentUploaderHeight;
 
         multiFileAttachmentUploader.Visible = true;
 
@@ -226,7 +255,7 @@ public partial class ChatPanelView
 
         tableLayoutPanelButtons.SuspendLayout();
 
-        tableLayoutPanelButtons.RowStyles[row].Height = 15;
+        tableLayoutPanelButtons.RowStyles[row].Height = StatsLabelHeight;
         statusLabel.Visible = true;
 
         tableLayoutPanelButtons.ResumeLayout(true);

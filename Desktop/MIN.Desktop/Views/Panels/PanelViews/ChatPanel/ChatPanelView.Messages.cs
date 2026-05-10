@@ -111,6 +111,7 @@ public partial class ChatPanelView
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
+        card.OnCardContextMenuStripClicked += () => OnSaveAsCLicked(msg.FilePath);
 
         InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate, wasLastPrivate);
         ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
@@ -135,6 +136,7 @@ public partial class ChatPanelView
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
+        card.OnCardContextMenuStripClicked += () => OnSaveAsCLicked(msg.FilePath);
 
         InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate, wasLastPrivate);
         ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);

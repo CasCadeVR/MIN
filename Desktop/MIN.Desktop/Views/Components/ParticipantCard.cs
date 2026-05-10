@@ -17,7 +17,7 @@ public partial class ParticipantCard : UserControl
     private bool selected;
 
     /// <summary>
-    /// Событие по нажатию ПКМ на карточку
+    /// Событие по нажатию на контекстное меню карточки
     /// </summary>
     public Action<bool, ParticipantInfo>? OnCardContextMenuStripClicked { get; set; }
 

@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
+using MIN.Desktop.Components.Controls.ContextMenuStrips;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Services;
@@ -21,6 +22,8 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
     private readonly FileMetadataMessage fileMetadataMessage = null!;
     private readonly SynchronizationContext uiContext = null!;
     private readonly ParticipantInfo localParticipant = null!;
+    private readonly string cachedFileFormat = string.Empty;
+    private Size? cachedImgSize;
     private HashSet<IDisposable> eventTokens = null!;
     private bool isDownloading;
     private bool downloaded;
@@ -35,6 +38,11 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
     /// Событие, возникающее по нажатию на кнопку отмены загрузки
     /// </summary>
     public event Func<Task>? OnCancelRequested;
+
+    /// <summary>
+    /// Событие по нажатию на контекстное меню карточки
+    /// </summary>
+    public Action? OnCardContextMenuStripClicked { get; set; }
 
     /// <inheritdoc />
     public Action? AskParentForResize { get; set; }
@@ -68,6 +76,8 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
         this.fileMetadataMessage = fileMetadataMessage;
         this.localParticipant = localParticipant;
 
+        cachedFileFormat = fileTransferFeatureCollection.FileHelperService
+            .GetFileType(fileMetadataMessage.FileName);
         downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
         uiContext = SynchronizationContext.Current
@@ -77,6 +87,7 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
         ApplyStylings();
         UpdateIconOutOfState();
         PerformLayout();
+        InitializeContextMenu();
         SubscribeToEvents();
     }
 
@@ -88,6 +99,14 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
             eventBus.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed),
             eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted)
         ];
+    }
+
+    private void InitializeContextMenu()
+    {
+        var pictureBoxContextMenuStrip = new ParticipantCardContextMenuStrip();
+        pictureBoxContextMenuStrip.OnItemClick += () => OnCardContextMenuStripClicked?.Invoke();
+        pictureBoxContextMenuStrip.Items[0].Text = "Сохранить как...";
+        ContextMenuStrip = pictureBoxContextMenuStrip;
     }
 
     private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
@@ -169,7 +188,9 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
         {
             splitContainerDownload.Panel2Collapsed = true;
             fileNameAndSize.Text = string.Empty;
-            fileNameAndSize.BackgroundImage = null;
+            fileNameAndSize.AutoSize = false;
+            fileNameAndSize.BackColor = Color.Transparent;
+            fileNameAndSize.Dock = DockStyle.Fill;
             AskParentForResize?.Invoke();
         }, this);
 
@@ -185,13 +206,19 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
         }
         base.ApplyStylings();
 
-        fileNameAndSize.BackColor = Color.Black;
+        fileNameAndSize.BackColor = ColorScheme.PrimaryAccent;
+        fileNameAndSize.ForeColor = ColorScheme.TextOnAccent;
         fileNameAndSize.Font = FontScheme.Heading3;
-        fileNameAndSize.BackgroundImageLayout = ImageLayout.Zoom;
     }
 
     private void FillLabels()
     {
+        if (downloaded)
+        {
+            fileNameAndSize.AutoSize = false;
+            fileNameAndSize.BackColor = Color.Transparent;
+            fileNameAndSize.Dock = DockStyle.Fill;
+        }
         fileNameAndSize.Text = downloaded
             ? string.Empty
             : $"{fileMetadataMessage.FileName} {fileTransferFeatureCollection.FileHelperService
@@ -202,11 +229,11 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
     {
         if (isDownloading)
         {
-            fileNameAndSize.BackgroundImage = Resources.close;
+            tableLayoutPanelImage.BackgroundImage = Resources.close;
         }
         else if (!downloaded)
         {
-            fileNameAndSize.BackgroundImage = Resources.download;
+            tableLayoutPanelImage.BackgroundImage = Resources.download;
         }
     }
 
@@ -223,22 +250,35 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
             return Height;
         }
 
-        var wantedWidth = Convert.ToInt32(Parent!.Width * 0.85);
+        var parentWidth = Convert.ToInt32(Parent!.Width * 0.85);
 
-        var imgSize = ImageHelper.GetDimensions(fileMetadataMessage.FilePath);
+        if (cachedImgSize == null)
+        {
+            cachedImgSize = ImageHelper.GetDimensions(fileMetadataMessage.FilePath);
+        }
+
+        var imgSize = cachedImgSize.Value;
         var ratio = (double)imgSize.Width / imgSize.Height;
-        var width = Math.Min(wantedWidth, imgSize.Width);
-        var height = (int)(width / ratio);
+        var wantedWidth = Math.Min(parentWidth, imgSize.Width);
 
-        Width = width;
+        if (Width == wantedWidth)
+        {
+            return Height;
+        }
 
+        Width = wantedWidth;
+
+        var wantedHeight = (int)(wantedWidth / ratio);
         var headerHeight = removeHeaders ? 0
             : Convert.ToInt32(TableLayoutPanel.RowStyles[0].Height);
-        Height = headerHeight + height;
+        var resultHeight = headerHeight + wantedHeight;
 
-        fileNameAndSize.Image = ImageHelper.LoadScaled(fileMetadataMessage.FilePath, width);
+        fileNameAndSize.Image = cachedFileFormat == ".gif"
+            ? Image.FromFile(fileMetadataMessage.FilePath)
+            : ImageHelper.LoadScaled(fileMetadataMessage.FilePath, wantedWidth);
 
-        return Height;
+        Height = resultHeight;
+        return resultHeight;
     }
 
     private void fileNameAndSize_Click(object sender, EventArgs e)

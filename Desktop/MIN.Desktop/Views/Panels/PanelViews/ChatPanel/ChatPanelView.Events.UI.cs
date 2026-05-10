@@ -129,13 +129,7 @@ public partial class ChatPanelView
         {
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                ShowMultiFileAttachmentUploader();
-                multiFileAttachmentUploader.OnLastFileRemoved
-                    += () => HideMultiFileAttachmentUploader();
-                var fileAttachment = new FileAttachment(openFileDialog.SafeFileName,
-                    openFileDialog.FileName);
-
-                multiFileAttachmentUploader.AddFileAttachment(fileAttachment);
+                UploadFile(openFileDialog.FileName);
             }
         }, this);
     }

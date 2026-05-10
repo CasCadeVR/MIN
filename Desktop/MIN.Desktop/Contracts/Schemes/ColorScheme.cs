@@ -60,6 +60,11 @@ public static class ColorScheme
     /// </summary>
     public readonly static Color PrivateParticipantCardBackground = ColorTranslator.FromHtml("#CDC0ED");
 
+    /// <summary>
+    /// Цвет фона чата при перетаскивании на него файл
+    /// </summary>
+    public readonly static Color ChatPanelFileDropBackground = ColorTranslator.FromHtml("#6C85BD");
+
     #endregion
 
     #region Text colors

@@ -32,6 +32,9 @@
     <Compile Update="Components\Controls\CheckBoxes\DefaultCheckBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="Components\Controls\ContextMenuStrips\FileMessageContextMenuStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="Components\Controls\DGVs\OneColumnDataGridView.cs">
       <SubType>Component</SubType>
     </Compile>

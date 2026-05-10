@@ -4,7 +4,7 @@ using MIN.Desktop.Contracts.Schemes;
 namespace MIN.Desktop.Components.Controls.Buttons
 {
     /// <summary>
-    /// Обычная <see cref="Button"/>
+    /// Инвертированная <see cref="Button"/>
     /// </summary>
     [DefaultEvent("Click")]
     public class InvertedButton : Button

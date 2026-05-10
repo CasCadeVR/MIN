@@ -1,6 +1,6 @@
 ﻿using MIN.Desktop.Components.Controls.Buttons;
 using MIN.Desktop.Contracts.Models;
-using MIN.Desktop.Contracts.Schemes;
+using MIN.Desktop.Properties;
 
 namespace MIN.Desktop.Components.ComplexControls;
 
@@ -9,6 +9,8 @@ namespace MIN.Desktop.Components.ComplexControls;
 /// </summary>
 public class FileAttachmentCard : Label
 {
+    private const int ButtonSize = 32;
+    private const int ButtonCornerPadding = 2;
     private Button? deleteButton;
 
     /// <summary>
@@ -22,7 +24,7 @@ public class FileAttachmentCard : Label
     public event Action<FileAttachmentCard>? DeleteRequested;
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="MultiFileAttachmentUploader"/>
+    /// Инициализирует новый экземпляр <see cref="FileAttachmentCard"/>
     /// </summary>
     public FileAttachmentCard(FileAttachment fileAttachment)
     {
@@ -30,7 +32,7 @@ public class FileAttachmentCard : Label
         TextAlign = ContentAlignment.MiddleCenter;
         FileAttachment = fileAttachment;
         BorderStyle = BorderStyle.FixedSingle;
-        Cursor = Cursors.Hand;
+
         AddRemoveButton();
     }
 
@@ -41,15 +43,13 @@ public class FileAttachmentCard : Label
             return;
         }
 
-        deleteButton = new InvertedButton
+        deleteButton = new CommonButton
         {
-            Text = "×",
-            Size = new Size(24, 24),
-            Padding = new Padding(0),
-            Location = new Point(Width - 26, 2),
-            Font = FontScheme.Caption,
-            BackColor = Color.Red,
-            ForeColor = Color.White,
+            BackgroundImage = Resources.close,
+            BackgroundImageLayout = ImageLayout.Zoom,
+            Size = new Size(ButtonSize, ButtonSize),
+            Margin = new Padding(0),
+            Location = new Point(Width - ButtonSize + ButtonCornerPadding, ButtonCornerPadding),
         };
 
         deleteButton.FlatAppearance.BorderSize = 0;
@@ -63,6 +63,6 @@ public class FileAttachmentCard : Label
     protected override void OnSizeChanged(EventArgs e)
     {
         base.OnSizeChanged(e);
-        deleteButton?.Location = new Point(Width - 26, 2);
+        deleteButton?.Location = new Point(Width - ButtonSize + ButtonCornerPadding, ButtonCornerPadding);
     }
 }

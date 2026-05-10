@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
+using MIN.Desktop.Components.Controls.ContextMenuStrips;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Properties;
 using MIN.Desktop.Views.Components.ChatMessages;
@@ -35,6 +36,11 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
     /// Событие, возникающее по нажатию на кнопку отмены загрузки
     /// </summary>
     public event Func<Task>? OnCancelRequested;
+
+    /// <summary>
+    /// Событие по нажатию на контекстное меню карточки
+    /// </summary>
+    public Action? OnCardContextMenuStripClicked { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatFileMessageCard"/>
@@ -76,8 +82,18 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 
         FillLabels();
         ApplyStylings();
-        PerformLayout();   // ← force layout cascade
+        PerformLayout();
+        InitializeContextMenu();
+
         SubscribeToEvents();
+    }
+
+    private void InitializeContextMenu()
+    {
+        var pictureBoxContextMenuStrip = new ParticipantCardContextMenuStrip();
+        pictureBoxContextMenuStrip.OnItemClick += () => OnCardContextMenuStripClicked?.Invoke();
+        pictureBoxContextMenuStrip.Items[0].Text = "Сохранить как...";
+        ContextMenuStrip = pictureBoxContextMenuStrip;
     }
 
     private void SubscribeToEvents()
