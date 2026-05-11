@@ -22,4 +22,7 @@ public interface IHelperFeatureCollection
 
     /// <inheritdoc cref="IIdentityService"/>
     IIdentityService IdentityService { get; }
+
+    /// <inheritdoc cref="IVersionProvider"/>
+    IVersionProvider VersionProvider { get; }
 }

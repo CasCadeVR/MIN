@@ -18,7 +18,7 @@ public interface IMessageEncryptor
     Task InitializeSessionWithPartnerAsync(Guid partnerId, byte[] partnerPublicKey);
 
     /// <summary>
-    /// Создать сообщения рукопожатия
+    /// Получить свой публичный ключ
     /// </summary>
     Task<byte[]> GetLocalPublicKey();
 

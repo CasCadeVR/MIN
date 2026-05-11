@@ -6,7 +6,9 @@ using MIN.Core.DI;
 using MIN.DI.FeatureCollection;
 using MIN.Discovery.DI;
 using MIN.FileTransfer.DI;
+using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.DI;
+using MIN.Helpers.Services;
 
 namespace MIN.DI;
 
@@ -19,7 +21,7 @@ public class MinModule : Common.Mvc.Module
     protected override void Load(IServiceCollection services)
     {
         var appVersion = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0, 0);
-        services.AddSingleton(appVersion);
+        services.AddSingleton<IVersionProvider>(new VersionProvider(appVersion));
 
         services.RegisterModule<HelpersModule>();
         services.RegisterModule<CoreModule>();

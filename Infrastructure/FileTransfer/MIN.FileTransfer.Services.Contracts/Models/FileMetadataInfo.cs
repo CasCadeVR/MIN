@@ -26,7 +26,7 @@ public sealed class FileMetadataInfo
     public string? OriginalPath { get; init; }
 
     /// <summary>
-    /// Файл уже сохранён в RoomFiles
+    /// Файл уже сохранён в файлах комнаты
     /// </summary>
     public bool IsStoredOnServer { get; init; }
 }

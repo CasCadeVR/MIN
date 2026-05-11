@@ -21,6 +21,9 @@ public class HelperFeatureCollection : IHelperFeatureCollection
     /// <inheritdoc cref="IIdentityService"/>
     public IIdentityService IdentityService { get; }
 
+    /// <inheritdoc cref="IVersionProvider"/>
+    public IVersionProvider VersionProvider { get; }
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="HelperFeatureCollection"/>
     /// </summary>
@@ -28,12 +31,14 @@ public class HelperFeatureCollection : IHelperFeatureCollection
         ILocalNetworkComputerProvider computerProvider,
         INotificationService notificationService,
         ILoggerProvider logger,
-        IIdentityService identityService)
+        IIdentityService identityService,
+        IVersionProvider versionProvider)
     {
         SettingsProvider = settingsProvider;
         ComputerProvider = computerProvider;
         NotificationService = notificationService;
         Logger = logger;
         IdentityService = identityService;
+        VersionProvider = versionProvider;
     }
 }

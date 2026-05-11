@@ -11,9 +11,9 @@ public sealed class AppDataProvider : IAppDataProvider
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="AppDataProvider"/>
     /// </summary>
-    public AppDataProvider(Version version)
+    public AppDataProvider(IVersionProvider versionProvider)
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        BaseDirectory = Path.Combine(appData, "MIN", $"v.{version}");
+        BaseDirectory = Path.Combine(appData, "MIN", $"v.{versionProvider.Version}");
     }
 }

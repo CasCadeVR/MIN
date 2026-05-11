@@ -7,6 +7,7 @@ namespace MIN.FileTransfer.Services;
 /// <inheritdoc cref="IFileStorageService"/>
 public sealed class FileStorageService : IFileStorageService
 {
+    private const string RoomFilesFolderName = "Файлы комнат";
     private readonly string baseDirectory;
     private readonly IRoomStore roomStore;
     private readonly ILoggerProvider logger;
@@ -20,8 +21,7 @@ public sealed class FileStorageService : IFileStorageService
         this.roomStore = roomStore;
         this.logger = logger;
 
-
-        baseDirectory = Path.Combine(AppContext.BaseDirectory, "RoomFiles");
+        baseDirectory = Path.Combine(AppContext.BaseDirectory, RoomFilesFolderName);
 
         if (!Directory.Exists(baseDirectory))
         {

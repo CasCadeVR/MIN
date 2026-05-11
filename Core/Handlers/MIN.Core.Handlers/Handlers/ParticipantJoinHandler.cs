@@ -27,6 +27,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
     private readonly IMessageRouter messageRouter;
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
+    private readonly IVersionProvider versionProvider;
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, Timer> rejectAckTimers = new();
 
@@ -40,6 +41,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         IMessageRouter messageRouter,
         IIdentityService identityService,
         IEventBus eventBus,
+        IVersionProvider versionProvider,
         ILoggerProvider logger)
     {
         this.roomStore = roomStore;
@@ -48,6 +50,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         this.messageRouter = messageRouter;
         this.identityService = identityService;
         this.eventBus = eventBus;
+        this.versionProvider = versionProvider;
         this.logger = logger;
     }
 
@@ -67,9 +70,13 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
                 {
                     RoomId = context.RoomContext.RoomId,
                 };
-                var room = roomStore.GetRoom(context.RoomContext.RoomId);
-                response.Allow = !room.IsFull;
-                response.Reason = response.Allow ? null : "Комната заполнена";
+                var isFull = roomStore.GetRoom(context.RoomContext.RoomId).IsFull;
+                var isDifferentVersion = versionProvider.Version != roomJoinRequestMessage.Version;
+
+                response.Allow = !isFull && !isDifferentVersion;
+                response.Reason = isFull
+                    ? "Комната заполнена"
+                    : isDifferentVersion ? "Вы на устаревшей версии" : null;
 
                 if (!response.Allow)
                 {

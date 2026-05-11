@@ -42,7 +42,7 @@ public partial class SettingsSidePanelView : StyledPanelView
 
     private void FillControls()
     {
-        labelVersion.Text += featureCollection.Version.ToString();
+        labelVersion.Text += featureCollection.Helper.VersionProvider.Version.ToString();
         defaultName.Text = Settings.DefaultParticipantName;
         roomSearchTime.Value = Settings.DiscoveryTimeout;
         preferredSearch.Checked = Settings.SearchMethod == SearchMethod.Preferred;

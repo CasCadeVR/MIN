@@ -15,16 +15,19 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
     private readonly IMessageEncryptor encryptor;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
+    private readonly IVersionProvider versionProvider;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
     public HandshakeHandler(IMessageEncryptor encryptor,
         IIdentityService identityService,
+        IVersionProvider versionProvider,
         ILoggerProvider logger)
     {
         this.encryptor = encryptor;
         this.identityService = identityService;
+        this.versionProvider = versionProvider;
         this.logger = logger;
     }
 
@@ -58,7 +61,8 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 
             return HandlerResult.WithResponse(new RoomJoinRequestMessage()
             {
-                RoomId = context.RoomContext.RoomId
+                RoomId = context.RoomContext.RoomId,
+                Version = versionProvider.Version
             });
         }
 

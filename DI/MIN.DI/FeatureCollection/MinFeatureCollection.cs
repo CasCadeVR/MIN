@@ -24,9 +24,6 @@ public class MinFeatureCollection : IMinFeatureCollection
     /// <inheritdoc />
     public IDiscoveryFeatureCollection Discovery { get; }
 
-    /// <inheritdoc />
-    public Version Version { get; }
-
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MinFeatureCollection"/>
     /// </summary>
@@ -34,14 +31,12 @@ public class MinFeatureCollection : IMinFeatureCollection
         ICoreFeatureCollection core,
         IChatFeatureCollection chat,
         IFileTransferFeatureCollection fileTransfer,
-        IDiscoveryFeatureCollection discovery,
-        Version version)
+        IDiscoveryFeatureCollection discovery)
     {
         Helper = helper;
         Core = core;
         Chat = chat;
         FileTransfer = fileTransfer;
         Discovery = discovery;
-        Version = version;
     }
 }

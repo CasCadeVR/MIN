@@ -25,9 +25,4 @@ public interface IMinFeatureCollection
 
     /// <inheritdoc cref="IHelperFeatureCollection"/>
     IHelperFeatureCollection Helper { get; }
-
-    /// <summary>
-    /// Версия приложения
-    /// </summary>
-    Version Version { get; }
 }
