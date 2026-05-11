@@ -21,4 +21,7 @@ public partial class BasePanelView : UserControl, IPanel
 
     /// <inheritdoc />
     public virtual void OnNavigatedTo() { }
+
+    /// <inheritdoc />
+    public virtual void OnNavigatedFrom() { }
 }

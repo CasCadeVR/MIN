@@ -24,6 +24,7 @@ public class NavigationService : INavigationService
     public SynchronizationContext UiContext { get; set; } = null!;
 
     private readonly IServiceProvider provider;
+    private IPanel? lastPanel;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NavigationService"/>
@@ -37,7 +38,6 @@ public class NavigationService : INavigationService
     {
         var panel = provider.GetRequiredService<TPanel>();
         NavigateToPanel(panel);
-        panel.OnNavigatedTo();
         return panel;
     }
 
@@ -51,19 +51,19 @@ public class NavigationService : INavigationService
         }
 
         NavigateToPanel(panel);
-        panel.OnNavigatedTo();
         return panel;
     }
 
     TPanel INavigationService.NavigateToExisting<TPanel>(TPanel panel)
     {
         NavigateToPanel(panel);
-        panel.OnNavigatedTo();
         return panel;
     }
 
     private void NavigateToPanel(BasePanelView panel)
     {
+        lastPanel?.OnNavigatedFrom();
+        lastPanel = null;
         UiContext.Post(_ =>
         {
             switch (panel.PanelType)
@@ -83,5 +83,8 @@ public class NavigationService : INavigationService
 
             panel.Dock = DockStyle.Fill;
         }, null);
+
+        panel.OnNavigatedTo();
+        lastPanel = panel;
     }
 }

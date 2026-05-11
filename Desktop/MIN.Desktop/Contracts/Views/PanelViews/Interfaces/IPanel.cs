@@ -16,4 +16,9 @@ public interface IPanel
     /// Действия, которые необходимо выполнить при навигации на панель
     /// </summary>
     void OnNavigatedTo();
+
+    /// <summary>
+    /// Действия, которые необходимо выполнить при навигации на другую панель
+    /// </summary>
+    void OnNavigatedFrom();
 }

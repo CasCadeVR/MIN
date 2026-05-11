@@ -57,12 +57,20 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
             return;
         }
 
-        chatFlow.Controls.Clear();
         loadedPage = 1;
         var lastHistory = featureCollection.Core.RoomFactory
             .GetOrCreateContext(roomId).Messages.GetRecentHistory();
         RenderMessages(lastHistory.ToList());
         ShowLoadMoreLabel();
+    }
+
+    /// <inheritdoc />
+    public override void OnNavigatedFrom()
+    {
+        if (loadedPage > 1)
+        {
+            chatFlow.Controls.Clear();
+        }
     }
 
     /// <inheritdoc />
