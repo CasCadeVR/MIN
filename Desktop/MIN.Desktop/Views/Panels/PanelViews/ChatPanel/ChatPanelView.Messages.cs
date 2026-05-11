@@ -24,7 +24,7 @@ public partial class ChatPanelView
     private int totalMessagesCount;
     private PrimaryLabel? loadMoreLabel;
 
-    private void AddMessageToChatFlow(IMessage message, bool appendOnTop = false)
+    private void AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool scrollToBottom = true)
     {
         if (InvokeRequired)
         {
@@ -89,7 +89,10 @@ public partial class ChatPanelView
         finally
         {
             chatFlow.ResumeLayout(true);
-            chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
+            if (scrollToBottom)
+            {
+                chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
+            }
         }
     }
 
@@ -156,7 +159,7 @@ public partial class ChatPanelView
 
     private void ReplaceOldestWithLoadMore()
     {
-        chatFlow.Controls.RemoveAt(PageSize - 1);
+        chatFlow.Controls.RemoveAt(loadedPage * PageSize - 1);
         ShowLoadMoreLabel();
     }
 

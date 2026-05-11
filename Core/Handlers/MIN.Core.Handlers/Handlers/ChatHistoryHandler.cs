@@ -34,9 +34,7 @@ internal sealed class ChatHistoryHandler : IMessageHandler, ICoreHandlerAnchor
     {
         if (message is ChatHistoryRequestMessage request)
         {
-            var room = roomStore.GetRoomFor(request.SenderId, request.RoomId);
-            var totalCount = room.TotalMessageCount;
-
+            var totalCount = roomStore.GetRoomChatHistoryCountFor(request.SenderId, request.RoomId);
             var pageMessages = context.RoomContext
                 .Messages
                 .GetRecentHistory(request.Page, request.PageSize)

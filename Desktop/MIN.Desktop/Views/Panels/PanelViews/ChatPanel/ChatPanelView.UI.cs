@@ -121,7 +121,7 @@ public partial class ChatPanelView
         chatFlow.Controls.Clear();
 
         totalMessagesCount = room.TotalMessageCount;
-        var messages = room.ChatHistory; // уже содержит GetRecentHistory(1, 25), newest-first
+        var messages = room.ChatHistory;
         RenderMessages(messages);
 
         if (totalMessagesCount > PageSize)
@@ -135,7 +135,7 @@ public partial class ChatPanelView
         for (var i = messages.Count - 1; i >= 0; i--)
         {
             var index = appendOnTop ? (messages.Count - 1) - i : i;
-            AddMessageToChatFlow(messages[index], appendOnTop);
+            AddMessageToChatFlow(messages[index], appendOnTop, scrollToBottom: false);
         }
     }
 

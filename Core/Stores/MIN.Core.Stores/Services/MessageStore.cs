@@ -41,7 +41,7 @@ public sealed class MessageStore : IMessageStore
     {
         lock (messages)
         {
-            var resultMessages = messages.AsEnumerable();
+            var resultMessages = messages.AsEnumerable().Reverse();
 
             if (page.HasValue && pageSize.HasValue)
             {

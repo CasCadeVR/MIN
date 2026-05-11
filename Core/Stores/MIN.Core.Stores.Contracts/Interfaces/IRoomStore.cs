@@ -23,6 +23,11 @@ public interface IRoomStore
     Room GetRoomFor(Guid participantId, Guid roomId);
 
     /// <summary>
+    /// Получить количество сообщений для участника (для того, чтобы сохранить его приватные сообщения)
+    /// </summary>
+    int GetRoomChatHistoryCountFor(Guid participantId, Guid roomId);
+
+    /// <summary>
     /// Существует ли такая комната в списке?
     /// </summary>
     bool RoomExists(Guid roomId);
