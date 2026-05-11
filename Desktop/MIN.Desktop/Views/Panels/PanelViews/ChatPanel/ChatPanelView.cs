@@ -50,6 +50,22 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     }
 
     /// <inheritdoc />
+    public override void OnNavigatedTo()
+    {
+        if (loadedPage == 1)
+        {
+            return;
+        }
+
+        chatFlow.Controls.Clear();
+        loadedPage = 1;
+        var lastHistory = featureCollection.Core.RoomFactory
+            .GetOrCreateContext(roomId).Messages.GetRecentHistory();
+        RenderMessages(lastHistory.ToList());
+        ShowLoadMoreLabel();
+    }
+
+    /// <inheritdoc />
     /// <remarks>
     /// Room передаётся по ссылке прямо из store, так что его обновление повлияет на room ui,
     /// но придётся ещё и обновить данные

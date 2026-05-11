@@ -20,5 +20,5 @@ public partial class BasePanelView : UserControl, IPanel
     }
 
     /// <inheritdoc />
-    public virtual void OnNavigatedTo() => throw new NotImplementedException();
+    public virtual void OnNavigatedTo() { }
 }

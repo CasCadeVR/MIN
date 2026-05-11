@@ -37,6 +37,7 @@ public class NavigationService : INavigationService
     {
         var panel = provider.GetRequiredService<TPanel>();
         NavigateToPanel(panel);
+        panel.OnNavigatedTo();
         return panel;
     }
 
@@ -50,12 +51,14 @@ public class NavigationService : INavigationService
         }
 
         NavigateToPanel(panel);
+        panel.OnNavigatedTo();
         return panel;
     }
 
     TPanel INavigationService.NavigateToExisting<TPanel>(TPanel panel)
     {
         NavigateToPanel(panel);
+        panel.OnNavigatedTo();
         return panel;
     }
 
