@@ -2,9 +2,9 @@
 using MIN.Core.Events.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
-using MIN.FileTransfer.Services.Contracts.Interfaces;
 using MIN.FileTransfer.Services.Contracts.Models;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Extensions;
@@ -18,8 +18,7 @@ public sealed class ChatFileService : IChatFileService
     private readonly IMessageRouter messageRouter;
     private readonly IRoomHoster roomHoster;
     private readonly IEventBus eventBus;
-    private readonly IFileHelperService fileHelperService;
-    private readonly IFileTransferService fileTransferService;
+    private readonly IFileTransferFeatureCollection fileFeatureCollection;
     private readonly IIdentityService identityService;
 
     /// <summary>
@@ -28,15 +27,13 @@ public sealed class ChatFileService : IChatFileService
     public ChatFileService(IMessageRouter messageRouter,
         IRoomHoster roomHoster,
         IEventBus eventBus,
-        IFileHelperService fileHelperService,
-        IFileTransferService fileTransferService,
+        IFileTransferFeatureCollection fileFeatureCollection,
         IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
         this.roomHoster = roomHoster;
         this.eventBus = eventBus;
-        this.fileHelperService = fileHelperService;
-        this.fileTransferService = fileTransferService;
+        this.fileFeatureCollection = fileFeatureCollection;
         this.identityService = identityService;
     }
 
@@ -57,7 +54,7 @@ public sealed class ChatFileService : IChatFileService
             FileName = fileName,
             SenderId = identityService.SelfParticipant.Id,
             FilePath = filePath,
-            FileSize = fileHelperService.GetFileSize(filePath),
+            FileSize = fileFeatureCollection.FileHelperService.GetFileSize(filePath),
             RecipientId = recipientId,
         };
 
@@ -73,7 +70,7 @@ public sealed class ChatFileService : IChatFileService
                 Direction = FileTransferDirection.Upload,
                 FileName = fileName,
             };
-            fileTransferService.RegisterTransfer(info);
+            fileFeatureCollection.FileTransferService.RegisterTransfer(info);
         }
 
         await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);
@@ -81,6 +78,24 @@ public sealed class ChatFileService : IChatFileService
 
     async Task IChatFileService.RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMetadataMessage, CancellationToken cancellationToken)
     {
+        if (fileFeatureCollection.FileStorageService.FileExists(roomId, fileMetadataMessage.FileName)
+            || Path.Exists(fileMetadataMessage.FilePath))
+        {
+            var savedFilePath = fileMetadataMessage.FilePath;
+            fileMetadataMessage.FilePath = fileFeatureCollection.FileStorageService
+                    .GetFilePath(roomId, fileMetadataMessage.FileName) ?? savedFilePath;
+
+            await eventBus.PublishAsync(new FileTransferCompletedEvent()
+            {
+                FileName = fileMetadataMessage.FileName,
+                FileMetadataId = fileMetadataMessage.Id,
+                RoomId = roomId,
+                FilePath = fileMetadataMessage.FilePath!,
+                TransferId = fileMetadataMessage.TransferId
+            }, cancellationToken);
+            return;
+        }
+
         var transferId = Guid.NewGuid();
         fileMetadataMessage.TransferId = transferId;
 
@@ -94,7 +109,7 @@ public sealed class ChatFileService : IChatFileService
             FileName = fileMetadataMessage.FileName,
         };
 
-        fileTransferService.RegisterTransfer(info);
+        fileFeatureCollection.FileTransferService.RegisterTransfer(info);
 
         await eventBus.PublishAsync(new FileTransferStartedEvent
         {
