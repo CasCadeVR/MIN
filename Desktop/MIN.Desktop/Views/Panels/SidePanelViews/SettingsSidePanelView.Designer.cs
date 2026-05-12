@@ -122,8 +122,8 @@
             // 
             tableLayoutPanel1.BackColor = Color.Transparent;
             tableLayoutPanel1.ColumnCount = 2;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50.15106F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 49.84894F));
             tableLayoutPanel1.Controls.Add(labelVersion, 0, 8);
             tableLayoutPanel1.Controls.Add(logButton, 0, 7);
             tableLayoutPanel1.Controls.Add(logDescriptionLabel, 1, 7);
@@ -174,7 +174,7 @@
             // 
             // logButton
             // 
-            logButton.Anchor = AnchorStyles.Right;
+            logButton.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             logButton.BackColor = Color.FromArgb(248, 249, 255);
             logButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
             logButton.FlatAppearance.BorderSize = 2;
@@ -182,8 +182,9 @@
             logButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             logButton.ForeColor = Color.FromArgb(167, 157, 255);
             logButton.Location = new Point(3, 507);
+            logButton.Margin = new Padding(3, 0, 0, 0);
             logButton.Name = "logButton";
-            logButton.Size = new Size(159, 33);
+            logButton.Size = new Size(163, 33);
             logButton.TabIndex = 12;
             logButton.Text = "Открыть окно логов";
             logButton.UseVisualStyleBackColor = false;
@@ -196,7 +197,7 @@
             logDescriptionLabel.Enabled = false;
             logDescriptionLabel.Font = new Font("Segoe UI", 8.25F);
             logDescriptionLabel.ForeColor = Color.Black;
-            logDescriptionLabel.Location = new Point(168, 504);
+            logDescriptionLabel.Location = new Point(169, 504);
             logDescriptionLabel.Name = "logDescriptionLabel";
             logDescriptionLabel.Size = new Size(157, 39);
             logDescriptionLabel.TabIndex = 11;
@@ -209,7 +210,7 @@
             pcNameDescription.Enabled = false;
             pcNameDescription.Font = new Font("Segoe UI", 8.25F);
             pcNameDescription.ForeColor = Color.Black;
-            pcNameDescription.Location = new Point(5, 256);
+            pcNameDescription.Location = new Point(6, 256);
             pcNameDescription.Name = "pcNameDescription";
             tableLayoutPanel1.SetRowSpan(pcNameDescription, 2);
             pcNameDescription.Size = new Size(157, 130);
@@ -234,7 +235,7 @@
             preferredPcNameList.Dock = DockStyle.Fill;
             preferredPcNameList.Font = new Font("Segoe UI", 8.25F);
             preferredPcNameList.GridColor = Color.FromArgb(248, 249, 255);
-            preferredPcNameList.Location = new Point(168, 259);
+            preferredPcNameList.Location = new Point(169, 259);
             preferredPcNameList.Name = "preferredPcNameList";
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Control;
@@ -245,7 +246,7 @@
             preferredPcNameList.RowHeadersDefaultCellStyle = dataGridViewCellStyle2;
             preferredPcNameList.RowHeadersWidth = 51;
             tableLayoutPanel1.SetRowSpan(preferredPcNameList, 2);
-            preferredPcNameList.Size = new Size(160, 239);
+            preferredPcNameList.Size = new Size(159, 239);
             preferredPcNameList.TabIndex = 10;
             // 
             // PCName
@@ -262,7 +263,7 @@
             preferredSearch.BackColor = Color.FromArgb(248, 249, 255);
             preferredSearch.Font = new Font("Segoe UI", 9.75F);
             preferredSearch.ForeColor = Color.FromArgb(45, 43, 58);
-            preferredSearch.Location = new Point(4, 207);
+            preferredSearch.Location = new Point(5, 207);
             preferredSearch.Name = "preferredSearch";
             preferredSearch.Size = new Size(158, 21);
             preferredSearch.TabIndex = 7;
@@ -277,9 +278,9 @@
             preferredPcNameDescription.Enabled = false;
             preferredPcNameDescription.Font = new Font("Segoe UI", 8.25F);
             preferredPcNameDescription.ForeColor = Color.Black;
-            preferredPcNameDescription.Location = new Point(168, 185);
+            preferredPcNameDescription.Location = new Point(169, 180);
             preferredPcNameDescription.Name = "preferredPcNameDescription";
-            preferredPcNameDescription.Size = new Size(160, 65);
+            preferredPcNameDescription.Size = new Size(146, 76);
             preferredPcNameDescription.TabIndex = 6;
             preferredPcNameDescription.Text = "Вот это лучше - будет быстрее. Подходит если у тебя есть друзья за каким-то компом и ты знаешь к кому хочешь подключиться";
             // 
@@ -291,7 +292,7 @@
             classRoomSearch.Checked = true;
             classRoomSearch.Font = new Font("Segoe UI", 9.75F);
             classRoomSearch.ForeColor = Color.FromArgb(45, 43, 58);
-            classRoomSearch.Location = new Point(24, 143);
+            classRoomSearch.Location = new Point(25, 143);
             classRoomSearch.Name = "classRoomSearch";
             classRoomSearch.Size = new Size(138, 21);
             classRoomSearch.TabIndex = 3;
@@ -306,7 +307,7 @@
             classRoomDescription.AutoSize = true;
             classRoomDescription.Font = new Font("Segoe UI", 8.25F);
             classRoomDescription.ForeColor = Color.Black;
-            classRoomDescription.Location = new Point(168, 128);
+            classRoomDescription.Location = new Point(169, 128);
             classRoomDescription.Name = "classRoomDescription";
             classRoomDescription.Size = new Size(141, 52);
             classRoomDescription.TabIndex = 5;
@@ -318,7 +319,7 @@
             searchTypeDescription.AutoSize = true;
             searchTypeDescription.Font = new Font("Segoe UI", 8.25F);
             searchTypeDescription.ForeColor = Color.Black;
-            searchTypeDescription.Location = new Point(168, 82);
+            searchTypeDescription.Location = new Point(169, 82);
             searchTypeDescription.Name = "searchTypeDescription";
             searchTypeDescription.Size = new Size(159, 39);
             searchTypeDescription.TabIndex = 4;
@@ -330,7 +331,7 @@
             ClassTitleInput.AutoSize = true;
             ClassTitleInput.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             ClassTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
-            ClassTitleInput.Location = new Point(12, 40);
+            ClassTitleInput.Location = new Point(13, 40);
             ClassTitleInput.Name = "ClassTitleInput";
             ClassTitleInput.Size = new Size(150, 34);
             ClassTitleInput.TabIndex = 0;
@@ -344,7 +345,7 @@
             roomSearchTime.Font = new Font("Segoe UI", 9.75F);
             roomSearchTime.ForeColor = Color.FromArgb(122, 119, 143);
             roomSearchTime.Increment = new decimal(new int[] { 100, 0, 0, 0 });
-            roomSearchTime.Location = new Point(168, 46);
+            roomSearchTime.Location = new Point(169, 46);
             roomSearchTime.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             roomSearchTime.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
             roomSearchTime.Name = "roomSearchTime";
@@ -358,7 +359,7 @@
             heading3Label1.AutoSize = true;
             heading3Label1.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             heading3Label1.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label1.Location = new Point(25, 93);
+            heading3Label1.Location = new Point(26, 93);
             heading3Label1.Name = "heading3Label1";
             heading3Label1.Size = new Size(137, 17);
             heading3Label1.TabIndex = 2;
@@ -370,7 +371,7 @@
             heading3Label2.AutoSize = true;
             heading3Label2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             heading3Label2.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label2.Location = new Point(20, 10);
+            heading3Label2.Location = new Point(21, 10);
             heading3Label2.Name = "heading3Label2";
             heading3Label2.Size = new Size(142, 17);
             heading3Label2.TabIndex = 14;
@@ -383,9 +384,9 @@
             defaultName.BorderStyle = BorderStyle.None;
             defaultName.Font = new Font("Segoe UI", 9.75F);
             defaultName.ForeColor = Color.FromArgb(122, 119, 143);
-            defaultName.Location = new Point(168, 10);
+            defaultName.Location = new Point(169, 10);
             defaultName.Name = "defaultName";
-            defaultName.Size = new Size(160, 18);
+            defaultName.Size = new Size(159, 18);
             defaultName.TabIndex = 15;
             // 
             // SettingsSidePanelView

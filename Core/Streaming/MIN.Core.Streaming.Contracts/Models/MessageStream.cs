@@ -124,6 +124,7 @@ public sealed class MessageStream : IDisposable
             else if (memoryBuffer != null)
             {
                 chunk.Data.Span.CopyTo(memoryBuffer.AsSpan(offset));
+                totalDataSize += chunk.Data.Length;   // <-- add this
             }
 
             LastChunkReceivedAt = DateTime.UtcNow;
@@ -146,7 +147,7 @@ public sealed class MessageStream : IDisposable
                     return Array.Empty<byte>();
                 }
 
-                return memoryBuffer!.ToArray();
+                return memoryBuffer![..(int)totalDataSize].ToArray();
             }
 
             return null;

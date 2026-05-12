@@ -55,6 +55,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         {
             var options = new StreamOptions
             {
+                IsRawPayload = false,
                 RequiresAcks = message.RequireStreamAcks,
                 RequiresEncryption = message.RequiresEncryption
             };

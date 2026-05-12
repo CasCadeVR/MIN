@@ -54,7 +54,6 @@ public sealed class StreamManager : IStreamManager, IDisposable
 
         try
         {
-
             for (var i = 0; i < totalChunks; i++)
             {
                 var chunkStart = i * StreamingConstants.ChunkDataSize;

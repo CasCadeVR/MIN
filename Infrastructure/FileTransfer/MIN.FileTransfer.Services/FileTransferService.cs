@@ -133,17 +133,18 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 
     private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
     {
-        if (e.IsRawPayload)
+        if (!e.IsRawPayload)
         {
-            if (e.FilePath != null)
-            {
-                await OnRawFileReceivedAsync(e.StreamId, e.FilePath);
-            }
-            else
-            {
-                await OnFileDataReceivedAsync(e.StreamId, e.Data ?? []);
-            }
             return;
+        }
+
+        if (e.FilePath != null)
+        {
+            await OnRawFileReceivedAsync(e.StreamId, e.FilePath);
+        }
+        else
+        {
+            await OnFileDataReceivedAsync(e.StreamId, e.Data ?? []);
         }
 
         logger.Log($"Сообщение собрано: StreamId={e.StreamId}, Size={e.Data?.Length ?? 0} байт");
@@ -207,6 +208,11 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 
     private async void OnChunkReceived(object? sender, ChunkReceivedEventArgs e)
     {
+        if (!activeTransfers.TryGetValue(e.StreamId, out _))
+        {
+            return;
+        }
+
         await eventBus.PublishAsync(new FileTransferProgressEvent
         {
             RoomId = e.RoomId,
