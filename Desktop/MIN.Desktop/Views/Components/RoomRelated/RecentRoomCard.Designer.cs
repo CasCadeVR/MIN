@@ -45,7 +45,7 @@ namespace MIN.Desktop.Components
             backgroundPanel.ColumnCount = 4;
             backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 87F));
             backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 24F));
+            backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 35F));
             backgroundPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50F));
             backgroundPanel.Controls.Add(Title, 0, 0);
             backgroundPanel.Controls.Add(lastMessageTime, 3, 0);
