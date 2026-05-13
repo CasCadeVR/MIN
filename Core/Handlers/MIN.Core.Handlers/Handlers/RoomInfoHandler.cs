@@ -51,7 +51,7 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
         else if (message is RoomInfoResponseMessage roomInfoResponse)
         {
             roomStore.Register(roomInfoResponse.Room);
-            foreach (var roomMessage in roomInfoResponse.Room.ChatHistory)
+            foreach (var roomMessage in roomInfoResponse.Room.ChatHistory.AsEnumerable().Reverse())
             {
                 context.RoomContext.Messages.AddMessage(roomMessage);
             }
@@ -61,7 +61,7 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
                 context.RoomContext.Participants.AddParticipant(roomParticipant);
             }
 
-            logger.Log($"Получил информацию о комнате с id {roomInfoResponse.Room.Id}");
+            logger.Log($"Получил информацию о комнате с id {roomInfoResponse.Room.Id} сообщений {roomInfoResponse.Room.TotalMessageCount}");
 
             await eventBus.PublishAsync(new RoomStateChangedEvent()
             {

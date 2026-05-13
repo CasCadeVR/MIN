@@ -50,11 +50,14 @@ internal sealed class ChatHistoryHandler : IMessageHandler, ICoreHandlerAnchor
         }
         else if (message is ChatHistoryResponseMessage response)
         {
-            if (!roomHoster.IsHosting(context.RoomContext.RoomId))
+            var roomId = context.RoomContext.RoomId;
+
+            if (roomStore.GetRoomHostParticipantId(roomId) == response.SenderId
+                && !roomHoster.IsHosting(roomId))
             {
                 foreach (var roomMessage in response.Messages)
                 {
-                    context.RoomContext.Messages.AddMessage(roomMessage);
+                    context.RoomContext.Messages.AddMessage(roomMessage, appendOnStart: true);
                 }
             }
 

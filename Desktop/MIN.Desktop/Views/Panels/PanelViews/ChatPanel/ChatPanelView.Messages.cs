@@ -3,6 +3,7 @@ using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.Stateless.RoomRelated.History;
+using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts.Interfaces;
@@ -14,14 +15,11 @@ namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
 public partial class ChatPanelView
 {
-    private const int PageSize = 25;
-
     private readonly int messageMinPadding = 4;
 
     private Guid? privateChatParticipantId;
     private IMessage? lastChatMessage;
     private int loadedPage = 1;
-    private int totalMessagesCount;
     private PrimaryLabel? loadMoreLabel;
 
     private void AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool scrollToBottom = true)
@@ -137,29 +135,53 @@ public partial class ChatPanelView
 
     async void OnLoadMoreClicked(object? sender, EventArgs e)
     {
-        var request = new ChatHistoryRequestMessage
-        {
-            RoomId = roomId,
-            Page = loadedPage + 1,
-            PageSize = PageSize,
-        };
 
-        await featureCollection.Core.MessageRouter.RouteAsync(request,
-            roomId,
-            localParticipant.Id,
-            formCts.Token);
+        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
+        var memoryCount = context.Messages.GetMessageCount();
+
+        var messageRouter = featureCollection.Core.MessageRouter;
+
+        if (memoryCount < room.TotalMessageCount)
+        {
+            var request = new ChatHistoryRequestMessage
+            {
+                RoomId = roomId,
+                Page = loadedPage + 1,
+                PageSize = StoreConstants.MessagesPageSize,
+            };
+
+            await messageRouter.RouteAsync(request,
+                roomId,
+                localParticipant.Id,
+                formCts.Token);
+        }
+        else
+        {
+            var pageMessages = context.Messages
+                .GetRecentHistory(loadedPage + 1, StoreConstants.MessagesPageSize)
+                .ToList();
+
+            loadedPage++;
+            RemoveLoadMoreLabel();
+            RenderMessages(pageMessages, appendOnTop: true);
+
+            if (loadedPage * StoreConstants.MessagesPageSize < memoryCount)
+            {
+                ShowLoadMoreLabel();
+            }
+        }
     }
 
     private bool ShouldTrimExcessMessages()
     {
         var messageCount = chatFlow.Controls.Count - (loadMoreLabel != null ? 1 : 0);
-        var maxVisible = loadedPage * PageSize;
+        var maxVisible = loadedPage * StoreConstants.MessagesPageSize;
         return messageCount >= maxVisible;
     }
 
     private void ReplaceOldestWithLoadMore()
     {
-        chatFlow.Controls.RemoveAt(loadedPage * PageSize - 1);
+        chatFlow.Controls.RemoveAt(loadedPage * StoreConstants.MessagesPageSize - 1);
         ShowLoadMoreLabel();
     }
 

@@ -22,7 +22,7 @@ public class Room : IRoomData
     public int ParticipantCount => CurrentParticipants.Count;
 
     /// <inheritdoc />
-    public int TotalMessageCount => ChatHistory.Count;
+    public int TotalMessageCount { get; set; }
 
     /// <inheritdoc />
     public bool IsActive { get; set; }

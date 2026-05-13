@@ -1,4 +1,3 @@
-using System.IO;
 using MIN.Core.Headers.Contracts.Enums;
 using MIN.Core.Streaming.Contracts.Constants;
 
@@ -124,7 +123,7 @@ public sealed class MessageStream : IDisposable
             else if (memoryBuffer != null)
             {
                 chunk.Data.Span.CopyTo(memoryBuffer.AsSpan(offset));
-                totalDataSize += chunk.Data.Length;   // <-- add this
+                totalDataSize += chunk.Data.Length;
             }
 
             LastChunkReceivedAt = DateTime.UtcNow;

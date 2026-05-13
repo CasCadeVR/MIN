@@ -3,7 +3,7 @@
 namespace MIN.Core.Headers.Contracts.Constants;
 
 /// <summary>
-/// Конфигурация для Transport
+/// Конфигурация для Headers
 /// </summary>
 public static class HeadersConstants
 {

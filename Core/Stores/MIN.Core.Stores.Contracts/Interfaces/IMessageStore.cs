@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Constants;
 
 namespace MIN.Core.Stores.Contracts.Interfaces;
 
@@ -10,7 +11,7 @@ public interface IMessageStore
     /// <summary>
     /// Добавить сообщение
     /// </summary>
-    void AddMessage(IMessage message);
+    void AddMessage(IMessage message, bool appendOnStart = false);
 
     /// <summary>
     /// Получить количество сохранённых сообщений
@@ -20,7 +21,7 @@ public interface IMessageStore
     /// <summary>
     /// Получить историю последних сообщений
     /// </summary>
-    IEnumerable<IMessage> GetRecentHistory(int page = 1, int pageSize = 25);
+    IEnumerable<IMessage> GetRecentHistory(int page = 1, int pageSize = StoreConstants.MessagesPageSize);
 
     /// <summary>
     /// Получить историю сообщений

@@ -6,9 +6,14 @@
 public static class DesktopConstants
 {
     /// <summary>
+    /// Максимальное количество участников в одной комнате
+    /// </summary>
+    public const int MaximumParticipantsInRoom = 20;
+
+    /// <summary>
     /// Не распознаный компьютер
     /// </summary>
-    public readonly static string UndefinedPCName = "ХЗ";
+    public const string UndefinedPCName = "ХЗ";
 
     /// <summary>
     /// Таймаут на подключение к комнате (мс)

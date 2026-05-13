@@ -182,6 +182,8 @@ public sealed class StreamManager : IStreamManager, IDisposable
                 logger.Log($"Отправлен пакет {chunkIndex + 1}/{totalChunks} для потока {streamId}");
                 await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
                 chunkIndex++;
+
+                await Task.Delay(1000);
             }
 
             CleanForStream(streamId);
