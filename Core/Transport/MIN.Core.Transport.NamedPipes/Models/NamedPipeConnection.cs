@@ -10,6 +10,7 @@ namespace MIN.Core.Transport.NamedPipes.Models;
 internal sealed class NamedPipeConnection : BaseConnection, IAsyncDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
+    private readonly SemaphoreSlim writeLock = new(1, 1);
     private bool disposed;
 
     /// <summary>
@@ -90,8 +91,16 @@ internal sealed class NamedPipeConnection : BaseConnection, IAsyncDisposable
             throw new InvalidOperationException("Connection is not active");
         }
 
-        await Pipe.WriteAsync(data.AsMemory(), cancellationToken);
-        await Pipe.FlushAsync(cancellationToken);
+        await writeLock.WaitAsync(cancellationToken);
+        try
+        {
+            await Pipe.WriteAsync(data.AsMemory(), cancellationToken);
+            await Pipe.FlushAsync(cancellationToken);
+        }
+        finally
+        {
+            writeLock.Release();
+        }
     }
 
     private void OnRawMessageReceived(byte[] data)

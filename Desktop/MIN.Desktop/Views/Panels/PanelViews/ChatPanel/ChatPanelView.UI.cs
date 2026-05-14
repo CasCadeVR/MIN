@@ -145,7 +145,7 @@ public partial class ChatPanelView
 
     private void SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false)
     {
-        AddMessageToChatFlow(systemMessage);
+        AddMessageToChatFlow(systemMessage, true);
 
         if (needsToNotify)
         {
