@@ -10,6 +10,9 @@ public interface IChatFeatureCollection
     /// <inheritdoc cref="IChatTextService"/>
     IChatTextService ChatTextService { get; }
 
+    /// <inheritdoc cref="IChatStatusService"/>
+    IChatStatusService ChatStatusService { get; }
+
     /// <inheritdoc cref="IChatFileService"/>
     IChatFileService ChatFileService { get; }
 }

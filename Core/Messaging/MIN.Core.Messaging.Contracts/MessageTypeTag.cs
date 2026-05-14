@@ -122,6 +122,11 @@ public enum MessageTypeTag : byte
     /// </summary>
     SystemMessage = 71,
 
+    /// <summary>
+    /// Смена статуса онлайн
+    /// </summary>
+    OnlineStatusChanged = 72,
+
     // ===== Сообщения управления комнатой (96-127) =====
 
     /// <summary>

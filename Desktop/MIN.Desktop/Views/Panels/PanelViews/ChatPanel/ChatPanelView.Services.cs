@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using MIN.Chat.Services.Contracts.Models.Enums;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.FileTransfer.Messaging;
 
@@ -55,6 +56,14 @@ public partial class ChatPanelView
 
     private bool IsMessageValid() => !string.IsNullOrWhiteSpace(messageTextBox.Text)
         || multiFileAttachmentUploader.AttachedFiles.Any();
+
+    private async Task SendSelfStatusChangedMessage(OnlineStatus newStatus)
+    {
+        await featureCollection.Chat.ChatStatusService.SendSelfOnlineStatusChangedAsync(roomId,
+            newStatus,
+            formCts.Token
+        );
+    }
 
     private async Task SendMessage()
     {

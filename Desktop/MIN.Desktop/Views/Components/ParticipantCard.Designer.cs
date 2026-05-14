@@ -30,7 +30,7 @@
         {
             tableLayoutPanelLabels = new TableLayoutPanel();
             participantRole = new MIN.Desktop.Components.Labels.Heading3Label();
-            lastOnline = new MIN.Desktop.Components.Labels.Heading3Label();
+            currentStatus = new MIN.Desktop.Components.Labels.Heading3Label();
             participantName = new MIN.Desktop.Components.Labels.Heading3Label();
             tableLayoutPanelLabels.SuspendLayout();
             SuspendLayout();
@@ -42,7 +42,7 @@
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanelLabels.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 36F));
             tableLayoutPanelLabels.Controls.Add(participantRole, 1, 0);
-            tableLayoutPanelLabels.Controls.Add(lastOnline, 0, 1);
+            tableLayoutPanelLabels.Controls.Add(currentStatus, 0, 1);
             tableLayoutPanelLabels.Controls.Add(participantName, 0, 0);
             tableLayoutPanelLabels.Dock = DockStyle.Fill;
             tableLayoutPanelLabels.Location = new Point(0, 0);
@@ -66,19 +66,19 @@
             participantRole.TabIndex = 3;
             participantRole.Text = "Роль";
             // 
-            // lastOnline
+            // currentStatus
             // 
-            lastOnline.AutoEllipsis = true;
-            lastOnline.AutoSize = true;
-            tableLayoutPanelLabels.SetColumnSpan(lastOnline, 2);
-            lastOnline.Dock = DockStyle.Fill;
-            lastOnline.Font = new Font("Segoe UI", 6.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            lastOnline.ForeColor = Color.FromArgb(0, 0, 0);
-            lastOnline.Location = new Point(3, 20);
-            lastOnline.Name = "lastOnline";
-            lastOnline.Size = new Size(233, 20);
-            lastOnline.TabIndex = 2;
-            lastOnline.Text = "Последний раз в сети";
+            currentStatus.AutoEllipsis = true;
+            currentStatus.AutoSize = true;
+            tableLayoutPanelLabels.SetColumnSpan(currentStatus, 2);
+            currentStatus.Dock = DockStyle.Fill;
+            currentStatus.Font = new Font("Segoe UI", 6.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            currentStatus.ForeColor = Color.FromArgb(0, 0, 0);
+            currentStatus.Location = new Point(3, 20);
+            currentStatus.Name = "currentStatus";
+            currentStatus.Size = new Size(233, 20);
+            currentStatus.TabIndex = 2;
+            currentStatus.Text = "Текущий статус";
             // 
             // participantName
             // 
@@ -109,7 +109,7 @@
         }
 
         #endregion
-        private Labels.Heading3Label lastOnline;
+        private Labels.Heading3Label currentStatus;
         private Labels.Heading3Label participantName;
         private Labels.Heading3Label participantRole;
         private TableLayoutPanel tableLayoutPanelLabels;

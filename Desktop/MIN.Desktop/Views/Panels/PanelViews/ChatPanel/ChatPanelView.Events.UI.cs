@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
+using MIN.Chat.Services.Contracts.Models.Enums;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
@@ -172,6 +173,32 @@ public partial class ChatPanelView
                 e.Handled = true;
             }
         }
+    }
+
+    #endregion
+
+    #region Parent form events
+
+    private void InitializeParentFormWindowStateEvents()
+    {
+        navigationService.Parent.Activated += Parent_Activated;
+        navigationService.Parent.Deactivate += Parent_Deactivate;
+    }
+
+    private void ClearParentFormEvents()
+    {
+        navigationService.Parent.Activated -= Parent_Activated;
+        navigationService.Parent.Deactivate -= Parent_Deactivate;
+    }
+
+    private async void Parent_Deactivate(object? sender, EventArgs e)
+    {
+        await SendSelfStatusChangedMessage(OnlineStatus.Offline);
+    }
+
+    private async void Parent_Activated(object? sender, EventArgs e)
+    {
+        await SendSelfStatusChangedMessage(OnlineStatus.Online);
     }
 
     #endregion

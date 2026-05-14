@@ -45,6 +45,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
         InitializeNotifications();
         InitializeResizeTimer();
+        InitializeParentFormWindowStateEvents();
         HideMultiFileAttachmentUploader();
         HideStatusRow();
     }
@@ -111,6 +112,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
     public async ValueTask DisposeAsync()
     {
+        ClearParentFormEvents();
         foreach (var token in eventTokens)
         {
             token.Dispose();

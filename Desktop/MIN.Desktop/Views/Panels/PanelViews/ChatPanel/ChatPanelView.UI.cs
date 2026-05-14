@@ -99,6 +99,8 @@ public partial class ChatPanelView
         foreach (var participant in room.CurrentParticipants)
         {
             var card = new ParticipantCard(participant,
+                featureCollection.Core.EventBus,
+                roomId,
                 isHost: participant.Id == room.HostParticipant.Id,
                 isSelf: participant.Id == localParticipant.Id)
             {

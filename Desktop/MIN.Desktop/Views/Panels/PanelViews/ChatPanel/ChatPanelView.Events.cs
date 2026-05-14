@@ -233,6 +233,8 @@ public partial class ChatPanelView
     {
         if (eventMessage.RoomId == roomId && eventMessage.NeedToDisconnect)
         {
+            ClearParentFormEvents();
+
             uiContext.Post(async _ =>
             {
                 if (!string.IsNullOrEmpty(eventMessage.LeavingMessage))
@@ -254,6 +256,7 @@ public partial class ChatPanelView
     {
         if (e.NeedToDisconnect)
         {
+            ClearParentFormEvents();
             await DisposeAsync();
             navigationService.NavigateTo<DiscoveryPanelView>();
         }

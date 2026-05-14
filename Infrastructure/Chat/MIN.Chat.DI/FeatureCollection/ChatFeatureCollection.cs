@@ -8,6 +8,9 @@ public class ChatFeatureCollection : IChatFeatureCollection
     /// <inheritdoc cref="IChatTextService"/>
     public IChatTextService ChatTextService { get; }
 
+    /// <inheritdoc cref="IChatStatusService"/>
+    public IChatStatusService ChatStatusService { get; }
+
     /// <inheritdoc cref="IChatFileService"/>
     public IChatFileService ChatFileService { get; }
 
@@ -15,9 +18,11 @@ public class ChatFeatureCollection : IChatFeatureCollection
     /// Инициализирует новый экземпляр <see cref="ChatFeatureCollection"/>
     /// </summary>
     public ChatFeatureCollection(IChatTextService chatTextService,
+        IChatStatusService chatStatusService,
         IChatFileService chatFileService)
     {
         ChatTextService = chatTextService;
+        ChatStatusService = chatStatusService;
         ChatFileService = chatFileService;
     }
 }

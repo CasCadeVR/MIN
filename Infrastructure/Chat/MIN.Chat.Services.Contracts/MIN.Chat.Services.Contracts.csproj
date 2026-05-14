@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\FileTransfer\MIN.FileTransfer.DI\MIN.FileTransfer.DI.csproj" />
-    <ProjectReference Include="..\MIN.Chat.Messaging\MIN.Chat.Messaging.csproj" />
   </ItemGroup>
 
 </Project>
