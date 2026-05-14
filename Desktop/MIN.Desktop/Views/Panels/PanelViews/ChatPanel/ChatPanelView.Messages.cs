@@ -1,4 +1,5 @@
-﻿using MIN.Chat.Messaging;
+﻿using System.Drawing.Printing;
+using MIN.Chat.Messaging;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
@@ -8,6 +9,7 @@ using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
+using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Components;
 using MIN.FileTransfer.Messaging;
 
@@ -21,8 +23,9 @@ public partial class ChatPanelView
     private IMessage? lastChatMessage;
     private int loadedPage = 1;
     private PrimaryLabel? loadMoreLabel;
+    private int renderedMessageCount;
 
-    private void AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool scrollToBottom = true)
+    private void AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool scrollToBottom = true, bool countTowardCap = true)
     {
         if (InvokeRequired)
         {
@@ -46,12 +49,12 @@ public partial class ChatPanelView
             switch (message)
             {
                 case ChatTextMessage m:
-                    rowControl = CreateTextMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate);
+                    rowControl = CreateTextMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate, appendOnTop);
                     break;
                 case FileMetadataMessage m:
                     rowControl = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
-                        ? CreateChatImagePreviewMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate)
-                        : CreateFileMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate);
+                        ? CreateChatImagePreviewMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate, appendOnTop)
+                        : CreateFileMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, wasLastPrivate, appendOnTop);
                     break;
                 case SystemTextMessage m:
                     rowControl = CreateSystemMessageLabel(m, row);
@@ -76,6 +79,11 @@ public partial class ChatPanelView
             if (!appendOnTop)
             {
                 chatFlow.Controls.SetChildIndex(chatFlow.Controls[^1], 0);
+            }
+
+            if (countTowardCap)
+            {
+                renderedMessageCount++;
             }
 
             if (rowControl is IResizableComponent resizableComponent)
@@ -135,7 +143,6 @@ public partial class ChatPanelView
 
     async void OnLoadMoreClicked(object? sender, EventArgs e)
     {
-
         var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
         var memoryCount = context.Messages.GetMessageCount();
 
@@ -174,19 +181,27 @@ public partial class ChatPanelView
 
     private bool ShouldTrimExcessMessages()
     {
-        var messageCount = chatFlow.Controls.Count - (loadMoreLabel != null ? 1 : 0);
         var maxVisible = loadedPage * StoreConstants.MessagesPageSize;
-        return messageCount >= maxVisible;
+        return renderedMessageCount >= maxVisible;
     }
 
     private void ReplaceOldestWithLoadMore()
     {
-        chatFlow.Controls.RemoveAt(loadedPage * StoreConstants.MessagesPageSize - 1);
+        for (var i = chatFlow.Controls.Count - 1; i >= 0; i--)
+        {
+            if (chatFlow.Controls[i] is ChatMessageRow row && row.container.Controls[0] != loadMoreLabel)
+            {
+                chatFlow.Controls.RemoveAt(i);
+                renderedMessageCount--;
+                break;
+            }
+        }
+
         ShowLoadMoreLabel();
     }
 
     private ChatTextMessageCard CreateTextMessageCard(ChatTextMessage msg, ChatMessageRow row,
-            bool isSelf, bool isHost, bool isCurrentPrivate, bool wasLastPrivate)
+            bool isSelf, bool isHost, bool isCurrentPrivate, bool wasLastPrivate, bool withAppendOnTop)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
         var minutesPassed = CalculateTimePadding(msg.Timestamp);
@@ -197,14 +212,18 @@ public partial class ChatPanelView
             Margin = new Padding(20, 0, 20, 0),
         };
 
-        InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate, wasLastPrivate);
+        if (!withAppendOnTop)
+        {
+            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId,
+                isCurrentPrivate, wasLastPrivate);
+        }
         ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
         lastChatMessage = msg;
         return card;
     }
 
     private ChatFileMessageCard CreateFileMessageCard(FileMetadataMessage msg, ChatMessageRow row,
-        bool isSelf, bool isHost, bool isCurrentPrivate, bool wasLastPrivate)
+        bool isSelf, bool isHost, bool isCurrentPrivate, bool wasLastPrivate, bool withAppendOnTop)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
         var minutesPassed = CalculateTimePadding(msg.Timestamp);
@@ -221,7 +240,11 @@ public partial class ChatPanelView
         card.OnCancelRequested += () => OnCancelRequested(msg);
         card.OnCardContextMenuStripClicked += () => OnShowFileClicked(msg.FilePath);
 
-        InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate, wasLastPrivate);
+        if (!withAppendOnTop)
+        {
+            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId,
+                isCurrentPrivate, wasLastPrivate);
+        }
         ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
         row.Height = card.Height;
         lastChatMessage = msg;
@@ -229,7 +252,7 @@ public partial class ChatPanelView
     }
 
     private ChatImagePreviewMessageCard CreateChatImagePreviewMessageCard(FileMetadataMessage msg, ChatMessageRow row,
-    bool isSelf, bool isHost, bool isCurrentPrivate, bool wasLastPrivate)
+    bool isSelf, bool isHost, bool isCurrentPrivate, bool wasLastPrivate, bool withAppendOnTop)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
         var minutesPassed = CalculateTimePadding(msg.Timestamp);
@@ -245,8 +268,11 @@ public partial class ChatPanelView
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
         card.OnCardContextMenuStripClicked += () => OnShowFileClicked(msg.FilePath);
-
-        InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate, wasLastPrivate);
+        if (!withAppendOnTop)
+        {
+            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId,
+                isCurrentPrivate, wasLastPrivate);
+        }
         ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
         row.Height = card.Height;
         lastChatMessage = msg;
@@ -295,6 +321,22 @@ public partial class ChatPanelView
 
         var minutes = (int)(messageTimestamp - lastChatMessage.Timestamp).TotalMinutes;
         return minutes > messageMinPadding ? messageMinPadding * 2 : minutes + messageMinPadding;
+    }
+
+    private void SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false,
+        bool countTowardCap = false)
+    {
+        AddMessageToChatFlow(systemMessage, scrollToBottom: true, countTowardCap: countTowardCap);
+
+        if (needsToNotify)
+        {
+            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
+            {
+                RoomId = roomId,
+                DescribableMessage = systemMessage,
+            });
+            NotifyIfNeeded(systemMessage);
+        }
     }
 
     private void InsertPrivateChatSystemMessageIfNeeded(Guid senderId, Guid? recipientId,

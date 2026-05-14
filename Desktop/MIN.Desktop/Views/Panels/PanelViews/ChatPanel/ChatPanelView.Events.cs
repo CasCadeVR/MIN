@@ -25,7 +25,7 @@ public partial class ChatPanelView
             eventBus.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted),
             eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted),
             eventBus.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed),
-            eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoChanged),
+            eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated),
             eventBus.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated),
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
@@ -184,7 +184,7 @@ public partial class ChatPanelView
 
     #region Room related
 
-    private async Task OnRoomInfoChanged(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
+    private async Task OnRoomInfoUpdated(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
         if (eventMessage.Room.Id != roomId)
         {

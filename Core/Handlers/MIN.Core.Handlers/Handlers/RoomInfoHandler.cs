@@ -51,9 +51,10 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
         else if (message is RoomInfoResponseMessage roomInfoResponse)
         {
             roomStore.Register(roomInfoResponse.Room);
-            foreach (var roomMessage in roomInfoResponse.Room.ChatHistory.AsEnumerable().Reverse())
+            var history = roomInfoResponse.Room.ChatHistory;
+            for (var i = history.Count - 1; i >= 0; i--)
             {
-                context.RoomContext.Messages.AddMessage(roomMessage);
+                context.RoomContext.Messages.AddMessage(history[i]);
             }
 
             foreach (var roomParticipant in roomInfoResponse.Room.CurrentParticipants)

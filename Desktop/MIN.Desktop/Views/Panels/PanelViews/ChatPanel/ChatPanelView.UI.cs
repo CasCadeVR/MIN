@@ -143,21 +143,6 @@ public partial class ChatPanelView
 
     #region Helper methods
 
-    private void SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false)
-    {
-        AddMessageToChatFlow(systemMessage, true);
-
-        if (needsToNotify)
-        {
-            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-            {
-                RoomId = roomId,
-                DescribableMessage = systemMessage,
-            });
-            NotifyIfNeeded(systemMessage);
-        }
-    }
-
     private void AddStatus(IDescribableStatus status)
     {
         currentStatuses.Add(status);
