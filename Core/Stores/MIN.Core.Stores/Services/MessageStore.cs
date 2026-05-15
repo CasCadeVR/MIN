@@ -8,11 +8,18 @@ public sealed class MessageStore : IMessageStore
 {
     private readonly List<IMessage> messages = [];
 
-    void IMessageStore.AddMessage(IMessage message)
+    void IMessageStore.AddMessage(IMessage message, bool appendOnStart)
     {
         lock (messages)
         {
-            messages.Add(message);
+            if (appendOnStart)
+            {
+                messages.Insert(0, message);
+            }
+            else
+            {
+                messages.Add(message);
+            }
         }
     }
 

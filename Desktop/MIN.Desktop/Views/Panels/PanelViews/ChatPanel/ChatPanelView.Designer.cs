@@ -120,6 +120,7 @@
             chatFlow.WrapContents = false;
             chatFlow.DragDrop += chatFlow_DragDrop;
             chatFlow.DragEnter += chatFlow_DragEnter;
+            chatFlow.DragOver += chatFlow_DragOver;
             chatFlow.DragLeave += chatFlow_DragLeave;
             chatFlow.Resize += chatFlow_Resize;
             // 
@@ -200,6 +201,7 @@
             messageTextBox.Size = new Size(558, 35);
             messageTextBox.TabIndex = 4;
             messageTextBox.TextChanged += messageTextBox_TextChanged;
+            messageTextBox.KeyDown += messageTextBox_KeyDown;
             messageTextBox.KeyPress += messageTextBox_KeyPress;
             // 
             // multiFileAttachmentUploader
@@ -528,7 +530,6 @@
             // 
             // openFileDialog
             // 
-            openFileDialog.FileName = "openFileDialog";
             openFileDialog.Multiselect = true;
             openFileDialog.ShowPreview = true;
             // 

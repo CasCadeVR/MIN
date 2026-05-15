@@ -2,6 +2,7 @@
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated;
+using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Panels.SidePanelViews;
@@ -24,7 +25,7 @@ public partial class ChatPanelView
             eventBus.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted),
             eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted),
             eventBus.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed),
-            eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoChanged),
+            eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated),
             eventBus.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated),
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
@@ -183,7 +184,7 @@ public partial class ChatPanelView
 
     #region Room related
 
-    private async Task OnRoomInfoChanged(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
+    private async Task OnRoomInfoUpdated(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
         if (eventMessage.Room.Id != roomId)
         {
@@ -217,11 +218,11 @@ public partial class ChatPanelView
             var e = eventMessage.Message;
 
             loadedPage = e.Page;
-            totalMessagesCount = e.TotalCount;
+            room.TotalMessageCount = e.TotalCount;
             RemoveLoadMoreLabel();
             RenderMessages(e.Messages, appendOnTop: true);
 
-            if (loadedPage * PageSize < totalMessagesCount)
+            if (loadedPage * StoreConstants.MessagesPageSize < room.TotalMessageCount)
             {
                 ShowLoadMoreLabel();
             }

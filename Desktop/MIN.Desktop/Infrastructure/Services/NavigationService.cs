@@ -24,7 +24,9 @@ public class NavigationService : INavigationService
     public SynchronizationContext UiContext { get; set; } = null!;
 
     private readonly IServiceProvider provider;
-    private IPanel? lastPanel;
+
+    private BasePanelView? lastSidePanel;
+    private BasePanelView? lastMainPanel;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NavigationService"/>
@@ -62,8 +64,6 @@ public class NavigationService : INavigationService
 
     private void NavigateToPanel(BasePanelView panel)
     {
-        lastPanel?.OnNavigatedFrom();
-        lastPanel = null;
         UiContext.Post(_ =>
         {
             switch (panel.PanelType)
@@ -72,12 +72,18 @@ public class NavigationService : INavigationService
                     MainPanel.Controls.Clear();
                     SplitContainer.Panel2MinSize = panel.MinimumSize.Width;
                     MainPanel.Controls.Add(panel);
+
+                    lastMainPanel?.OnNavigatedFrom();
+                    lastMainPanel = panel;
                     break;
 
                 case Contracts.Enums.PanelType.Side:
                     SidePanel.Controls.Clear();
                     SplitContainer.Panel1MinSize = panel.MinimumSize.Width;
                     SidePanel.Controls.Add(panel);
+
+                    lastSidePanel?.OnNavigatedFrom();
+                    lastSidePanel = panel;
                     break;
             }
 
@@ -85,6 +91,5 @@ public class NavigationService : INavigationService
         }, null);
 
         panel.OnNavigatedTo();
-        lastPanel = panel;
     }
 }

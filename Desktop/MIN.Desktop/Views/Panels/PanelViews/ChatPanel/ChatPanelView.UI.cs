@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
+using MIN.Core.Stores.Contracts.Constants;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
@@ -122,11 +123,10 @@ public partial class ChatPanelView
     {
         chatFlow.Controls.Clear();
 
-        totalMessagesCount = room.TotalMessageCount;
         var messages = room.ChatHistory;
         RenderMessages(messages);
 
-        if (totalMessagesCount > PageSize)
+        if (room.TotalMessageCount > StoreConstants.MessagesPageSize)
         {
             ShowLoadMoreLabel();
         }
@@ -144,21 +144,6 @@ public partial class ChatPanelView
     #endregion
 
     #region Helper methods
-
-    private void SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false)
-    {
-        AddMessageToChatFlow(systemMessage);
-
-        if (needsToNotify)
-        {
-            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-            {
-                RoomId = roomId,
-                DescribableMessage = systemMessage,
-            });
-            NotifyIfNeeded(systemMessage);
-        }
-    }
 
     private void AddStatus(IDescribableStatus status)
     {

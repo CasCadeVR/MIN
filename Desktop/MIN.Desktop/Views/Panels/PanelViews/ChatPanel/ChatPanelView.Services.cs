@@ -48,6 +48,7 @@ public partial class ChatPanelView
     {
         if (!Path.Exists(filePath))
         {
+            MessageBox.Show("Файл не нашёлся", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
 

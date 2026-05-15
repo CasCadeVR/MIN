@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Core.Entities;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Models;
 
 namespace MIN.Core.Stores.Services;
 
@@ -28,6 +29,7 @@ public sealed class RoomStore : IRoomStore
             var context = roomFactory.GetOrCreateContext(roomId);
             room.CurrentParticipants = context.Participants.GetParticipants().ToList();
             room.ChatHistory = context.Messages.GetHistory().ToList();
+            room.TotalMessageCount = room.ChatHistory.Count();
             return room;
         }
 
@@ -41,6 +43,7 @@ public sealed class RoomStore : IRoomStore
             var context = roomFactory.GetOrCreateContext(roomId);
             room.CurrentParticipants = context.Participants.GetParticipants().ToList();
             room.ChatHistory = context.Messages.GetHistory().ToList();
+            room.TotalMessageCount = room.ChatHistory.Count();
             return true;
         }
 
@@ -56,6 +59,7 @@ public sealed class RoomStore : IRoomStore
             room.ChatHistory = context.Messages.GetRecentHistory()
                 .Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId)
                 .ToList();
+            room.TotalMessageCount = GetMessagesCountFor(context, participantId);
             return room;
         }
 
@@ -64,15 +68,17 @@ public sealed class RoomStore : IRoomStore
 
     int IRoomStore.GetRoomChatHistoryCountFor(Guid participantId, Guid roomId)
     {
-        if (roomsById.TryGetValue(roomId, out var room))
+        if (roomsById.TryGetValue(roomId, out _))
         {
             var context = roomFactory.GetOrCreateContext(roomId);
-            return context.Messages.GetHistory()
-                .Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId).Count();
+            return GetMessagesCountFor(context, participantId);
         }
 
         throw new InvalidOperationException($"Комнаты с {roomId} не нашлось");
     }
+
+    private static int GetMessagesCountFor(RoomContext context, Guid participantId)
+        => context.Messages.GetHistory().Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId).Count();
 
     Guid IRoomStore.GetRoomHostParticipantId(Guid roomId)
         => roomsById.TryGetValue(roomId, out var room) ? room.HostParticipant.Id : throw new KeyNotFoundException();

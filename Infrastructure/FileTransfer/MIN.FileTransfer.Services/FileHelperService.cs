@@ -51,7 +51,7 @@ public sealed class FileHelperService : IFileHelperService
         { ".bat", ".cmd", ".com", ".scr", ".vbs", ".ps1", ".wsf", ".reg", ".inf", };
 
     private readonly static HashSet<string> imageExtensions = new(StringComparer.OrdinalIgnoreCase)
-        { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".ico"};
+        { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".ico", ".jfif"};
 
     bool IFileHelperService.IsFileImage(string fileName)
     {

@@ -1,4 +1,5 @@
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 
@@ -35,6 +36,8 @@ public partial class RoomCreateForm : StyledForm
         var title = isNew ? "Создание комнаты" : "Редактирование комнаты";
         Title.Text = title;
         Text = "MIN - " + title;
+
+        roomMaximumCount.Maximum = DesktopConstants.MaximumParticipantsInRoom;
     }
 
     /// <inheritdoc />
