@@ -28,6 +28,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
     private readonly INavigationService navigationService;
     private readonly Dictionary<Guid, RecentRoomCard> activeRecentRoomCards = [];
     private readonly Dictionary<Guid, ChatPanelView> activeChatPanels = [];
+    private readonly ParticipantInfo localParticipant;
     private RecentRoomCard? selectedRecentRoomCard;
 
     /// <inheritdoc />
@@ -45,6 +46,8 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         this.featureCollection = featureCollection;
         this.ctsProvider = ctsProvider;
         this.navigationService = navigationService;
+
+        localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
 
         SubscribeToEvents();
     }
@@ -128,7 +131,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
 
             await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, ctsProvider.AppCts.Token);
 
-            context.Participants.AddParticipant(localParticipant);
+            context.Participants.AddParticipant(new Participant(localParticipant));
 
             await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, ctsProvider.AppCts.Token);
 
@@ -158,7 +161,8 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         activeChatPanels[roomId] = panel;
         var card = new RecentRoomCard(featureCollection.Core.EventBus,
             context,
-            roomInfo)
+            roomInfo,
+            AsCreator: roomInfo.HostParticipant.Id == localParticipant.Id)
         {
             Width = flowLayoutPanelRooms.Width - flowLayoutPanelRooms.Margin.Horizontal * 2,
         };

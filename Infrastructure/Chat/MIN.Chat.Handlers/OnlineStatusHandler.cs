@@ -1,10 +1,11 @@
-﻿using MIN.Core.Handlers.Contracts;
-using MIN.Core.Handlers.Contracts.Models;
+﻿using MIN.Chat.Events;
 using MIN.Chat.Messaging;
-using MIN.Chat.Events;
-using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Messaging.Contracts;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts;
+using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Handlers;
@@ -33,6 +34,16 @@ internal sealed class OnlineStatusHandler : IMessageHandler, IChatHandlerAnchor
         {
             logger.Log($"Неизвестный тип сообщения в {nameof(OnlineStatusHandler)} - {message.GetType()}");
             return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(OnlineStatusHandler)} - {message.GetType()}");
+        }
+
+        if (context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var participant))
+        {
+            var status = onlineStatusChangedMessage.Status;
+            participant!.CurrentStatus = status;
+            if (status == OnlineStatus.Offline)
+            {
+                participant.LastSeenOnline = DateTime.Now;
+            }
         }
 
         await eventBus.PublishAsync(new OnlineStatusChangedEvent()

@@ -1,6 +1,6 @@
 ﻿using MIN.Chat.Messaging;
 using MIN.Chat.Services.Contracts.Interfaces;
-using MIN.Chat.Services.Contracts.Models.Enums;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
 

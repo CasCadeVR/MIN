@@ -1,4 +1,4 @@
-﻿using MIN.Chat.Services.Contracts.Models.Enums;
+﻿using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts;
 
 namespace MIN.Chat.Events;

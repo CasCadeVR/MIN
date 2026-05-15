@@ -79,7 +79,7 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
 
             await eventBus.PublishAsync(new RoomInfoUpdatedMessageEvent()
             {
-                Room = roomInfoUpdated.Room,
+                RoomInfo = roomInfoUpdated.Room,
             }, context.CancellationToken);
 
             return HandlerResult.Success();

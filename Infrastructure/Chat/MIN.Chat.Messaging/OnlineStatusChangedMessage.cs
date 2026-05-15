@@ -1,4 +1,4 @@
-﻿using MIN.Chat.Services.Contracts.Models.Enums;
+﻿using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 

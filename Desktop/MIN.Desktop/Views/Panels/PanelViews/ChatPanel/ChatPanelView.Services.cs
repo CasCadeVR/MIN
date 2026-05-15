@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
-using MIN.Chat.Services.Contracts.Models.Enums;
 using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.FileTransfer.Messaging;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;

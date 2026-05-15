@@ -11,5 +11,5 @@ public sealed class RoomInfoUpdatedMessageEvent : BaseEvent
     /// <summary>
     /// Информация о комнате
     /// </summary>
-    public RoomInfo Room { get; init; } = null!;
+    public RoomInfo RoomInfo { get; init; } = null!;
 }

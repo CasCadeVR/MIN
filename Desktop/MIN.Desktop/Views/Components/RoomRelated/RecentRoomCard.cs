@@ -41,12 +41,12 @@ public partial class RecentRoomCard : UserControl, IDisposable
     public bool IsSelected { get; set; }
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
+    /// Инициализирует новый экземпляр <see cref="RecentRoomCard"/>
     /// </summary>
     /// <remarks>
     /// Room нужно получить по ссылке из store
     /// </remarks>
-    public RecentRoomCard(IEventBus eventBus, RoomContext roomContext, RoomInfo roomInfo)
+    public RecentRoomCard(IEventBus eventBus, RoomContext roomContext, RoomInfo roomInfo, bool AsCreator)
     {
         InitializeComponent();
         this.eventBus = eventBus;
@@ -54,7 +54,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
         this.roomInfo = roomInfo;
 
         RoomName = roomInfo.Name;
-        currentAmount = roomInfo.ParticipantCount + 1;
+        currentAmount = roomInfo.ParticipantCount + (AsCreator ? 1 : 0);
         maximumAmount = roomInfo.MaximumParticipants;
 
         uiContext = SynchronizationContext.Current
@@ -163,14 +163,14 @@ public partial class RecentRoomCard : UserControl, IDisposable
 
     private async Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
-        if (eventMessage.Room.Id != roomInfo.Id)
+        if (eventMessage.RoomInfo.Id != roomInfo.Id)
         {
             return;
         }
 
-        RoomName = eventMessage.Room.Name;
-        roomInfo.Name = eventMessage.Room.Name;
-        maximumAmount = eventMessage.Room.MaximumParticipants;
+        RoomName = eventMessage.RoomInfo.Name;
+        roomInfo.Name = eventMessage.RoomInfo.Name;
+        maximumAmount = eventMessage.RoomInfo.MaximumParticipants;
 
         uiContext.Post(_ =>
         {
@@ -193,7 +193,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
         lastMessageTime.Text = lastMessageReceivedAt.ToShortTimeString();
         lastMessageSenderAndContent.Text = lastMessageContent;
         missedMessagesCountLabel.Text = missedMessagesCount.ToString();
-        missedMessagesCountLabel.Visible = !IsSelected || missedMessagesCount > 0;
+        missedMessagesCountLabel.Visible = !IsSelected && missedMessagesCount > 0;
     }
 
     private void RecentRoomCard_Click(object sender, EventArgs e)

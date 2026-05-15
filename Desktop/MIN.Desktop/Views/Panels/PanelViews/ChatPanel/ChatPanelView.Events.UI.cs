@@ -1,13 +1,13 @@
 ﻿using System.Drawing.Imaging;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
-using MIN.Chat.Services.Contracts.Models.Enums;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Views.Components;
 using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Desktop.Views.Panels.SidePanelViews;
+using MIN.Core.Entities.Contracts.Enums;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 

@@ -38,7 +38,7 @@ public class Room : IRoomData
     /// <summary>
     /// Получить текущих участников комнаты
     /// </summary>
-    public List<ParticipantInfo> CurrentParticipants { get; set; } = [];
+    public List<Participant> CurrentParticipants { get; set; } = [];
 
     /// <summary>
     /// Получить историю чата
@@ -53,9 +53,9 @@ public class Room : IRoomData
     /// <summary>
     /// Добавить участника в комнату
     /// </summary>
-    public void AddParticipant(ParticipantInfo participantInfo)
+    public void AddParticipant(Participant participant)
     {
-        CurrentParticipants.Add(participantInfo);
+        CurrentParticipants.Add(participant);
     }
 
     /// <summary>

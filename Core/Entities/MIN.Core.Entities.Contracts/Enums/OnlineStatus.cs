@@ -1,4 +1,4 @@
-﻿namespace MIN.Chat.Services.Contracts.Models.Enums;
+﻿namespace MIN.Core.Entities.Contracts.Enums;
 
 /// <summary>
 /// Статус действия в сети

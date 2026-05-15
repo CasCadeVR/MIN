@@ -1,4 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Entities;
 
 namespace MIN.Core.Stores.Contracts.Interfaces;
 
@@ -10,7 +10,12 @@ public interface IParticipantStore
     /// <summary>
     /// Добавить участника в комнату
     /// </summary>
-    void AddParticipant(ParticipantInfo participant);
+    void AddParticipant(Participant participant);
+
+    /// <summary>
+    /// Обновить участника
+    /// </summary>
+    void UpdateParticipant(Guid id, Participant participant);
 
     /// <summary>
     /// Удалить участника из комнаты
@@ -20,17 +25,17 @@ public interface IParticipantStore
     /// <summary>
     /// Получить участника комнаты
     /// </summary>
-    ParticipantInfo GetParticipantById(Guid participantId);
+    Participant GetParticipantById(Guid participantId);
 
     /// <summary>
     /// Попытаться получить участника комнаты
     /// </summary>
-    bool TryGetParticipantById(Guid participantId, out ParticipantInfo? participantInfo);
+    bool TryGetParticipantById(Guid participantId, out Participant? participant);
 
     /// <summary>
     /// Получить список всех участников комнаты
     /// </summary>
-    IEnumerable<ParticipantInfo> GetParticipants();
+    IEnumerable<Participant> GetParticipants();
 
     /// <summary>
     /// Очистить участников для комнаты

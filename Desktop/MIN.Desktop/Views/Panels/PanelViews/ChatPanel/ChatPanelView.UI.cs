@@ -1,5 +1,4 @@
 ﻿using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
@@ -7,7 +6,6 @@ using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
-using MIN.Desktop.Infrastructure.Events;
 using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
@@ -110,6 +108,17 @@ public partial class ChatPanelView
 
             card.OnCardContextMenuStripClicked += (selected, particpant) =>
             {
+                foreach (var participantsFlowControl in participantsFlow.Controls)
+                {
+                    if (participantsFlowControl is ParticipantCard participantCard)
+                    {
+                        if (participantCard.ParticipantId != participant.Id)
+                        {
+                            participantCard.Unselect();
+                        }
+                    }
+                }
+
                 privateChatParticipantId = selected ? participant.Id : null;
             };
 

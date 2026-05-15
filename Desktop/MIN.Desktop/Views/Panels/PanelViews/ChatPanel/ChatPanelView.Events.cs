@@ -186,20 +186,20 @@ public partial class ChatPanelView
 
     private async Task OnRoomInfoUpdated(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
-        if (eventMessage.Room.Id != roomId)
+        if (eventMessage.RoomInfo.Id != roomId)
         {
             return;
         }
 
         uiContext.Post(_ =>
         {
-            if (lastRoomName != eventMessage.Room.Name)
+            if (lastRoomName != eventMessage.RoomInfo.Name)
             {
                 SendSystemMessage(new SystemTextMessage
                 {
-                    Content = $"Хост поменял название комнаты с {lastRoomName} на {eventMessage.Room.Name}",
+                    Content = $"Хост поменял название комнаты с {lastRoomName} на {eventMessage.RoomInfo.Name}",
                 }, needsToNotify: true);
-                lastRoomName = eventMessage.Room.Name;
+                lastRoomName = eventMessage.RoomInfo.Name;
             }
             UpdateStats();
         }, null);

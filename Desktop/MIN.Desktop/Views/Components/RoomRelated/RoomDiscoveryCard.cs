@@ -118,7 +118,9 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
             return;
         }
 
-        room.ParticipantCount++;
+        room.Name = eventMessage.RoomInfo.Name;
+        room.MaximumParticipants = eventMessage.RoomInfo.MaximumParticipants;
+        room.ParticipantCount = eventMessage.RoomInfo.ParticipantCount;
 
         uiContext.Post(_ =>
         {
@@ -129,13 +131,14 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
 
     private async Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
-        if (eventMessage.Room.Id != room.Id)
+        if (eventMessage.RoomInfo.Id != room.Id)
         {
             return;
         }
 
-        room.Name = eventMessage.Room.Name;
-        room.MaximumParticipants = eventMessage.Room.MaximumParticipants;
+        room.Name = eventMessage.RoomInfo.Name;
+        room.MaximumParticipants = eventMessage.RoomInfo.MaximumParticipants;
+        room.ParticipantCount = eventMessage.RoomInfo.ParticipantCount;
 
         uiContext.Post(_ =>
         {

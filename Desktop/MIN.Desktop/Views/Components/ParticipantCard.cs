@@ -1,6 +1,6 @@
 ﻿using MIN.Chat.Events;
-using MIN.Chat.Services.Contracts.Models.Enums;
-using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts;
 using MIN.Desktop.Components.Controls.ContextMenuStrips;
 using MIN.Desktop.Contracts.Schemes;
@@ -15,24 +15,29 @@ public partial class ParticipantCard : UserControl, IDisposable
     private const string StartPrivateChatText = "Начать приватное общение";
     private const string StopPrivateChatText = "Прекратить приватное общение";
 
-    private readonly ParticipantInfo participant;
+    private readonly Participant participant;
     private readonly IEventBus eventBus;
     private readonly Guid roomId;
     private readonly SynchronizationContext uiContext;
     private readonly bool isHost;
+    private readonly bool isSelf;
     private HashSet<IDisposable> eventTokens = null!;
-    private DateTime lastOnline;
     private bool selected;
+
+    /// <summary>
+    /// Идентфикатор участника на карточке
+    /// </summary>
+    public Guid ParticipantId => participant.Id;
 
     /// <summary>
     /// Событие по нажатию на контекстное меню карточки
     /// </summary>
-    public Action<bool, ParticipantInfo>? OnCardContextMenuStripClicked { get; set; }
+    public Action<bool, Participant>? OnCardContextMenuStripClicked { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantCard"/>
     /// </summary>
-    public ParticipantCard(ParticipantInfo participant,
+    public ParticipantCard(Participant participant,
         IEventBus eventBus,
         Guid roomId,
         bool isHost,
@@ -44,6 +49,8 @@ public partial class ParticipantCard : UserControl, IDisposable
         this.eventBus = eventBus;
         this.roomId = roomId;
         this.isHost = isHost;
+        this.isSelf = isSelf;
+
         FillLabels();
 
         uiContext = SynchronizationContext.Current
@@ -51,10 +58,10 @@ public partial class ParticipantCard : UserControl, IDisposable
 
         if (!isSelf)
         {
-            var pictureBoxContextMenuStrip = new ParticipantCardContextMenuStrip();
-            pictureBoxContextMenuStrip.OnItemClick += CardContextMenuStripClicked;
-            pictureBoxContextMenuStrip.Items[0].Text = StartPrivateChatText;
-            ContextMenuStrip = pictureBoxContextMenuStrip;
+            var participantCardContextMenuStrip = new ParticipantCardContextMenuStrip();
+            participantCardContextMenuStrip.OnItemClick += CardContextMenuStripClicked;
+            participantCardContextMenuStrip.Items[0].Text = StartPrivateChatText;
+            ContextMenuStrip = participantCardContextMenuStrip;
         }
         if (!isSelf)
         {
@@ -81,24 +88,34 @@ public partial class ParticipantCard : UserControl, IDisposable
         {
             if (eventMessage.SenderId == participant.Id)
             {
-                if (eventMessage.Status == OnlineStatus.Offline)
-                {
-                    lastOnline = DateTime.Now;
-                }
                 UpdateStatus(eventMessage.Status);
             }
         }, null);
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Отменить выбор карточки
+    /// </summary>
+    public void Unselect()
+    {
+        selected = false;
+        UpdateStylesOutOfSelected();
+    }
+
     private void CardContextMenuStripClicked()
     {
         selected = !selected;
-        ContextMenuStrip!.Items[0].Text = selected ? StopPrivateChatText : StartPrivateChatText;
+        UpdateStylesOutOfSelected();
+        OnCardContextMenuStripClicked?.Invoke(selected, participant);
+    }
+
+    private void UpdateStylesOutOfSelected()
+    {
+        ContextMenuStrip?.Items[0].Text = selected ? StopPrivateChatText : StartPrivateChatText;
         BackColor = selected
             ? ColorScheme.PrivateParticipantCardBackground
             : ColorScheme.DefaultParticipantCardBackground;
-        OnCardContextMenuStripClicked?.Invoke(selected, participant);
     }
 
     private void ApplyStylings()
@@ -123,7 +140,7 @@ public partial class ParticipantCard : UserControl, IDisposable
                 break;
 
             case OnlineStatus.Offline:
-                resultText = $"Последний раз в сети: {lastOnline:t}";
+                resultText = $"Последний раз в сети: {participant.LastSeenOnline:t}";
                 break;
         }
         currentStatus.Text = resultText;
@@ -131,7 +148,7 @@ public partial class ParticipantCard : UserControl, IDisposable
 
     private void FillLabels()
     {
-        UpdateStatus(OnlineStatus.Online);
+        UpdateStatus(isSelf ? OnlineStatus.Online : participant.CurrentStatus);
         participantName.Text = participant.Name;
         if (isHost)
         {

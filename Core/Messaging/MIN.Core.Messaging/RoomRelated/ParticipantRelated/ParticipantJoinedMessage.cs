@@ -1,5 +1,5 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Entities;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 
@@ -24,7 +24,7 @@ public sealed class ParticipantJoinedMessage : BaseMessage, IDescribable
     /// <summary>
     /// Информация о присоединившемся участнике
     /// </summary>
-    public ParticipantInfo Participant { get; set; } = null!;
+    public Participant Participant { get; set; } = null!;
 
     string IDescribable.GetDescription() => $"Участник {Participant.Name} зашёл в комнату";
 }

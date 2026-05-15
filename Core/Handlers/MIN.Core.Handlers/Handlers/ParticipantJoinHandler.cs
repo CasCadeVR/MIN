@@ -12,7 +12,6 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
@@ -99,7 +98,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
 
                 var selfparticipantJoinedMessage = new ParticipantJoinedMessage()
                 {
-                    Participant = identityService.SelfParticipant.ToParticipantInfo(),
+                    Participant = new Entities.Participant(identityService.SelfParticipant),
                     RoomId = context.RoomContext.RoomId
                 };
 
@@ -119,7 +118,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
             case ParticipantJoinedMessage participantJoinedMessage:
                 logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomContext.RoomId}");
 
-                context.RoomContext.Participants.AddParticipant(participantJoinedMessage.Participant);
+                context.RoomContext.Participants.AddParticipant(new Entities.Participant(participantJoinedMessage.Participant));
                 context.RoomContext.Messages.AddMessage(message);
 
                 await eventBus.PublishAsync(new ParticipantJoinedEvent()

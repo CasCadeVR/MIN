@@ -1,11 +1,12 @@
-﻿using MIN.Core.Entities.Contracts.Interfaces;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Entities.Contracts.Interfaces;
 
 namespace MIN.Core.Entities;
 
 /// <summary>
 /// Участник комнаты
 /// </summary>
-public class Participant : IParticipantData
+public record Participant : IParticipantData
 {
     /// <summary>
     /// Идентификатор участника
@@ -16,4 +17,33 @@ public class Participant : IParticipantData
     /// Имя участника
     /// </summary>
     public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Статус действия в сети
+    /// </summary>
+    public OnlineStatus CurrentStatus { get; set; }
+
+    /// <summary>
+    /// Последнее время онлайн
+    /// </summary>
+    public DateTime LastSeenOnline { get; set; }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="Participant"/>
+    /// </summary>
+    public Participant(IParticipantData participantData)
+    {
+        Id = participantData.Id;
+        Name = participantData.Name;
+        CurrentStatus = OnlineStatus.Online;
+        LastSeenOnline = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="Participant"/>
+    /// </summary>
+    /// <remarks>
+    /// Нужен для сериализации
+    /// </remarks>
+    public Participant() { }
 }

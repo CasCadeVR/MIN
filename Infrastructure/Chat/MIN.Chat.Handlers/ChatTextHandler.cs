@@ -6,6 +6,7 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Events.Contracts;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Extensions;
 
 namespace MIN.Chat.Handlers;
 
@@ -53,7 +54,7 @@ internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
             {
                 Message = chatTextMessage,
                 RoomId = context.RoomContext.RoomId,
-                Sender = sender!,
+                Sender = sender!.ToParticipantInfo(),
             });
         }
 

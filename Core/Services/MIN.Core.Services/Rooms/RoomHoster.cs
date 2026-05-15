@@ -39,7 +39,7 @@ public sealed class RoomHoster : IRoomHoster
 
         context.Messages.AddMessage(new ParticipantJoinedMessage()
         {
-            Participant = roomInfo.HostParticipant,
+            Participant = new Entities.Participant(roomInfo.HostParticipant),
             RoomId = roomInfo.Id
         });
 

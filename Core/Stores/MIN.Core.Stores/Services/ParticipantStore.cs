@@ -1,4 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Entities;
 using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Core.Stores.Services;
@@ -6,15 +6,27 @@ namespace MIN.Core.Stores.Services;
 /// <inheritdoc cref="IParticipantStore"/>
 public sealed class ParticipantStore : IParticipantStore
 {
-    private readonly List<ParticipantInfo> participants = [];
+    private readonly List<Participant> participants = [];
 
-    void IParticipantStore.AddParticipant(ParticipantInfo participant)
+    void IParticipantStore.AddParticipant(Participant participant)
     {
         lock (participants)
         {
             if (!participants.Any(p => p.Id == participant.Id))
             {
                 participants.Add(participant);
+            }
+        }
+    }
+
+    void IParticipantStore.UpdateParticipant(Guid id, Participant participant)
+    {
+        lock (participants)
+        {
+            var existing = participants.FirstOrDefault(p => p.Id == id);
+            if (existing != null)
+            {
+                existing = participant;
             }
         }
     }
@@ -31,7 +43,7 @@ public sealed class ParticipantStore : IParticipantStore
         }
     }
 
-    ParticipantInfo IParticipantStore.GetParticipantById(Guid participantId)
+    Participant IParticipantStore.GetParticipantById(Guid participantId)
     {
         lock (participants)
         {
@@ -40,16 +52,16 @@ public sealed class ParticipantStore : IParticipantStore
         }
     }
 
-    bool IParticipantStore.TryGetParticipantById(Guid participantId, out ParticipantInfo? participantInfo)
+    bool IParticipantStore.TryGetParticipantById(Guid participantId, out Participant? participant)
     {
         lock (participants)
         {
-            participantInfo = participants.FirstOrDefault(x => x.Id == participantId);
-            return participantInfo != null;
+            participant = participants.FirstOrDefault(x => x.Id == participantId);
+            return participant != null;
         }
     }
 
-    IEnumerable<ParticipantInfo> IParticipantStore.GetParticipants()
+    IEnumerable<Participant> IParticipantStore.GetParticipants()
     {
         lock (participants)
         {
