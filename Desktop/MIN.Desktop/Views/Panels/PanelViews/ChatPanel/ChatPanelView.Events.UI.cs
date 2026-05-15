@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Drawing.Imaging;
+﻿using System.Drawing.Imaging;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
 using MIN.Chat.Services.Contracts.Models.Enums;
@@ -16,11 +15,8 @@ public partial class ChatPanelView
 {
     private const string UriDataFormat = "UniformResourceLocator";
 
-    #region Resizing
-    private const int TypingTimerInterval = 3000;
-
     private readonly System.Windows.Forms.Timer resizeTimer = new() { Interval = 150 };
-    private readonly System.Windows.Forms.Timer typingTimer = new() { Interval = TypingTimerInterval };
+    private readonly System.Windows.Forms.Timer typingTimer = new() { Interval = 3000 };
 
     private bool isResizing;
     private bool isParentWindowActive = true;
@@ -248,9 +244,6 @@ public partial class ChatPanelView
     {
         await SendSelfStatusChangedMessage(OnlineStatus.Online);
         isParentWindowActive = true;
-    }
-            }
-        }
     }
 
     private void messageTextBox_KeyDown(object sender, KeyEventArgs e)
