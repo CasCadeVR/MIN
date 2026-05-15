@@ -12,11 +12,15 @@ namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
 public partial class ChatPanelView
 {
-    #region Resizing
+    private const int TypingTimerInterval = 3000;
 
     private readonly System.Windows.Forms.Timer resizeTimer = new() { Interval = 150 };
+    private readonly System.Windows.Forms.Timer typingTimer = new() { Interval = TypingTimerInterval };
 
     private bool isResizing;
+    private bool isParentWindowActive = true;
+
+    #region Timers
 
     private void InitializeResizeTimer()
     {
@@ -27,6 +31,25 @@ public partial class ChatPanelView
             PerformResize();
         };
     }
+
+    private void InitializeTypingTimer()
+    {
+        typingTimer.Tick += (s, e) => OnTypingTimerStop();
+    }
+
+    private void OnTypingTimerStop()
+    {
+        typingTimer.Stop();
+        _ = SendSelfStatusChangedMessage(GetRestingStatus());
+    }
+
+    private OnlineStatus GetRestingStatus() => isParentWindowActive
+            ? OnlineStatus.Online
+            : OnlineStatus.Offline;
+
+    #endregion
+
+    #region Resizing
 
     private void PerformResize()
     {
@@ -160,7 +183,25 @@ public partial class ChatPanelView
 
     #region MesssageTextBox events
 
-    private void messageTextBox_TextChanged(object sender, EventArgs e) => ResizeMessageTextBox();
+    private async void messageTextBox_TextChanged(object sender, EventArgs e)
+    {
+        ResizeMessageTextBox();
+
+        if (string.IsNullOrEmpty(messageTextBox.Text))
+        {
+            OnTypingTimerStop();
+        }
+        else
+        {
+            if (!typingTimer.Enabled)
+            {
+                _ = SendSelfStatusChangedMessage(OnlineStatus.Typing);
+            }
+
+            typingTimer.Stop();
+            typingTimer.Start();
+        }
+    }
 
     private void messageTextBox_KeyPress(object sender, KeyPressEventArgs e)
     {
@@ -193,12 +234,15 @@ public partial class ChatPanelView
 
     private async void Parent_Deactivate(object? sender, EventArgs e)
     {
+        typingTimer.Stop();
         await SendSelfStatusChangedMessage(OnlineStatus.Offline);
+        isParentWindowActive = false;
     }
 
     private async void Parent_Activated(object? sender, EventArgs e)
     {
         await SendSelfStatusChangedMessage(OnlineStatus.Online);
+        isParentWindowActive = true;
     }
 
     #endregion

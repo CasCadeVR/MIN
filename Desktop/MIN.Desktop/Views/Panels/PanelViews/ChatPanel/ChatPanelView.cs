@@ -45,6 +45,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
         InitializeNotifications();
         InitializeResizeTimer();
+        InitializeTypingTimer();
         InitializeParentFormWindowStateEvents();
         HideMultiFileAttachmentUploader();
         HideStatusRow();
@@ -117,6 +118,8 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         {
             token.Dispose();
         }
+        resizeTimer.Dispose();
+        typingTimer.Dispose();
         formCts.Cancel();
         formCts.Dispose();
         await CleanUpAsync(roomId, connectionId, isHost: localParticipant.Id == room.HostParticipant.Id);

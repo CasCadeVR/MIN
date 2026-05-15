@@ -56,8 +56,10 @@ public partial class ParticipantCard : UserControl, IDisposable
             pictureBoxContextMenuStrip.Items[0].Text = StartPrivateChatText;
             ContextMenuStrip = pictureBoxContextMenuStrip;
         }
-
-        SubscribeToEvents();
+        if (!isSelf)
+        {
+            SubscribeToEvents();
+        }
     }
 
     private void SubscribeToEvents()
@@ -145,6 +147,11 @@ public partial class ParticipantCard : UserControl, IDisposable
     /// <inheritdoc cref="IDisposable.Dispose"/>
     void IDisposable.Dispose()
     {
+        if (eventTokens == null)
+        {
+            return;
+        }
+
         foreach (var token in eventTokens)
         {
             token.Dispose();

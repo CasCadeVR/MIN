@@ -59,10 +59,14 @@ public partial class ChatPanelView
 
     private async Task SendSelfStatusChangedMessage(OnlineStatus newStatus)
     {
-        await featureCollection.Chat.ChatStatusService.SendSelfOnlineStatusChangedAsync(roomId,
-            newStatus,
-            formCts.Token
-        );
+        try
+        {
+            await featureCollection.Chat.ChatStatusService.SendSelfOnlineStatusChangedAsync(roomId,
+                newStatus,
+                formCts.Token
+            );
+        }
+        catch { }
     }
 
     private async Task SendMessage()
