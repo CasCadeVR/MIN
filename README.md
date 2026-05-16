@@ -170,7 +170,7 @@ dotnet test
 
 ```mermaid
 flowchart TB
-    %%{init: {'flowchart': {'nodeSpacing': 12}}}%%
+    %%{init: {'flowchart': {'nodeSpacing': 20}}}%%
     classDef coreFolder fill:#ede9fe,stroke:#7c3aed,color:#5b21b6
     classDef infraFolder fill:#e0e7ff,stroke:#4f46e5,color:#3730a3
     classDef deskFolder fill:#dbeafe,stroke:#3b82f6,color:#1e40af
