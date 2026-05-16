@@ -84,11 +84,16 @@ public partial class DiscoveryPanelView : StyledPanelView
 
     private async Task PerformDiscovery()
     {
-        isDiscovering = true;
-
         var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
                 ? featureCollection.Helper.ComputerProvider.GetLocalNetworkMachineNames(classNumber.Value.ToString())
                 : Settings.PreferredPCNames;
+
+        if (!availablePCs.Any())
+        {
+            return;
+        }
+
+        isDiscovering = true;
 
         uiContext.Post(_ =>
         {

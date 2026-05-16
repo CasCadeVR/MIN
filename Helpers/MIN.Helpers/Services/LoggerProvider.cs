@@ -25,11 +25,11 @@ public class LoggerProvider : ILoggerProvider
         OnLogReceived?.Invoke(this, result);
     }
 
-    IEnumerable<string> ILoggerProvider.GetLogHistory(int? page, int? pageSize)
+    IEnumerable<string> ILoggerProvider.GetRecentLogHistory(int? page, int? pageSize)
     {
         if (page.HasValue && pageSize.HasValue)
         {
-            return messages.Skip(page.Value * pageSize.Value).Take(pageSize.Value);
+            return messages.AsEnumerable().Reverse().Skip(page.Value * pageSize.Value).Take(pageSize.Value);
         }
         else
         {

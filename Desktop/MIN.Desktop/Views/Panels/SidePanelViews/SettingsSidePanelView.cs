@@ -3,6 +3,7 @@ using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Views.Forms;
+using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Models;
 using MIN.Helpers.Contracts.Models.Enums;
@@ -44,15 +45,15 @@ public partial class SettingsSidePanelView : StyledPanelView
     private void FillControls()
     {
         Settings = featureCollection.Helper.SettingsProvider.GetSettings();
-        labelVersion.Text += featureCollection.Helper.VersionProvider.Version.ToString();
+        labelVersion.Text = $"Версия: {featureCollection.Helper.VersionProvider.Version.ToString()}";
         defaultName.Text = Settings.DefaultParticipantName;
         roomSearchTime.Value = Settings.DiscoveryTimeout;
         preferredSearch.Checked = Settings.SearchMethod == SearchMethod.Preferred;
         classRoomSearch.Checked = Settings.SearchMethod == SearchMethod.ClassRoom;
-        SetPCNames(Settings.PreferredPCNames.ToList());
+        SetPCNames(Settings.PreferredPCNames);
     }
 
-    private void SetPCNames(List<string> pcNames)
+    private void SetPCNames(IEnumerable<string> pcNames)
     {
         var allowAdd = preferredPcNameList.AllowUserToAddRows;
         preferredPcNameList.AllowUserToAddRows = false;
@@ -168,5 +169,6 @@ public partial class SettingsSidePanelView : StyledPanelView
     private void logButton_Click(object sender, EventArgs e)
     {
         new LogForm(featureCollection.Helper.Logger).Show();
+        navigationService.NavigateTo<MainSidePanelView>();
     }
 }

@@ -186,6 +186,7 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
 
         uiContext.Post(_ =>
         {
+            UpdateIconOutOfState();
             splitContainerDownload.Panel2Collapsed = true;
             fileNameAndSize.Text = string.Empty;
             fileNameAndSize.AutoSize = false;
@@ -231,18 +232,21 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
         {
             tableLayoutPanelImage.BackgroundImage = Resources.close;
         }
-        else if (!downloaded)
+        else
         {
-            tableLayoutPanelImage.BackgroundImage = Resources.download;
+            if (downloaded)
+            {
+                tableLayoutPanelImage.BackColor = ColorScheme.PrimaryAccent;
+                tableLayoutPanelImage.BackgroundImage = null;
+            }
+            else
+            {
+                tableLayoutPanelImage.BackgroundImage = Resources.download;
+            }
         }
     }
 
-    /// <summary>
-    /// Подстроивает размеры сообщений под содержимое внутри и возвращает полученную высоту
-    /// </summary>
-    /// <returns>
-    /// Вычисленную высоту, исходя из содержимого
-    /// </returns>
+    /// <inheritdoc />
     public int ResizeOutOfPrefferedSize()
     {
         if (!downloaded || string.IsNullOrEmpty(fileMetadataMessage.FilePath))

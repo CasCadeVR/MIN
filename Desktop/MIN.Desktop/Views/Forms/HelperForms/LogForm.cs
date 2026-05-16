@@ -2,7 +2,7 @@ using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Helpers.Contracts.Interfaces;
 
-namespace MIN.Desktop.Views.Forms;
+namespace MIN.Desktop.Views.Forms.HelperForms;
 
 /// <summary>
 /// Форма логирования
@@ -36,9 +36,8 @@ public partial class LogForm : StyledForm
     {
         uiContext.Post(_ =>
         {
-            logListBox.Items.Add(message);
-            var visibleItems = logListBox.ClientSize.Height / logListBox.ItemHeight;
-            logListBox.TopIndex = Math.Max(logListBox.Items.Count - visibleItems + 1, 0);
+            logListBox.Items.Insert(0, message);
+
         }, this);
     }
 
@@ -58,7 +57,7 @@ public partial class LogForm : StyledForm
 
     private void LoadLogs()
     {
-        var history = loggerProvider.GetLogHistory(currentPage, 100);
+        var history = loggerProvider.GetRecentLogHistory(currentPage, 100);
 
         foreach (var message in history)
         {
@@ -78,5 +77,12 @@ public partial class LogForm : StyledForm
     {
         currentPage++;
         LoadLogs();
+        var visibleItems = logListBox.ClientSize.Height / logListBox.ItemHeight;
+        logListBox.TopIndex = Math.Max(logListBox.Items.Count - visibleItems + 1, 0);
+    }
+
+    private void scrollUpButton_Click(object sender, EventArgs e)
+    {
+        logListBox.TopIndex = 0;
     }
 }
