@@ -72,8 +72,11 @@ flowchart TB
         L["📋 Serialization"]
     end
     
-    class A highlight; B,C,D,E,F,G,H,I,J,K,L component
-    class UI uiLayer; INF infraLayer; CORE coreLayer
+    class A highlight;
+    class B,C,D,E,F,G,H,I,J,K,L component
+    class UI uiLayer;
+    class INF infraLayer;
+    class CORE coreLayer
     UI --> INF
     INF --> CORE
 ```
@@ -170,9 +173,7 @@ flowchart TB
     classDef file fill:#fff,stroke:#c7d2fe,color:#4338ca
     
     subgraph MIN["📂 MIN"]
-        class MIN rootFolder
         subgraph CORE["⚙️ Core/"]
-            class CORE coreFolder
             G["Cryptography/"]
             H["Messaging/"]
             I["Events/"]
@@ -181,13 +182,11 @@ flowchart TB
             L["Serialization/"]
         end
         subgraph INF["🏗️ Infrastructure/"]
-            class INF infraFolder
             M["Chat/"]
             N["Discovery/"]
             O["FileTransfer/"]
         end
         subgraph DESK["🖥️ Desktop/"]
-            class DESK deskFolder
             P["MIN.Desktop/"]
             Q["Views/"]
             R["Components/"]
@@ -197,6 +196,10 @@ flowchart TB
         U["Common/"]
     end
     
+    class MIN rootFolder
+    class CORE coreFolder
+    class INF infraFolder
+    class DESK deskFolder
     class G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U file
 ```
 
@@ -221,7 +224,9 @@ flowchart LR
     A["👤 Отправитель"] -->|"🔐 Шифрование"| B["🔐 Зашифрованное сообщение"]
     B -->|"🌐 Локальная сеть"| C["👤 Получатель"]
     
-    class A sender; B encrypted; C recipient
+    class A sender;
+    class B encrypted;
+    class C recipient
 ```
 
 ### Технологии защиты
