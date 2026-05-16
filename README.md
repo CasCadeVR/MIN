@@ -44,32 +44,37 @@
 ## 🏗️ Архитектура
 
 ```mermaid
-flowchart TB
+flowchart LR
+    %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffffff', 'edgeLabelBackground':'#ffffff' }}}%%
+    
     classDef uiLayer fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
     classDef infraLayer fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#3730a3
     classDef coreLayer fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#5b21b6
-    classDef component fill:#fff,stroke:#c7d2fe,color:#312e81
+    classDef component fill:#ffffff,stroke:#c7d2fe,stroke-width:1.5px,color:#312e81
     classDef highlight fill:#c7d2fe,stroke:#4f46e5,stroke-width:3px,color:#312e81
     
     subgraph UI["🖥️ UI Layer (WinForms)"]
-        A["💬 ChatPanel"]
-        B["🔍 DiscoveryPanel"]
-        C["📁 FileTransferPanel"]
+        direction TB
+        A["💬 ChatPanel<br><small>Сообщения и комнаты</small>"]
+        B["🔍 DiscoveryPanel<br><small>Обнаружение комнат</small>"]
+        C["📁 FileTransferPanel<br><small>Обмен файлами</small>"]
     end
     
     subgraph INF["🏗️ Infrastructure Layer"]
-        D["💬 Chat Services"]
-        E["🔍 Discovery Services"]
-        F["📁 FileTransfer Services"]
+        direction TB
+        D["💬 Chat Services<br><small>Сообщения и статусы</small>"]
+        E["🔍 Discovery Services<br><small>Named Pipes Discovery</small>"]
+        F["📁 FileTransfer Services<br><small>Потоковая передача</small>"]
     end
     
     subgraph CORE["⚙️ Core Layer"]
-        G["🔐 Cryptography"]
-        H["📨 Messaging"]
-        I["⚡ Events"]
-        J["🔄 Handlers"]
-        K["🔌 Transport"]
-        L["📋 Serialization"]
+        direction TB
+        G["🔐 Cryptography<br><small>E2E шифрование</small>"]
+        H["📨 Messaging<br><small>Система сообщений</small>"]
+        I["⚡ Events<br><small>Event Bus</small>"]
+        J["🔄 Handlers<br><small>Диспетчер</small>"]
+        K["🔌 Transport<br><small>Named Pipes</small>"]
+        L["📋 Serialization<br><small>JSON</small>"]
     end
     
     class A highlight;
@@ -77,6 +82,7 @@ flowchart TB
     class UI uiLayer;
     class INF infraLayer;
     class CORE coreLayer
+    
     UI --> INF
     INF --> CORE
 ```
@@ -165,7 +171,6 @@ dotnet test
 
 ```mermaid
 flowchart TB
-    classDef rootFolder fill:#fef3c7,stroke:#f59e0b,color:#92400e
     classDef coreFolder fill:#ede9fe,stroke:#7c3aed,color:#5b21b6
     classDef infraFolder fill:#e0e7ff,stroke:#4f46e5,color:#3730a3
     classDef deskFolder fill:#dbeafe,stroke:#3b82f6,color:#1e40af
@@ -196,7 +201,6 @@ flowchart TB
         U["Common/"]
     end
     
-    class MIN rootFolder
     class CORE coreFolder
     class INF infraFolder
     class DESK deskFolder
