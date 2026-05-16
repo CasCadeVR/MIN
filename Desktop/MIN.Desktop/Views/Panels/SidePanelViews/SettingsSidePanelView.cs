@@ -35,13 +35,15 @@ public partial class SettingsSidePanelView : StyledPanelView
 
         this.featureCollection = featureCollection;
         this.navigationService = navigationService;
-        Settings = featureCollection.Helper.SettingsProvider.GetSettings();
+        featureCollection.Helper.SettingsProvider.OnSettingsSaved += FillControls;
+
         FillControls();
         EnableOutOfRadioButtons();
     }
 
     private void FillControls()
     {
+        Settings = featureCollection.Helper.SettingsProvider.GetSettings();
         labelVersion.Text += featureCollection.Helper.VersionProvider.Version.ToString();
         defaultName.Text = Settings.DefaultParticipantName;
         roomSearchTime.Value = Settings.DiscoveryTimeout;

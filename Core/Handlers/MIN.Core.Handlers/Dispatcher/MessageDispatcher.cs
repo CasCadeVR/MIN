@@ -61,7 +61,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
                 if (!result.IsSuccess)
                 {
-                    logger.Log($"Обработчик {handler.GetType().Name} провалился: {result.ErrorMessage}");
+                    logger.Log($"Обработчик {handler.GetType().Name} провалился: {result.ErrorMessage}", LogLevel.Error);
                     if (result.ShowErrorMessage)
                     {
                         await PublishErrorEvent(result.ErrorMessage!, result.CriticalError, context);
@@ -94,7 +94,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
             }
             catch (Exception ex)
             {
-                logger.Log($"Handler {handler.GetType().Name} threw exception: {ex.Message}");
+                logger.Log($"Handler {handler.GetType().Name} threw exception: {ex.Message}", LogLevel.Error);
                 await PublishErrorEvent(ex.Message, needToDisconnect: true, context);
             }
         }

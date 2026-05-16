@@ -16,7 +16,7 @@ public class Settings
     /// <summary>
     /// Время ожидания поиска комнаты
     /// </summary>
-    public int DiscoveryTimeout { get; set; } = 300;
+    public int DiscoveryTimeout { get; set; } = 1500;
 
     /// <summary>
     /// Метод поиска комнат

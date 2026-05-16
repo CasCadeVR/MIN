@@ -7,6 +7,7 @@ using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Streaming.Services;
@@ -101,15 +102,15 @@ public sealed class StreamManager : IStreamManager, IDisposable
                     StartAckTimer(ackKey);
                 }
 
-                logger.Log($"Отправлен пакет {i + 1}/{totalChunks} для потока {streamId}");
                 await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
             }
 
+            logger.Log($"Передача пакетов окончена");
             CleanForStream(streamId);
         }
         catch (TaskCanceledException ex)
         {
-            logger.Log($"Передача пакетов была отменена: {ex.Message}");
+            logger.Log($"Передача пакетов была отменена: {ex.Message}", LogLevel.Warning);
             CleanForStream(streamId);
         }
     }
@@ -179,7 +180,6 @@ public sealed class StreamManager : IStreamManager, IDisposable
                     StartAckTimer(ackKey);
                 }
 
-                logger.Log($"Отправлен пакет {chunkIndex + 1}/{totalChunks} для потока {streamId}");
                 await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
                 chunkIndex++;
             }
@@ -221,7 +221,6 @@ public sealed class StreamManager : IStreamManager, IDisposable
         var ackKey = new ChunkAckKey { StreamId = streamId, ChunkIndex = chunkIndex };
 
         OnChunkAcknowledged(ackKey);
-        logger.Log($"Получен ACK для пакета {chunkIndex} потока {streamId}");
     }
 
     private void OnChunkAcknowledged(ChunkAckKey ackKey)
@@ -252,7 +251,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
     {
         if (state is ChunkAckKey ackKey)
         {
-            logger.Log($"Таймаут ожидания ACK для пакета {ackKey.ChunkIndex}");
+            logger.Log($"Таймаут ожидания ACK для пакета {ackKey.ChunkIndex}", LogLevel.Warning);
         }
     }
 

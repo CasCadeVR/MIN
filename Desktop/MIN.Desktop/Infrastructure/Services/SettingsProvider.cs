@@ -9,6 +9,9 @@ public class SettingsProvider : ISettingsProvider
     private readonly ISettingsStorage storage;
     private Settings? cachedSettings;
 
+    /// <inheritdoc />
+    public Action? OnSettingsSaved { get; set; }
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="SettingsProvider"/>
     /// </summary>
@@ -26,5 +29,6 @@ public class SettingsProvider : ISettingsProvider
     {
         cachedSettings = settings;
         storage.Save(settings);
+        OnSettingsSaved?.Invoke();
     }
 }

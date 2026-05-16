@@ -16,4 +16,9 @@ public interface ISettingsProvider
     /// Сохранить настройки
     /// </summary>
     void SaveSettings(Settings settings);
+
+    /// <summary>
+    /// Событие по сохранению настроек
+    /// </summary>
+    Action? OnSettingsSaved { get; set; }
 }

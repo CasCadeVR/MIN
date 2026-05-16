@@ -30,7 +30,6 @@ public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
 
         if (!this.handlers.TryGetValue(eventType, out var handlers))
         {
-            logger.Log($"Не было подписчиков на {eventType.Name}, когда опубликовали событие", LogLevel.Warning);
             return;
         }
 

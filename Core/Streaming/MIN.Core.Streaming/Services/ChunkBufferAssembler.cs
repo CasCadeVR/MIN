@@ -104,6 +104,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             var result = stream.AddChunk(chunk);
             if (result != null)
             {
+                logger.Log("Сообщение было собрано из потока");
                 var filePath = stream.GetTempFilePath();
                 OnMessageAssembled(chunk.StreamId, connectionId, roomId, result, filePath, stream.IsRawPayload);
                 TryRemoveStream(chunk.StreamId);
@@ -166,7 +167,6 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             BitConverter.GetBytes(chunkIndex).CopyTo(ack, 17);
 
             await transport.SendAsync(ack, roomId, connectionId, cancellationToken);
-            logger.Log($"Отправлен ACK для пакета {chunkIndex} потока {streamId}");
         }
         catch (Exception ex)
         {

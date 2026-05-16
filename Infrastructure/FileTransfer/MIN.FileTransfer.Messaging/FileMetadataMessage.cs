@@ -69,6 +69,7 @@ public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable, IMessa
 
     void IMessageWithSecuredFields.Sanitize()
     {
+        AsDownloaded = false;
         FilePath = null;
     }
 

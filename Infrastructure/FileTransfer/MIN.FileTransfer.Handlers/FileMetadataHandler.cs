@@ -50,13 +50,13 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(FileMetadataHandler)} - {message.GetType()}");
         }
 
-        logger.Log($"Получены метаданные файла: {metadata.FileName} ({metadata.FileSize} байт) от {metadata.SenderId}");
-
         if (!context.RoomContext.Participants.TryGetParticipantById(metadata.SenderId, out var sender))
         {
             logger.Log($"Получил метаданные файла от неизвестного отправителя {metadata.SenderId}");
             return HandlerResult.Failure("Получил метаданные файла от неизвестного отправителя", stopPropagation: false, critical: true);
         }
+
+        logger.Log($"Получены метаданные файла: {metadata.FileName} ({metadata.FileSize} байт) от {metadata.SenderId}");
 
         if (!metadata.AsDownloaded)
         {
@@ -98,13 +98,11 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 
         if (isHosting && isSelf)
         {
-            logger.Log($"Хост: не запрашиваю файл у себя");
             return HandlerResult.Success();
         }
 
         if (!isHosting || isSelf)
         {
-            logger.Log($"Не являюсь хостом или отправитель — не запрашиваю файл: {metadata.FileName}");
             return HandlerResult.Success();
         }
 
@@ -112,8 +110,7 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
         logger.Log($"Хост: регистрирую загрузку файла {metadata.FileName} (TransferId: {metadata.TransferId})");
 
         fileTransferService.RegisterPendingMetadata(metadata.TransferId, metadata.FileName);
-        eventBus.Subscribe(
-            async (FilePendingMetaDataReceivedEvent e, CancellationToken _) =>
+        eventBus.Subscribe(async (FilePendingMetaDataReceivedEvent e, CancellationToken _) =>
         {
             if (e.TransferId != metadata.TransferId)
             {
