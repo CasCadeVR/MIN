@@ -45,16 +45,25 @@
 
 ```mermaid
 flowchart TB
+    %% Стили слоёв
+    classDef uiLayer fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+    classDef infraLayer fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#3730a3
+    classDef coreLayer fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#5b21b6
+    classDef component fill:#fff,stroke:#c7d2fe,color:#312e81
+    classDef highlight fill:#e0e7ff,stroke:#4f46e5,stroke-width:3px,color:#312e81
+    
     subgraph UI["🖥️ UI Layer (WinForms)"]
         A["💬 ChatPanel<br><small>Сообщения и комнаты</small>"]
         B["🔍 DiscoveryPanel<br><small>Обнаружение комнат</small>"]
         C["📁 FileTransferPanel<br><small>Обмен файлами</small>"]
+        class A highlight; B component; C component
     end
     
     subgraph INF["🏗️ Infrastructure Layer"]
         D["💬 Chat Services<br><small>Сообщения и статусы</small>"]
         E["🔍 Discovery Services<br><small>Named Pipes Discovery</small>"]
         F["📁 FileTransfer Services<br><small>Потоковая передача</small>"]
+        class D,E,F component
     end
     
     subgraph CORE["⚙️ Core Layer"]
@@ -64,8 +73,10 @@ flowchart TB
         J["🔄 Handlers<br><small>Диспетчер</small>"]
         K["🔌 Transport<br><small>Named Pipes</small>"]
         L["📋 Serialization<br><small>JSON</small>"]
+        class G,H,I,J,K,L component
     end
     
+    class UI uiLayer; INF infraLayer; CORE coreLayer
     UI --> INF
     INF --> CORE
 ```
@@ -154,28 +165,44 @@ dotnet test
 
 ```mermaid
 flowchart TB
-    subgraph MIN["📂 MIN"]
-        subgraph CORE["⚙️ Core/"]
+    %% Стили слоёв
+    classDef folder fill:#f5f3ff,stroke:#c7c2ea,color:#312e81
+    classDef coreFolder fill:#ede9fe,stroke:#7c3aed,color:#5b21b6
+    classDef infraFolder fill:#e0e7ff,stroke:#4f46e5,color:#3730a3
+    classDef deskFolder fill:#dbeafe,stroke:#3b82f6,color:#1e40af
+    classDef file fill:#fff,stroke:#c7d2fe,color:#4338ca
+    classDef rootFolder fill:#fef3c7,stroke:#f59e0b,color:#92400e
+    
+    subgraph MIN["📂 MIN (Корень проекта)"]
+        class MIN rootFolder
+        subgraph CORE["⚙️ Core/ (Ядро)"]
+            class CORE coreFolder
             G["Cryptography/"]
             H["Messaging/"]
             I["Events/"]
             J["Handlers/"]
             K["Transport/"]
             L["Serialization/"]
+            class G,H,I,J,K,L file
         end
-        subgraph INF["🏗️ Infrastructure/"]
+        subgraph INF["🏗️ Infrastructure/ (Бизнес-логика)"]
+            class INF infraFolder
             M["Chat/"]
             N["Discovery/"]
             O["FileTransfer/"]
+            class M,N,O file
         end
-        subgraph DESK["🖥️ Desktop/"]
+        subgraph DESK["🖥️ Desktop/ (Интерфейс)"]
+            class DESK deskFolder
             P["MIN.Desktop/"]
             Q["Views/"]
             R["Components/"]
             S["Resources/"]
+            class P,Q,R,S file
         end
         T["Helpers/"]
         U["Common/"]
+        class T,U folder
     end
 ```
 
@@ -193,12 +220,17 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    A["👤 Отправитель"] -->|Шифрование| B["🔐 Зашифрованное<br>сообщение"]
-    B -->|Локальная сеть| C["👤 Получатель"]
+    %% Стили узлов
+    classDef sender fill:#dbeafe,stroke:#3b82f6,stroke-width:3px,color:#1e40af
+    classDef encrypted fill:#e0e7ff,stroke:#4f46e5,stroke-width:3px,color:#3730a3
+    classDef network fill:#ede9fe,stroke:#7c3aed,stroke-width:3px,color:#5b21b6
+    classDef recipient fill:#dbeafe,stroke:#3b82f6,stroke-width:3px,color:#1e40af
+    classDef arrow fill:#4f46e5,color:#4f46e5
     
-    style A fill:#dbeafe,stroke:#3b82f6
-    style B fill:#e0e7ff,stroke:#4f46e5
-    style C fill:#dbeafe,stroke:#3b82f6
+    A["👤 Отправитель"] -->|🔐 Шифрование| B["🔐 Зашифрованное<br>сообщение"]
+    B -->|🌐 Локальная сеть| C["👤 Получатель"]
+    
+    class A sender; B encrypted; C recipient
 ```
 
 ### Технологии защиты
@@ -231,11 +263,8 @@ MIN предоставляет современный интерфейс для:
 
 | Автор | Роль | Вклад |
 |-------|------|-------|
-| 👨‍💻 **CasCadeVR** | Основатель | Основной разработчик, создатель архитектуры |
-| 💡 **Karo4a** | Вдохновитель | Идеи и вдохновение |
-
-- 🏢 [Организация CasCade](https://github.com/CasCadeVR)
-- 👤 [GitHub профиль](https://github.com/Karo4a)
+| 👨‍💻 [**CasCadeVR**](https://github.com/CasCadeVR) | Основатель | Основной разработчик, создатель архитектуры |
+| 💡 [**Karo4a**](https://github.com/Karo4a) | Вдохновитель | Идеи и вдохновение |
 
 ---
 
