@@ -45,6 +45,7 @@
 
 ```mermaid
 flowchart TB
+    %%{init: {'flowchart': {'nodeSpacing': 12}}}%%
     classDef uiLayer fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
     classDef infraLayer fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#3730a3
     classDef coreLayer fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#5b21b6
@@ -169,6 +170,7 @@ dotnet test
 
 ```mermaid
 flowchart TB
+    %%{init: {'flowchart': {'nodeSpacing': 12}}}%%
     classDef coreFolder fill:#ede9fe,stroke:#7c3aed,color:#5b21b6
     classDef infraFolder fill:#e0e7ff,stroke:#4f46e5,color:#3730a3
     classDef deskFolder fill:#dbeafe,stroke:#3b82f6,color:#1e40af
