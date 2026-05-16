@@ -45,12 +45,11 @@
 
 ```mermaid
 flowchart TB
-    %%{init: {'flowchart': {'nodeSpacing': 12}}}%%
     classDef uiLayer fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
     classDef infraLayer fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#3730a3
     classDef coreLayer fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#5b21b6
-    classDef component fill:#ffffff,stroke:#c7d2fe,stroke-width:1.5px,color:#312e81,padding:28px
-    classDef highlight fill:#c7d2fe,stroke:#4f46e5,stroke-width:3px,color:#312e81,padding:28px
+    classDef component fill:#ffffff,stroke:#c7d2fe,stroke-width:1.5px,color:#312e81
+    classDef highlight fill:#c7d2fe,stroke:#4f46e5,stroke-width:3px,color:#312e81
     
     subgraph UI["🖥️ UI Layer (WinForms)"]
         direction TB
