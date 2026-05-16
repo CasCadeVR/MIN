@@ -44,7 +44,7 @@
 ## 🏗️ Архитектура
 
 ```mermaid
-flowchart LR
+flowchart TB
     %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffffff', 'edgeLabelBackground':'#ffffff' }}}%%
     
     classDef uiLayer fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
