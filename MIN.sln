@@ -160,6 +160,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.FileTransfer.Handlers",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.FileTransfer.Events", "Infrastructure\FileTransfer\MIN.FileTransfer.Events\MIN.FileTransfer.Events.csproj", "{4D3DB7D0-665F-437E-A2F6-7B934D3C131A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Discovery.Transport.UdpBroadcast", "Infrastructure\Discovery\Transport\MIN.Discovery.Transport.UdpBroadcast\MIN.Discovery.Transport.UdpBroadcast.csproj", "{5D80F1FB-8C62-4454-861B-DD0BBE29B556}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -374,6 +376,10 @@ Global
 		{4D3DB7D0-665F-437E-A2F6-7B934D3C131A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D3DB7D0-665F-437E-A2F6-7B934D3C131A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D3DB7D0-665F-437E-A2F6-7B934D3C131A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D80F1FB-8C62-4454-861B-DD0BBE29B556}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D80F1FB-8C62-4454-861B-DD0BBE29B556}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D80F1FB-8C62-4454-861B-DD0BBE29B556}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D80F1FB-8C62-4454-861B-DD0BBE29B556}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -448,6 +454,7 @@ Global
 		{15A51A15-80DC-4AB5-967E-0CD39AE2CBDC} = {F02B6426-F46E-4034-914A-469816357EEE}
 		{5F6C5489-FCAE-404C-A95A-7C967596AC1C} = {F02B6426-F46E-4034-914A-469816357EEE}
 		{4D3DB7D0-665F-437E-A2F6-7B934D3C131A} = {F02B6426-F46E-4034-914A-469816357EEE}
+		{5D80F1FB-8C62-4454-861B-DD0BBE29B556} = {3A923FE2-8FAF-42DB-9F5D-56314C0CB8D0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57E9A443-C4F6-4D77-AEA8-F7D953811002}

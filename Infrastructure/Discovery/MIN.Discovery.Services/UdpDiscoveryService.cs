@@ -1,22 +1,22 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Discovery.Events;
 using MIN.Discovery.Messaging;
-using MIN.Discovery.Services.Contracts.Exceptions;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Discovery.Services.Contracts.Models;
 using MIN.Discovery.Transport.Contracts;
 using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Discovery.Services;
 
-/// <inheritdoc cref="IDiscoveryService"/>
-public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
+/// <summary>
+/// <inheritdoc cref="UdpDiscoveryService"/> на базе UDP
+/// </summary>
+public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
 {
     private readonly ITransport transport;
     private readonly IDiscoveryTransport discoveryTransport;
@@ -25,12 +25,12 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
     private readonly HashSet<Guid> activeRoomIds = [];
-    private readonly CancellationTokenSource serviceCts = null!;
+    private readonly CancellationTokenSource serviceCts;
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="DiscoveryService"/>
+    /// Инициализирует новый экземпляр <see cref="UdpDiscoveryService"/>
     /// </summary>
-    public DiscoveryService(
+    public UdpDiscoveryService(
         ITransport transport,
         IDiscoveryTransport discoveryTransport,
         IMessageSerializer serializer,
@@ -66,60 +66,25 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
         }
     }
 
-    async Task IDiscoveryService.DiscoverRoomsAsync(IEnumerable<string>? computers, TimeSpan timeout, CancellationToken cancellationToken)
+    async Task IDiscoveryService.DiscoverRoomsAsync(TimeSpan timeout, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(computers);
-
         var request = new DiscoveryRequestMessage();
         var requestData = serializer.Serialize(request);
 
-        if (!computers.Any())
-        {
-            logger.Log("Список компьютеров был пуст");
-            return;
-        }
-
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
         discoveryTransport.MessageReceived += OnResponseReceived;
 
-        logger.Log("[DEBUG]: starting discovery");
+        logger.Log("[DEBUG]: starting UDP discovery");
 
         try
         {
-            var tasks = computers
-            .Select(async computer =>
-            {
-                try
-                {
-                    using var perComputerCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
-                    perComputerCts.CancelAfter(timeout);
-                    await discoveryTransport.SendAsync(requestData, computer, timeout, perComputerCts.Token);
-                    return eventBus.PublishAsync(new EndpointCheckedEvent()
-                    {
-                        Endpoint = computer
-                    }, serviceCts.Token);
-                }
-                catch (Exception ex)
-                {
-                    logger.Log($"Не удалось отправить запрос на обнаружение компу {computer}: {ex.Message}");
-                    return Task.CompletedTask;
-                }
-            });
-
-            await Task.WhenAll(tasks);
+            await discoveryTransport.BroadcastAsync(requestData, timeout, cts.Token);
         }
-        catch (DiscoveryException ex)
-        {
-            logger.Log($"[DEBUG]: discovery failed at discoveryException: {ex.Message}");
-        }
-        catch (OperationCanceledException ex)
-        {
-            logger.Log($"[DEBUG]: discovery failed at OperationCanceledException: {ex.Message}");
-        }
+        catch (OperationCanceledException) { }
         finally
         {
             discoveryTransport.MessageReceived -= OnResponseReceived;
-            logger.Log("[DEBUG]: discovery ended");
+            logger.Log("[DEBUG]: UDP discovery ended");
         }
     }
 
@@ -128,6 +93,7 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
         try
         {
             var message = serializer.Deserialize(e.Data);
+
             if (message is not DiscoveryResponseMessage response)
             {
                 return;
@@ -136,7 +102,6 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
             logger.Log($"Нашёл +{response.RoomDiscoveryInfos.Count} комнат");
             eventBus.PublishAsync(new RoomDiscoveredEvent()
             {
-                MachineName = e.MachineName,
                 RoomDiscoveryInfos = response.RoomDiscoveryInfos,
             });
         }
@@ -152,7 +117,7 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
         {
             var message = serializer.Deserialize(e.Data);
 
-            if (message is not DiscoveryRequestMessage _)
+            if (message is not DiscoveryRequestMessage)
             {
                 return;
             }
@@ -165,7 +130,7 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
 
                 if (room == null)
                 {
-                    logger.Log($"Получил запрос на обнаружение, но комната не была установлена", LogLevel.Warning);
+                    logger.Log("Получил запрос на обнаружение, но комната не была установлена");
                     return;
                 }
 
@@ -177,8 +142,7 @@ public sealed class DiscoveryService : IDiscoveryService, IAsyncDisposable
             }
 
             var data = serializer.Serialize(discoveryResponse);
-
-            await discoveryTransport.ResponseWithData(data, e.ConnectionId, serviceCts.Token);
+            await e.Responder.RespondAsync(data, serviceCts.Token);
         }
         catch (Exception ex)
         {

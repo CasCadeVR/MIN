@@ -1,5 +1,4 @@
 ﻿using MIN.Helpers.Contracts.Models.Enums;
-using MIN.Core.Transport.Contracts.Enum;
 
 namespace MIN.Helpers.Contracts.Models;
 
@@ -29,7 +28,7 @@ public class Settings
     public IEnumerable<string> PreferredPCNames { get; set; } = [];
 
     /// <summary>
-    /// Транспорт, который будет использоваться в локальной среде (NamedPipe, Tcp, ...)
+    /// Порт для обнаружения в сети
     /// </summary>
-    public TransportType TransportType { get; set; } = TransportType.NamedPipe;
+    public int DiscoveryPort { get; set; } = 42069;
 }

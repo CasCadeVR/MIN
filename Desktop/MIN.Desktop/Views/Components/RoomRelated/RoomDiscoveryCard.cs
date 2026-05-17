@@ -29,12 +29,12 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
     /// </summary>
-    public RoomDiscoveryCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room, string computerName)
+    public RoomDiscoveryCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room, string? computerName = null)
     {
         InitializeComponent();
         this.eventBus = eventBus;
         this.room = room;
-        this.computerName = computerName;
+        this.computerName = computerName ?? string.Empty;
         isOwner = room.HostParticipant.Id == localParticipant.Id;
 
         uiContext = SynchronizationContext.Current

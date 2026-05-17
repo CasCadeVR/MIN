@@ -8,11 +8,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
 	<SelfContained>true</SelfContained>
-    <!--<PublishSingleFile>true</PublishSingleFile>-->
+    <PublishSingleFile>true</PublishSingleFile>
 	<Version>1.1.0.1</Version>
 	<ApplicationIcon>logo.ico</ApplicationIcon>
-    <!--<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>-->
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>

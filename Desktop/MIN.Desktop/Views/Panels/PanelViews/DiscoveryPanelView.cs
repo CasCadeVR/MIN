@@ -1,4 +1,4 @@
-﻿using MIN.Core.Entities;
+using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Desktop.Components;
@@ -14,7 +14,6 @@ using MIN.DI.FeatureCollection;
 using MIN.Discovery.Events;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Models;
-using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Views.Panels.SidePanelViews;
@@ -73,8 +72,6 @@ public partial class DiscoveryPanelView : StyledPanelView
         if (isDiscovering)
         {
             discoveryCts?.Cancel();
-            isDiscovering = false;
-            discoverRooms.Enabled = false;
         }
         else
         {
@@ -84,38 +81,22 @@ public partial class DiscoveryPanelView : StyledPanelView
 
     private async Task PerformDiscovery()
     {
-        var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
-                ? featureCollection.Helper.ComputerProvider.GetLocalNetworkMachineNames(classNumber.Value.ToString())
-                : Settings.PreferredPCNames;
-
-        if (!availablePCs.Any())
-        {
-            return;
-        }
-
         isDiscovering = true;
 
         uiContext.Post(_ =>
         {
             discoverRooms.Text = "Остановить поиск";
             splitContainerDiscoverRoom.Panel2Collapsed = false;
-            discoveryProgressBar.Value = 1;
-            discoveryProgressBar.Maximum = availablePCs.Count() + 1;
+            discoveryProgressBar.Style = ProgressBarStyle.Marquee;
             flowLayoutPanelDiscoveredRooms.Controls.Clear();
             totalRoomsCount.Text = "Поиск комнат...";
         }, null);
 
         discoveryCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
 
-        using var subscriptionToken = featureCollection.Core.EventBus.Subscribe((EndpointCheckedEvent _, CancellationToken _) =>
-        {
-            discoveryProgressBar.Value++;
-            return Task.CompletedTask;
-        });
-
         try
         {
-            await featureCollection.Discovery.DiscoveryService.DiscoverRoomsAsync(availablePCs,
+            await featureCollection.Discovery.DiscoveryService.DiscoverRoomsAsync(
                 TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), discoveryCts.Token);
         }
         catch (Exception ex)
@@ -127,6 +108,7 @@ public partial class DiscoveryPanelView : StyledPanelView
             discoverRooms.Enabled = true;
             discoverRooms.Text = "Найти комнаты";
             splitContainerDiscoverRoom.Panel2Collapsed = true;
+            discoveryProgressBar.Style = ProgressBarStyle.Blocks;
             var roomsCount = flowLayoutPanelDiscoveredRooms.Controls.Count;
             totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
             isDiscovering = false;
@@ -140,7 +122,7 @@ public partial class DiscoveryPanelView : StyledPanelView
             foreach (var discoveryInfo in e.RoomDiscoveryInfos)
             {
                 var card = new RoomDiscoveryCard(featureCollection.Core.EventBus, localParticipant,
-                    discoveryInfo.Room, e.MachineName)
+                    discoveryInfo.Room)
                 {
                     Parent = flowLayoutPanelDiscoveredRooms
                 };
