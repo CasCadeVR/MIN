@@ -2,7 +2,7 @@
 
 ![Logo](https://raw.githubusercontent.com/CasCadeVR/MIN/main/Desktop/MIN.Desktop/Resources/logo.png)
 
-> **Безопасный локальный мессенджер с end-to-end шифрованием для локальной сети**
+> **Secure local messenger with end-to-end encryption for local network**
 
 [![Stars](https://img.shields.io/github/stars/CasCadeVR/MIN?style=flat-square&logo=github)](https://github.com/CasCadeVR/MIN/stargazers)
 [![Forks](https://img.shields.io/github/forks/CasCadeVR/MIN?style=flat-square&logo=github)](https://github.com/CasCadeVR/MIN/network/members)
@@ -10,38 +10,40 @@
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-Latest-blue?style=flat-square&logo=csharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 
----
-
-## 📑 Содержание
-
-- [🎯 Возможности](#-возможности)
-- [🏗️ Архитектура](#-архитектура)
-- [🛠️ Технологический стек](#-технологический-стек)
-- [🚀 Установка и запуск](#-установка-и-запуск)
-- [📁 Структура проекта](#-структура-проекта)
-- [🔐 Безопасность](#-безопасность)
-- [📸 Интерфейс](#-интерфейс)
-- [🤝 Авторы](#-авторы)
+[🌐 English](README.md) • [🇷🇺 Русский](README.ru.md)
 
 ---
 
-## 🎯 Возможности
+## 📑 Contents
 
-| Возможность | Описание |
-|-------------|----------|
-| 🔒 **End-to-End шифрование** | Все сообщения шифруются с использованием криптографии |
-| 📁 **Передача файлов** | Отправка и получение фотографий и файлов |
-| 🌐 **Локальное обнаружение** | Автоматическое обнаружение комнат через Named Pipes |
-| 💬 **Текстовые сообщения** | Отправка и получение сообщений в реальном времени |
-| 👥 **Комнаты** | Создание и присоединение к чат-комнатам |
-| 🖥️ **Desktop UI** | Интуитивный интерфейс на WinForms |
+- [🎯 Features](#-features)
+- [🏗️ Architecture](#-architecture)
+- [🛠️ Technology Stack](#-technology-stack)
+- [🚀 Installation and Running](#-installation-and-running)
+- [📁 Project Structure](#-project-structure)
+- [🔐 Security](#-security)
+- [📸 Interface](#-interface)
+- [🤝 Authors](#-authors)
+
+---
+
+## 🎯 Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔒 **End-to-End Encryption** | All messages are encrypted using cryptography |
+| 📁 **File Transfer** | Sending and receiving photos and files |
+| 🌐 **Local Discovery** | Automatic room discovery via Named Pipes |
+| 💬 **Text Messages** | Sending and receiving messages in real time |
+| 👥 **Rooms** | Creating and joining chat rooms |
+| 🖥️ **Desktop UI** | Intuitive interface using WinForms |
 
 > [!IMPORTANT]
-> MIN работает **без сервера** в вашей локальной сети. Не требуется подключение к интернету!
+> MIN works **without a server** in your local network. No internet connection required!
 
 ---
 
-## 🏗️ Архитектура
+## 🏗️ Architecture
 
 ```mermaid
 flowchart TB
@@ -54,24 +56,24 @@ flowchart TB
     
     subgraph UI["🖥️ UI Layer (WinForms)"]
         direction TB
-        A["💬 ChatPanel<br><small>Сообщения и комнаты</small>"]
-        B["🔍 DiscoveryPanel<br><small>Обнаружение комнат</small>"]
-        C["📁 FileTransferPanel<br><small>Обмен файлами</small>"]
+        A["💬 ChatPanel<br><small>Messages and rooms</small>"]
+        B["🔍 DiscoveryPanel<br><small>Room discovery</small>"]
+        C["📁 FileTransferPanel<br><small>File exchange</small>"]
     end
     
     subgraph INF["🏗️ Infrastructure Layer"]
         direction TB
-        D["💬 Chat Services<br><small>Сообщения и статусы</small>"]
+        D["💬 Chat Services<br><small>Messages and statuses</small>"]
         E["🔍 Discovery Services<br><small>Named Pipes Discovery</small>"]
-        F["📁 FileTransfer Services<br><small>Потоковая передача</small>"]
+        F["📁 FileTransfer Services<br><small>Streaming transfer</small>"]
     end
     
     subgraph CORE["⚙️ Core Layer"]
         direction TB
-        G["🔐 Cryptography<br><small>E2E шифрование</small>"]
-        H["📨 Messaging<br><small>Система сообщений</small>"]
+        G["🔐 Cryptography<br><small>E2E encryption</small>"]
+        H["📨 Messaging<br><small>Messaging system</small>"]
         I["⚡ Events<br><small>Event Bus</small>"]
-        J["🔄 Handlers<br><small>Диспетчер</small>"]
+        J["🔄 Handlers<br><small>Dispatcher</small>"]
         K["🔌 Transport<br><small>Named Pipes</small>"]
         L["📋 Serialization<br><small>JSON</small>"]
     end
@@ -86,79 +88,79 @@ flowchart TB
     INF --> CORE
 ```
 
-### Модули
+### Modules
 
-#### Core (Ядро)
-| Модуль | Назначение |
-|--------|------------|
-| `MIN.Core.Cryptography` | Криптографические операции |
-| `MIN.Core.Messaging` | Система сообщений |
+#### Core
+| Module | Purpose |
+|--------|---------|
+| `MIN.Core.Cryptography` | Cryptographic operations |
+| `MIN.Core.Messaging` | Messaging system |
 | `MIN.Core.Events` | Event Bus |
-| `MIN.Core.Handlers` | Обработчики с dispatcher |
-| `MIN.Core.Transport` | Транспорт Named Pipes |
-| `MIN.Core.Serialization` | JSON сериализация |
-| `MIN.Core.Entities` | Модели данных |
-| `MIN.Core.Stores` | Хранилища |
-| `MIN.Core.Streaming` | Потоки данных |
+| `MIN.Core.Handlers` | Handlers with dispatcher |
+| `MIN.Core.Transport` | Named Pipes transport |
+| `MIN.Core.Serialization` | JSON serialization |
+| `MIN.Core.Entities` | Data models |
+| `MIN.Core.Stores` | Stores |
+| `MIN.Core.Streaming` | Data streams |
 
-#### Infrastructure (Бизнес-логика)
-| Модуль | Назначение |
-|--------|------------|
-| `MIN.Chat` | Чаты и сообщения |
-| `MIN.Discovery` | Обнаружение комнат |
-| `MIN.FileTransfer` | Передача файлов |
+#### Infrastructure (Business Logic)
+| Module | Purpose |
+|--------|---------|
+| `MIN.Chat` | Chats and messages |
+| `MIN.Discovery` | Room discovery |
+| `MIN.FileTransfer` | File transfer |
 
 #### Desktop (UI)
-| Модуль | Назначение |
-|--------|------------|
-| `MIN.Desktop` | WinForms приложение |
+| Module | Purpose |
+|--------|---------|
+| `MIN.Desktop` | WinForms application |
 
 ---
 
-## 🛠️ Технологический стек
+## 🛠️ Technology Stack
 
-| Категория | Технология | Описание |
-|-----------|------------|----------|
-| 🔷 Язык | C# | Современный объектно-ориентированный язык |
-| ⚙️ Платформа | .NET 8.0 | Кроссплатформенный фреймворк |
-| 🖼️ UI | WinForms | Настольный интерфейс Windows |
-| 📦 DI | Microsoft.Extensions.DependencyInjection | Внедрение зависимостей |
-| 🔐 Защита | System.Security.Cryptography.ProtectedData | Windows DPAPI |
-| 🔌 Транспорт | Named Pipes | Межпроцессное взаимодействие |
-| 🧪 Тестирование | xUnit, FluentAssertions, Moq | Модульные тесты |
-| 📋 Стиль | .editorconfig | Единый код-стайл |
+| Category | Technology | Description |
+|----------|------------|-------------|
+| 🔷 Language | C# | Modern object-oriented language |
+| ⚙️ Platform | .NET 8.0 | Cross-platform framework |
+| 🖼️ UI | WinForms | Windows desktop interface |
+| 📦 DI | Microsoft.Extensions.DependencyInjection | Dependency injection |
+| 🔐 Security | System.Security.Cryptography.ProtectedData | Windows DPAPI |
+| 🔌 Transport | Named Pipes | Inter-process communication |
+| 🧪 Testing | xUnit, FluentAssertions, Moq | Unit tests |
+| 📋 Style | .editorconfig | Unified code style |
 
 ---
 
-## 🚀 Установка и запуск
+## 🚀 Installation and Running
 
-### Требования
+### Requirements
 
 > [!TIP]
-> Убедитесь, что у вас установлен .NET SDK 8.0 или выше.
+> Make sure you have .NET SDK 8.0 or higher installed.
 
-- [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0) или выше
+- [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0) or higher
 - Windows 10/11
-- Локальная сеть (для обнаружения комнат)
+- Local network (for room discovery)
 
-### Быстрый старт
+### Quick Start
 
 ```bash
-# 1. Клонирование репозитория
+# 1. Clone the repository
 git clone https://github.com/CasCadeVR/MIN.git
 cd MIN
 
-# 2. Восстановление зависимостей
+# 2. Restore dependencies
 dotnet restore
 
-# 3. Сборка проекта
+# 3. Build the project
 dotnet build
 
-# 4. Запуск приложения
+# 4. Run the application
 dotnet run --project Desktop/MIN.Desktop/MIN.Desktop.csproj
 ```
 
-### Запуск тестов
+### Running Tests
 
 ```bash
 dotnet test
@@ -166,7 +168,7 @@ dotnet test
 
 ---
 
-## 📁 Структура проекта
+## 📁 Project Structure
 
 ```mermaid
 flowchart TB
@@ -208,16 +210,16 @@ flowchart TB
 ```
 
 > [!NOTE]
-> Конфигурационные файлы (`Directory.Build.props`, `Directory.Packages.props`) управляют зависимостями централизованно.
+> Configuration files (`Directory.Build.props`, `Directory.Packages.props`) manage dependencies centrally.
 
 ---
 
-## 🔐 Безопасность
+## 🔐 Security
 
 > [!IMPORTANT]
-> MIN использует **end-to-end шифрование** — ваши сообщения защищены от перехвата.
+> MIN uses **end-to-end encryption** — your messages are protected from interception.
 
-### Схема шифрования
+### Encryption Scheme
 
 ```mermaid
 flowchart LR
@@ -225,59 +227,59 @@ flowchart LR
     classDef encrypted fill:#e0e7ff,stroke:#4f46e5,stroke-width:3px,color:#3730a3
     classDef recipient fill:#dbeafe,stroke:#3b82f6,stroke-width:3px,color:#1e40af
     
-    A["👤 Отправитель"] -->|"🔐 Шифрование"| B["🔐 Зашифрованное сообщение"]
-    B -->|"🌐 Локальная сеть"| C["👤 Получатель"]
+    A["👤 Sender"] -->|"🔐 Encryption"| B["🔐 Encrypted Message"]
+    B -->|"🌐 Local Network"| C["👤 Recipient"]
     
     class A sender;
     class B encrypted;
     class C recipient
 ```
 
-### Технологии защиты
+### Security Technologies
 
-| Технология | Назначение |
-|------------|------------|
-| 🔑 **Асимметричное (RSA)** | Обмен ключами между участниками |
-| 🛡️ **Симметричное (AES)** | Шифрование содержимого сообщений |
-| 💾 **Windows DPAPI** | Защищённое хранение ключей |
+| Technology | Purpose |
+|------------|---------|
+| 🔑 **Asymmetric (RSA)** | Key exchange between participants |
+| 🛡️ **Symmetric (AES)** | Message content encryption |
+| 💾 **Windows DPAPI** | Secure key storage |
 
 ---
 
-## 📸 Интерфейс
+## 📸 Interface
 
-MIN предоставляет современный интерфейс для:
+MIN provides a modern interface for:
 
-| Функция | Описание |
-|---------|----------|
-| 🏠 **Комнаты** | Создание и управление чат-комнатами |
-| 💬 **Чат** | Общение в реальном времени |
-| 📁 **Файлы** | Передача с отображением прогресса |
-| 👥 **Участники** | Статусы онлайн/оффлайн |
+| Function | Description |
+|----------|-------------|
+| 🏠 **Rooms** | Creating and managing chat rooms |
+| 💬 **Chat** | Real-time communication |
+| 📁 **Files** | Transfer with progress display |
+| 👥 **Participants** | Online/offline statuses |
 
 > [!NOTE]
-> 📸 Скриншоты будут добавлены после первого релиза.
+> 📸 Screenshots will be added after the first release.
 
 ---
 
-## 🤝 Авторы
+## 🤝 Authors
 
-| Автор | Роль | Вклад |
-|-------|------|-------|
-| 👨‍💻 [**CasCadeVR**](https://github.com/CasCadeVR) | Основатель | Основной разработчик, создатель архитектуры |
-| 💡 [**Karo4a**](https://github.com/Karo4a) | Вдохновитель | Идеи и вдохновение |
+| Author | Role | Contribution |
+|--------|------|--------------|
+| 👨‍💻 [**CasCadeVR**](https://github.com/CasCadeVR) | Founder | Lead developer, architecture creator |
+| 💡 [**Karo4a**](https://github.com/Karo4a) | Inspiration | Ideas and inspiration |
 
 ---
 
 > [!TIP]
-> **Сделано с ❤️ командой CasCade**
+> **Made with ❤️ by CasCade team**
 
-*MIN — Локальный мессенджер для вашей сети*
+*MIN — Local messenger for your network*
 
 ---
 
 [![Stars](https://img.shields.io/github/stars/CasCadeVR/MIN?style=social)](https://github.com/CasCadeVR/MIN)
 [![Forks](https://img.shields.io/github/forks/CasCadeVR/MIN?style=social)](https://github.com/CasCadeVR/MIN)
 
-[Исходный код](https://github.com/CasCadeVR/MIN) • 
-[Сообщить об ошибке](https://github.com/CasCadeVR/MIN/issues) • 
-[Лицензия MIT](LICENSE)
+[Source Code](https://github.com/CasCadeVR/MIN) • 
+[Report an Issue](https://github.com/CasCadeVR/MIN/issues) • 
+[MIT License](LICENSE)
