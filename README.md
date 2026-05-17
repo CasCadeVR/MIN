@@ -56,25 +56,25 @@ flowchart TB
     
     subgraph UI["🖥️ UI Layer (WinForms)"]
         direction TB
-        A["💬 ChatPanel<br><small>Messages and rooms</small>"]
-        B["🔍 DiscoveryPanel<br><small>Room discovery</small>"]
+        A["💬 ChatPanel<br>Messages and rooms"]
+        B["🔍 DiscoveryPanel<br>Room discovery"]
     end
     
     subgraph INF["🏗️ Infrastructure Layer"]
         direction TB
-        C["💬 Chat Services<br><small>Messages and statuses</small>"]
-        D["🔍 Discovery Services<br><small>Named Pipes Discovery</small>"]
-        E["📁 FileTransfer Services<br><small>Streaming transfer</small>"]
+        C["💬 Chat Services<br>Messages and statuses"]
+        D["🔍 Discovery Services<br>Named Pipes Discovery"]
+        E["📁 FileTransfer Services<br>Streaming transfer"]
     end
     
     subgraph CORE["⚙️ Core Layer"]
         direction TB
-        F["🔐 Cryptography<br><small>E2E encryption</small>"]
-        G["📨 Messaging<br><small>Messaging system</small>"]
-        H["⚡ Events<br><small>Event Bus</small>"]
-        I["🔄 Handlers<br><small>Dispatcher</small>"]
-        J["🔌 Transport<br><small>Named Pipes</small>"]
-        K["📋 Serialization<br><small>JSON</small>"]
+        F["🔐 Cryptography<br>E2E encryption"]
+        G["📨 Messaging<br>Messaging system"]
+        H["⚡ Events<br>Event Bus"]
+        I["🔄 Handlers<br>Dispatcher"]
+        J["🔌 Transport<br>Named Pipes"]
+        K["📋 Serialization<br>JSON"]
     end
     
     class A highlight;

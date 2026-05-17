@@ -56,25 +56,25 @@ flowchart TB
     
     subgraph UI["🖥️ UI Layer (WinForms)"]
         direction TB
-        A["💬 ChatPanel<br><small>Сообщения и комнаты</small>"]
-        B["🔍 DiscoveryPanel<br><small>Обнаружение комнат</small>"]
+        A["💬 ChatPanel<br>Сообщения и комнаты"]
+        B["🔍 DiscoveryPanel<br>Обнаружение комнат"]
     end
     
     subgraph INF["🏗️ Infrastructure Layer"]
         direction TB
-        C["💬 Chat Services<br><small>Сообщения и статусы</small>"]
-        D["🔍 Discovery Services<br><small>Named Pipes Discovery</small>"]
-        E["📁 FileTransfer Services<br><small>Потоковая передача</small>"]
+        C["💬 Chat Services<br>Сообщения и статусы"]
+        D["🔍 Discovery Services<br>Named Pipes Discovery"]
+        E["📁 FileTransfer Services<br>Потоковая передача"]
     end
     
     subgraph CORE["⚙️ Core Layer"]
         direction TB
-        F["🔐 Cryptography<br><small>E2E шифрование</small>"]
-        G["📨 Messaging<br><small>Система сообщений</small>"]
-        H["⚡ Events<br><small>Event Bus</small>"]
-        I["🔄 Handlers<br><small>Диспетчер</small>"]
-        J["🔌 Transport<br><small>Named Pipes</small>"]
-        K["📋 Serialization<br><small>JSON</small>"]
+        F["🔐 Cryptography<br>E2E шифрование"]
+        G["📨 Messaging<br>Система сообщений"]
+        H["⚡ Events<br>Event Bus"]
+        I["🔄 Handlers<br>Диспетчер"]
+        J["🔌 Transport<br>Named Pipes"]
+        K["📋 Serialization<br>JSON"]
     end
     
     class A highlight;
