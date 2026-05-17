@@ -10,7 +10,7 @@
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-Latest-blue?style=flat-square&logo=csharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 
-[🌐 English](README.md) • [🇷🇺 Русский](README.ru.md)
+[English](README.md) • [Русский](README.ru.md)
 
 ---
 
@@ -58,28 +58,27 @@ flowchart TB
         direction TB
         A["💬 ChatPanel<br><small>Messages and rooms</small>"]
         B["🔍 DiscoveryPanel<br><small>Room discovery</small>"]
-        C["📁 FileTransferPanel<br><small>File exchange</small>"]
     end
     
     subgraph INF["🏗️ Infrastructure Layer"]
         direction TB
-        D["💬 Chat Services<br><small>Messages and statuses</small>"]
-        E["🔍 Discovery Services<br><small>Named Pipes Discovery</small>"]
-        F["📁 FileTransfer Services<br><small>Streaming transfer</small>"]
+        C["💬 Chat Services<br><small>Messages and statuses</small>"]
+        D["🔍 Discovery Services<br><small>Named Pipes Discovery</small>"]
+        E["📁 FileTransfer Services<br><small>Streaming transfer</small>"]
     end
     
     subgraph CORE["⚙️ Core Layer"]
         direction TB
-        G["🔐 Cryptography<br><small>E2E encryption</small>"]
-        H["📨 Messaging<br><small>Messaging system</small>"]
-        I["⚡ Events<br><small>Event Bus</small>"]
-        J["🔄 Handlers<br><small>Dispatcher</small>"]
-        K["🔌 Transport<br><small>Named Pipes</small>"]
-        L["📋 Serialization<br><small>JSON</small>"]
+        F["🔐 Cryptography<br><small>E2E encryption</small>"]
+        G["📨 Messaging<br><small>Messaging system</small>"]
+        H["⚡ Events<br><small>Event Bus</small>"]
+        I["🔄 Handlers<br><small>Dispatcher</small>"]
+        J["🔌 Transport<br><small>Named Pipes</small>"]
+        K["📋 Serialization<br><small>JSON</small>"]
     end
     
     class A highlight;
-    class B,C,D,E,F,G,H,I,J,K,L component
+    class B,C,D,E,F,G,H,I,J,K component
     class UI uiLayer;
     class INF infraLayer;
     class CORE coreLayer
@@ -127,7 +126,6 @@ flowchart TB
 | 📦 DI | Microsoft.Extensions.DependencyInjection | Dependency injection |
 | 🔐 Security | System.Security.Cryptography.ProtectedData | Windows DPAPI |
 | 🔌 Transport | Named Pipes | Inter-process communication |
-| 🧪 Testing | xUnit, FluentAssertions, Moq | Unit tests |
 | 📋 Style | .editorconfig | Unified code style |
 
 ---
@@ -158,12 +156,6 @@ dotnet build
 
 # 4. Run the application
 dotnet run --project Desktop/MIN.Desktop/MIN.Desktop.csproj
-```
-
-### Running Tests
-
-```bash
-dotnet test
 ```
 
 ---
