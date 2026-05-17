@@ -14,36 +14,36 @@
 
 ---
 
-## 📑 Contents
+## Contents
 
-- [🎯 Features](#-features)
-- [🏗️ Architecture](#-architecture)
-- [🛠️ Technology Stack](#-technology-stack)
-- [🚀 Installation and Running](#-installation-and-running)
-- [📁 Project Structure](#-project-structure)
-- [🔐 Security](#-security)
-- [📸 Interface](#-interface)
-- [🤝 Authors](#-authors)
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Technology Stack](#-technology-stack)
+- [Installation and Running](#-installation-and-running)
+- [Project Structure](#-project-structure)
+- [Security](#-security)
+- [Interface](#-interface)
+- [Authors](#-authors)
 
 ---
 
-## 🎯 Features
+## Features
 
 | Feature | Description |
 |---------|-------------|
-| 🔒 **End-to-End Encryption** | All messages are encrypted using cryptography |
-| 📁 **File Transfer** | Sending and receiving photos and files |
-| 🌐 **Local Discovery** | Automatic room discovery via Named Pipes |
-| 💬 **Text Messages** | Sending and receiving messages in real time |
-| 👥 **Rooms** | Creating and joining chat rooms |
-| 🖥️ **Desktop UI** | Intuitive interface using WinForms |
+| **End-to-End Encryption** | All messages are encrypted using cryptography |
+| **File Transfer** | Sending and receiving photos and files |
+| **Local Discovery** | Automatic room discovery via Named Pipes |
+| **Text Messages** | Sending and receiving messages in real time |
+| **Rooms** | Creating and joining chat rooms |
+| **Desktop UI** | Intuitive interface using WinForms |
 
 > [!IMPORTANT]
 > MIN works **without a server** in your local network. No internet connection required!
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 flowchart TB
@@ -54,27 +54,27 @@ flowchart TB
     classDef component fill:#ffffff,stroke:#c7d2fe,stroke-width:1.5px,color:#312e81
     classDef highlight fill:#c7d2fe,stroke:#4f46e5,stroke-width:3px,color:#312e81
     
-    subgraph UI["🖥️ UI Layer (WinForms)"]
+    subgraph UI["UI Layer (WinForms)"]
         direction TB
-        A["💬 ChatPanel<br>Messages and rooms"]
-        B["🔍 DiscoveryPanel<br>Room discovery"]
+        A["ChatPanel<br>Messages and rooms"]
+        B["DiscoveryPanel<br>Room discovery"]
     end
     
-    subgraph INF["🏗️ Infrastructure Layer"]
+    subgraph INF["Infrastructure Layer"]
         direction TB
-        C["💬 Chat Services<br>Messages and statuses"]
-        D["🔍 Discovery Services<br>Named Pipes Discovery"]
-        E["📁 FileTransfer Services<br>Streaming transfer"]
+        C["Chat Services<br>Messages and statuses"]
+        D["Discovery Services<br>Named Pipes Discovery"]
+        E["FileTransfer Services<br>Streaming transfer"]
     end
     
-    subgraph CORE["⚙️ Core Layer"]
+    subgraph CORE["Core Layer"]
         direction TB
-        F["🔐 Cryptography<br>E2E encryption"]
-        G["📨 Messaging<br>Messaging system"]
-        H["⚡ Events<br>Event Bus"]
-        I["🔄 Handlers<br>Dispatcher"]
-        J["🔌 Transport<br>Named Pipes"]
-        K["📋 Serialization<br>JSON"]
+        F["Cryptography<br>E2E encryption"]
+        G["Messaging<br>Messaging system"]
+        H["Events<br>Event Bus"]
+        I["Handlers<br>Dispatcher"]
+        J["Transport<br>Named Pipes"]
+        K["Serialization<br>JSON"]
     end
     
     class A highlight;
@@ -116,21 +116,21 @@ flowchart TB
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Category | Technology | Description |
 |----------|------------|-------------|
-| 🔷 Language | C# | Modern object-oriented language |
-| ⚙️ Platform | .NET 8.0 | Cross-platform framework |
-| 🖼️ UI | WinForms | Windows desktop interface |
-| 📦 DI | Microsoft.Extensions.DependencyInjection | Dependency injection |
-| 🔐 Security | System.Security.Cryptography.ProtectedData | Windows DPAPI |
-| 🔌 Transport | Named Pipes | Inter-process communication |
-| 📋 Style | .editorconfig | Unified code style |
+| Language | C# | Modern object-oriented language |
+| Platform | .NET 8.0 | Cross-platform framework |
+| UI | WinForms | Windows desktop interface |
+| DI | Microsoft.Extensions.DependencyInjection | Dependency injection |
+| Security | System.Security.Cryptography.ProtectedData | Windows DPAPI |
+| Transport | Named Pipes | Inter-process communication |
+| Style | .editorconfig | Unified code style |
 
 ---
 
-## 🚀 Installation and Running
+## Installation and Running
 
 ### Requirements
 
@@ -160,7 +160,7 @@ dotnet run --project Desktop/MIN.Desktop/MIN.Desktop.csproj
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```mermaid
 flowchart TB
@@ -171,8 +171,8 @@ flowchart TB
     classDef folder fill:#f5f3ff,stroke:#c7c2ea,color:#312e81
     classDef file fill:#fff,stroke:#c7d2fe,color:#4338ca
     
-    subgraph MIN["📂 MIN"]
-        subgraph CORE["⚙️ Core/"]
+    subgraph MIN["MIN"]
+        subgraph CORE["Core/"]
             G["Cryptography/"]
             H["Messaging/"]
             I["Events/"]
@@ -180,12 +180,12 @@ flowchart TB
             K["Transport/"]
             L["Serialization/"]
         end
-        subgraph INF["🏗️ Infrastructure/"]
+        subgraph INF["Infrastructure/"]
             M["Chat/"]
             N["Discovery/"]
             O["FileTransfer/"]
         end
-        subgraph DESK["🖥️ Desktop/"]
+        subgraph DESK["Desktop/"]
             P["MIN.Desktop/"]
             Q["Views/"]
             R["Components/"]
@@ -206,7 +206,7 @@ flowchart TB
 
 ---
 
-## 🔐 Security
+## Security
 
 > [!IMPORTANT]
 > MIN uses **end-to-end encryption** — your messages are protected from interception.
@@ -219,8 +219,8 @@ flowchart LR
     classDef encrypted fill:#e0e7ff,stroke:#4f46e5,stroke-width:3px,color:#3730a3
     classDef recipient fill:#dbeafe,stroke:#3b82f6,stroke-width:3px,color:#1e40af
     
-    A["👤 Sender"] -->|"🔐 Encryption"| B["🔐 Encrypted Message"]
-    B -->|"🌐 Local Network"| C["👤 Recipient"]
+    A["Sender"] -->|"Encryption"| B["Encrypted Message"]
+    B -->|"Local Network"| C["Recipient"]
     
     class A sender;
     class B encrypted;
@@ -231,39 +231,39 @@ flowchart LR
 
 | Technology | Purpose |
 |------------|---------|
-| 🔑 **Asymmetric (RSA)** | Key exchange between participants |
-| 🛡️ **Symmetric (AES)** | Message content encryption |
-| 💾 **Windows DPAPI** | Secure key storage |
+| **Asymmetric (RSA)** | Key exchange between participants |
+| **Symmetric (AES)** | Message content encryption |
+| **Windows DPAPI** | Secure key storage |
 
 ---
 
-## 📸 Interface
+## Interface
 
 MIN provides a modern interface for:
 
 | Function | Description |
 |----------|-------------|
-| 🏠 **Rooms** | Creating and managing chat rooms |
-| 💬 **Chat** | Real-time communication |
-| 📁 **Files** | Transfer with progress display |
-| 👥 **Participants** | Online/offline statuses |
+| **Rooms** | Creating and managing chat rooms |
+| **Chat** | Real-time communication |
+| **Files** | Transfer with progress display |
+| **Participants** | Online/offline statuses |
 
 > [!NOTE]
-> 📸 Screenshots will be added after the first release.
+> Screenshots will be added after the first release.
 
 ---
 
-## 🤝 Authors
+## Authors
 
 | Author | Role | Contribution |
 |--------|------|--------------|
-| 👨‍💻 [**CasCadeVR**](https://github.com/CasCadeVR) | Founder | Lead developer, architecture creator |
-| 💡 [**Karo4a**](https://github.com/Karo4a) | Inspiration | Ideas and inspiration |
+| [**CasCadeVR**](https://github.com/CasCadeVR) | Founder | Lead developer, architecture creator |
+| [**Karo4a**](https://github.com/Karo4a) | Inspiration | Ideas and inspiration |
 
 ---
 
 > [!TIP]
-> **Made with ❤️ by CasCade team**
+> **Made with love by CasCade team**
 
 *MIN — Local messenger for your network*
 
