@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.NetworkInformation;
 
 namespace MIN.Discovery.Transport.UdpBroadcast.Helpers;
 
@@ -54,7 +55,36 @@ internal class UdpBroadcastIpHelper : IDisposable
 
     private IEnumerable<IPAddress> GetAllBroadcastChannels()
     {
-        return [IPAddress.Broadcast];
+        var result = new List<IPAddress>();
+
+        foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            if (ni.OperationalStatus != OperationalStatus.Up ||
+                ni.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+            {
+                continue;
+            }
+
+            var props = ni.GetIPProperties();
+
+            if (props.GatewayAddresses.Count > 0)
+            {
+                Console.WriteLine($"Главный адаптер: {ni.Description}");
+                foreach (var ip in props.UnicastAddresses)
+                {
+                    if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    {
+                        Console.WriteLine($"Его IP: {ip.Address}");
+                        var ipAddr = BitConverter.ToUInt32(ip.Address.GetAddressBytes(), 0);
+                        var mask = BitConverter.ToUInt32(ip.IPv4Mask.GetAddressBytes(), 0);
+                        var broadcast = ipAddr | ~mask;
+                        result.Add(new IPAddress(BitConverter.GetBytes(broadcast)));
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

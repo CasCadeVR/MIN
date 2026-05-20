@@ -10,7 +10,7 @@
     <DebugSymbols>true</DebugSymbols>
 
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup Condition=" $(MSBuildProjectName.EndsWith('.Tests')) ">

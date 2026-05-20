@@ -284,6 +284,7 @@ public partial class ChatPanelView
         {
             Text = msg.Content,
             Anchor = AnchorStyles.None,
+            AutoEllipsis = true,
             AutoSize = true,
         };
 
@@ -297,6 +298,7 @@ public partial class ChatPanelView
         {
             Text = describable.GetDescription(),
             Anchor = AnchorStyles.None,
+            AutoEllipsis = true,
             AutoSize = true,
         };
 
