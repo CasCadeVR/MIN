@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Sockets;
 using MIN.Discovery.Transport.Contracts;
 using MIN.Discovery.Transport.Contracts.Events;
+using MIN.Discovery.Transport.UdpBroadcast.Helpers;
+using MIN.Discovery.Transport.UdpBroadcast.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 
@@ -11,6 +13,7 @@ namespace MIN.Discovery.Transport.UdpBroadcast;
 public sealed class UdpBroadcastDiscoveryTransport : IDiscoveryTransport, IAsyncDisposable
 {
     private readonly ILoggerProvider logger;
+    private readonly UdpBroadcastIpHelper ipHelper;
     private int port;
     private UdpClient? listener;
     private CancellationTokenSource? listenerCts;
@@ -22,9 +25,14 @@ public sealed class UdpBroadcastDiscoveryTransport : IDiscoveryTransport, IAsync
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="UdpBroadcastDiscoveryTransport"/>
     /// </summary>
-    public UdpBroadcastDiscoveryTransport(ISettingsProvider settingsProvider, ILoggerProvider logger)
+    public UdpBroadcastDiscoveryTransport(ISettingsProvider settingsProvider,
+        IAppDataProvider appDataProvider,
+        ILoggerProvider logger)
     {
         this.logger = logger;
+
+        var storage = new UdpBroadcastIpStorage(appDataProvider);
+        ipHelper = new UdpBroadcastIpHelper(storage);
 
         port = settingsProvider.GetSettings().DiscoveryPort;
         settingsProvider.OnSettingsSaved += () => port = settingsProvider.GetSettings().DiscoveryPort;
@@ -76,7 +84,16 @@ public sealed class UdpBroadcastDiscoveryTransport : IDiscoveryTransport, IAsync
         client.EnableBroadcast = true;
 
         var packet = UdpPacketHelper.Pack(data);
-        await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Broadcast, port));
+
+        var addresses = await ipHelper.GetBroadcastAddressesAsync();
+        foreach (var address in addresses)
+        {
+            await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Broadcast, port));
+        }
+        //var sendTasks = addresses.Select(address
+        //    => client.SendAsync(packet, packet.Length, new IPEndPoint(address, port)));
+
+        //await Task.WhenAll(sendTasks);
 
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeoutCts.CancelAfter(timeout);

@@ -1,8 +1,9 @@
 using System.Net;
 using System.Net.Sockets;
 using MIN.Discovery.Transport.Contracts;
+using MIN.Discovery.Transport.UdpBroadcast.Helpers;
 
-namespace MIN.Discovery.Transport.UdpBroadcast;
+namespace MIN.Discovery.Transport.UdpBroadcast.Models;
 
 internal sealed class UdpDiscoveryResponder : IDiscoveryResponder
 {

@@ -1,9 +1,9 @@
-namespace MIN.Discovery.Transport.UdpBroadcast;
+namespace MIN.Discovery.Transport.UdpBroadcast.Helpers;
 
 /// <summary>
 /// Хелпер для упаковки/распаковки UDP-пакетов с magic bytes "MI" + длина
 /// </summary>
-internal static class UdpPacketHelper
+static internal class UdpPacketHelper
 {
     /// <summary>
     /// Максимальный размер полезной нагрузки UDP (MTU 1472 - заголовок 4)
@@ -18,7 +18,9 @@ internal static class UdpPacketHelper
     public static byte[] Pack(byte[] payload)
     {
         if (payload.Length > MaxPayloadSize)
+        {
             throw new ArgumentException($"Payload exceeds UDP max ({MaxPayloadSize} bytes)");
+        }
 
         var packet = new byte[payload.Length + HeaderSize];
         packet[0] = (byte)'M';
@@ -36,13 +38,19 @@ internal static class UdpPacketHelper
     {
         payload = [];
         if (packet.Length < HeaderSize)
+        {
             return false;
+        }
         if (packet[0] != 'M' || packet[1] != 'I')
+        {
             return false;
+        }
 
         var len = (packet[2] << 8) | packet[3];
         if (len + HeaderSize != packet.Length)
+        {
             return false;
+        }
 
         payload = new byte[len];
         Array.Copy(packet, HeaderSize, payload, 0, len);
