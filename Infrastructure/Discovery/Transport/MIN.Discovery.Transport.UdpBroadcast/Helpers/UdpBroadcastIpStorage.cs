@@ -40,7 +40,7 @@ internal class UdpBroadcastIpStorage : IDisposable
             }
 
             var json = await File.ReadAllTextAsync(addressesPath, cancellationToken);
-            return JsonSerializer.Deserialize<IPAddress[]>(json, jsonOptions);
+            return JsonSerializer.Deserialize<string[]>(json, jsonOptions)?.Select(IPAddress.Parse);
         }
         catch (JsonException ex)
         {
@@ -57,7 +57,7 @@ internal class UdpBroadcastIpStorage : IDisposable
         await localKeyLock.WaitAsync(cancellationToken);
         try
         {
-            var json = JsonSerializer.Serialize(iPAddresses.ToArray(), jsonOptions);
+            var json = JsonSerializer.Serialize(iPAddresses.Select(x => x.ToString()).ToArray(), jsonOptions);
             await File.WriteAllTextAsync(addressesPath, json, cancellationToken);
         }
         finally
