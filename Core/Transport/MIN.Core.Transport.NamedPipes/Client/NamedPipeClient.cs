@@ -55,7 +55,7 @@ internal sealed class NamedPipeClient : IAsyncDisposable
     public bool IsConnected => isConnected && connection?.Pipe.IsConnected == true;
 
     /// <summary>
-    /// Подключиться к серверу и выполняет handshake
+    /// Подключиться к серверу
     /// </summary>
     public async Task<Guid> ConnectAsync(int timeoutMs = 1000, CancellationToken cancellationToken = default)
     {

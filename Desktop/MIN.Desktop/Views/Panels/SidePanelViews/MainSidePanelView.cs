@@ -19,7 +19,6 @@ namespace MIN.Desktop.Views.Panels.SidePanelViews;
 public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
 {
     private readonly IMinFeatureCollection featureCollection;
-    private readonly ICtsProvider ctsProvider;
     private readonly INavigationService navigationService;
     private readonly Dictionary<Guid, RecentRoomCard> activeRecentRoomCards = [];
     private readonly Dictionary<Guid, ChatPanelView> activeChatPanels = [];
@@ -33,13 +32,11 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
     /// Инициализирует новый экземпляр <see cref="MainSidePanelView"/>
     /// </summary>
     public MainSidePanelView(IMinFeatureCollection featureCollection,
-        ICtsProvider ctsProvider,
         INavigationService navigationService)
     {
         InitializeComponent();
 
         this.featureCollection = featureCollection;
-        this.ctsProvider = ctsProvider;
         this.navigationService = navigationService;
 
         localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();

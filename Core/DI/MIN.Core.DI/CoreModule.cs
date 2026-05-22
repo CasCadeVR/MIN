@@ -19,8 +19,7 @@ using MIN.Core.Stores.Factories;
 using MIN.Core.Stores.Registries;
 using MIN.Core.Stores.Services;
 using MIN.Core.Streaming.Services;
-using MIN.Core.Transport.NamedPipes;
-using MIN.Core.Transport.NamedPipes.Services;
+using MIN.Core.Transport.TcpSockets;
 
 namespace MIN.Core.DI;
 
@@ -39,8 +38,7 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<FileSystemKeyStorage>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);
 
-        services.RegisterAsImplementedInterfaces<NamedPipeEndpointProvider>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<NamedPipeTransport>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<TcpTransport>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<HeaderManager>(ServiceLifetime.Singleton);
 

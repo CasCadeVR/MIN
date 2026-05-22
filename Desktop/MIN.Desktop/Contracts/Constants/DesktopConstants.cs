@@ -13,7 +13,7 @@ public static class DesktopConstants
     /// <summary>
     /// Не распознаный компьютер
     /// </summary>
-    public const string UndefinedPCName = "ХЗ";
+    public const string UndefinedPcName = "ХЗ";
 
     /// <summary>
     /// Таймаут на подключение к комнате (мс)

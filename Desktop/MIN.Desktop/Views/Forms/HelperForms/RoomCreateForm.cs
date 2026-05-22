@@ -2,6 +2,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Views.Forms.HelperForms;
 
@@ -90,6 +91,13 @@ public partial class RoomCreateForm : StyledForm
         }
 
         Room.Name = roomName.Text;
+
+        if (CollegePCNameParser.TryParseComputerName(Environment.MachineName, out var roomNumber, out var computerNumber))
+        {
+            Room.Cabinet = roomNumber.ToString();
+            Room.PcNumber = computerNumber;
+        }
+
         Room.MaximumParticipants = Convert.ToInt32(roomMaximumCount.Value);
 
         DialogResult = DialogResult.OK;

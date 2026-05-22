@@ -1,0 +1,163 @@
+﻿using System.Net.Sockets;
+using MIN.Core.Transport.Contracts.Models;
+
+namespace MIN.Core.Transport.TcpSockets.Models;
+
+/// <summary>
+/// Соединение через Tcp Socket
+/// </summary>
+internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
+{
+    private readonly TcpClient client;
+    private NetworkStream stream;
+    private Task? receiveLoop;
+    private readonly SemaphoreSlim writeLock = new(1, 1);
+
+    private readonly CancellationTokenSource cancellationTokenSource = new();
+    private bool disposed;
+
+    /// <summary>
+    /// Инициализирует новый экзмепляр <see cref="TcpSocketConnection"/>
+    /// </summary>
+    public TcpSocketConnection(TcpClient client)
+    {
+        this.client = client;
+        stream = client.GetStream();
+    }
+
+    /// <summary>
+    /// Активно ли соединение
+    /// </summary>
+    public override bool IsConnected => client.Connected && stream != null && !disposed;
+
+    /// <summary>
+    /// Событие получения сообщения
+    /// </summary>
+    public event Action<TcpSocketConnection, byte[]>? RawMessageReceived;
+
+    /// <summary>
+    /// Событие отключения
+    /// </summary>
+    public event Action<TcpSocketConnection, string?>? Disconnected;
+
+    /// <summary>
+    /// Запускает асинхронное чтение сообщений из Tcp socket
+    /// </summary>
+    public void StartReading()
+    {
+        receiveLoop = Task.Run(ReceiveLoopAsync);
+    }
+
+    private async Task ReceiveLoopAsync()
+    {
+        var disconnectMessage = string.Empty;
+
+        try
+        {
+            while (!cancellationTokenSource.Token.IsCancellationRequested && IsConnected)
+            {
+                var message = await ReadMessageAsync(cancellationTokenSource.Token);
+                OnRawMessageReceived(message);
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            disconnectMessage = ex.Message;
+        }
+        finally
+        {
+            OnDisconnected(disconnectMessage);
+            await DisposeAsync();
+        }
+    }
+
+    private async Task<byte[]> ReadMessageAsync(CancellationToken ct)
+    {
+        // Читаем длину (4 байта)
+        var lengthBuf = new byte[4];
+        var bytesRead = 0;
+        while (bytesRead < 4)
+        {
+            var read = await stream.ReadAsync(lengthBuf.AsMemory(bytesRead, 4 - bytesRead), ct);
+            if (read == 0)
+            {
+                throw new EndOfStreamException();
+            }
+            bytesRead += read;
+        }
+        var length = BitConverter.ToInt32(lengthBuf);
+
+        var data = new byte[length];
+        bytesRead = 0;
+        while (bytesRead < length)
+        {
+            var read = await stream.ReadAsync(data.AsMemory(bytesRead, length - bytesRead), ct);
+            if (read == 0)
+            {
+                throw new EndOfStreamException();
+            }
+            bytesRead += read;
+        }
+        return data;
+    }
+
+    /// <summary>
+    /// Отправляет данные
+    /// </summary>
+    public async Task SendAsync(byte[] data, CancellationToken cancellationToken = default)
+    {
+        if (!IsConnected)
+        {
+            throw new InvalidOperationException("Connection is closed");
+        }
+
+        await writeLock.WaitAsync(cancellationToken);
+        try
+        {
+            var lengthPrefix = BitConverter.GetBytes(data.Length);
+            await stream.WriteAsync(lengthPrefix, cancellationToken);
+            await stream.WriteAsync(data, cancellationToken);
+            await stream.FlushAsync(cancellationToken);
+        }
+        finally
+        {
+            writeLock.Release();
+        }
+    }
+
+
+    private void OnRawMessageReceived(byte[] data)
+    {
+        RawMessageReceived?.Invoke(this, data);
+    }
+
+    private void OnDisconnected(string? reason)
+    {
+        Disconnected?.Invoke(this, reason);
+    }
+
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
+    public async ValueTask DisposeAsync()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+
+        disposed = true;
+        cancellationTokenSource.Cancel();
+
+        if (receiveLoop != null)
+        {
+            await receiveLoop.WaitAsync(TimeSpan.FromSeconds(3));
+        }
+
+        stream.Dispose();
+        client.Dispose();
+        writeLock.Dispose();
+        cancellationTokenSource.Dispose();
+    }
+}
+

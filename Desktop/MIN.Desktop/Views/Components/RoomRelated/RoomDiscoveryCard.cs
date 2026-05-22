@@ -4,7 +4,6 @@ using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
-using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Components;
 
@@ -15,7 +14,6 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
 {
     private readonly IEventBus eventBus;
     private readonly RoomInfo room;
-    private readonly string computerName;
     private readonly SynchronizationContext uiContext;
     private readonly bool isOwner;
 
@@ -29,12 +27,11 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
     /// </summary>
-    public RoomDiscoveryCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room, string? computerName = null)
+    public RoomDiscoveryCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room)
     {
         InitializeComponent();
         this.eventBus = eventBus;
         this.room = room;
-        this.computerName = computerName ?? string.Empty;
         isOwner = room.HostParticipant.Id == localParticipant.Id;
 
         uiContext = SynchronizationContext.Current
@@ -161,17 +158,10 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
         participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
         hostName.Text = room.HostParticipant.Name;
         createdAt.Text = room.CreatedAt.ToShortTimeString();
-
-        if (CollegePCNameParser.TryParseComputerName(computerName, out var roomNumber, out var computerNumber))
-        {
-            computer.Text = computerNumber.ToString();
-            classroom.Text = roomNumber.ToString();
-        }
-        else
-        {
-            computer.Text = DesktopConstants.UndefinedPCName;
-            classroom.Text = DesktopConstants.UndefinedPCName;
-        }
+        computer.Text = room.PcNumber.ToString();
+        classroom.Text = string.IsNullOrEmpty(room.Cabinet)
+            ? DesktopConstants.UndefinedPcName
+            : room.Cabinet;
 
         ManageConnectButtonAccessability();
     }

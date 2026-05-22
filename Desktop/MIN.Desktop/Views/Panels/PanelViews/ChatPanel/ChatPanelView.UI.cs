@@ -1,12 +1,10 @@
 ﻿using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Constants;
-using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
-using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -66,23 +64,9 @@ public partial class ChatPanelView
         var isHost = room.HostParticipant?.Id == localParticipant.Id;
         hostName.Text = isHost ? "Ты" : room.HostParticipant?.Name ?? "Неизвестно";
         createdAt.Text = room.CreatedAt.ToShortTimeString();
+        computer.Text = room.PcNumber.ToString();
+        classroom.Text = string.IsNullOrEmpty(room.Cabinet) ? DesktopConstants.UndefinedPcName : room.Cabinet;
         editButton.Visible = isHost;
-
-        if (CollegePCNameParser.TryParseComputerName(endpoint is NamedPipeEndpoint npEndpoint
-                ? npEndpoint.MachineName
-                : string.Empty,
-            out var roomNumber,
-            out var computerNumber))
-        {
-            computer.Text = computerNumber.ToString();
-            classroom.Text = roomNumber.ToString();
-        }
-        else
-        {
-            computer.Text = DesktopConstants.UndefinedPCName;
-            classroom.Text = DesktopConstants.UndefinedPCName;
-        }
-
         UpdateParticipantFlow();
     }
 

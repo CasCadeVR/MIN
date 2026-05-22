@@ -2,7 +2,6 @@ using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
@@ -180,7 +179,7 @@ public partial class DiscoveryPanelView : StyledPanelView
                 var newRoomInfo = new RoomInfo(room);
                 chatPanelManager.RegisterChat(newRoomInfo,
                     navigationService
-                    .NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>((room, connectionId, endpoint)));
+                    .NavigateTo<ChatPanelView, (Room room, Guid connectionId)>((room, connectionId)));
                 await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent()
                 {
                     RoomId = room.Id,
@@ -244,13 +243,10 @@ public partial class DiscoveryPanelView : StyledPanelView
 
             await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
 
-            chatPanelManager.RegisterChat(roomInfo, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>(
+            chatPanelManager.RegisterChat(roomInfo, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId)>(
                 (featureCollection.Core.RoomStore.GetRoom(roomId),
-                CoreRegistryConstants.LocalConnectionId,
-                new NamedPipeEndpoint()
-                {
-                    MachineName = Environment.MachineName,
-                })));
+                CoreRegistryConstants.LocalConnectionId)
+            ));
         }
         catch (Exception ex)
         {
