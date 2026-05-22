@@ -86,14 +86,10 @@ public sealed class UdpBroadcastDiscoveryTransport : IDiscoveryTransport, IAsync
         var packet = UdpPacketHelper.Pack(data);
 
         var addresses = await ipHelper.GetBroadcastAddressesAsync();
-        foreach (var address in addresses)
-        {
-            await client.SendAsync(packet, packet.Length, new IPEndPoint(IPAddress.Broadcast, port));
-        }
-        //var sendTasks = addresses.Select(address
-        //    => client.SendAsync(packet, packet.Length, new IPEndPoint(address, port)));
+        var sendTasks = addresses.Select(address
+            => client.SendAsync(packet, packet.Length, new IPEndPoint(address, port)));
 
-        //await Task.WhenAll(sendTasks);
+        await Task.WhenAll(sendTasks);
 
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeoutCts.CancelAfter(timeout);
@@ -107,7 +103,6 @@ public sealed class UdpBroadcastDiscoveryTransport : IDiscoveryTransport, IAsync
                 {
                     continue;
                 }
-
                 var responder = new UdpDiscoveryResponder(client, result.RemoteEndPoint);
                 MessageReceived?.Invoke(this, new DiscoveryRawMessageReceivedEventArgs(payload, responder));
             }

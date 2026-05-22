@@ -1,6 +1,8 @@
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
@@ -14,7 +16,6 @@ using MIN.DI.FeatureCollection;
 using MIN.Discovery.Events;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Models;
-using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Views.Panels.SidePanelViews;
 
@@ -50,16 +51,7 @@ public partial class DiscoveryPanelView : StyledPanelView
 
         lifeTimeCts = new CancellationTokenSource();
 
-        ParseMachineName();
         SubscribeToEvents();
-    }
-
-    private void ParseMachineName()
-    {
-        if (CollegePCNameParser.TryParseComputerName(featureCollection.Helper.ComputerProvider.GetLocalMachineName(), out var roomNumber, out var _))
-        {
-            classNumber.Value = roomNumber;
-        }
     }
 
     private void SubscribeToEvents()
@@ -212,10 +204,60 @@ public partial class DiscoveryPanelView : StyledPanelView
     protected override void ApplyStylings()
     {
         tableLayoutPanel.BackColor = ColorScheme.PrimaryAccent;
-        classroomTitleInput.ForeColor = ColorScheme.TextOnAccent;
-        classNumber.ForeColor = ColorScheme.PrimaryAccent;
         statusStrip.BackColor = ColorScheme.SecondaryAccent;
         totalRoomsCount.ForeColor = ColorScheme.TextOnAccent;
         discoveryProgressBar.ForeColor = ColorScheme.PrimaryAccent;
+    }
+
+    private async void createRoom_Click(object sender, EventArgs e)
+    {
+        var roomCreateForm = new RoomCreateForm();
+
+        if (roomCreateForm.ShowDialog() != DialogResult.OK)
+        {
+            return;
+        }
+
+        var roomInfo = roomCreateForm.Room;
+        var roomId = roomInfo.Id;
+
+        if (!ResolveParticipant())
+        {
+            return;
+        }
+
+        var localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
+
+        context.Connections.RegisterLocalParticipant(localParticipant);
+        roomInfo.HostParticipant = localParticipant;
+
+        var room = new Room(roomInfo);
+
+        try
+        {
+            featureCollection.Core.RoomStore.Register(room);
+
+            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, lifeTimeCts.Token);
+
+            context.Participants.AddParticipant(new Participant(localParticipant));
+
+            await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
+
+            chatPanelManager.RegisterChat(roomInfo, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>(
+                (featureCollection.Core.RoomStore.GetRoom(roomId),
+                CoreRegistryConstants.LocalConnectionId,
+                new NamedPipeEndpoint()
+                {
+                    MachineName = Environment.MachineName,
+                })));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}",
+                "Ошибка",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
     }
 }

@@ -25,6 +25,7 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
     private readonly HashSet<Guid> activeRoomIds = [];
+    private readonly HashSet<Guid> discoveredRoomIds = [];
     private readonly CancellationTokenSource serviceCts;
 
     /// <summary>
@@ -68,13 +69,13 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
 
     async Task IDiscoveryService.DiscoverRoomsAsync(TimeSpan timeout, CancellationToken cancellationToken)
     {
+        discoveredRoomIds.Clear();
+
         var request = new DiscoveryRequestMessage();
         var requestData = serializer.Serialize(request);
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
         discoveryTransport.MessageReceived += OnResponseReceived;
-
-        logger.Log("[DEBUG]: starting UDP discovery");
 
         try
         {
@@ -84,7 +85,6 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
         finally
         {
             discoveryTransport.MessageReceived -= OnResponseReceived;
-            logger.Log("[DEBUG]: UDP discovery ended");
         }
     }
 
@@ -99,10 +99,19 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
                 return;
             }
 
-            logger.Log($"Нашёл +{response.RoomDiscoveryInfos.Count} комнат");
+            var newRooms = response.RoomDiscoveryInfos
+                .Where(r => discoveredRoomIds.Add(r.Room.Id))
+                .ToList();
+
+            if (newRooms.Count == 0)
+            {
+                return;
+            }
+
+            logger.Log($"Нашёл +{newRooms.Count} комнат");
             eventBus.PublishAsync(new RoomDiscoveredEvent()
             {
-                RoomDiscoveryInfos = response.RoomDiscoveryInfos,
+                RoomDiscoveryInfos = newRooms,
             });
         }
         catch (Exception ex)

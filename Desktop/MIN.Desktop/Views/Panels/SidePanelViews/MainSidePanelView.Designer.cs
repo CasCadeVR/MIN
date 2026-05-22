@@ -32,7 +32,6 @@
             searchButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             discoveryButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             settingsButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
-            createRoom = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             tableLayoutPanelHeader = new TableLayoutPanel();
             flowLayoutPanelRooms = new MIN.Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
@@ -50,13 +49,11 @@
             // splitContainer.Panel1
             // 
             splitContainer.Panel1.Controls.Add(tableLayoutPanelHeader);
-            splitContainer.Panel1MinSize = 88;
             // 
             // splitContainer.Panel2
             // 
             splitContainer.Panel2.Controls.Add(flowLayoutPanelRooms);
             splitContainer.Size = new Size(409, 800);
-            splitContainer.SplitterDistance = 88;
             // 
             // roomSearchTextBox
             // 
@@ -120,23 +117,6 @@
             settingsButton.UseVisualStyleBackColor = false;
             settingsButton.Click += settingsButton_Click;
             // 
-            // createRoom
-            // 
-            createRoom.BackColor = Color.FromArgb(192, 192, 255);
-            tableLayoutPanelHeader.SetColumnSpan(createRoom, 4);
-            createRoom.Dock = DockStyle.Fill;
-            createRoom.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
-            createRoom.FlatStyle = FlatStyle.Flat;
-            createRoom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            createRoom.ForeColor = Color.FromArgb(248, 249, 255);
-            createRoom.Location = new Point(3, 51);
-            createRoom.Name = "createRoom";
-            createRoom.Size = new Size(403, 34);
-            createRoom.TabIndex = 8;
-            createRoom.Text = "Создать комнату";
-            createRoom.UseVisualStyleBackColor = false;
-            createRoom.Click += createRoom_Click;
-            // 
             // tableLayoutPanelHeader
             // 
             tableLayoutPanelHeader.BackColor = Color.Transparent;
@@ -145,7 +125,6 @@
             tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
             tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
-            tableLayoutPanelHeader.Controls.Add(createRoom, 0, 1);
             tableLayoutPanelHeader.Controls.Add(settingsButton, 0, 0);
             tableLayoutPanelHeader.Controls.Add(discoveryButton, 3, 0);
             tableLayoutPanelHeader.Controls.Add(searchButton, 2, 0);
@@ -154,10 +133,9 @@
             tableLayoutPanelHeader.Location = new Point(0, 0);
             tableLayoutPanelHeader.Margin = new Padding(0);
             tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
-            tableLayoutPanelHeader.RowCount = 2;
+            tableLayoutPanelHeader.RowCount = 1;
             tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
-            tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelHeader.Size = new Size(409, 88);
+            tableLayoutPanelHeader.Size = new Size(409, 48);
             tableLayoutPanelHeader.TabIndex = 1;
             // 
             // flowLayoutPanelRooms
@@ -166,7 +144,7 @@
             flowLayoutPanelRooms.Dock = DockStyle.Fill;
             flowLayoutPanelRooms.Location = new Point(0, 0);
             flowLayoutPanelRooms.Name = "flowLayoutPanelRooms";
-            flowLayoutPanelRooms.Size = new Size(409, 710);
+            flowLayoutPanelRooms.Size = new Size(409, 750);
             flowLayoutPanelRooms.TabIndex = 0;
             flowLayoutPanelRooms.Resize += flowLayoutPanelRooms_Resize;
             // 
@@ -190,7 +168,6 @@
         #endregion
 
         private TableLayoutPanel tableLayoutPanelHeader;
-        private Desktop.Components.Controls.Buttons.CommonButton createRoom;
         private Desktop.Components.Controls.Buttons.CommonButton settingsButton;
         private Desktop.Components.Controls.Buttons.CommonButton discoveryButton;
         private Desktop.Components.Controls.Buttons.CommonButton searchButton;

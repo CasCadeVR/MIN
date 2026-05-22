@@ -2,11 +2,9 @@
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
-using MIN.Desktop.Views.Forms;
 using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Models;
-using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Desktop.Views.Panels.SidePanelViews;
 
@@ -39,7 +37,6 @@ public partial class SettingsSidePanelView : StyledPanelView
         featureCollection.Helper.SettingsProvider.OnSettingsSaved += FillControls;
 
         FillControls();
-        EnableOutOfRadioButtons();
     }
 
     private void FillControls()
@@ -48,30 +45,7 @@ public partial class SettingsSidePanelView : StyledPanelView
         labelVersion.Text = $"Версия: {featureCollection.Helper.VersionProvider.Version.ToString()}";
         defaultName.Text = Settings.DefaultParticipantName;
         roomSearchTime.Value = Settings.DiscoveryTimeout;
-        preferredSearch.Checked = Settings.SearchMethod == SearchMethod.Preferred;
-        classRoomSearch.Checked = Settings.SearchMethod == SearchMethod.ClassRoom;
-        SetPCNames(Settings.PreferredPCNames);
-    }
-
-    private void SetPCNames(IEnumerable<string> pcNames)
-    {
-        var allowAdd = preferredPcNameList.AllowUserToAddRows;
-        preferredPcNameList.AllowUserToAddRows = false;
-        preferredPcNameList.Rows.Clear();
-
-        if (pcNames != null)
-        {
-            foreach (var pcName in pcNames)
-            {
-                var cleanName = pcName.Trim();
-                if (!string.IsNullOrEmpty(cleanName))
-                {
-                    preferredPcNameList.Rows.Add(cleanName);
-                }
-            }
-        }
-
-        preferredPcNameList.AllowUserToAddRows = allowAdd;
+        discoveryPort.Value = Settings.DiscoveryPort;
     }
 
     /// <inheritdoc />
@@ -85,85 +59,11 @@ public partial class SettingsSidePanelView : StyledPanelView
     private void saveButton_Click(object sender, EventArgs e)
     {
         Settings.DefaultParticipantName = defaultName.Text;
+        Settings.DiscoveryPort = Convert.ToInt32(discoveryPort.Value);
         Settings.DiscoveryTimeout = Convert.ToInt32(roomSearchTime.Value);
-        Settings.SearchMethod = preferredSearch.Checked ? SearchMethod.Preferred : SearchMethod.ClassRoom;
-        Settings.PreferredPCNames = GetPCNames();
-
         featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
 
         navigationService.NavigateTo<MainSidePanelView>();
-    }
-
-    private List<string> GetPCNames()
-    {
-        var pcNames = new List<string>();
-
-        foreach (DataGridViewRow row in preferredPcNameList.Rows)
-        {
-            if (row.IsNewRow)
-            {
-                continue;
-            }
-
-            var cellValue = row.Cells[0].Value;
-
-            if (cellValue != null)
-            {
-                var pcName = cellValue.ToString()!.Trim();
-                if (!string.IsNullOrEmpty(pcName))
-                {
-                    pcNames.Add(pcName);
-                }
-            }
-        }
-
-        return pcNames;
-    }
-
-    private void EnableOutOfRadioButtons()
-    {
-        classRoomDescription.Enabled = classRoomSearch.Checked;
-        pcNameDescription.Enabled = preferredSearch.Checked;
-        preferredPcNameDescription.Enabled = preferredSearch.Checked;
-        preferredPcNameList.Enabled = preferredSearch.Checked;
-    }
-
-    private void preferredSearch_CheckedChanged(object sender, EventArgs e)
-    {
-        EnableOutOfRadioButtons();
-    }
-
-    private void classRoomSearch_CheckedChanged(object sender, EventArgs e)
-    {
-        EnableOutOfRadioButtons();
-    }
-
-    private void preferredPcNameList_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
-    {
-        if (e.ColumnIndex == 0)
-        {
-            var newValue = e.FormattedValue!.ToString()!.Trim();
-            if (string.IsNullOrEmpty(newValue))
-            {
-                return;
-            }
-
-            foreach (DataGridViewRow row in preferredPcNameList.Rows)
-            {
-                if (row.IsNewRow || row.Index == e.RowIndex)
-                {
-                    continue;
-                }
-
-                var existing = row.Cells[0].Value.ToString()!.Trim();
-                if (string.Equals(existing, newValue, StringComparison.OrdinalIgnoreCase))
-                {
-                    MessageBox.Show("Такое имя компьютера уже существует.");
-                    e.Cancel = true;
-                    return;
-                }
-            }
-        }
     }
 
     private void logButton_Click(object sender, EventArgs e)
