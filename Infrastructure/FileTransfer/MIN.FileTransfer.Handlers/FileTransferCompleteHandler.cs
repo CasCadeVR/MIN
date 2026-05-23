@@ -23,17 +23,17 @@ internal sealed class FileTransferCompleteHandler : IMessageHandler, IFileTransf
 
     int IMessageHandler.Priority => 10;
 
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
         if (message is not FileTransferCompleteMessage complete)
         {
             logger.Log($"Неизвестный тип сообщения в {nameof(FileTransferCompleteHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(FileTransferCompleteHandler)} - {message.GetType()}");
+            return Task.FromResult(HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(FileTransferCompleteHandler)} - {message.GetType()}"));
         }
 
         logger.Log($"Transfer {complete.TransferId} завершён, очищаю информацию");
         fileTransferService.RemoveTransfer(complete.TransferId);
 
-        return HandlerResult.Success();
+        return Task.FromResult(HandlerResult.Success());
     }
 }

@@ -118,11 +118,11 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
 
         isDownloading = true;
 
-        fileTransferProgressSubsciptionToken = eventBus.Subscribe(async (FileTransferProgressEvent e, CancellationToken _) =>
+        fileTransferProgressSubsciptionToken = eventBus.Subscribe((FileTransferProgressEvent e, CancellationToken _) =>
         {
             if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var progress = 100 * e.BytesReceived / fileMetadataMessage.FileSize;
@@ -134,7 +134,7 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
                     $" / {fileTransferFeatureCollection.FileHelperService.FormatFileSize(eventMessage.FileSize)}";
             }, this);
 
-            return;
+            return Task.CompletedTask;
         });
 
         uiContext.Post(_ =>
