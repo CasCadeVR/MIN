@@ -19,16 +19,7 @@ public sealed class TcpEndpoint : IEndpoint
     /// <summary>
     /// Динамически созданный порт
     /// </summary>
-    public int Port { get; set; }         // Dynamic port
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="TcpEndpoint"/>
-    /// </summary>
-    public TcpEndpoint(string ipAddress, int port)
-    {
-        IPAddress = ipAddress;
-        Port = port;
-    }
+    public int Port { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="TcpEndpoint"/>

@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Sockets;
 using MIN.Core.Transport.Contracts.Constants;
-using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -19,6 +18,7 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     private readonly ConcurrentDictionary<Guid, TcpSocketConnection> connections = new();
     private readonly CancellationTokenSource cts = new();
     private readonly int maxConnections = TransportConstants.RoomMaximumConnectionsAmount;
+
     private Task? acceptLoop;
 
     /// <summary>

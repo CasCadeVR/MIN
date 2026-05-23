@@ -99,7 +99,6 @@ public sealed class StreamManager : IStreamManager, IDisposable
                         LastAcknowledgedIndex = i,
                         TotalChunks = totalChunks,
                     });
-                    StartAckTimer(ackKey);
                 }
 
                 await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
@@ -177,7 +176,6 @@ public sealed class StreamManager : IStreamManager, IDisposable
                         LastAcknowledgedIndex = chunkIndex,
                         TotalChunks = totalChunks,
                     });
-                    StartAckTimer(ackKey);
                 }
 
                 await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
@@ -233,25 +231,6 @@ public sealed class StreamManager : IStreamManager, IDisposable
         if (pendingChunks.TryGetValue(ackKey, out var pending))
         {
             pending.LastAcknowledgedIndex = ackKey.ChunkIndex;
-        }
-    }
-
-    private void StartAckTimer(ChunkAckKey ackKey)
-    {
-        var timer = new Timer(
-            OnAckTimeout,
-            ackKey,
-            StreamingConstants.DefaultChunkTimeoutMs,
-            Timeout.InfiniteTimeSpan.Seconds);
-
-        ackTimers.TryAdd(ackKey, timer);
-    }
-
-    private void OnAckTimeout(object? state)
-    {
-        if (state is ChunkAckKey ackKey)
-        {
-            logger.Log($"Таймаут ожидания ACK для пакета {ackKey.ChunkIndex}", LogLevel.Warning);
         }
     }
 

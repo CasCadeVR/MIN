@@ -95,7 +95,7 @@ public class TcpTransport : ITransport
             ConnectionStateChanged?.Invoke(this, args);
         };
 
-        Guid connectionId = await client.ConnectAsync(tcpEp.IPAddress, tcpEp.Port, timeoutMs);
+        var connectionId = await client.ConnectAsync(tcpEp.IPAddress, tcpEp.Port, timeoutMs);
         clients.TryAdd(connectionId, client);
 
         var connectedArgs = new ConnectionStateChangedEventArgs(roomId, connectionId, true);

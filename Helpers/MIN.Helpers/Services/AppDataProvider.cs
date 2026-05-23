@@ -8,6 +8,14 @@ public sealed class AppDataProvider : IAppDataProvider
     /// <inheritdoc />
     public string BaseDirectory { get; }
 
+    void IAppDataProvider.ClearFolder(string folderName)
+    {
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(BaseDirectory, folderName)))
+        {
+            File.Delete(file);
+        }
+    }
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="AppDataProvider"/>
     /// </summary>

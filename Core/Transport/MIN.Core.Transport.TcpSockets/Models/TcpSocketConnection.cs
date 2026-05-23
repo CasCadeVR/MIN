@@ -9,11 +9,11 @@ namespace MIN.Core.Transport.TcpSockets.Models;
 internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
 {
     private readonly TcpClient client;
-    private NetworkStream stream;
-    private Task? receiveLoop;
+    private readonly NetworkStream stream;
     private readonly SemaphoreSlim writeLock = new(1, 1);
-
     private readonly CancellationTokenSource cancellationTokenSource = new();
+
+    private Task? receiveLoop;
     private bool disposed;
 
     /// <summary>
@@ -61,6 +61,7 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
             }
         }
         catch (OperationCanceledException) { }
+        catch (EndOfStreamException) { }
         catch (Exception ex)
         {
             disconnectMessage = ex.Message;
@@ -74,7 +75,6 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
 
     private async Task<byte[]> ReadMessageAsync(CancellationToken ct)
     {
-        // Читаем длину (4 байта)
         var lengthBuf = new byte[4];
         var bytesRead = 0;
         while (bytesRead < 4)
@@ -126,7 +126,6 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         }
     }
 
-
     private void OnRawMessageReceived(byte[] data)
     {
         RawMessageReceived?.Invoke(this, data);
@@ -160,4 +159,3 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         cancellationTokenSource.Dispose();
     }
 }
-

@@ -1,3 +1,4 @@
+
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Models;
@@ -78,7 +79,6 @@ public partial class DiscoveryPanelView : StyledPanelView
         {
             discoverRooms.Text = "Остановить поиск";
             splitContainerDiscoverRoom.Panel2Collapsed = false;
-            discoveryProgressBar.Style = ProgressBarStyle.Marquee;
             flowLayoutPanelDiscoveredRooms.Controls.Clear();
             totalRoomsCount.Text = "Поиск комнат...";
         }, null);
@@ -99,7 +99,6 @@ public partial class DiscoveryPanelView : StyledPanelView
             discoverRooms.Enabled = true;
             discoverRooms.Text = "Найти комнаты";
             splitContainerDiscoverRoom.Panel2Collapsed = true;
-            discoveryProgressBar.Style = ProgressBarStyle.Blocks;
             var roomsCount = flowLayoutPanelDiscoveredRooms.Controls.Count;
             totalRoomsCount.Text = $"Всего нашлось комнат: {roomsCount}";
             isDiscovering = false;
@@ -161,7 +160,10 @@ public partial class DiscoveryPanelView : StyledPanelView
             return;
         }
 
-        ResolveParticipant();
+        if (!ResolveParticipant())
+        {
+            return;
+        }
 
         try
         {
@@ -255,5 +257,17 @@ public partial class DiscoveryPanelView : StyledPanelView
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
         }
+    }
+
+    private async void connectDirectButton_Click(object sender, EventArgs e)
+    {
+        var directConnectForm = new TcpDirectConnectForm();
+
+        if (directConnectForm.ShowDialog() != DialogResult.OK)
+        {
+            return;
+        }
+
+        await OnRoomJoin(new RoomInfo(), directConnectForm.Endpoint);
     }
 }

@@ -71,4 +71,10 @@ public partial class SettingsSidePanelView : StyledPanelView
         new LogForm(featureCollection.Helper.Logger).Show();
         navigationService.NavigateTo<MainSidePanelView>();
     }
+
+    private void clearCacheButton_Click(object sender, EventArgs e)
+    {
+        featureCollection.Helper.AppDataProvider.ClearFolder("cryptography");
+        featureCollection.Helper.AppDataProvider.ClearFolder("network");
+    }
 }

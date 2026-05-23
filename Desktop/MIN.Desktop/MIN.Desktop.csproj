@@ -86,6 +86,9 @@
     <Compile Update="Views\Forms\HelperForms\ParticipantCreateForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Views\Forms\HelperForms\TcpDirectConnectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Views\Forms\HelperForms\RoomCreateForm.cs">
       <SubType>Form</SubType>
     </Compile>

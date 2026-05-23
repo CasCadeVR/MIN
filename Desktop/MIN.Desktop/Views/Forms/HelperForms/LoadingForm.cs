@@ -18,7 +18,6 @@ public partial class LoadingForm : StyledForm
     private readonly CancellationTokenSource cts;
 
     private HashSet<IDisposable> eventTokens = null!;
-
     private bool gotRoom;
 
     /// <summary>

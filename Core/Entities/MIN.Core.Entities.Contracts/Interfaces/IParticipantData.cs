@@ -8,10 +8,10 @@ public interface IParticipantData
     /// <summary>
     /// Идентификатор участника
     /// </summary>
-    Guid Id { get; }
+    Guid Id { get; set; }
 
     /// <summary>
     /// Имя участника
     /// </summary>
-    string Name { get; }
+    string Name { get; set; }
 }

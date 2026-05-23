@@ -20,5 +20,5 @@ public interface IIdentityService
     /// <summary>
     /// Сбросить данные пользователя
     /// </summary>
-    void ResetParticipant(IParticipantData participantData);
+    void ResetParticipant();
 }

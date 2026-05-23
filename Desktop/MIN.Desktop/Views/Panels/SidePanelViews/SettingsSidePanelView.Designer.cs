@@ -41,6 +41,8 @@
             logButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             logDescriptionLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             labelVersion = new MIN.Desktop.Components.Labels.CaptionLabel();
+            clearCacheButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
+            clearCacheLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -114,6 +116,8 @@
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(clearCacheLabel, 1, 4);
+            tableLayoutPanel1.Controls.Add(clearCacheButton, 0, 4);
             tableLayoutPanel1.Controls.Add(discoveryPort, 1, 2);
             tableLayoutPanel1.Controls.Add(discoveryPortLabel, 0, 2);
             tableLayoutPanel1.Controls.Add(ClassTitleInput, 0, 1);
@@ -122,18 +126,19 @@
             tableLayoutPanel1.Controls.Add(defaultName, 1, 0);
             tableLayoutPanel1.Controls.Add(logButton, 0, 3);
             tableLayoutPanel1.Controls.Add(logDescriptionLabel, 1, 3);
-            tableLayoutPanel1.Controls.Add(labelVersion, 0, 5);
+            tableLayoutPanel1.Controls.Add(labelVersion, 0, 6);
             tableLayoutPanel1.Dock = DockStyle.Top;
             tableLayoutPanel1.Location = new Point(0, 0);
             tableLayoutPanel1.Margin = new Padding(0);
             tableLayoutPanel1.MaximumSize = new Size(0, 571);
             tableLayoutPanel1.MinimumSize = new Size(0, 571);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 6;
+            tableLayoutPanel1.RowCount = 7;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 72F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel1.Size = new Size(294, 571);
@@ -227,7 +232,7 @@
             logButton.FlatStyle = FlatStyle.Flat;
             logButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             logButton.ForeColor = Color.FromArgb(167, 157, 255);
-            logButton.Location = new Point(3, 151);
+            logButton.Location = new Point(3, 159);
             logButton.Margin = new Padding(3, 0, 0, 0);
             logButton.Name = "logButton";
             logButton.Size = new Size(144, 33);
@@ -243,9 +248,9 @@
             logDescriptionLabel.Enabled = false;
             logDescriptionLabel.Font = new Font("Segoe UI", 8.25F);
             logDescriptionLabel.ForeColor = Color.Black;
-            logDescriptionLabel.Location = new Point(150, 144);
+            logDescriptionLabel.Location = new Point(150, 150);
             logDescriptionLabel.Name = "logDescriptionLabel";
-            logDescriptionLabel.Size = new Size(135, 48);
+            logDescriptionLabel.Size = new Size(135, 52);
             logDescriptionLabel.TabIndex = 11;
             logDescriptionLabel.Text = "Окно логов - чисто для разраба, но можете и сами понаблюдать по приколу";
             // 
@@ -262,6 +267,37 @@
             labelVersion.Size = new Size(47, 13);
             labelVersion.TabIndex = 13;
             labelVersion.Text = "Версия:";
+            // 
+            // clearCacheButton
+            // 
+            clearCacheButton.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            clearCacheButton.BackColor = Color.FromArgb(248, 249, 255);
+            clearCacheButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
+            clearCacheButton.FlatAppearance.BorderSize = 2;
+            clearCacheButton.FlatStyle = FlatStyle.Flat;
+            clearCacheButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            clearCacheButton.ForeColor = Color.FromArgb(167, 157, 255);
+            clearCacheButton.Location = new Point(3, 223);
+            clearCacheButton.Margin = new Padding(3, 0, 0, 0);
+            clearCacheButton.Name = "clearCacheButton";
+            clearCacheButton.Size = new Size(144, 33);
+            clearCacheButton.TabIndex = 18;
+            clearCacheButton.Text = "Очистить кэш";
+            clearCacheButton.UseVisualStyleBackColor = false;
+            clearCacheButton.Click += clearCacheButton_Click;
+            // 
+            // clearCacheLabel
+            // 
+            clearCacheLabel.Anchor = AnchorStyles.Left;
+            clearCacheLabel.AutoSize = true;
+            clearCacheLabel.Enabled = false;
+            clearCacheLabel.Font = new Font("Segoe UI", 8.25F);
+            clearCacheLabel.ForeColor = Color.Black;
+            clearCacheLabel.Location = new Point(150, 220);
+            clearCacheLabel.Name = "clearCacheLabel";
+            clearCacheLabel.Size = new Size(116, 39);
+            clearCacheLabel.TabIndex = 19;
+            clearCacheLabel.Text = "Обычно нужен при неправильных настройках в кэше";
             // 
             // SettingsSidePanelView
             // 
@@ -300,5 +336,7 @@
         private Desktop.Components.Controls.Buttons.CommonButton saveButton;
         private Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown discoveryPort;
         private Desktop.Components.Labels.Heading3Label discoveryPortLabel;
+        private Desktop.Components.Labels.CaptionLabel clearCacheLabel;
+        private Desktop.Components.Controls.Buttons.InvertedButton clearCacheButton;
     }
 }

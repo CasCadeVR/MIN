@@ -44,7 +44,7 @@ internal class UdpBroadcastIpStorage : IDisposable
         }
         catch (JsonException ex)
         {
-            throw new InvalidDataException("Local key file is corrupted", ex);
+            throw new InvalidDataException("Broadcast addresses file is corrupted", ex);
         }
         finally
         {

@@ -35,7 +35,7 @@ internal sealed class TcpSocketClient : IAsyncDisposable
     /// <summary>
     /// Подключиться к серверу
     /// </summary>
-    public async Task<Guid> ConnectAsync(string ipAddress, int port, int timeoutMs = 3000)
+    public async Task<Guid> ConnectAsync(string ipAddress, int port, int timeoutMs)
     {
         client = new TcpClient();
         using var cts = new CancellationTokenSource(timeoutMs);
