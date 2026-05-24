@@ -165,39 +165,43 @@ public partial class DiscoveryPanelView : StyledPanelView
             return;
         }
 
+        featureCollection.Core.RoomStore.Register(new Room(roomInfo));
+
+        var connectionId = Guid.Empty;
+        var connectCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
+
+        var loadingForm = new LoadingForm(roomInfo.Id, featureCollection.Core.EventBus, async room =>
+        {
+            if (room == null)
+            {
+                return;
+            }
+            var newRoomInfo = new RoomInfo(room);
+            chatPanelManager.RegisterChat(newRoomInfo,
+                navigationService
+                .NavigateTo<ChatPanelView, (Room room, Guid connectionId)>((room, connectionId)));
+            await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent()
+            {
+                RoomId = room.Id,
+                RoomInfo = newRoomInfo,
+            });
+        }, connectCts, DesktopConstants.RoomConnectionTimeoutMs);
+        loadingForm.Show();
+
+        featureCollection.Core.RoomFactory.GetOrCreateContext(roomInfo.Id)
+            .Connections.RegisterLocalParticipant(localParticipant);
+
         try
         {
-            featureCollection.Core.RoomStore.Register(new Room(roomInfo));
-
-            var connectionId = Guid.Empty;
-            var connectCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
-
-            new LoadingForm(roomInfo.Id, featureCollection.Core.EventBus, async room =>
-            {
-                if (room == null)
-                {
-                    return;
-                }
-                var newRoomInfo = new RoomInfo(room);
-                chatPanelManager.RegisterChat(newRoomInfo,
-                    navigationService
-                    .NavigateTo<ChatPanelView, (Room room, Guid connectionId)>((room, connectionId)));
-                await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent()
-                {
-                    RoomId = room.Id,
-                    RoomInfo = newRoomInfo,
-                });
-            }, connectCts, DesktopConstants.RoomConnectionTimeoutMs).Show();
-
-            featureCollection.Core.RoomFactory.GetOrCreateContext(roomInfo.Id)
-                .Connections.RegisterLocalParticipant(localParticipant);
-
             connectionId = await featureCollection.Core.RoomConnector.ConnectAsync(roomInfo, endpoint,
                 DesktopConstants.RoomConnectionTimeoutMs, connectCts.Token);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Произошла ошибка: {ex.Message}");
+            loadingForm.Close();
+            MessageBox.Show($"Произошла ошибка: {ex.Message}, \nВозможно, комнаты уже и нет", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            featureCollection.Core.RoomStore.Remove(roomInfo.Id);
+            featureCollection.Core.RoomFactory.DestroyContext(roomInfo.Id);
         }
     }
 
