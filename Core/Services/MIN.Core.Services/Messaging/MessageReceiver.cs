@@ -7,12 +7,11 @@ using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Events;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
-using MIN.Core.Transport.Contracts.Events;
-using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Messaging;
@@ -22,7 +21,8 @@ namespace MIN.Core.Services.Messaging;
 /// </summary>
 public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 {
-    private readonly ITransport transport;
+    private readonly IRoomHoster roomHoster;
+    private readonly IRoomConnector roomConnector;
     private readonly IMessageSerializer serializer;
     private readonly IEventBus eventBus;
     private readonly IMessageDispatcher dispatcher;
@@ -37,7 +37,8 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="MessageReceiver"/>
     /// </summary>
-    public MessageReceiver(ITransport transport,
+    public MessageReceiver(IRoomHoster roomHoster,
+        IRoomConnector roomConnector,
         IMessageSerializer serializer,
         IEventBus eventBus,
         IMessageDispatcher dispatcher,
@@ -48,7 +49,8 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         IChunkBufferAssembler chunkBufferAssembler,
         IStreamManager streamManager)
     {
-        this.transport = transport;
+        this.roomHoster = roomHoster;
+        this.roomConnector = roomConnector;
         this.serializer = serializer;
         this.eventBus = eventBus;
         this.dispatcher = dispatcher;
@@ -63,7 +65,8 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     async Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        transport.RawMessageReceived += OnRawMessageReceived;
+        roomHoster.RawMessageReceived += OnRawMessageReceived;
+        roomConnector.RawMessageReceived += OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
         eventBus.Subscribe<LocalMessageRecievedEvent>(OnLocalMessageRecieved);
         await Task.CompletedTask;
@@ -99,7 +102,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         }
     }
 
-    private async void OnRawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
+    private async void OnRawMessageReceived(object? sender, RoomRawMessageReceivedEventArgs e)
     {
         try
         {
@@ -162,7 +165,8 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        transport.RawMessageReceived -= OnRawMessageReceived;
+        roomHoster.RawMessageReceived -= OnRawMessageReceived;
+        roomConnector.RawMessageReceived -= OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
         cts.Cancel();
         cts.Dispose();

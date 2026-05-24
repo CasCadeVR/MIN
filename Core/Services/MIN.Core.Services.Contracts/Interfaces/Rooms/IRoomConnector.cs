@@ -1,4 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -9,9 +9,19 @@ namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
 public interface IRoomConnector
 {
     /// <summary>
+    /// Событие получения сырых данных от сервера
+    /// </summary>
+    event EventHandler<RoomRawMessageReceivedEventArgs>? RawMessageReceived;
+
+    /// <summary>
+    /// Событие изменения состояния соединения
+    /// </summary>
+    event EventHandler<RoomConnectionStateChangedEventArgs>? ConnectionStateChanged;
+
+    /// <summary>
     /// Подключиться к удалённой комнате
     /// </summary>
-    Task<Guid> ConnectAsync(RoomInfo room, IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
+    Task<Guid> ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Отключиться от удалённой комнаты

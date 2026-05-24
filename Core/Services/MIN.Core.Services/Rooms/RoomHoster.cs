@@ -1,6 +1,8 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
+using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
@@ -12,7 +14,14 @@ public sealed class RoomHoster : IRoomHoster
 {
     private readonly IRoomFactory roomFactory;
     private readonly ITransport transport;
-    private readonly HashSet<Guid> activeRooms = [];
+    private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
+    private readonly Dictionary<Guid, Guid> activeConnections = []; // ConnectionId -> RoomId
+
+    /// <inheritdoc />
+    public event EventHandler<RoomRawMessageReceivedEventArgs>? RawMessageReceived;
+
+    /// <inheritdoc />
+    public event EventHandler<RoomConnectionStateChangedEventArgs>? ConnectionStateChanged;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomHoster"/>
@@ -21,11 +30,41 @@ public sealed class RoomHoster : IRoomHoster
     {
         this.roomFactory = roomFactory;
         this.transport = transport;
+
+        SubscibeToEvents();
+    }
+
+    private void SubscibeToEvents()
+    {
+        transport.RawMessageReceived += Transport_RawMessageReceived;
+        transport.ConnectionStateChanged += Transport_ConnectionStateChanged;
+    }
+
+    private void Transport_ConnectionStateChanged(object? sender, Transport.Contracts.Events.ConnectionStateChangedEventArgs e)
+    {
+        if (!activeConnections.TryGetValue(e.ServerConnectionId ?? Guid.Empty, out var roomId))
+        {
+            return;
+        }
+
+        var args = new RoomConnectionStateChangedEventArgs(roomId, e);
+        ConnectionStateChanged?.Invoke(this, args);
+    }
+
+    private void Transport_RawMessageReceived(object? sender, Transport.Contracts.Events.RawMessageReceivedEventArgs e)
+    {
+        if (!activeConnections.TryGetValue(e.ServerConnectionId ?? Guid.Empty, out var roomId))
+        {
+            return;
+        }
+
+        var args = new RoomRawMessageReceivedEventArgs(roomId, e);
+        RawMessageReceived?.Invoke(this, args);
     }
 
     async Task IRoomHoster.StartHostingAsync(RoomInfo roomInfo, CancellationToken cancellationToken)
     {
-        if (activeRooms.Contains(roomInfo.Id))
+        if (activeRooms.ContainsKey(roomInfo.Id))
         {
             return;
         }
@@ -39,25 +78,31 @@ public sealed class RoomHoster : IRoomHoster
 
         context.Messages.AddMessage(new ParticipantJoinedMessage()
         {
-            Participant = new Entities.Participant(roomInfo.HostParticipant),
+            Participant = new Participant(roomInfo.HostParticipant),
             RoomId = roomInfo.Id
         });
 
-        await transport.StartHostingAsync(roomInfo.Id, cancellationToken);
-        activeRooms.Add(roomInfo.Id);
+        var connectionId = await transport.StartHostingAsync(cancellationToken);
+        activeRooms[roomInfo.Id] = connectionId;
+        activeConnections[connectionId] = roomInfo.Id;
     }
+
+    Guid IRoomHoster.GetConnectionIdByRoomId(Guid roomId)
+        => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
 
     async Task IRoomHoster.StopHostingAsync(Guid roomId)
     {
-        if (!activeRooms.Contains(roomId))
+        if (!activeRooms.TryGetValue(roomId, out var connectionId))
         {
             return;
         }
 
-        await transport.StopHostingAsync(roomId);
+
+        await transport.StopHostingAsync(connectionId);
         activeRooms.Remove(roomId);
+        activeConnections.Remove(connectionId);
     }
 
     bool IRoomHoster.IsHosting(Guid roomId)
-        => activeRooms.Contains(roomId);
+        => activeRooms.ContainsKey(roomId);
 }

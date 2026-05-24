@@ -35,48 +35,46 @@ public class TcpTransport : ITransport
         this.logger = logger;
     }
 
-    async Task ITransport.StartHostingAsync(Guid roomId, CancellationToken cancellationToken)
+    async Task<Guid> ITransport.StartHostingAsync(CancellationToken cancellationToken)
     {
-        if (servers.ContainsKey(roomId))
-        {
-            throw new InvalidOperationException($"Room {roomId} is already hosted");
-        }
-
+        var connectionId = Guid.NewGuid();
         var port = portManager.AllocatePort();
         var server = new TcpSocketServer(logger, port);
 
         server.OnMessageReceived += (TcpSocketServer server, (TcpSocketConnection conn, byte[] msg) eventArgs) =>
         {
-            var args = new RawMessageReceivedEventArgs(eventArgs.msg, roomId, eventArgs.conn.Id);
+            var args = new RawMessageReceivedEventArgs(eventArgs.msg, eventArgs.conn.Id, connectionId);
             RawMessageReceived?.Invoke(this, args);
         };
 
         server.OnConnectionEstablished += (s, conn) =>
         {
-            var args = new ConnectionStateChangedEventArgs(roomId, conn.Id, true);
+            var args = new ConnectionStateChangedEventArgs(conn.Id, true);
             ConnectionStateChanged?.Invoke(this, args);
         };
 
         server.ConnectionDisconnected += (TcpSocketServer server, (TcpSocketConnection conn, string? reason) eventArgs) =>
         {
-            var args = new ConnectionStateChangedEventArgs(roomId, eventArgs.conn.Id, false, eventArgs.reason);
+            var args = new ConnectionStateChangedEventArgs(eventArgs.conn.Id, false, eventArgs.reason, connectionId);
             ConnectionStateChanged?.Invoke(this, args);
         };
 
-        await server.StartAsync();
-        servers.TryAdd(roomId, server);
+        await server.StartAsync(cancellationToken);
+        servers.TryAdd(connectionId, server);
+
+        return connectionId;
     }
 
-    async Task ITransport.StopHostingAsync(Guid roomId)
+    async Task ITransport.StopHostingAsync(Guid connectionId)
     {
-        if (servers.TryRemove(roomId, out var server))
+        if (servers.TryRemove(connectionId, out var server))
         {
             await server.DisposeAsync();
             portManager.ReleasePort(server.Port);
         }
     }
 
-    async Task<Guid> ITransport.ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
+    async Task<Guid> ITransport.ConnectAsync(IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
     {
         if (endpoint is not TcpEndpoint tcpEp)
         {
@@ -86,47 +84,47 @@ public class TcpTransport : ITransport
         var client = new TcpSocketClient();
         client.OnMessageReceived += msg =>
         {
-            var args = new RawMessageReceivedEventArgs(msg, roomId, client.ConnectionId);
+            var args = new RawMessageReceivedEventArgs(msg, client.ConnectionId);
             RawMessageReceived?.Invoke(this, args);
         };
         client.OnDisconnected += reason =>
         {
-            var args = new ConnectionStateChangedEventArgs(roomId, client.ConnectionId, false, reason);
+            var args = new ConnectionStateChangedEventArgs(client.ConnectionId, false, reason);
             ConnectionStateChanged?.Invoke(this, args);
         };
 
         var connectionId = await client.ConnectAsync(tcpEp.IPAddress, tcpEp.Port, timeoutMs);
         clients.TryAdd(connectionId, client);
 
-        var connectedArgs = new ConnectionStateChangedEventArgs(roomId, connectionId, true);
+        var connectedArgs = new ConnectionStateChangedEventArgs(connectionId, true);
         ConnectionStateChanged?.Invoke(this, connectedArgs);
 
         return connectionId;
     }
 
-    async Task ITransport.SendAsync(byte[] data, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
+    async Task ITransport.SendAsync(byte[] data, Guid receipientConnectionId, Guid? serverConnectionId, CancellationToken cancellationToken)
     {
-        if (clients.TryGetValue(connectionId, out var client))
+        if (clients.TryGetValue(receipientConnectionId, out var client))
         {
             await client.SendAsync(data, cancellationToken);
             return;
         }
 
-        if (servers.TryGetValue(roomId, out var server) &&
-            server.Connections.TryGetValue(connectionId, out var conn))
+        if (servers.TryGetValue(serverConnectionId ?? Guid.Empty, out var server) &&
+            server.Connections.TryGetValue(receipientConnectionId, out var conn))
         {
             await conn.SendAsync(data, cancellationToken);
             return;
         }
 
-        throw new KeyNotFoundException($"Connection {connectionId} not found in room {roomId}");
+        throw new KeyNotFoundException($"Connection {receipientConnectionId} not found");
     }
 
-    async Task ITransport.BroadcastAsync(byte[] data, Guid roomId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
+    async Task ITransport.BroadcastAsync(byte[] data, Guid connectionId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
     {
         var excludeSet = excludeConnections?.ToHashSet() ?? [];
 
-        if (servers.TryGetValue(roomId, out var server))
+        if (servers.TryGetValue(connectionId, out var server))
         {
             var tasks = server.Connections.Values
                 .Where(conn => !excludeSet.Contains(conn.Id))
@@ -135,11 +133,11 @@ public class TcpTransport : ITransport
         }
     }
 
-    IEndpoint ITransport.GetEndpoint(Guid roomId)
+    IEndpoint ITransport.GetEndpoint(Guid connectionId)
     {
-        if (!servers.TryGetValue(roomId, out var server))
+        if (!servers.TryGetValue(connectionId, out var server))
         {
-            throw new InvalidOperationException($"Room {roomId} is not hosted locally");
+            throw new InvalidOperationException($"Connection {connectionId} is not hosted locally");
         }
 
         var localIp = GetLocalIpAddress();
@@ -147,26 +145,23 @@ public class TcpTransport : ITransport
     }
 
     /// <inheritdoc />
-    public async Task DisconnectClientAsync(Guid roomId, Guid connectionId, string reason)
+    public async Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId, string reason)
     {
-        if (servers.TryGetValue(roomId, out var server) &&
-            server.Connections.TryGetValue(connectionId, out var conn))
+        if (servers.TryGetValue(serverConnectionId ?? Guid.Empty, out var server) &&
+            server.Connections.TryGetValue(clientConnectionId, out var conn))
         {
             await conn.DisposeAsync();
         }
-        else if (clients.TryGetValue(connectionId, out var client))
+        else if (clients.TryGetValue(clientConnectionId, out var client))
         {
             await client.DisposeAsync();
-            clients.TryRemove(connectionId, out _);
+            clients.TryRemove(clientConnectionId, out _);
         }
-
-        var args = new ConnectionStateChangedEventArgs(roomId, connectionId, false, reason);
-        ConnectionStateChanged?.Invoke(this, args);
     }
 
-    async Task ITransport.DisconnectAsync(Guid roomId, Guid connectionId)
+    async Task ITransport.DisconnectAsync(Guid connectionId)
     {
-        await DisconnectClientAsync(roomId, connectionId, "Disconnected by user");
+        await DisconnectClientAsync(connectionId, null, "Disconnected by user");
     }
 
     private static string GetLocalIpAddress()

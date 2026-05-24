@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj" />
     <ProjectReference Include="..\..\Cryptography\MIN.Core.Cryptography.Contracts\MIN.Core.Cryptography.Contracts.csproj" />
+    <ProjectReference Include="..\..\Protocol\MIN.Core.Protocol.Contracts\MIN.Core.Protocol.Contracts.csproj" />
     <ProjectReference Include="..\..\Stores\MIN.Core.Stores.Contracts\MIN.Core.Stores.Contracts.csproj" />
     <ProjectReference Include="..\MIN.Core.Streaming.Contracts\MIN.Core.Streaming.Contracts.csproj" />
   </ItemGroup>

@@ -3,7 +3,7 @@
 namespace MIN.Core.Transport.Contracts.Interfaces;
 
 /// <summary>
-/// Интерфейс транспортного уровня для передачи данных между участниками
+/// Интерфейс транспортного уровня для передачи данных между устройствами
 /// </summary>
 public interface ITransport
 {
@@ -18,42 +18,45 @@ public interface ITransport
     event EventHandler<ConnectionStateChangedEventArgs>? ConnectionStateChanged;
 
     /// <summary>
-    /// Отправить сырые данные конкретному участнику
+    /// Отправить сырые данные соединению
     /// </summary>
-    Task SendAsync(byte[] data, Guid roomId, Guid connectionId, CancellationToken cancellationToken = default);
+    /// <remarks>
+    /// serverConnectionId указывает, какой id соединения у сервера в случае хоста
+    /// </remarks>
+    Task SendAsync(byte[] data, Guid receipientConnectionId, Guid? serverConnectionId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Отправить сырые данные всем участникам комнаты
+    /// Отправить сырые данные всем соединениям
     /// </summary>
-    Task BroadcastAsync(byte[] data, Guid roomId, IEnumerable<Guid>? excludeConnections = null, CancellationToken cancellationToken = default);
+    Task BroadcastAsync(byte[] data, Guid connectionId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Запустить сервер подключений для указанной комнаты
+    /// Запустить сервер подключений
     /// </summary>
-    Task StartHostingAsync(Guid roomId, CancellationToken cancellationToken = default);
+    Task<Guid> StartHostingAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Получить точку подключения комнаты
+    /// Получить точку подключения
     /// </summary>
-    IEndpoint GetEndpoint(Guid roomId);
+    IEndpoint GetEndpoint(Guid connectionId);
 
     /// <summary>
-    /// Прекратить сервер для указанной комнаты
+    /// Прекратить сервер для указанного соединения
     /// </summary>
-    Task StopHostingAsync(Guid roomId);
+    Task StopHostingAsync(Guid connectionId);
 
     /// <summary>
-    /// Подключиться к удалённой комнате
+    /// Подключиться к удалённому устройству
     /// </summary>
-    Task<Guid> ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
+    Task<Guid> ConnectAsync(IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Разорвать соединение с указанным соединением
     /// </summary>
-    Task DisconnectClientAsync(Guid roomId, Guid connectionId, string reason);
+    Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId, string reason);
 
     /// <summary>
-    /// Отключиться от указанной комнаты
+    /// Отключиться
     /// </summary>
-    Task DisconnectAsync(Guid roomId, Guid connectionId);
+    Task DisconnectAsync(Guid connectionId);
 }

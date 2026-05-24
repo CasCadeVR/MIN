@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using MIN.Core.Headers.Contracts.Constants;
 using MIN.Core.Headers.Contracts.Enums;
 using MIN.Core.Headers.Contracts.Interfaces;
+using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
@@ -17,7 +18,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
 {
     private readonly ConcurrentDictionary<Guid, MessageStream> activeStreams = new();
     private readonly ConcurrentDictionary<Guid, Timer> streamTimers = new();
-    private readonly ITransport transport;
+    private readonly IRawDataSender rawDataSender;
     private readonly IHeaderManager headerManager;
     private readonly ILoggerProvider logger;
     private bool disposed;
@@ -31,11 +32,11 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChunkBufferAssembler"/>
     /// </summary>
-    public ChunkBufferAssembler(ITransport transport,
+    public ChunkBufferAssembler(IRawDataSender rawDataSender,
         IHeaderManager headerManager,
         ILoggerProvider logger)
     {
-        this.transport = transport;
+        this.rawDataSender = rawDataSender;
         this.headerManager = headerManager;
         this.logger = logger;
     }
@@ -166,7 +167,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             streamId.TryWriteBytes(new Span<byte>(ack, 1, 16));
             BitConverter.GetBytes(chunkIndex).CopyTo(ack, 17);
 
-            await transport.SendAsync(ack, roomId, connectionId, cancellationToken);
+            await rawDataSender.SendAsync(ack, roomId, connectionId, cancellationToken);
         }
         catch (Exception ex)
         {

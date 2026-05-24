@@ -16,9 +16,9 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     private readonly TcpListener listener;
     private readonly SemaphoreSlim connectionSlots;
     private readonly ConcurrentDictionary<Guid, TcpSocketConnection> connections = new();
-    private readonly CancellationTokenSource cts = new();
     private readonly int maxConnections = TransportConstants.RoomMaximumConnectionsAmount;
 
+    private CancellationTokenSource? cts;
     private Task? acceptLoop;
 
     /// <summary>
@@ -59,8 +59,9 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     /// <summary>
     /// Запустить сервер
     /// </summary>
-    public async Task StartAsync()
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
+        cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         listener.Start();
         acceptLoop = Task.Run(AcceptLoopAsync);
         await Task.CompletedTask;
@@ -70,7 +71,7 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     {
         try
         {
-            while (!cts.Token.IsCancellationRequested)
+            while (!cts!.Token.IsCancellationRequested)
             {
                 await connectionSlots.WaitAsync(cts.Token);
                 var tcpClient = await listener.AcceptTcpClientAsync(cts.Token);
@@ -116,7 +117,7 @@ internal sealed class TcpSocketServer : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        cts.Cancel();
+        cts?.Cancel();
 
         if (acceptLoop != null)
         {
@@ -131,6 +132,6 @@ internal sealed class TcpSocketServer : IAsyncDisposable
         }
 
         connectionSlots.Dispose();
-        cts.Dispose();
+        cts?.Dispose();
     }
 }

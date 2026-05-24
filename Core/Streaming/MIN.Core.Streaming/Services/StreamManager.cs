@@ -6,16 +6,16 @@ using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
-using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Core.Protocol.Contracts.Interfaces;
 
 namespace MIN.Core.Streaming.Services;
 
 /// <inheritdoc cref="IStreamManager"/>
 public sealed class StreamManager : IStreamManager, IDisposable
 {
-    private readonly ITransport transport;
+    private readonly IRawDataSender rawDataSender;
     private readonly IMessageEncryptor encryptor;
     private readonly IHeaderManager headerManager;
     private readonly IRoomFactory roomFactory;
@@ -27,13 +27,13 @@ public sealed class StreamManager : IStreamManager, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="StreamManager"/>
     /// </summary>
-    public StreamManager(ITransport transport,
+    public StreamManager(IRawDataSender rawDataSender,
         IMessageEncryptor encryptor,
         IHeaderManager headerManager,
         IRoomFactory roomFactory,
         ILoggerProvider logger)
     {
-        this.transport = transport;
+        this.rawDataSender = rawDataSender;
         this.encryptor = encryptor;
         this.headerManager = headerManager;
         this.roomFactory = roomFactory;
@@ -101,7 +101,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
                     });
                 }
 
-                await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
+                await rawDataSender.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
             }
 
             logger.Log($"Передача пакетов окончена");
@@ -178,7 +178,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
                     });
                 }
 
-                await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
+                await rawDataSender.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
                 chunkIndex++;
             }
 

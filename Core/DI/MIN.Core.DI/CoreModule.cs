@@ -11,6 +11,7 @@ using MIN.Core.Handlers.Handlers;
 using MIN.Core.Headers.Services;
 using MIN.Core.Messaging;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Protocol.Services;
 using MIN.Core.Serialization.Json;
 using MIN.Core.Serialization.Json.Services;
 using MIN.Core.Services.Messaging;
@@ -48,6 +49,8 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<RoomFactory>(ServiceLifetime.Singleton);
 
         // Room-scoped
+        services.RegisterAsImplementedInterfaces<RawDataSender>(ServiceLifetime.Singleton);
+
         services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Transient);
         services.RegisterAsImplementedInterfaces<MessageStore>(ServiceLifetime.Transient);
         services.RegisterAsImplementedInterfaces<ParticipantStore>(ServiceLifetime.Transient);

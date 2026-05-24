@@ -2,10 +2,10 @@
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
+using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
-using MIN.Core.Transport.Contracts.Events;
-using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Rooms;
@@ -15,7 +15,8 @@ namespace MIN.Core.Services.Rooms;
 /// </summary>
 public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
 {
-    private readonly ITransport transport;
+    private readonly IRoomConnector roomConnector;
+    private readonly IRoomHoster roomHoster;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
     private readonly IRoomStore roomStore;
@@ -27,14 +28,16 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ConnectionMonitor"/>
     /// </summary>
-    public ConnectionMonitor(ITransport transport,
+    public ConnectionMonitor(IRoomConnector roomConnector,
+        IRoomHoster roomHoster,
         IEventBus eventBus,
         IMessageRouter messageRouter,
         IRoomStore roomStore,
         IRoomFactory roomFactory,
         ILoggerProvider logger)
     {
-        this.transport = transport;
+        this.roomConnector = roomConnector;
+        this.roomHoster = roomHoster;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
         this.roomStore = roomStore;
@@ -45,11 +48,12 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     async Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        transport.ConnectionStateChanged += OnConnectionStateChanged;
+        roomConnector.ConnectionStateChanged += OnConnectionStateChanged;
+        roomHoster.ConnectionStateChanged += OnConnectionStateChanged;
         await Task.CompletedTask;
     }
 
-    private async void OnConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
+    private async void OnConnectionStateChanged(object? sender, RoomConnectionStateChangedEventArgs e)
     {
         try
         {
@@ -112,7 +116,8 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
             cts.Dispose();
             cts = null!;
         }
-        transport.ConnectionStateChanged -= OnConnectionStateChanged;
+        roomConnector.ConnectionStateChanged -= OnConnectionStateChanged;
+        roomHoster.ConnectionStateChanged -= OnConnectionStateChanged;
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>

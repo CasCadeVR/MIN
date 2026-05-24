@@ -1,6 +1,7 @@
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Serialization.Contracts;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Discovery.Events;
@@ -19,6 +20,7 @@ namespace MIN.Discovery.Services;
 public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
 {
     private readonly ITransport transport;
+    private readonly IRoomHoster roomHoster;
     private readonly IDiscoveryTransport discoveryTransport;
     private readonly IMessageSerializer serializer;
     private readonly IRoomStore roomStore;
@@ -33,6 +35,7 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
     /// </summary>
     public UdpDiscoveryService(
         ITransport transport,
+        IRoomHoster roomHoster,
         IDiscoveryTransport discoveryTransport,
         IMessageSerializer serializer,
         IRoomStore roomStore,
@@ -40,6 +43,7 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
         ILoggerProvider logger)
     {
         this.transport = transport;
+        this.roomHoster = roomHoster;
         this.discoveryTransport = discoveryTransport;
         this.serializer = serializer;
         this.roomStore = roomStore;
@@ -143,10 +147,12 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
                     return;
                 }
 
+                var connectionId = roomHoster.GetConnectionIdByRoomId(roomId);
+
                 discoveryResponse.RoomDiscoveryInfos.Add(new RoomDiscoveryInfo()
                 {
                     Room = new RoomInfo(room),
-                    Endpoint = transport.GetEndpoint(roomId),
+                    Endpoint = transport.GetEndpoint(connectionId),
                 });
             }
 

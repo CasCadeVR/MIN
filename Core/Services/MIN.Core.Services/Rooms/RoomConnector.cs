@@ -1,11 +1,8 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
-using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Stateless;
+using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
@@ -18,31 +15,32 @@ namespace MIN.Core.Services.Rooms;
 public sealed class RoomConnector : IRoomConnector
 {
     private readonly ITransport transport;
-    private readonly IMessageRouter messageRouter;
+    private readonly IMessageSender messageSender;
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
-    private readonly IRoomFactory roomFactory;
-    private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
-    private readonly HashSet<Guid> activeConnections = [];
+    private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
+    private readonly Dictionary<Guid, Guid> activeConnections = []; // ConnectionId -> RoomId
+
+    /// <inheritdoc />
+    public event EventHandler<RoomRawMessageReceivedEventArgs>? RawMessageReceived;
+
+    /// <inheritdoc />
+    public event EventHandler<RoomConnectionStateChangedEventArgs>? ConnectionStateChanged;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomConnector"/>
     /// </summary>
     public RoomConnector(ITransport transport,
-        IMessageRouter messageRouter,
+        IMessageSender messageSender,
         IIdentityService identityService,
         IMessageEncryptor encryptor,
-        IRoomFactory roomFactory,
-        IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.transport = transport;
-        this.messageRouter = messageRouter;
+        this.messageSender = messageSender;
         this.identityService = identityService;
         this.encryptor = encryptor;
-        this.roomFactory = roomFactory;
-        this.eventBus = eventBus;
         this.logger = logger;
 
         SubscribeToEvents();
@@ -50,30 +48,45 @@ public sealed class RoomConnector : IRoomConnector
 
     private void SubscribeToEvents()
     {
-        eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChangedEvent);
+        transport.RawMessageReceived += Transport_RawMessageReceived;
+        transport.ConnectionStateChanged += Transport_ConnectionStateChanged;
+        ;
     }
 
-    private Task OnConnectionStatusChangedEvent(ConnectionStatusChangedEvent e, CancellationToken cancellationToken)
+    private void Transport_ConnectionStateChanged(object? sender, Transport.Contracts.Events.ConnectionStateChangedEventArgs e)
     {
-        if (!activeConnections.Contains(e.RoomId))
+        if (!activeConnections.TryGetValue(e.ConnectionId, out var roomId))
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        activeConnections.Remove(e.RoomId);
-        logger.Log($"Отключились от комнаты с id {e.RoomId}, соединение было с id {e.ConnectionId}");
+        if (!e.IsConnected)
+        {
+            activeConnections.Remove(roomId);
+            logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {e.ConnectionId}");
+        }
 
-        return Task.CompletedTask;
+        var args = new RoomConnectionStateChangedEventArgs(roomId, e);
+        ConnectionStateChanged?.Invoke(this, args);
     }
 
-    async Task<Guid> IRoomConnector.ConnectAsync(RoomInfo room, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
+    private void Transport_RawMessageReceived(object? sender, Transport.Contracts.Events.RawMessageReceivedEventArgs e)
+    {
+        if (!activeConnections.TryGetValue(e.ConnectionId, out var roomId))
+        {
+            return;
+        }
+
+        var args = new RoomRawMessageReceivedEventArgs(roomId, e);
+        RawMessageReceived?.Invoke(this, args);
+    }
+
+    async Task<Guid> IRoomConnector.ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
     {
         try
         {
-            var roomId = room.Id;
-            var connectionId = await transport.ConnectAsync(roomId, endpoint, timeoutMs, cancellationToken);
-            roomFactory.GetOrCreateContext(roomId).Connections.Register(connectionId, room.HostParticipant);
-            logger.Log($"Подключились к комнате с {room.Name}, соединение с id {connectionId}");
+            var connectionId = await transport.ConnectAsync(endpoint, timeoutMs, cancellationToken);
+            logger.Log($"Подключились к комнате с id {roomId}, соединение с id {connectionId}");
 
             var selfHandshake = new HandshakeMessage()
             {
@@ -81,8 +94,9 @@ public sealed class RoomConnector : IRoomConnector
                 PublicKey = await encryptor.GetLocalPublicKey(),
             };
 
-            await messageRouter.RouteAsync(selfHandshake, roomId, selfHandshake.Participant.Id, cancellationToken);
-            activeConnections.Add(roomId);
+            await messageSender.SendAsync(selfHandshake, roomId, connectionId, cancellationToken);
+            activeRooms[roomId] = connectionId;
+            activeConnections[connectionId] = roomId;
             return connectionId;
         }
         catch (TimeoutException) { return Guid.Empty; }
@@ -91,15 +105,16 @@ public sealed class RoomConnector : IRoomConnector
 
     async Task IRoomConnector.DisconnectAsync(Guid roomId, Guid connectionId)
     {
-        if (!activeConnections.Contains(roomId))
+        if (!activeRooms.ContainsKey(roomId))
         {
             return;
         }
 
-        await transport.DisconnectAsync(roomId, connectionId);
-        activeConnections.Remove(roomId);
+        await transport.DisconnectAsync(connectionId);
+        activeRooms.Remove(roomId);
+        activeConnections.Remove(connectionId);
         logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {connectionId}");
     }
 
-    bool IRoomConnector.IsConnected(Guid roomId) => activeConnections.Any(x => x == roomId);
+    bool IRoomConnector.IsConnected(Guid roomId) => activeRooms.ContainsKey(roomId);
 }

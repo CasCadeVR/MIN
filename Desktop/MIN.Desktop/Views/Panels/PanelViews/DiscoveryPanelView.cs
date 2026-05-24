@@ -1,4 +1,3 @@
-
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Models;
@@ -153,7 +152,9 @@ public partial class DiscoveryPanelView : StyledPanelView
 
     private async Task OnRoomJoin(RoomInfo roomInfo, IEndpoint endpoint)
     {
-        if (featureCollection.Core.RoomConnector.IsConnected(roomInfo.Id))
+        var roomId = roomInfo.Id;
+
+        if (featureCollection.Core.RoomConnector.IsConnected(roomId))
         {
             MessageBox.Show($"Вы уже подключены к этой комнате", "Ошибка",
                 MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
@@ -170,7 +171,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         var connectionId = Guid.Empty;
         var connectCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
 
-        var loadingForm = new LoadingForm(roomInfo.Id, featureCollection.Core.EventBus, async room =>
+        var loadingForm = new LoadingForm(roomId, featureCollection.Core.EventBus, async room =>
         {
             if (room == null)
             {
@@ -188,20 +189,20 @@ public partial class DiscoveryPanelView : StyledPanelView
         }, connectCts, DesktopConstants.RoomConnectionTimeoutMs);
         loadingForm.Show();
 
-        featureCollection.Core.RoomFactory.GetOrCreateContext(roomInfo.Id)
+        featureCollection.Core.RoomFactory.GetOrCreateContext(roomId)
             .Connections.RegisterLocalParticipant(localParticipant);
 
         try
         {
-            connectionId = await featureCollection.Core.RoomConnector.ConnectAsync(roomInfo, endpoint,
+            connectionId = await featureCollection.Core.RoomConnector.ConnectAsync(roomId, endpoint,
                 DesktopConstants.RoomConnectionTimeoutMs, connectCts.Token);
         }
         catch (Exception ex)
         {
             loadingForm.Close();
             MessageBox.Show($"Произошла ошибка: {ex.Message}, \nВозможно, комнаты уже и нет", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            featureCollection.Core.RoomStore.Remove(roomInfo.Id);
-            featureCollection.Core.RoomFactory.DestroyContext(roomInfo.Id);
+            featureCollection.Core.RoomStore.Remove(roomId);
+            featureCollection.Core.RoomFactory.DestroyContext(roomId);
         }
     }
 
