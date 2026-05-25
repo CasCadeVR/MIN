@@ -49,7 +49,10 @@ public class TcpTransport : ITransport
 
         server.OnConnectionEstablished += (s, conn) =>
         {
-            var args = new ConnectionStateChangedEventArgs(conn.Id, true);
+            var args = new ConnectionStateChangedEventArgs(conn.Id, true, serverConnectionId: connectionId)
+            {
+                RemoteEndPoint = conn.RemoteEndPoint,
+            };
             ConnectionStateChanged?.Invoke(this, args);
         };
 

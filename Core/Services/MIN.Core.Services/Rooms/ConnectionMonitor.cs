@@ -68,7 +68,10 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
             if (!e.IsConnected)
             {
                 var context = roomFactory.GetOrCreateContext(e.RoomId);
-                context.Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant);
+                if (!context.Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant))
+                {
+                    return;
+                }
 
                 var hostParticipantId = roomStore.GetRoomHostParticipantId(e.RoomId);
                 var isHostLeaving = hostParticipantId == leavingParticipant.Id;

@@ -9,4 +9,9 @@ public interface IVersionProvider
     /// Версия приложения
     /// </summary>
     Version Version { get; }
+
+    /// <summary>
+    /// Совместима ли версия приложения
+    /// </summary>
+    bool IsVersionCompatible(Version version);
 }

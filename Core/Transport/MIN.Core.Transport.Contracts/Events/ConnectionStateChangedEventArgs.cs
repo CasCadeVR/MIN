@@ -26,6 +26,11 @@ public class ConnectionStateChangedEventArgs : EventArgs
     public string? LeavingMessage { get; init; }
 
     /// <summary>
+    /// Удалённая точка подключения
+    /// </summary>
+    public string? RemoteEndPoint { get; init; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="ConnectionStateChangedEventArgs"/>
     /// </summary>
     public ConnectionStateChangedEventArgs(Guid сonnectionId, bool isConnected, string? reason = null, Guid? serverConnectionId = null)

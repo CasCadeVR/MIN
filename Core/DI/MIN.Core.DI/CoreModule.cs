@@ -40,6 +40,7 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<TcpTransport>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<MinProtocolHandler>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<HeaderManager>(ServiceLifetime.Singleton);
 
@@ -49,7 +50,7 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<RoomFactory>(ServiceLifetime.Singleton);
 
         // Room-scoped
-        services.RegisterAsImplementedInterfaces<RawDataSender>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<RoomConnectionResolver>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Transient);
         services.RegisterAsImplementedInterfaces<MessageStore>(ServiceLifetime.Transient);

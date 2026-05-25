@@ -90,7 +90,18 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
                 return;
             }
 
-            var context = roomFactory.GetOrCreateContext(e.RoomId);
+            Guid? roomId = null;
+
+            if (e.ServerConnectionId != null)
+            {
+                roomId = roomHoster.GetRoomIdByConnectionId(e.ServerConnectionId.Value);
+            }
+            else
+            {
+                roomId = roomConnector.GetRoomIdByConnectionId(e.ConnectionId);
+            }
+
+            var context = roomFactory.GetOrCreateContext(roomId.Value);
             var message = serializer.Deserialize(e.Data!); // Потому-что это не RawPayload
             await dispatcher.DispatchAsync(message, new MessageContext(context,
                 e.ConnectionId,
@@ -135,7 +146,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 
             if (headerManager.IsStreamChunk(plainData))
             {
-                await chunkBufferAssembler.ProcessStreamChunk(plainData, e.ConnectionId, e.RoomId, cts.Token);
+                await chunkBufferAssembler.ProcessStreamChunk(plainData, e.ConnectionId, e.ServerConnectionId, cts.Token);
                 return;
             }
 

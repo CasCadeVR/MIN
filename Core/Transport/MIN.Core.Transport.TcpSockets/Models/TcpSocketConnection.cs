@@ -26,6 +26,11 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
     }
 
     /// <summary>
+    /// Удалённая точка подключения
+    /// </summary>
+    public string? RemoteEndPoint => client.Client.RemoteEndPoint?.ToString();
+
+    /// <summary>
     /// Активно ли соединение
     /// </summary>
     public override bool IsConnected => client.Connected && stream != null && !disposed;

@@ -116,7 +116,7 @@ public partial class DiscoveryPanelView : StyledPanelView
                     Parent = flowLayoutPanelDiscoveredRooms
                 };
 
-                card.Clicked += () => OnRoomJoin(discoveryInfo.Room, discoveryInfo.Endpoint);
+                card.Clicked += () => OnRoomJoin(discoveryInfo.Endpoint, discoveryInfo.Room);
                 card.Disposed += (s, _) =>
                 {
                     totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanelDiscoveredRooms.Controls.Count}";
@@ -150,11 +150,9 @@ public partial class DiscoveryPanelView : StyledPanelView
         return true;
     }
 
-    private async Task OnRoomJoin(RoomInfo roomInfo, IEndpoint endpoint)
+    private async Task OnRoomJoin(IEndpoint endpoint, RoomInfo? roomInfo = null)
     {
-        var roomId = roomInfo.Id;
-
-        if (featureCollection.Core.RoomConnector.IsConnected(roomId))
+        if (roomInfo != null && featureCollection.Core.RoomConnector.IsConnected(roomInfo.Id))
         {
             MessageBox.Show($"Вы уже подключены к этой комнате", "Ошибка",
                 MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
@@ -166,43 +164,36 @@ public partial class DiscoveryPanelView : StyledPanelView
             return;
         }
 
-        featureCollection.Core.RoomStore.Register(new Room(roomInfo));
-
-        var connectionId = Guid.Empty;
         var connectCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
-
-        var loadingForm = new LoadingForm(roomId, featureCollection.Core.EventBus, async room =>
-        {
-            if (room == null)
-            {
-                return;
-            }
-            var newRoomInfo = new RoomInfo(room);
-            chatPanelManager.RegisterChat(newRoomInfo,
-                navigationService
-                .NavigateTo<ChatPanelView, (Room room, Guid connectionId)>((room, connectionId)));
-            await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent()
-            {
-                RoomId = room.Id,
-                RoomInfo = newRoomInfo,
-            });
-        }, connectCts, DesktopConstants.RoomConnectionTimeoutMs);
-        loadingForm.Show();
-
-        featureCollection.Core.RoomFactory.GetOrCreateContext(roomId)
-            .Connections.RegisterLocalParticipant(localParticipant);
+        LoadingForm? loadingForm = null;
 
         try
         {
-            connectionId = await featureCollection.Core.RoomConnector.ConnectAsync(roomId, endpoint,
+            var connectionResult = await featureCollection.Core.RoomConnector.ConnectAsync(endpoint,
                 DesktopConstants.RoomConnectionTimeoutMs, connectCts.Token);
+
+            loadingForm = new LoadingForm(connectionResult.RoomId, featureCollection.Core.EventBus, async room =>
+            {
+                if (room == null)
+                {
+                    return;
+                }
+                var newRoomInfo = new RoomInfo(room);
+                chatPanelManager.RegisterChat(newRoomInfo,
+                    navigationService
+                    .NavigateTo<ChatPanelView, (Room room, Guid connectionId)>((room, connectionResult.ConnectionId)));
+                await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent()
+                {
+                    RoomId = room.Id,
+                    RoomInfo = newRoomInfo,
+                });
+            }, connectCts, DesktopConstants.RoomConnectionTimeoutMs);
+            loadingForm.Show();
         }
         catch (Exception ex)
         {
-            loadingForm.Close();
+            loadingForm?.Close();
             MessageBox.Show($"Произошла ошибка: {ex.Message}, \nВозможно, комнаты уже и нет", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            featureCollection.Core.RoomStore.Remove(roomId);
-            featureCollection.Core.RoomFactory.DestroyContext(roomId);
         }
     }
 
@@ -273,6 +264,6 @@ public partial class DiscoveryPanelView : StyledPanelView
             return;
         }
 
-        await OnRoomJoin(new RoomInfo(), directConnectForm.Endpoint);
+        await OnRoomJoin(directConnectForm.Endpoint);
     }
 }

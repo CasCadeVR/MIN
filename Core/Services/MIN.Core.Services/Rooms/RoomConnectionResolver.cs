@@ -1,0 +1,36 @@
+﻿using MIN.Core.Services.Contracts.Interfaces.Rooms;
+
+namespace MIN.Core.Services.Rooms;
+
+/// <inheritdoc cref="IRoomConnectionResolver"/>
+public class RoomConnectionResolver : IRoomConnectionResolver
+{
+    private readonly IRoomHoster roomHoster;
+    private readonly IRoomConnector roomConnector;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="RoomConnectionResolver"/>
+    /// </summary>
+    public RoomConnectionResolver(IRoomHoster roomHoster,
+        IRoomConnector roomConnector)
+    {
+        this.roomHoster = roomHoster;
+        this.roomConnector = roomConnector;
+    }
+
+    Guid IRoomConnectionResolver.GetRoomIdByConnectionId(Guid connectionId, Guid? serverConnectionId)
+    {
+        var roomId = Guid.Empty;
+
+        if (serverConnectionId != null)
+        {
+            roomId = roomHoster.GetRoomIdByConnectionId(serverConnectionId.Value);
+        }
+        else
+        {
+            roomId = roomConnector.GetRoomIdByConnectionId(connectionId);
+        }
+
+        return roomId;
+    }
+}

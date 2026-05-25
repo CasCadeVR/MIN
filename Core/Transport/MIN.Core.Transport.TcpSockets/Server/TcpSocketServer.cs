@@ -64,6 +64,7 @@ internal sealed class TcpSocketServer : IAsyncDisposable
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         listener.Start();
         acceptLoop = Task.Run(AcceptLoopAsync);
+        logger.Log($"Стартанул сервер на порту: {Port}");
         await Task.CompletedTask;
     }
 
@@ -88,6 +89,7 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     private async Task HandleConnectionAsync(TcpClient tcpClient)
     {
         var connection = new TcpSocketConnection(tcpClient);
+        logger.Log($"Клиент подключился: {connection.RemoteEndPoint ?? "unknown"}");
         try
         {
             connection.RawMessageReceived += OnConnectionMessage;

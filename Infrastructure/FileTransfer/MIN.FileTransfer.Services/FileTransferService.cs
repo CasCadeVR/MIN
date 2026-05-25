@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using MIN.Core.Events.Contracts;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.FileTransfer.Events;
@@ -13,6 +14,7 @@ namespace MIN.FileTransfer.Services;
 public sealed class FileTransferService : IFileTransferService, IDisposable
 {
     private readonly IEventBus eventBus;
+    private readonly IRoomConnectionResolver roomConnectionResolver;
     private readonly IChunkBufferAssembler chunkBufferAssembler;
     private readonly IFileStorageService fileStorageService;
     private readonly ILoggerProvider logger;
@@ -25,11 +27,13 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     /// Инициализирует новый экземпляр <see cref="FileTransferService"/>
     /// </summary>
     public FileTransferService(IEventBus eventBus,
+        IRoomConnectionResolver roomConnectionResolver,
         IChunkBufferAssembler chunkBufferAssembler,
         IFileStorageService fileStorageService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
+        this.roomConnectionResolver = roomConnectionResolver;
         this.chunkBufferAssembler = chunkBufferAssembler;
         this.fileStorageService = fileStorageService;
         this.logger = logger;
@@ -213,9 +217,11 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             return;
         }
 
+        var roomId = roomConnectionResolver.GetRoomIdByConnectionId(e.ConnectionId, e.ServerConnectionId);
+
         await eventBus.PublishAsync(new FileTransferProgressEvent
         {
-            RoomId = e.RoomId,
+            RoomId = roomId,
             TransferId = e.StreamId,
             BytesReceived = e.ReceivedBytes,
         });

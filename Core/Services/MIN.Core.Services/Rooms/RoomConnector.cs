@@ -1,8 +1,12 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Entities;
 using MIN.Core.Messaging.Stateless;
+using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Models;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
@@ -15,6 +19,9 @@ namespace MIN.Core.Services.Rooms;
 public sealed class RoomConnector : IRoomConnector
 {
     private readonly ITransport transport;
+    private readonly IProtocolHandler protocolHandler;
+    private readonly IRoomStore roomStore;
+    private readonly IRoomFactory roomFactory;
     private readonly IMessageSender messageSender;
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
@@ -32,12 +39,18 @@ public sealed class RoomConnector : IRoomConnector
     /// Инициализирует новый экземпляр <see cref="RoomConnector"/>
     /// </summary>
     public RoomConnector(ITransport transport,
+        IProtocolHandler protocolHandler,
+        IRoomStore roomStore,
+        IRoomFactory roomFactory,
         IMessageSender messageSender,
         IIdentityService identityService,
         IMessageEncryptor encryptor,
         ILoggerProvider logger)
     {
         this.transport = transport;
+        this.protocolHandler = protocolHandler;
+        this.roomStore = roomStore;
+        this.roomFactory = roomFactory;
         this.messageSender = messageSender;
         this.identityService = identityService;
         this.encryptor = encryptor;
@@ -50,7 +63,6 @@ public sealed class RoomConnector : IRoomConnector
     {
         transport.RawMessageReceived += Transport_RawMessageReceived;
         transport.ConnectionStateChanged += Transport_ConnectionStateChanged;
-        ;
     }
 
     private void Transport_ConnectionStateChanged(object? sender, Transport.Contracts.Events.ConnectionStateChangedEventArgs e)
@@ -81,27 +93,65 @@ public sealed class RoomConnector : IRoomConnector
         RawMessageReceived?.Invoke(this, args);
     }
 
-    async Task<Guid> IRoomConnector.ConnectAsync(Guid roomId, IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
+    async Task<ConnectionResult> IRoomConnector.ConnectAsync(IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
     {
+        var connectionResult = new ConnectionResult();
+
         try
         {
-            var connectionId = await transport.ConnectAsync(endpoint, timeoutMs, cancellationToken);
-            logger.Log($"Подключились к комнате с id {roomId}, соединение с id {connectionId}");
+            logger.Log($"Подключаюсь к {endpoint}");
+
+            connectionResult.ConnectionId = await transport.ConnectAsync(endpoint, timeoutMs, cancellationToken);
+
+            var result = await protocolHandler.HandleClientAsync(connectionResult.ConnectionId, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                logger.Log($"Протокол не пройден для {endpoint}: {result.ErrorMessage}");
+                throw new InvalidOperationException(result.ErrorMessage);
+            }
+
+            connectionResult.RoomId = result.RoomInfo.Id;
+            logger.Log($"Протокол успешен, комната {connectionResult.RoomId}");
+
+            var selfParticipant = identityService.SelfParticipant.ToParticipantInfo();
+
+            roomFactory.GetOrCreateContext(connectionResult.RoomId)
+                .Connections.RegisterLocalParticipant(selfParticipant);
+
+            roomStore.Register(new Room(result.RoomInfo));
+
+            logger.Log($"Подключились к комнате с id {connectionResult.RoomId}, соединение с id {connectionResult.ConnectionId}");
 
             var selfHandshake = new HandshakeMessage()
             {
-                Participant = identityService.SelfParticipant.ToParticipantInfo(),
+                Participant = selfParticipant,
                 PublicKey = await encryptor.GetLocalPublicKey(),
             };
 
-            await messageSender.SendAsync(selfHandshake, roomId, connectionId, cancellationToken);
-            activeRooms[roomId] = connectionId;
-            activeConnections[connectionId] = roomId;
-            return connectionId;
+            await messageSender.SendAsync(selfHandshake, connectionResult.RoomId, connectionResult.ConnectionId, cancellationToken);
+            activeRooms[connectionResult.RoomId] = connectionResult.ConnectionId;
+            activeConnections[connectionResult.ConnectionId] = connectionResult.RoomId;
+            return connectionResult;
         }
-        catch (TimeoutException) { return Guid.Empty; }
-        catch (OperationCanceledException) { return Guid.Empty; }
+        catch (TimeoutException) { throw; }
+        catch (OperationCanceledException) { throw; }
+        catch
+        {
+            if (connectionResult.RoomId != Guid.Empty)
+            {
+                roomStore.Remove(connectionResult.RoomId);
+                roomFactory.DestroyContext(connectionResult.RoomId);
+            }
+
+            throw;
+        }
     }
+
+    Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
+           => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
+
+    Guid IRoomConnectionRelated.GetRoomIdByConnectionId(Guid connectionId)
+        => activeConnections.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
 
     async Task IRoomConnector.DisconnectAsync(Guid roomId, Guid connectionId)
     {

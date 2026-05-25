@@ -8,6 +8,9 @@ public class VersionProvider : IVersionProvider
     /// <inheritdoc />
     public Version Version { get; init; } = null!;
 
+    bool IVersionProvider.IsVersionCompatible(Version version)
+        => Version == version;
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="VersionProvider"/>
     /// </summary>

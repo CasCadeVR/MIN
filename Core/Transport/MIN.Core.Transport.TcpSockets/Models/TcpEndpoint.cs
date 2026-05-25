@@ -25,4 +25,7 @@ public sealed class TcpEndpoint : IEndpoint
     /// Инициализирует новый экземпляр <see cref="TcpEndpoint"/>
     /// </summary>
     public TcpEndpoint() { }
+
+    /// <inheritdoc />
+    public override string ToString() => $"{IPAddress}:{Port}";
 }

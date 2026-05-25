@@ -15,6 +15,7 @@ public interface IStreamManager
         StreamOptions options,
         Guid roomId,
         Guid recipientConnectionId,
+        Guid? serverConnectionId,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -25,6 +26,7 @@ public interface IStreamManager
         StreamOptions options,
         Guid roomId,
         Guid recipientConnectionId,
+        Guid? serverConnectionId,
         CancellationToken cancellationToken = default);
 
     /// <summary>

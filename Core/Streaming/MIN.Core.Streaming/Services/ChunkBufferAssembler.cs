@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using MIN.Core.Headers.Contracts.Constants;
 using MIN.Core.Headers.Contracts.Enums;
 using MIN.Core.Headers.Contracts.Interfaces;
-using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
@@ -18,7 +17,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
 {
     private readonly ConcurrentDictionary<Guid, MessageStream> activeStreams = new();
     private readonly ConcurrentDictionary<Guid, Timer> streamTimers = new();
-    private readonly IRawDataSender rawDataSender;
+    private readonly ITransport transport;
     private readonly IHeaderManager headerManager;
     private readonly ILoggerProvider logger;
     private bool disposed;
@@ -32,16 +31,16 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChunkBufferAssembler"/>
     /// </summary>
-    public ChunkBufferAssembler(IRawDataSender rawDataSender,
+    public ChunkBufferAssembler(ITransport transport,
         IHeaderManager headerManager,
         ILoggerProvider logger)
     {
-        this.rawDataSender = rawDataSender;
+        this.transport = transport;
         this.headerManager = headerManager;
         this.logger = logger;
     }
 
-    async Task IChunkBufferAssembler.ProcessStreamChunk(byte[] data, Guid connectionId, Guid roomId, CancellationToken cancellationToken)
+    async Task IChunkBufferAssembler.ProcessStreamChunk(byte[] data, Guid connectionId, Guid? serverConnectionId, CancellationToken cancellationToken)
     {
         if (disposed)
         {
@@ -67,15 +66,15 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             {
                 if (chunk.Flags.HasFlag(StreamChunkFlags.RequiresAcks))
                 {
-                    await SendAck(chunk.StreamId, chunk.Index, connectionId, roomId, cancellationToken);
+                    await SendAck(chunk.StreamId, chunk.Index, connectionId, serverConnectionId, cancellationToken);
                 }
 
-                OnMessageAssembled(chunk.StreamId, connectionId, roomId, chunk.Data.ToArray(), null, chunk.Flags.HasFlag(StreamChunkFlags.RawPayload));
+                OnMessageAssembled(chunk.StreamId, connectionId, serverConnectionId, chunk.Data.ToArray(), null, chunk.Flags.HasFlag(StreamChunkFlags.RawPayload));
                 return;
             }
 
             var stream = activeStreams.GetOrAdd(chunk.StreamId, _ =>
-                   CreateMessageStream(chunk, connectionId, roomId));
+                   CreateMessageStream(chunk, connectionId, serverConnectionId));
 
             if (stream.ConnectionId != connectionId)
             {
@@ -91,7 +90,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
 
             if (stream.RequiresAcks)
             {
-                await SendAck(chunk.StreamId, chunk.Index, connectionId, roomId, cancellationToken);
+                await SendAck(chunk.StreamId, chunk.Index, connectionId, serverConnectionId, cancellationToken);
             }
 
             ChunkReceived?.Invoke(this, new ChunkReceivedEventArgs
@@ -99,7 +98,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
                 StreamId = stream.Id,
                 ReceivedBytes = stream.GottenChunks * TransportConstants.MessageBufferSize,
                 ConnectionId = connectionId,
-                RoomId = roomId
+                ServerConnectionId = serverConnectionId
             });
 
             var result = stream.AddChunk(chunk);
@@ -107,7 +106,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             {
                 logger.Log("Сообщение было собрано из потока");
                 var filePath = stream.GetTempFilePath();
-                OnMessageAssembled(chunk.StreamId, connectionId, roomId, result, filePath, stream.IsRawPayload);
+                OnMessageAssembled(chunk.StreamId, connectionId, serverConnectionId, result, filePath, stream.IsRawPayload);
                 TryRemoveStream(chunk.StreamId);
             }
         }
@@ -119,11 +118,11 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         }
     }
 
-    private MessageStream CreateMessageStream(StreamChunk startChunk, Guid connectionId, Guid roomId)
+    private MessageStream CreateMessageStream(StreamChunk startChunk, Guid connectionId, Guid? serverConnectionId)
     {
         var requiresAcks = startChunk.Flags.HasFlag(StreamChunkFlags.RequiresAcks);
         var isRawPayload = startChunk.Flags.HasFlag(StreamChunkFlags.RawPayload);
-        var stream = new MessageStream(startChunk.StreamId, connectionId, roomId, startChunk.Total, requiresAcks, isRawPayload);
+        var stream = new MessageStream(startChunk.StreamId, connectionId, serverConnectionId, startChunk.Total, requiresAcks, isRawPayload);
         StartStreamTimer(stream);
         return stream;
     }
@@ -158,7 +157,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         }
     }
 
-    private async Task SendAck(Guid streamId, int chunkIndex, Guid connectionId, Guid roomId, CancellationToken cancellationToken)
+    private async Task SendAck(Guid streamId, int chunkIndex, Guid connectionId, Guid? serverConnectionid, CancellationToken cancellationToken)
     {
         try
         {
@@ -167,7 +166,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             streamId.TryWriteBytes(new Span<byte>(ack, 1, 16));
             BitConverter.GetBytes(chunkIndex).CopyTo(ack, 17);
 
-            await rawDataSender.SendAsync(ack, roomId, connectionId, cancellationToken);
+            await transport.SendAsync(ack, connectionId, serverConnectionid, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -189,13 +188,13 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         }
     }
 
-    private void OnMessageAssembled(Guid streamId, Guid connectionId, Guid roomId, byte[] data, string? filePath, bool isRawPayload)
+    private void OnMessageAssembled(Guid streamId, Guid connectionId, Guid? serverConnectionId, byte[] data, string? filePath, bool isRawPayload)
     {
         var args = new MessageAssembledEventArgs
         {
             StreamId = streamId,
             ConnectionId = connectionId,
-            RoomId = roomId,
+            ServerConnectionId = serverConnectionId,
             Data = data,
             FilePath = filePath,
             IsRawPayload = isRawPayload,

@@ -128,7 +128,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             connectButton.Padding = new Padding(8, 4, 8, 4);
             connectButton.Size = new Size(175, 44);
             connectButton.TabIndex = 2;
-            connectButton.Text = "Создать";
+            connectButton.Text = "Подключиться";
             connectButton.UseVisualStyleBackColor = false;
             connectButton.Click += connectButton_Click;
             // 

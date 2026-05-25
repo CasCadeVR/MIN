@@ -53,6 +53,13 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
             messageWithSecured.Sanitize();
         }
 
+        Guid? serverConnectionId = null;
+
+        if (roomHoster.IsHosting(roomId))
+        {
+            serverConnectionId = roomHoster.GetConnectionIdByRoomId(roomId);
+        }
+
         var serialized = serializer.Serialize(message);
 
         if (serialized.Length > StreamingConstants.ChunkDataSize)
@@ -63,19 +70,12 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
                 RequiresAcks = message.RequireStreamAcks,
                 RequiresEncryption = message.RequiresEncryption
             };
-            await streamManager.SendAsync(serialized.AsMemory(), options, roomId, recipientConnectionId, cancellationToken);
+            await streamManager.SendAsync(serialized.AsMemory(), options, roomId, recipientConnectionId, serverConnectionId, cancellationToken);
             return;
         }
 
         var dataWithMarker = headerManager.AddHeader(serialized, (byte)StreamChunkFlags.None);
         var dataToSend = EncryptDataIfRequired(message, dataWithMarker, roomId, recipientConnectionId);
-
-        Guid? serverConnectionId = null;
-
-        if (roomHoster.IsHosting(roomId))
-        {
-            serverConnectionId = roomHoster.GetConnectionIdByRoomId(roomId);
-        }
 
         await transport.SendAsync(dataToSend, recipientConnectionId, serverConnectionId, cancellationToken);
     }
