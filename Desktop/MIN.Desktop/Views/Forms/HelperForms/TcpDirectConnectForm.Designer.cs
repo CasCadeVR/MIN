@@ -40,7 +40,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             connectButton = new CommonButton();
             cancelButton = new InvertedButton();
             tableLayoutPanel1 = new TableLayoutPanel();
-            port = new DefaultNumericUpDown();
+            portNumericUpDown = new DefaultNumericUpDown();
             portLabel = new Heading3Label();
             ipAddressLabel = new Heading3Label();
             ipAddress = new DefaultTextBox();
@@ -51,7 +51,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             tableLayoutPanelHeader.SuspendLayout();
             tableLayoutPanelButtons.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)port).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)portNumericUpDown).BeginInit();
             SuspendLayout();
             // 
             // splitContainer
@@ -149,13 +149,14 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             cancelButton.TabIndex = 3;
             cancelButton.Text = "Отмена";
             cancelButton.UseVisualStyleBackColor = false;
+            cancelButton.Click += cancelButton_Click;
             // 
             // tableLayoutPanel1
             // 
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Controls.Add(port, 1, 1);
+            tableLayoutPanel1.Controls.Add(portNumericUpDown, 1, 1);
             tableLayoutPanel1.Controls.Add(portLabel, 0, 1);
             tableLayoutPanel1.Controls.Add(ipAddressLabel, 0, 0);
             tableLayoutPanel1.Controls.Add(ipAddress, 1, 0);
@@ -169,20 +170,20 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             tableLayoutPanel1.Size = new Size(363, 94);
             tableLayoutPanel1.TabIndex = 1;
             // 
-            // port
+            // portNumericUpDown
             // 
-            port.Anchor = AnchorStyles.Left;
-            port.BackColor = Color.White;
-            port.BorderStyle = BorderStyle.None;
-            port.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            port.ForeColor = Color.Purple;
-            port.Location = new Point(184, 56);
-            port.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
-            port.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
-            port.Name = "port";
-            port.Size = new Size(74, 29);
-            port.TabIndex = 1;
-            port.Value = new decimal(new int[] { 49152, 0, 0, 0 });
+            portNumericUpDown.Anchor = AnchorStyles.Left;
+            portNumericUpDown.BackColor = Color.White;
+            portNumericUpDown.BorderStyle = BorderStyle.None;
+            portNumericUpDown.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            portNumericUpDown.ForeColor = Color.Purple;
+            portNumericUpDown.Location = new Point(184, 56);
+            portNumericUpDown.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+            portNumericUpDown.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            portNumericUpDown.Name = "portNumericUpDown";
+            portNumericUpDown.Size = new Size(74, 29);
+            portNumericUpDown.TabIndex = 1;
+            portNumericUpDown.Value = new decimal(new int[] { 49152, 0, 0, 0 });
             // 
             // portLabel
             // 
@@ -202,11 +203,11 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             ipAddressLabel.AutoSize = true;
             ipAddressLabel.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             ipAddressLabel.ForeColor = Color.FromArgb(0, 0, 0);
-            ipAddressLabel.Location = new Point(18, 13);
+            ipAddressLabel.Location = new Point(37, 13);
             ipAddressLabel.Name = "ipAddressLabel";
-            ipAddressLabel.Size = new Size(160, 21);
+            ipAddressLabel.Size = new Size(141, 21);
             ipAddressLabel.TabIndex = 0;
-            ipAddressLabel.Text = "IP Адрес комнаты: ";
+            ipAddressLabel.Text = "Адрес комнаты: ";
             // 
             // ipAddress
             // 
@@ -219,11 +220,14 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             ipAddress.Name = "ipAddress";
             ipAddress.Size = new Size(147, 26);
             ipAddress.TabIndex = 2;
+            ipAddress.KeyPress += ipAddress_KeyPress;
+            ipAddress.Leave += ipAddress_Leave;
             // 
             // TcpDirectConnectForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            CancelButton = cancelButton;
             ClientSize = new Size(363, 202);
             Controls.Add(splitContainer);
             MinimumSize = new Size(379, 241);
@@ -239,7 +243,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             tableLayoutPanelButtons.ResumeLayout(false);
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)port).EndInit();
+            ((System.ComponentModel.ISupportInitialize)portNumericUpDown).EndInit();
             ResumeLayout(false);
         }
 
@@ -252,7 +256,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private Heading1Label Title;
         private CommonButton connectButton;
         private Heading3Label portLabel;
-        private DefaultNumericUpDown port;
+        private DefaultNumericUpDown portNumericUpDown;
         private TableLayoutPanel tableLayoutPanelButtons;
         private InvertedButton cancelButton;
         private DefaultTextBox ipAddress;

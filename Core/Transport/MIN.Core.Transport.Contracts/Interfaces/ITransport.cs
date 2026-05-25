@@ -48,7 +48,7 @@ public interface ITransport
     /// <summary>
     /// Подключиться к удалённому устройству
     /// </summary>
-    Task<Guid> ConnectAsync(IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
+    Task<Guid> ConnectAsync(IEndpoint endpoint, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Разорвать соединение с указанным соединением

@@ -97,7 +97,7 @@ public sealed class RoomConnector : IRoomConnector
         RawMessageReceived?.Invoke(this, args);
     }
 
-    async Task<ConnectionResult> IRoomConnector.ConnectAsync(IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
+    async Task<ConnectionResult> IRoomConnector.ConnectAsync(IEndpoint endpoint, CancellationToken cancellationToken)
     {
         var connectionResult = new ConnectionResult();
 
@@ -105,13 +105,18 @@ public sealed class RoomConnector : IRoomConnector
         {
             logger.Log($"Подключаюсь к {endpoint}");
 
-            connectionResult.ConnectionId = await transport.ConnectAsync(endpoint, timeoutMs, cancellationToken);
+            connectionResult.ConnectionId = await transport.ConnectAsync(endpoint, cancellationToken);
 
             var result = await protocolHandler.HandleClientAsync(connectionResult.ConnectionId, cancellationToken);
             if (!result.IsSuccess)
             {
                 logger.Log($"Протокол не пройден для {endpoint}: {result.ErrorMessage}");
                 throw new InvalidOperationException(result.ErrorMessage);
+            }
+
+            if (activeRooms.ContainsKey(result.RoomInfo.Id))
+            {
+                throw new InvalidOperationException("Вы уже подключены к этой комнате");
             }
 
             connectionResult.RoomId = result.RoomInfo.Id;
@@ -138,8 +143,8 @@ public sealed class RoomConnector : IRoomConnector
             activeConnections[connectionResult.ConnectionId] = connectionResult.RoomId;
             return connectionResult;
         }
-        catch (TimeoutException) { throw; }
-        catch (OperationCanceledException) { throw; }
+        catch (TimeoutException) { return connectionResult; }
+        catch (OperationCanceledException) { return connectionResult; }
         catch
         {
             if (connectionResult.RoomId != Guid.Empty)

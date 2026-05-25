@@ -50,9 +50,10 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 
             if (!versionProvider.IsVersionCompatible(handshakeMessage.Version))
             {
+                var clientOnOlderVersion = selfVersion > handshakeMessage.Version ? "Вы" : "Хост";
                 await gracefulDisconnector.DisconnectWithReasonAsync(context.ConnectionId,
                     context.RoomContext.RoomId,
-                   $"Вы на устаревшей версии: \nВаша версия - {handshakeMessage.Version}\nВерсия хоста комнаты - {selfVersion}");
+                   $"{clientOnOlderVersion} на устаревшей версии: \nВаша версия - {handshakeMessage.Version}\nВерсия хоста комнаты - {selfVersion}");
                 return HandlerResult.Success();
             }
 

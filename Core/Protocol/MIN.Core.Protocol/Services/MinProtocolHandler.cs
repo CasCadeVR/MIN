@@ -12,28 +12,23 @@ namespace MIN.Core.Protocol.Services;
 /// <inheritdoc cref="IProtocolHandler"/>
 public sealed class MinProtocolHandler : IProtocolHandler
 {
-    private const string ResponseStarter = "MIN ";
+    private const string ResponseStarter = "MIN";
     private readonly ITransport transport;
-    private readonly IVersionProvider versionProvider;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MinProtocolHandler"/>
     /// </summary>
     public MinProtocolHandler(ITransport transport,
-        IVersionProvider versionProvider,
         ILoggerProvider logger)
     {
         this.transport = transport;
-        this.versionProvider = versionProvider;
         this.logger = logger;
     }
 
     async Task<PreambleResult> IProtocolHandler.HandleClientAsync(Guid connectionId, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSource<PreambleResult>();
-
-        logger.Log($"Protocol client: отправляю запрос на соединение {connectionId}");
 
         void Handler(object? sender, RawMessageReceivedEventArgs e)
         {
@@ -51,7 +46,7 @@ public sealed class MinProtocolHandler : IProtocolHandler
                 return;
             }
 
-            var roomInfo = JsonSerializer.Deserialize<RoomInfo>(response.AsSpan(4));
+            var roomInfo = JsonSerializer.Deserialize<RoomInfo>(response.AsSpan(ResponseStarter.Length));
 
             if (roomInfo == null)
             {
@@ -66,7 +61,8 @@ public sealed class MinProtocolHandler : IProtocolHandler
 
         transport.RawMessageReceived += Handler;
 
-        var request = Encoding.UTF8.GetBytes("MIN " + versionProvider.Version);
+        var request = Encoding.UTF8.GetBytes(ResponseStarter);
+        logger.Log($"Protocol client: отправляю запрос на соединение {connectionId}");
         await transport.SendAsync(request, connectionId, null, cancellationToken);
 
         try
@@ -104,28 +100,15 @@ public sealed class MinProtocolHandler : IProtocolHandler
                 tcs.TrySetResult(new PreambleResult
                 {
                     IsSuccess = false,
-                    ErrorMessage = "Invalid protocol"
+                    ErrorMessage = "Неверный протокол"
                 });
                 return;
             }
 
-            var clientVersion = request[4..];
-
-            if (!Version.TryParse(clientVersion, out var parsedVersion) || !versionProvider.IsVersionCompatible(parsedVersion))
-            {
-                logger.Log($"Protocol server: несовместимая версия {clientVersion} от {clientConnectionId}");
-                tcs.TrySetResult(new PreambleResult
-                {
-                    IsSuccess = false,
-                    ErrorMessage = $"Несовместимая версия: {clientVersion}"
-                });
-                return;
-            }
-
-            logger.Log($"Protocol server: клиент {clientConnectionId} прошёл протокол, версия {clientVersion}");
+            logger.Log($"Protocol server: клиент {clientConnectionId} прошёл протокол");
 
             var roomJson = JsonSerializer.Serialize(roomInfo);
-            var response = Encoding.UTF8.GetBytes("MIN " + roomJson);
+            var response = Encoding.UTF8.GetBytes(ResponseStarter + roomJson);
             await transport.SendAsync(response, clientConnectionId, serverConnectionId, cancellationToken);
 
             tcs.TrySetResult(new PreambleResult { IsSuccess = true });

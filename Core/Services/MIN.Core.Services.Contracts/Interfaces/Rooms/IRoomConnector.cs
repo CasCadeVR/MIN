@@ -22,7 +22,7 @@ public interface IRoomConnector : IRoomConnectionRelated
     /// <summary>
     /// Подключиться к удалённой комнате
     /// </summary>
-    Task<ConnectionResult> ConnectAsync(IEndpoint endpoint, int timeoutMs = 1000, CancellationToken cancellationToken = default);
+    Task<ConnectionResult> ConnectAsync(IEndpoint endpoint, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Отключиться от удалённой комнаты

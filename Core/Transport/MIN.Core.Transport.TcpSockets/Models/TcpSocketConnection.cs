@@ -67,6 +67,7 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         }
         catch (OperationCanceledException) { }
         catch (EndOfStreamException) { }
+        catch (IOException) { }
         catch (Exception ex)
         {
             disconnectMessage = $"{ex.GetType().Name}: {ex.Message}";

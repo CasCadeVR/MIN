@@ -75,7 +75,7 @@ public class TcpTransport : ITransport
         }
     }
 
-    async Task<Guid> ITransport.ConnectAsync(IEndpoint endpoint, int timeoutMs, CancellationToken cancellationToken)
+    async Task<Guid> ITransport.ConnectAsync(IEndpoint endpoint, CancellationToken cancellationToken)
     {
         if (endpoint is not TcpEndpoint tcpEp)
         {
@@ -94,7 +94,7 @@ public class TcpTransport : ITransport
             ConnectionStateChanged?.Invoke(this, args);
         };
 
-        var connectionId = await client.ConnectAsync(tcpEp.IPAddress, tcpEp.Port, timeoutMs);
+        var connectionId = await client.ConnectAsync(tcpEp.IPAddress, tcpEp.Port, cancellationToken);
         clients.TryAdd(connectionId, client);
 
         var connectedArgs = new ConnectionStateChangedEventArgs(connectionId, true);

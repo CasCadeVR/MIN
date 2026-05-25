@@ -16,13 +16,26 @@ public partial class TcpDirectConnectForm : StyledForm
     public TcpEndpoint Endpoint { get; set; } = new();
 
     /// <summary>
+    /// Событие по нажатию на кнопку
+    /// </summary>
+    public Action? OnConnect { get; set; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="TcpDirectConnectForm"/>
     /// </summary>
     public TcpDirectConnectForm()
     {
         InitializeComponent();
 
-        Shown += (_, _) => port.Focus();
+        Shown += (_, _) => ipAddress.Focus();
+    }
+
+    /// <summary>
+    /// Включить кнопку подключения обратно
+    /// </summary>
+    public void EnableConnectButton()
+    {
+        connectButton.Enabled = true;
     }
 
     /// <inheritdoc />
@@ -37,7 +50,22 @@ public partial class TcpDirectConnectForm : StyledForm
     {
         if (!IPAddress.TryParse(ipAddress.Text, out _))
         {
-            throw new InvalidOperationException("IP Адрес задан в неккоретном формате");
+            try
+            {
+                var iPHostEntry = Dns.GetHostEntry(ipAddress.Text);
+                if (iPHostEntry.AddressList.Length == 0)
+                {
+                    throw new InvalidOperationException("IP Адрес задан в неккоретном формате");
+                }
+                else
+                {
+                    ipAddress.Text = iPHostEntry.AddressList.First().ToString();
+                }
+            }
+            catch (Exception)
+            {
+                throw new InvalidOperationException("DNS не смог распознать IP адрес");
+            }
         }
     }
 
@@ -59,8 +87,43 @@ public partial class TcpDirectConnectForm : StyledForm
         }
 
         Endpoint.IPAddress = ipAddress.Text;
-        Endpoint.Port = Convert.ToInt32(port.Value);
+        Endpoint.Port = Convert.ToInt32(portNumericUpDown.Value);
 
-        DialogResult = DialogResult.OK;
+        connectButton.Enabled = false;
+        OnConnect?.Invoke();
+    }
+
+    private void cancelButton_Click(object sender, EventArgs e)
+    {
+        Close();
+    }
+
+    private void ipAddress_Leave(object sender, EventArgs e)
+    {
+        TryParsePort();
+    }
+
+    private void TryParsePort()
+    {
+        var input = ipAddress.Text;
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return;
+        }
+
+        var parts = input.Split(':');
+        if (parts.Length == 2 && int.TryParse(parts[1], out var port) && port > 0 && port <= 65535)
+        {
+            portNumericUpDown.Value = port;
+            ipAddress.Text = parts[0];
+        }
+    }
+
+    private void ipAddress_KeyPress(object sender, KeyPressEventArgs e)
+    {
+        if (e.KeyChar == '\r')
+        {
+            TryParsePort();
+        }
     }
 }

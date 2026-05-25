@@ -1,4 +1,5 @@
-﻿using MIN.Core.Entities;
+﻿using System.Collections.Concurrent;
+using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
@@ -21,6 +22,7 @@ public sealed class RoomHoster : IRoomHoster
     private readonly ILoggerProvider logger;
     private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
     private readonly Dictionary<Guid, Guid> activeConnections = []; // ConnectionId -> RoomId
+    private readonly ConcurrentDictionary<Guid, RoomInfo> readyRoomInfos = []; // RoomId -> RoomInfo
     private readonly Dictionary<Guid, CancellationToken> roomCancellationTokens = [];
     private readonly HashSet<Guid> protocolPhase = [];
 
@@ -66,7 +68,7 @@ public sealed class RoomHoster : IRoomHoster
             protocolPhase.Add(e.ConnectionId);
             logger.Log($"Новое подключение к комнате {roomId}: {e.RemoteEndPoint ?? "unknown"}");
 
-            var roomInfo = new RoomInfo(roomStore.GetRoom(roomId));
+            var roomInfo = readyRoomInfos[roomId];
             var result = await protocolHandler.HandleServerAsync(
                 e.ServerConnectionId!.Value, e.ConnectionId, roomInfo, roomCancellationTokens[roomId]);
 
@@ -130,6 +132,7 @@ public sealed class RoomHoster : IRoomHoster
 
         activeRooms[roomInfo.Id] = connectionId;
         activeConnections[connectionId] = roomInfo.Id;
+        readyRoomInfos[roomInfo.Id] = roomInfo;
     }
 
     Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
@@ -149,6 +152,7 @@ public sealed class RoomHoster : IRoomHoster
         await transport.StopHostingAsync(connectionId);
         activeRooms.Remove(roomId);
         activeConnections.Remove(connectionId);
+        readyRoomInfos.TryRemove(roomId, out _);
     }
 
     bool IRoomHoster.IsHosting(Guid roomId)
