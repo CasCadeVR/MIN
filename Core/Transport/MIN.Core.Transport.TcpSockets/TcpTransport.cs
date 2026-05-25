@@ -145,8 +145,9 @@ public class TcpTransport : ITransport
     }
 
     /// <inheritdoc />
-    public async Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId, string reason)
+    public async Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId)
     {
+        logger.Log($"Отключаю соединения с id {clientConnectionId}");
         if (servers.TryGetValue(serverConnectionId ?? Guid.Empty, out var server) &&
             server.Connections.TryGetValue(clientConnectionId, out var conn))
         {
@@ -161,7 +162,7 @@ public class TcpTransport : ITransport
 
     async Task ITransport.DisconnectAsync(Guid connectionId)
     {
-        await DisconnectClientAsync(connectionId, null, "Disconnected by user");
+        await DisconnectClientAsync(connectionId, null);
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

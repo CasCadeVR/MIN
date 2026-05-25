@@ -73,8 +73,7 @@ public sealed class RoomHoster : IRoomHoster
             if (!result.IsSuccess)
             {
                 logger.Log($"Клиент {e.RemoteEndPoint} не прошёл протокол: {result.ErrorMessage}");
-                await transport.DisconnectClientAsync(
-                    e.ConnectionId, e.ServerConnectionId, result.ErrorMessage ?? "Протокол не пройден");
+                await transport.DisconnectClientAsync(e.ConnectionId, e.ServerConnectionId);
                 return;
             }
 

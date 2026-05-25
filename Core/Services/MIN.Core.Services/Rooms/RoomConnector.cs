@@ -74,7 +74,8 @@ public sealed class RoomConnector : IRoomConnector
 
         if (!e.IsConnected)
         {
-            activeConnections.Remove(roomId);
+            activeRooms.Remove(roomId);
+            activeConnections.Remove(e.ConnectionId);
             logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {e.ConnectionId}");
         }
 

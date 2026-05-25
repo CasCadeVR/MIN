@@ -18,14 +18,4 @@ public sealed class RoomJoinResponseMessage : BaseMessage
     /// Идентификтор комнаты
     /// </summary>
     public Guid RoomId { get; set; }
-
-    /// <summary>
-    /// Разрешение на вход
-    /// </summary>
-    public bool Allow { get; set; }
-
-    /// <summary>
-    /// Сообщение, на случай отказа
-    /// </summary>
-    public string? Reason { get; set; }
 }

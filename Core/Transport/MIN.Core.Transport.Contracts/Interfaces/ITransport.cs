@@ -53,7 +53,7 @@ public interface ITransport
     /// <summary>
     /// Разорвать соединение с указанным соединением
     /// </summary>
-    Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId, string reason);
+    Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId);
 
     /// <summary>
     /// Отключиться

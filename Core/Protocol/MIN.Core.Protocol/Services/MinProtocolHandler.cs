@@ -47,7 +47,7 @@ public sealed class MinProtocolHandler : IProtocolHandler
             if (!response.StartsWith(ResponseStarter))
             {
                 logger.Log($"Protocol client: неверный ответ от {connectionId}: {response[..Math.Min(response.Length, 20)]}");
-                tcs.TrySetResult(new PreambleResult { IsSuccess = false, ErrorMessage = "Not a MIN endpoint" });
+                tcs.TrySetResult(new PreambleResult { IsSuccess = false, ErrorMessage = "Конечное подключение не соответсвует MIN протоколу" });
                 return;
             }
 
@@ -56,7 +56,7 @@ public sealed class MinProtocolHandler : IProtocolHandler
             if (roomInfo == null)
             {
                 logger.Log($"Protocol client: не удалось десериализовать RoomInfo от {connectionId}");
-                tcs.TrySetResult(new PreambleResult { IsSuccess = false, ErrorMessage = "Couldn't deserialize room information" });
+                tcs.TrySetResult(new PreambleResult { IsSuccess = false, ErrorMessage = "Не удалось десериализовать информацию о комнате, возможно, вы на устаревшей версии" });
                 return;
             }
 
@@ -117,7 +117,7 @@ public sealed class MinProtocolHandler : IProtocolHandler
                 tcs.TrySetResult(new PreambleResult
                 {
                     IsSuccess = false,
-                    ErrorMessage = $"Incompatible version: {clientVersion}"
+                    ErrorMessage = $"Несовместимая версия: {clientVersion}"
                 });
                 return;
             }

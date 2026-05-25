@@ -18,6 +18,18 @@ public class RoomConnectionResolver : IRoomConnectionResolver
         this.roomConnector = roomConnector;
     }
 
+    Guid? IRoomConnectionResolver.GetServerConnectionIdByRoomId(Guid connectionId, Guid roomId)
+    {
+        Guid? serverConnectionId = null;
+
+        if (roomHoster.IsHosting(roomId))
+        {
+            serverConnectionId = roomHoster.GetConnectionIdByRoomId(roomId);
+        }
+
+        return serverConnectionId;
+    }
+
     Guid IRoomConnectionResolver.GetRoomIdByConnectionId(Guid connectionId, Guid? serverConnectionId)
     {
         var roomId = Guid.Empty;
