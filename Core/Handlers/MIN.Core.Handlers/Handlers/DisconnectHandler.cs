@@ -14,21 +14,18 @@ namespace MIN.Core.Handlers.Handlers;
 internal sealed class DisconnectHandler : IMessageHandler, ICoreHandlerAnchor
 {
     private readonly IEventBus eventBus;
-    private readonly IMessageRouter messageRouter;
-    private readonly IIdentityService identityService;
+    private readonly IMessageSender messageSender;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="DisconnectHandler"/>
     /// </summary>
     public DisconnectHandler(IEventBus eventBus,
-        IMessageRouter messageRouter,
-        IIdentityService identityService,
+        IMessageSender messageSender,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
-        this.messageRouter = messageRouter;
-        this.identityService = identityService;
+        this.messageSender = messageSender;
         this.logger = logger;
     }
 
@@ -44,10 +41,10 @@ internal sealed class DisconnectHandler : IMessageHandler, ICoreHandlerAnchor
             case DisconnectMessage disconnectMessage:
                 var reason = disconnectMessage.Reason;
                 logger.Log($"Сервер нарошно отключил меня: {reason}", LogLevel.Error);
-                await messageRouter.RouteAsync(new DisconnectAckMessage()
+                await messageSender.SendAsync(new DisconnectAckMessage()
                 {
                     Reason = reason,
-                }, context.RoomContext.RoomId, identityService.SelfParticipant.Id, context.CancellationToken);
+                }, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
                 return HandlerResult.Failure(reason, stopPropagation: true, critical: true);
 
             case DisconnectAckMessage disconnectAckMessage:

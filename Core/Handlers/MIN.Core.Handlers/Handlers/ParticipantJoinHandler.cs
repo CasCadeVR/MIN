@@ -20,7 +20,6 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
     private readonly IGracefulDisconnector gracefulDisconnector;
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
-    private readonly IVersionProvider versionProvider;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -32,7 +31,6 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         IGracefulDisconnector gracefulDisconnector,
         IIdentityService identityService,
         IEventBus eventBus,
-        IVersionProvider versionProvider,
         ILoggerProvider logger)
     {
         this.roomStore = roomStore;
@@ -40,7 +38,6 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         this.gracefulDisconnector = gracefulDisconnector;
         this.identityService = identityService;
         this.eventBus = eventBus;
-        this.versionProvider = versionProvider;
         this.logger = logger;
     }
 
@@ -61,17 +58,11 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
                     RoomId = context.RoomContext.RoomId,
                 };
                 var isFull = roomStore.GetRoom(context.RoomContext.RoomId).IsFull;
-                var isDifferentVersion = !versionProvider.IsVersionCompatible(roomJoinRequestMessage.Version);
 
-                var allow = !isFull && !isDifferentVersion;
-                var reason = isFull
-                    ? "Комната заполнена"
-                    : isDifferentVersion ? "Вы на устаревшей версии" : null;
-
-                if (!allow)
+                if (isFull)
                 {
                     await gracefulDisconnector.DisconnectWithReasonAsync(context.ConnectionId,
-                        context.RoomContext.RoomId, reason ?? "Вход был запрещён");
+                        context.RoomContext.RoomId, "Комната заполнена");
                     return HandlerResult.Success();
                 }
 

@@ -18,9 +18,4 @@ public sealed class RoomJoinRequestMessage : BaseMessage
     /// Идентификтор комнаты
     /// </summary>
     public Guid RoomId { get; set; }
-
-    /// <summary>
-    /// Версия приложения отправителя
-    /// </summary>
-    public Version Version { get; set; } = null!;
 }

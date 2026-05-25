@@ -12,6 +12,9 @@ public sealed class DisconnectMessage : BaseMessage
     public override MessageTypeTag TypeTag => MessageTypeTag.Disconnect;
 
     /// <inheritdoc />
+    public override bool RequiresEncryption => false;
+
+    /// <inheritdoc />
     public override bool IsPublic => false;
 
     /// <summary>

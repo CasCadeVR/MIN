@@ -25,6 +25,7 @@ public sealed class RoomConnector : IRoomConnector
     private readonly IMessageSender messageSender;
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
+    private readonly IVersionProvider versionProvider;
     private readonly ILoggerProvider logger;
     private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
     private readonly Dictionary<Guid, Guid> activeConnections = []; // ConnectionId -> RoomId
@@ -45,6 +46,7 @@ public sealed class RoomConnector : IRoomConnector
         IMessageSender messageSender,
         IIdentityService identityService,
         IMessageEncryptor encryptor,
+        IVersionProvider versionProvider,
         ILoggerProvider logger)
     {
         this.transport = transport;
@@ -54,6 +56,7 @@ public sealed class RoomConnector : IRoomConnector
         this.messageSender = messageSender;
         this.identityService = identityService;
         this.encryptor = encryptor;
+        this.versionProvider = versionProvider;
         this.logger = logger;
 
         SubscribeToEvents();
@@ -127,6 +130,7 @@ public sealed class RoomConnector : IRoomConnector
             {
                 Participant = selfParticipant,
                 PublicKey = await encryptor.GetLocalPublicKey(),
+                Version = versionProvider.Version
             };
 
             await messageSender.SendAsync(selfHandshake, connectionResult.RoomId, connectionResult.ConnectionId, cancellationToken);

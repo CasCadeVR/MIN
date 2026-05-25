@@ -69,7 +69,7 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         catch (EndOfStreamException) { }
         catch (Exception ex)
         {
-            disconnectMessage = ex.Message;
+            disconnectMessage = $"{ex.GetType().Name}: {ex.Message}";
         }
         finally
         {
@@ -148,7 +148,6 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         {
             return;
         }
-
 
         disposed = true;
         cancellationTokenSource.Cancel();

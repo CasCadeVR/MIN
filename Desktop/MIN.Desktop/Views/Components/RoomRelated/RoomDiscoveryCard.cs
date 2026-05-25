@@ -42,6 +42,14 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
         SubscribeToEvents();
     }
 
+    /// <summary>
+    /// Включить кнопку подключения обратно
+    /// </summary>
+    public void EnableConnectButton()
+    {
+        connectButton.Enabled = true;
+    }
+
     private void SubscribeToEvents()
     {
         eventTokens =
@@ -51,7 +59,23 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
             eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent),
             eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
             eventBus.Subscribe<RoomJoinedEvent>(OnRoomJoined),
+            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
         ];
+    }
+
+    private async Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != eventMessage.RoomId)
+        {
+            return;
+        }
+
+        uiContext.Post(_ =>
+        {
+            connectButton.Enabled = true;
+        }, this);
+
+        await Task.CompletedTask;
     }
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
@@ -115,6 +139,7 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
             return;
         }
 
+        connectButton.Enabled = true;
         room.Name = eventMessage.RoomInfo.Name;
         room.MaximumParticipants = eventMessage.RoomInfo.MaximumParticipants;
         room.ParticipantCount = eventMessage.RoomInfo.ParticipantCount;
@@ -187,6 +212,7 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
 
     private void connectButton_Click(object sender, EventArgs e)
     {
+        connectButton.Enabled = false;
         Clicked?.Invoke();
     }
 

@@ -116,7 +116,7 @@ public partial class DiscoveryPanelView : StyledPanelView
                     Parent = flowLayoutPanelDiscoveredRooms
                 };
 
-                card.Clicked += () => OnRoomJoin(discoveryInfo.Endpoint, discoveryInfo.Room);
+                card.Clicked += () => OnRoomJoin(discoveryInfo.Endpoint, discoveryInfo.Room, card);
                 card.Disposed += (s, _) =>
                 {
                     totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanelDiscoveredRooms.Controls.Count}";
@@ -150,12 +150,13 @@ public partial class DiscoveryPanelView : StyledPanelView
         return true;
     }
 
-    private async Task OnRoomJoin(IEndpoint endpoint, RoomInfo? roomInfo = null)
+    private async Task OnRoomJoin(IEndpoint endpoint, RoomInfo? roomInfo = null, RoomDiscoveryCard? card = null)
     {
         if (roomInfo != null && featureCollection.Core.RoomConnector.IsConnected(roomInfo.Id))
         {
             MessageBox.Show($"Вы уже подключены к этой комнате", "Ошибка",
                 MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            card?.EnableConnectButton();
             return;
         }
 
@@ -192,6 +193,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         }
         catch (Exception ex)
         {
+            card?.EnableConnectButton();
             loadingForm?.Close();
             MessageBox.Show($"Произошла ошибка: {ex.Message}, \nВозможно, комнаты уже и нет", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }

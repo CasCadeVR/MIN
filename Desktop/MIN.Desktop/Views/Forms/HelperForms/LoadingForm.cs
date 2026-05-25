@@ -58,11 +58,11 @@ public partial class LoadingForm : StyledForm
     {
         eventTokens = [
             eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived),
-            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccurredEvent),
+            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
         ];
     }
 
-    private async Task OnErrorOccurredEvent(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
+    private async Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.RoomId != roomId)
         {
