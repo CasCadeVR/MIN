@@ -21,7 +21,7 @@ public interface IRoomHoster : IRoomConnectionRelated
     /// <summary>
     /// Начать хостинг комнаты
     /// </summary>
-    Task StartHostingAsync(RoomInfo roomInfo, CancellationToken cancellationToken = default);
+    Task StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Остановить хостинг комнаты

@@ -102,7 +102,7 @@ public sealed class RoomHoster : IRoomHoster
         RawMessageReceived?.Invoke(this, args);
     }
 
-    async Task IRoomHoster.StartHostingAsync(RoomInfo roomInfo, CancellationToken cancellationToken)
+    async Task IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
     {
         if (activeRooms.ContainsKey(roomInfo.Id))
         {
@@ -124,7 +124,7 @@ public sealed class RoomHoster : IRoomHoster
             RoomId = roomInfo.Id
         });
 
-        var connectionId = await transport.StartHostingAsync(cancellationToken);
+        var connectionId = await transport.StartHostingAsync(withPortForwarding, cancellationToken);
 
         var endpoint = transport.GetEndpoint(connectionId);
         logger.Log($"Комната создана: {endpoint} ({roomInfo.Name})");

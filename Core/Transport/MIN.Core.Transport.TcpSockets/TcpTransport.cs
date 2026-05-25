@@ -1,6 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Net;
-using System.Net.Sockets;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.TcpSockets.Client;
@@ -35,7 +33,7 @@ public class TcpTransport : ITransport
         this.logger = logger;
     }
 
-    async Task<Guid> ITransport.StartHostingAsync(CancellationToken cancellationToken)
+    async Task<Guid> ITransport.StartHostingAsync(bool withPortForwarding, CancellationToken cancellationToken)
     {
         var connectionId = Guid.NewGuid();
         var port = portManager.AllocatePort();
@@ -62,7 +60,7 @@ public class TcpTransport : ITransport
             ConnectionStateChanged?.Invoke(this, args);
         };
 
-        await server.StartAsync(cancellationToken);
+        await server.StartAsync(withPortForwarding, cancellationToken);
         servers.TryAdd(connectionId, server);
 
         return connectionId;
@@ -143,8 +141,7 @@ public class TcpTransport : ITransport
             throw new InvalidOperationException($"Connection {connectionId} is not hosted locally");
         }
 
-        var localIp = GetLocalIpAddress();
-        return new TcpEndpoint { IPAddress = localIp, Port = server.Port };
+        return new TcpEndpoint { IPAddress = server.IpAddress.ToString(), Port = server.Port };
     }
 
     /// <inheritdoc />
@@ -165,14 +162,6 @@ public class TcpTransport : ITransport
     async Task ITransport.DisconnectAsync(Guid connectionId)
     {
         await DisconnectClientAsync(connectionId, null, "Disconnected by user");
-    }
-
-    private static string GetLocalIpAddress()
-    {
-        using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
-        socket.Connect("8.8.8.8", 65530);
-        var endPoint = socket.LocalEndPoint as IPEndPoint;
-        return endPoint?.Address.ToString() ?? "127.0.0.1";
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

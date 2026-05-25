@@ -3,7 +3,9 @@ using System.Net;
 using System.Net.Sockets;
 using MIN.Core.Transport.Contracts.Constants;
 using MIN.Core.Transport.TcpSockets.Models;
+using MIN.Core.Transport.TcpSockets.Services;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Transport.TcpSockets.Server;
 
@@ -19,7 +21,13 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     private readonly int maxConnections = TransportConstants.RoomMaximumConnectionsAmount;
 
     private CancellationTokenSource? cts;
+    private PortForwardingHelper? pfHelper;
     private Task? acceptLoop;
+
+    /// <summary>
+    /// Ip Адрес подключения
+    /// </summary>
+    public IPAddress IpAddress = GetLocalIpAddress();
 
     /// <summary>
     /// Порт подключения
@@ -59,12 +67,30 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     /// <summary>
     /// Запустить сервер
     /// </summary>
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(bool withPortForwarding, CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         listener.Start();
         acceptLoop = Task.Run(AcceptLoopAsync);
         logger.Log($"Стартанул сервер на порту: {Port}");
+
+        if (withPortForwarding)
+        {
+            pfHelper = new PortForwardingHelper();
+            var publicIp = await pfHelper.CreatePortForwardingAsync(IpAddress, Port, null, $"Room {Port}");
+            if (publicIp != null)
+            {
+                IpAddress = publicIp;
+                logger.Log($"Порт проброшен. Публичный IP: {publicIp}, Публичный порт: {Port}");
+            }
+            else
+            {
+                var message = "UPnP не доступен. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную.";
+                logger.Log(message, LogLevel.Error);
+                throw new InvalidOperationException(message);
+            }
+        }
+
         await Task.CompletedTask;
     }
 
@@ -117,9 +143,22 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     private void OnConnectionDisconnected(TcpSocketConnection conn, string? reason)
         => ConnectionDisconnected?.Invoke(this, (conn, reason));
 
+    private static IPAddress GetLocalIpAddress()
+    {
+        using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+        socket.Connect("8.8.8.8", 65530);
+        var endPoint = socket.LocalEndPoint as IPEndPoint;
+        return endPoint?.Address ?? IPAddress.Parse("127.0.0.1");
+    }
+
     public async ValueTask DisposeAsync()
     {
         cts?.Cancel();
+
+        if (pfHelper != null)
+        {
+            await pfHelper.RemovePortForwardingAsync();
+        }
 
         if (acceptLoop != null)
         {

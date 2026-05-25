@@ -235,7 +235,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         {
             featureCollection.Core.RoomStore.Register(room);
 
-            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, lifeTimeCts.Token);
+            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, roomCreateForm.WithPortForwarding, lifeTimeCts.Token);
 
             context.Participants.AddParticipant(new Participant(localParticipant));
 

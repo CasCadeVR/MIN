@@ -19,6 +19,11 @@ public partial class RoomCreateForm : StyledForm
     public RoomInfo Room { get; set; }
 
     /// <summary>
+    /// Флаг, указывающий что комната должна быть с проброской порта
+    /// </summary>
+    public bool WithPortForwarding { get; set; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomCreateForm"/>
     /// </summary>
     public RoomCreateForm(RoomInfo? room = null)
@@ -99,6 +104,7 @@ public partial class RoomCreateForm : StyledForm
         }
 
         Room.MaximumParticipants = Convert.ToInt32(roomMaximumCount.Value);
+        WithPortForwarding = withPortForwardingCheckBox.Checked;
 
         DialogResult = DialogResult.OK;
     }

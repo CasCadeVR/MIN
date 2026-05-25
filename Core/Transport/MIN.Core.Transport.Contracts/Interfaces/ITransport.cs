@@ -33,7 +33,7 @@ public interface ITransport
     /// <summary>
     /// Запустить сервер подключений
     /// </summary>
-    Task<Guid> StartHostingAsync(CancellationToken cancellationToken = default);
+    Task<Guid> StartHostingAsync(bool withPortForwarding, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получить точку подключения
