@@ -14,7 +14,7 @@ public sealed class IdentityService : IIdentityService
     private readonly SemaphoreSlim localKeyLock = new(1, 1);
     private readonly SemaphoreSlim cacheLock = new(1, 1);
 
-    private IParticipantData? currentParticipant;
+    private ParticipantInfo? currentParticipant;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="IdentityService"/>
@@ -37,7 +37,10 @@ public sealed class IdentityService : IIdentityService
     /// <inheritdoc />
     void IIdentityService.SetParticipant(IParticipantData participantData)
     {
-        currentParticipant?.Name = participantData.Name;
+        if (currentParticipant != null)
+        {
+            currentParticipant.Name = participantData.Name;
+        }
     }
 
     /// <inheritdoc />

@@ -103,11 +103,11 @@ public sealed class RoomHoster : IRoomHoster
         RawMessageReceived?.Invoke(this, args);
     }
 
-    async Task IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
+    async Task<IEndpoint> IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
     {
-        if (activeRooms.ContainsKey(roomInfo.Id))
+        if (activeRooms.TryGetValue(roomInfo.Id, out var foundConnectionId))
         {
-            return;
+            return transport.GetEndpoint(foundConnectionId);
         }
 
         roomCancellationTokens[roomInfo.Id] = cancellationToken;
@@ -133,6 +133,8 @@ public sealed class RoomHoster : IRoomHoster
         activeRooms[roomInfo.Id] = connectionId;
         activeConnections[connectionId] = roomInfo.Id;
         readyRoomInfos[roomInfo.Id] = roomInfo;
+
+        return endpoint;
     }
 
     Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)

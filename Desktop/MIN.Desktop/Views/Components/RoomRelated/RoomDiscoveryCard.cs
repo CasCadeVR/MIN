@@ -4,6 +4,7 @@ using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
+using MIN.Desktop.Infrastructure.Services;
 
 namespace MIN.Desktop.Components;
 
@@ -184,6 +185,13 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
         hostName.Text = room.HostParticipant.Name;
         createdAt.Text = room.CreatedAt.ToShortTimeString();
         computer.Text = room.PcNumber.ToString();
+
+        if (IpAddressParser.TryParseIpAddress(room.ConnectionAddress, out var gottenIpAddress, out var port))
+        {
+            connectionPort.Text = port.ToString();
+            connectionAddress.Text = gottenIpAddress;
+        }
+
         classroom.Text = string.IsNullOrEmpty(room.Cabinet)
             ? DesktopConstants.UndefinedPcName
             : room.Cabinet;

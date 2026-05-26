@@ -170,10 +170,10 @@ public sealed class RoomConnector : IRoomConnector
             return;
         }
 
+        logger.Log($"Я сам иницирую отключение от комнаты с id {roomId} с соединением {connectionId}");
         await transport.DisconnectAsync(connectionId);
         activeRooms.Remove(roomId);
         activeConnections.Remove(connectionId);
-        logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {connectionId}");
     }
 
     bool IRoomConnector.IsConnected(Guid roomId) => activeRooms.ContainsKey(roomId);

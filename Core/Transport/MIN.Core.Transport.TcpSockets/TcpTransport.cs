@@ -6,6 +6,7 @@ using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Core.Transport.TcpSockets.Server;
 using MIN.Core.Transport.TcpSockets.Services;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Transport.TcpSockets;
 
@@ -118,7 +119,7 @@ public class TcpTransport : ITransport
             return;
         }
 
-        throw new KeyNotFoundException($"Connection {receipientConnectionId} not found");
+        logger.Log("Попытка отправить сообщение, не подключившись, игнорю", LogLevel.Warning);
     }
 
     async Task ITransport.BroadcastAsync(byte[] data, Guid connectionId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)

@@ -36,6 +36,9 @@ public class Room : IRoomData
     /// <inheritdoc />
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    /// <inheritdoc />
+    public string? ConnectionAddress { get; set; }
+
     /// <summary>
     /// Хост комнаты
     /// </summary>
@@ -94,5 +97,6 @@ public class Room : IRoomData
         MaximumParticipants = roomData.MaximumParticipants;
         IsActive = roomData.IsActive;
         CreatedAt = roomData.CreatedAt;
+        ConnectionAddress = roomData.ConnectionAddress;
     }
 }

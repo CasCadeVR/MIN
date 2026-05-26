@@ -2,6 +2,7 @@ using System.Net;
 using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
+using MIN.Desktop.Infrastructure.Services;
 
 namespace MIN.Desktop.Views.Forms.HelperForms;
 
@@ -105,17 +106,10 @@ public partial class TcpDirectConnectForm : StyledForm
 
     private void TryParsePort()
     {
-        var input = ipAddress.Text;
-        if (string.IsNullOrWhiteSpace(input))
-        {
-            return;
-        }
-
-        var parts = input.Split(':');
-        if (parts.Length == 2 && int.TryParse(parts[1], out var port) && port > 0 && port <= 65535)
+        if (IpAddressParser.TryParseIpAddress(ipAddress.Text, out var gottenIpAddress, out var port))
         {
             portNumericUpDown.Value = port;
-            ipAddress.Text = parts[0];
+            ipAddress.Text = gottenIpAddress;
         }
     }
 

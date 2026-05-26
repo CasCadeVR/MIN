@@ -69,8 +69,8 @@
             tableLayoutPanel.ColumnCount = 4;
             tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
             tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 250F));
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200F));
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 225F));
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
             tableLayoutPanel.Controls.Add(connectDirectButton, 2, 0);
             tableLayoutPanel.Controls.Add(createRoom, 0, 0);
             tableLayoutPanel.Controls.Add(splitContainerDiscoverRoom, 3, 0);
@@ -92,9 +92,10 @@
             connectDirectButton.FlatStyle = FlatStyle.Flat;
             connectDirectButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             connectDirectButton.ForeColor = Color.FromArgb(167, 157, 255);
-            connectDirectButton.Location = new Point(389, 3);
+            connectDirectButton.Location = new Point(464, 3);
+            connectDirectButton.Margin = new Padding(3, 3, 3, 5);
             connectDirectButton.Name = "connectDirectButton";
-            connectDirectButton.Size = new Size(244, 44);
+            connectDirectButton.Size = new Size(219, 42);
             connectDirectButton.TabIndex = 10;
             connectDirectButton.Text = "Подключиться напрямую";
             connectDirectButton.UseVisualStyleBackColor = false;
@@ -121,7 +122,7 @@
             // splitContainerDiscoverRoom
             // 
             splitContainerDiscoverRoom.Dock = DockStyle.Fill;
-            splitContainerDiscoverRoom.Location = new Point(639, 3);
+            splitContainerDiscoverRoom.Location = new Point(689, 3);
             splitContainerDiscoverRoom.Name = "splitContainerDiscoverRoom";
             splitContainerDiscoverRoom.Orientation = Orientation.Horizontal;
             // 
@@ -134,14 +135,14 @@
             // 
             splitContainerDiscoverRoom.Panel2.Controls.Add(discoveryProgressBar);
             splitContainerDiscoverRoom.Panel2Collapsed = true;
-            splitContainerDiscoverRoom.Size = new Size(194, 44);
+            splitContainerDiscoverRoom.Size = new Size(144, 44);
             splitContainerDiscoverRoom.SplitterDistance = 25;
             splitContainerDiscoverRoom.TabIndex = 5;
             // 
             // discoverRooms
             // 
             discoverRooms.BackColor = Color.FromArgb(248, 249, 255);
-            discoverRooms.Dock = DockStyle.Fill;
+            discoverRooms.Dock = DockStyle.Top;
             discoverRooms.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
             discoverRooms.FlatAppearance.BorderSize = 2;
             discoverRooms.FlatStyle = FlatStyle.Flat;
@@ -149,7 +150,7 @@
             discoverRooms.ForeColor = Color.FromArgb(167, 157, 255);
             discoverRooms.Location = new Point(0, 0);
             discoverRooms.Name = "discoverRooms";
-            discoverRooms.Size = new Size(194, 48);
+            discoverRooms.Size = new Size(144, 42);
             discoverRooms.TabIndex = 0;
             discoverRooms.Text = "Найти комнаты";
             discoverRooms.UseVisualStyleBackColor = false;
@@ -158,11 +159,11 @@
             // discoveryProgressBar
             // 
             discoveryProgressBar.Dock = DockStyle.Bottom;
-            discoveryProgressBar.Location = new Point(0, 17);
+            discoveryProgressBar.Location = new Point(0, 38);
             discoveryProgressBar.Margin = new Padding(0);
             discoveryProgressBar.MarqueeAnimationSpeed = 5;
             discoveryProgressBar.Name = "discoveryProgressBar";
-            discoveryProgressBar.Size = new Size(194, 8);
+            discoveryProgressBar.Size = new Size(150, 8);
             discoveryProgressBar.Style = ProgressBarStyle.Marquee;
             discoveryProgressBar.TabIndex = 0;
             // 

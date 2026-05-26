@@ -40,11 +40,11 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             createButton = new CommonButton();
             cancelButton = new InvertedButton();
             tableLayoutPanel1 = new TableLayoutPanel();
+            heading3Label2 = new Heading3Label();
             roomMaximumCount = new DefaultNumericUpDown();
             heading3Label1 = new Heading3Label();
             ClassTitleInput = new Heading3Label();
             roomName = new DefaultTextBox();
-            heading3Label2 = new Heading3Label();
             withPortForwardingCheckBox = new MIN.Desktop.Components.Controls.CheckBoxes.DefaultCheckBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
@@ -175,6 +175,18 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             tableLayoutPanel1.Size = new Size(416, 121);
             tableLayoutPanel1.TabIndex = 1;
             // 
+            // heading3Label2
+            // 
+            heading3Label2.Anchor = AnchorStyles.Right;
+            heading3Label2.AutoSize = true;
+            heading3Label2.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            heading3Label2.ForeColor = Color.FromArgb(0, 0, 0);
+            heading3Label2.Location = new Point(53, 90);
+            heading3Label2.Name = "heading3Label2";
+            heading3Label2.Size = new Size(152, 21);
+            heading3Label2.TabIndex = 2;
+            heading3Label2.Text = "Проброска порта:";
+            // 
             // roomMaximumCount
             // 
             roomMaximumCount.Anchor = AnchorStyles.Left;
@@ -183,12 +195,12 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             roomMaximumCount.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
             roomMaximumCount.ForeColor = Color.Purple;
             roomMaximumCount.Location = new Point(211, 45);
-            roomMaximumCount.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            roomMaximumCount.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
             roomMaximumCount.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             roomMaximumCount.Name = "roomMaximumCount";
             roomMaximumCount.Size = new Size(46, 29);
             roomMaximumCount.TabIndex = 1;
-            roomMaximumCount.Value = new decimal(new int[] { 2, 0, 0, 0 });
+            roomMaximumCount.Value = new decimal(new int[] { 8, 0, 0, 0 });
             // 
             // heading3Label1
             // 
@@ -226,18 +238,6 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             roomName.PlaceholderText = "Введите имя...";
             roomName.Size = new Size(202, 26);
             roomName.TabIndex = 1;
-            // 
-            // heading3Label2
-            // 
-            heading3Label2.Anchor = AnchorStyles.Right;
-            heading3Label2.AutoSize = true;
-            heading3Label2.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            heading3Label2.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label2.Location = new Point(53, 90);
-            heading3Label2.Name = "heading3Label2";
-            heading3Label2.Size = new Size(152, 21);
-            heading3Label2.TabIndex = 2;
-            heading3Label2.Text = "Проброска порта:";
             // 
             // withPortForwardingCheckBox
             // 

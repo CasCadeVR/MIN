@@ -245,7 +245,9 @@ public partial class DiscoveryPanelView : StyledPanelView
         {
             featureCollection.Core.RoomStore.Register(room);
 
-            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, roomCreateForm.WithPortForwarding, lifeTimeCts.Token);
+            var endpoint = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, roomCreateForm.WithPortForwarding, lifeTimeCts.Token);
+            roomInfo.ConnectionAddress = endpoint.ToString();
+            room.ConnectionAddress = endpoint.ToString();
 
             context.Participants.AddParticipant(new Participant(localParticipant));
 
