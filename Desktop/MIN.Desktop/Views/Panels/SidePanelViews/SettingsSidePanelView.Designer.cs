@@ -32,6 +32,9 @@
             saveButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             tableLayoutPanel1 = new TableLayoutPanel();
+            captionLabel3 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            captionLabel2 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            captionLabel1 = new MIN.Desktop.Components.Labels.CaptionLabel();
             clearCacheLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             clearCacheButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             discoveryPort = new MIN.Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown();
@@ -40,9 +43,6 @@
             logButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             logDescriptionLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             labelVersion = new MIN.Desktop.Components.Labels.CaptionLabel();
-            captionLabel1 = new MIN.Desktop.Components.Labels.CaptionLabel();
-            captionLabel2 = new MIN.Desktop.Components.Labels.CaptionLabel();
-            captionLabel3 = new MIN.Desktop.Components.Labels.CaptionLabel();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -143,6 +143,45 @@
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel1.Size = new Size(250, 571);
             tableLayoutPanel1.TabIndex = 2;
+            // 
+            // captionLabel3
+            // 
+            captionLabel3.Anchor = AnchorStyles.Right;
+            captionLabel3.AutoSize = true;
+            captionLabel3.Enabled = false;
+            captionLabel3.Font = new Font("Segoe UI", 8.25F);
+            captionLabel3.ForeColor = Color.Black;
+            captionLabel3.Location = new Point(15, 82);
+            captionLabel3.Name = "captionLabel3";
+            captionLabel3.Size = new Size(107, 52);
+            captionLabel3.TabIndex = 22;
+            captionLabel3.Text = "UDP Порт комнат (Лучше не менять, по умолчанию 42069)";
+            // 
+            // captionLabel2
+            // 
+            captionLabel2.Anchor = AnchorStyles.Right;
+            captionLabel2.AutoSize = true;
+            captionLabel2.Enabled = false;
+            captionLabel2.Font = new Font("Segoe UI", 8.25F);
+            captionLabel2.ForeColor = Color.Black;
+            captionLabel2.Location = new Point(38, 35);
+            captionLabel2.Name = "captionLabel2";
+            captionLabel2.Size = new Size(84, 26);
+            captionLabel2.TabIndex = 21;
+            captionLabel2.Text = "Время поиска комнат (в мс.)";
+            // 
+            // captionLabel1
+            // 
+            captionLabel1.Anchor = AnchorStyles.Right;
+            captionLabel1.AutoSize = true;
+            captionLabel1.Enabled = false;
+            captionLabel1.Font = new Font("Segoe UI", 8.25F);
+            captionLabel1.ForeColor = Color.Black;
+            captionLabel1.Location = new Point(11, 5);
+            captionLabel1.Name = "captionLabel1";
+            captionLabel1.Size = new Size(111, 13);
+            captionLabel1.TabIndex = 20;
+            captionLabel1.Text = "Имя по умолчанию";
             // 
             // clearCacheLabel
             // 
@@ -262,45 +301,6 @@
             labelVersion.Size = new Size(47, 13);
             labelVersion.TabIndex = 13;
             labelVersion.Text = "Версия:";
-            // 
-            // captionLabel1
-            // 
-            captionLabel1.Anchor = AnchorStyles.Right;
-            captionLabel1.AutoSize = true;
-            captionLabel1.Enabled = false;
-            captionLabel1.Font = new Font("Segoe UI", 8.25F);
-            captionLabel1.ForeColor = Color.Black;
-            captionLabel1.Location = new Point(11, 5);
-            captionLabel1.Name = "captionLabel1";
-            captionLabel1.Size = new Size(111, 13);
-            captionLabel1.TabIndex = 20;
-            captionLabel1.Text = "Имя по умолчанию";
-            // 
-            // captionLabel2
-            // 
-            captionLabel2.Anchor = AnchorStyles.Right;
-            captionLabel2.AutoSize = true;
-            captionLabel2.Enabled = false;
-            captionLabel2.Font = new Font("Segoe UI", 8.25F);
-            captionLabel2.ForeColor = Color.Black;
-            captionLabel2.Location = new Point(38, 35);
-            captionLabel2.Name = "captionLabel2";
-            captionLabel2.Size = new Size(84, 26);
-            captionLabel2.TabIndex = 21;
-            captionLabel2.Text = "Время поиска комнат (в мс.)";
-            // 
-            // captionLabel3
-            // 
-            captionLabel3.Anchor = AnchorStyles.Right;
-            captionLabel3.AutoSize = true;
-            captionLabel3.Enabled = false;
-            captionLabel3.Font = new Font("Segoe UI", 8.25F);
-            captionLabel3.ForeColor = Color.Black;
-            captionLabel3.Location = new Point(17, 82);
-            captionLabel3.Name = "captionLabel3";
-            captionLabel3.Size = new Size(105, 52);
-            captionLabel3.TabIndex = 22;
-            captionLabel3.Text = "UDP Порт поиска комнат (Лучше не менять, по умолчанию 42069)";
             // 
             // SettingsSidePanelView
             // 

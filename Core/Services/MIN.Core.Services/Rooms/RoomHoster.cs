@@ -4,6 +4,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Protocol.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
@@ -109,6 +110,11 @@ public sealed class RoomHoster : IRoomHoster
 
     async Task<Room> IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
     {
+        if (activeRooms.Count + 1 > ServicesConstants.MaximumRoomHosts)
+        {
+            throw new InvalidOperationException($"Можно хостить максимум {ServicesConstants.MaximumRoomHosts} комнат");
+        }
+
         var roomId = roomInfo.Id;
 
         if (activeRooms.ContainsKey(roomId))
