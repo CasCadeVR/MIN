@@ -8,6 +8,7 @@ using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Rooms;
@@ -16,14 +17,15 @@ namespace MIN.Core.Services.Rooms;
 public sealed class RoomHoster : IRoomHoster
 {
     private readonly IRoomFactory roomFactory;
-    private readonly IRoomStore roomStore;
     private readonly IProtocolHandler protocolHandler;
     private readonly ITransport transport;
+    private readonly IRoomStore roomStore;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
     private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
     private readonly Dictionary<Guid, Guid> activeConnections = []; // ConnectionId -> RoomId
     private readonly ConcurrentDictionary<Guid, RoomInfo> readyRoomInfos = []; // RoomId -> RoomInfo
-    private readonly Dictionary<Guid, CancellationToken> roomCancellationTokens = [];
+    private readonly Dictionary<Guid, CancellationTokenSource> roomCancellationTokenSources = [];
     private readonly HashSet<Guid> protocolPhase = [];
 
     /// <inheritdoc />
@@ -36,15 +38,17 @@ public sealed class RoomHoster : IRoomHoster
     /// Инициализирует новый экземпляр <see cref="RoomHoster"/>
     /// </summary>
     public RoomHoster(IRoomFactory roomFactory,
-        IRoomStore roomStore,
         IProtocolHandler protocolHandler,
         ITransport transport,
+        IRoomStore roomStore,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.roomFactory = roomFactory;
-        this.roomStore = roomStore;
         this.protocolHandler = protocolHandler;
         this.transport = transport;
+        this.roomStore = roomStore;
+        this.identityService = identityService;
         this.logger = logger;
 
         SubscibeToEvents();
@@ -70,7 +74,7 @@ public sealed class RoomHoster : IRoomHoster
 
             var roomInfo = readyRoomInfos[roomId];
             var result = await protocolHandler.HandleServerAsync(
-                e.ServerConnectionId!.Value, e.ConnectionId, roomInfo, roomCancellationTokens[roomId]);
+                e.ServerConnectionId!.Value, e.ConnectionId, roomInfo, roomCancellationTokenSources[roomId].Token);
 
             if (!result.IsSuccess)
             {
@@ -103,16 +107,25 @@ public sealed class RoomHoster : IRoomHoster
         RawMessageReceived?.Invoke(this, args);
     }
 
-    async Task<IEndpoint> IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
+    async Task IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
     {
-        if (activeRooms.TryGetValue(roomInfo.Id, out var foundConnectionId))
+        if (activeRooms.ContainsKey(roomInfo.Id))
         {
-            return transport.GetEndpoint(foundConnectionId);
+            return;
         }
 
-        roomCancellationTokens[roomInfo.Id] = cancellationToken;
+        roomCancellationTokenSources[roomInfo.Id] = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         var context = roomFactory.GetOrCreateContext(roomInfo.Id);
+
+        var localParticipant = identityService.SelfParticipant.ToParticipantInfo();
+
+        context.Connections.RegisterLocalParticipant(localParticipant);
+        roomInfo.HostParticipant = localParticipant;
+
+        var room = new Room(roomInfo);
+
+        roomStore.Register(room);
 
         context.Messages.AddMessage(new SystemTextMessage()
         {
@@ -121,20 +134,24 @@ public sealed class RoomHoster : IRoomHoster
 
         context.Messages.AddMessage(new ParticipantJoinedMessage()
         {
-            Participant = new Participant(roomInfo.HostParticipant),
+            Participant = new Participant(localParticipant),
             RoomId = roomInfo.Id
         });
 
         var connectionId = await transport.StartHostingAsync(withPortForwarding, cancellationToken);
 
         var endpoint = transport.GetEndpoint(connectionId);
+
+        roomInfo.ConnectionAddress = endpoint.ToString();
+        room.ConnectionAddress = endpoint.ToString();
+
+        context.Participants.AddParticipant(new Participant(localParticipant));
+
         logger.Log($"Комната создана: {endpoint} ({roomInfo.Name})");
 
         activeRooms[roomInfo.Id] = connectionId;
         activeConnections[connectionId] = roomInfo.Id;
         readyRoomInfos[roomInfo.Id] = roomInfo;
-
-        return endpoint;
     }
 
     Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
@@ -150,6 +167,12 @@ public sealed class RoomHoster : IRoomHoster
             return;
         }
 
+        if (roomCancellationTokenSources.TryGetValue(roomId, out var cancellationTokenSource))
+        {
+            cancellationTokenSource.Cancel();
+            cancellationTokenSource.Dispose();
+            roomCancellationTokenSources.Remove(roomId);
+        }
 
         await transport.StopHostingAsync(connectionId);
         activeRooms.Remove(roomId);

@@ -40,9 +40,9 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             createButton = new CommonButton();
             cancelButton = new InvertedButton();
             tableLayoutPanel1 = new TableLayoutPanel();
-            heading3Label2 = new Heading3Label();
+            withPortForwardingLabel = new Heading3Label();
             roomMaximumCount = new DefaultNumericUpDown();
-            heading3Label1 = new Heading3Label();
+            roomMaximumCountLabel = new Heading3Label();
             ClassTitleInput = new Heading3Label();
             roomName = new DefaultTextBox();
             withPortForwardingCheckBox = new MIN.Desktop.Components.Controls.CheckBoxes.DefaultCheckBox();
@@ -119,8 +119,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             // createButton
             // 
-            createButton.Anchor = AnchorStyles.Right;
             createButton.BackColor = Color.FromArgb(192, 192, 255);
+            createButton.Dock = DockStyle.Fill;
             createButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             createButton.FlatStyle = FlatStyle.Flat;
             createButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
@@ -136,9 +136,9 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             // cancelButton
             // 
-            cancelButton.Anchor = AnchorStyles.Left;
             cancelButton.BackColor = Color.FromArgb(248, 249, 255);
             cancelButton.DialogResult = DialogResult.Cancel;
+            cancelButton.Dock = DockStyle.Fill;
             cancelButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
             cancelButton.FlatAppearance.BorderSize = 2;
             cancelButton.FlatStyle = FlatStyle.Flat;
@@ -158,9 +158,9 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Controls.Add(heading3Label2, 0, 2);
+            tableLayoutPanel1.Controls.Add(withPortForwardingLabel, 0, 2);
             tableLayoutPanel1.Controls.Add(roomMaximumCount, 1, 1);
-            tableLayoutPanel1.Controls.Add(heading3Label1, 0, 1);
+            tableLayoutPanel1.Controls.Add(roomMaximumCountLabel, 0, 1);
             tableLayoutPanel1.Controls.Add(ClassTitleInput, 0, 0);
             tableLayoutPanel1.Controls.Add(roomName, 1, 0);
             tableLayoutPanel1.Controls.Add(withPortForwardingCheckBox, 1, 2);
@@ -175,17 +175,17 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             tableLayoutPanel1.Size = new Size(416, 121);
             tableLayoutPanel1.TabIndex = 1;
             // 
-            // heading3Label2
+            // withPortForwardingLabel
             // 
-            heading3Label2.Anchor = AnchorStyles.Right;
-            heading3Label2.AutoSize = true;
-            heading3Label2.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            heading3Label2.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label2.Location = new Point(53, 90);
-            heading3Label2.Name = "heading3Label2";
-            heading3Label2.Size = new Size(152, 21);
-            heading3Label2.TabIndex = 2;
-            heading3Label2.Text = "Проброска порта:";
+            withPortForwardingLabel.Anchor = AnchorStyles.Right;
+            withPortForwardingLabel.AutoSize = true;
+            withPortForwardingLabel.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            withPortForwardingLabel.ForeColor = Color.FromArgb(0, 0, 0);
+            withPortForwardingLabel.Location = new Point(53, 90);
+            withPortForwardingLabel.Name = "withPortForwardingLabel";
+            withPortForwardingLabel.Size = new Size(152, 21);
+            withPortForwardingLabel.TabIndex = 2;
+            withPortForwardingLabel.Text = "Проброска порта:";
             // 
             // roomMaximumCount
             // 
@@ -202,17 +202,17 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             roomMaximumCount.TabIndex = 1;
             roomMaximumCount.Value = new decimal(new int[] { 8, 0, 0, 0 });
             // 
-            // heading3Label1
+            // roomMaximumCountLabel
             // 
-            heading3Label1.Anchor = AnchorStyles.Right;
-            heading3Label1.AutoSize = true;
-            heading3Label1.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            heading3Label1.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label1.Location = new Point(3, 49);
-            heading3Label1.Name = "heading3Label1";
-            heading3Label1.Size = new Size(202, 21);
-            heading3Label1.TabIndex = 0;
-            heading3Label1.Text = "Количество участников: ";
+            roomMaximumCountLabel.Anchor = AnchorStyles.Right;
+            roomMaximumCountLabel.AutoSize = true;
+            roomMaximumCountLabel.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            roomMaximumCountLabel.ForeColor = Color.FromArgb(0, 0, 0);
+            roomMaximumCountLabel.Location = new Point(3, 49);
+            roomMaximumCountLabel.Name = "roomMaximumCountLabel";
+            roomMaximumCountLabel.Size = new Size(202, 21);
+            roomMaximumCountLabel.TabIndex = 0;
+            roomMaximumCountLabel.Text = "Количество участников: ";
             // 
             // ClassTitleInput
             // 
@@ -255,8 +255,10 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             // RoomCreateForm
             // 
+            AcceptButton = createButton;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            CancelButton = cancelButton;
             ClientSize = new Size(416, 229);
             Controls.Add(splitContainer);
             MinimumSize = new Size(432, 241);
@@ -284,12 +286,12 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         private Heading3Label ClassTitleInput;
         private Heading1Label Title;
         private CommonButton createButton;
-        private Heading3Label heading3Label1;
+        private Heading3Label roomMaximumCountLabel;
         private DefaultNumericUpDown roomMaximumCount;
         private DefaultTextBox roomName;
         private TableLayoutPanel tableLayoutPanelButtons;
         private InvertedButton cancelButton;
-        private Heading3Label heading3Label2;
+        private Heading3Label withPortForwardingLabel;
         private Desktop.Components.Controls.CheckBoxes.DefaultCheckBox withPortForwardingCheckBox;
     }
 }

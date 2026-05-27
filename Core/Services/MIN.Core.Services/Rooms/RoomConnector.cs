@@ -10,6 +10,7 @@ using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Services.Rooms;
 
@@ -108,9 +109,11 @@ public sealed class RoomConnector : IRoomConnector
             connectionResult.ConnectionId = await transport.ConnectAsync(endpoint, cancellationToken);
 
             var result = await protocolHandler.HandleClientAsync(connectionResult.ConnectionId, cancellationToken);
+
             if (!result.IsSuccess)
             {
-                logger.Log($"Протокол не пройден для {endpoint}: {result.ErrorMessage}");
+                logger.Log($"Протокол не пройден для {endpoint}: {result.ErrorMessage}", LogLevel.Error);
+                await transport.DisconnectAsync(connectionResult.ConnectionId);
                 throw new InvalidOperationException(result.ErrorMessage);
             }
 

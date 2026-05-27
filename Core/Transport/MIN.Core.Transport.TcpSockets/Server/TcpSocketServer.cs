@@ -85,7 +85,7 @@ internal sealed class TcpSocketServer : IAsyncDisposable
             }
             else
             {
-                var message = "UPnP не доступен. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную.";
+                var message = "UPnP не доступен. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную. Либо ну удалось получить публичный адрес.";
                 logger.Log(message, LogLevel.Error);
                 throw new InvalidOperationException(message);
             }

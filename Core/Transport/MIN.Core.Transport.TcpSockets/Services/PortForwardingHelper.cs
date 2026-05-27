@@ -35,10 +35,9 @@ internal class PortForwardingHelper
 
             return IPAddress.Parse(publicIp);
         }
-        catch (Exception ex)
+        catch
         {
             // UPnP не поддерживается, отключён или таймаут
-            Debug.WriteLine($"Port forwarding failed: {ex.Message}");
             return null;
         }
     }
@@ -48,15 +47,8 @@ internal class PortForwardingHelper
     /// </summary>
     public static async Task<string> GetPublicIpAsync()
     {
-        try
-        {
-            using var http = new HttpClient() { Timeout = TimeSpan.FromSeconds(5) };
-            return await http.GetStringAsync(PublicIpResolverServiceUrl);
-        }
-        catch
-        {
-            return "127.0.0.1";
-        }
+        using var http = new HttpClient() { Timeout = TimeSpan.FromSeconds(5) };
+        return await http.GetStringAsync(PublicIpResolverServiceUrl);
     }
 
     /// <summary>

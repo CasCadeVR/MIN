@@ -34,13 +34,13 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         {
             splitContainer = new SplitContainer();
             tableLayoutPanelHeader = new TableLayoutPanel();
-            Title = new MIN.Desktop.Components.Labels.Heading1Label();
+            Title = new Heading1Label();
             tableLayoutPanelButtons = new TableLayoutPanel();
-            connectButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
-            cancelButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
+            connectButton = new CommonButton();
+            cancelButton = new InvertedButton();
             tableLayoutPanel1 = new TableLayoutPanel();
-            ClassTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
-            participantName = new MIN.Desktop.Components.Controls.TextBoxes.DefaultTextBox();
+            ClassTitleInput = new Heading3Label();
+            participantName = new DefaultTextBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -188,8 +188,10 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             // ParticipantCreateForm
             // 
+            AcceptButton = connectButton;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            CancelButton = cancelButton;
             ClientSize = new Size(416, 154);
             Controls.Add(splitContainer);
             MinimumSize = new Size(432, 193);

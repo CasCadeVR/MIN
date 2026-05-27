@@ -55,6 +55,9 @@ public partial class RoomCreateForm : StyledForm
 
         if (!isNew)
         {
+            withPortForwardingLabel.Visible = false;
+            withPortForwardingCheckBox.Visible = false;
+
             cancelButton.FlatAppearance.BorderColor = ColorScheme.ErrorColor;
             cancelButton.ForeColor = ColorScheme.ErrorColor;
             cancelButton.Text = "Удалить комнату";

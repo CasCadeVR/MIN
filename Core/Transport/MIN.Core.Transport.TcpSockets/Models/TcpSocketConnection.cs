@@ -115,7 +115,7 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
     {
         if (!IsConnected)
         {
-            throw new InvalidOperationException("Connection is closed");
+            throw new InvalidOperationException("Соединение уже закрыто");
         }
 
         await writeLock.WaitAsync(cancellationToken);

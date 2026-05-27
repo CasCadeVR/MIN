@@ -199,7 +199,7 @@ public partial class DiscoveryPanelView : StyledPanelView
         {
             loadingForm?.Close();
             loadingForm?.Dispose();
-            MessageBox.Show($"Произошла ошибка: {ex.Message}, \nВозможно, комнаты уже и нет", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show($"Произошла ошибка при подключении: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
@@ -233,24 +233,9 @@ public partial class DiscoveryPanelView : StyledPanelView
             return;
         }
 
-        var localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
-        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
-
-        context.Connections.RegisterLocalParticipant(localParticipant);
-        roomInfo.HostParticipant = localParticipant;
-
-        var room = new Room(roomInfo);
-
         try
         {
-            featureCollection.Core.RoomStore.Register(room);
-
-            var endpoint = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, roomCreateForm.WithPortForwarding, lifeTimeCts.Token);
-            roomInfo.ConnectionAddress = endpoint.ToString();
-            room.ConnectionAddress = endpoint.ToString();
-
-            context.Participants.AddParticipant(new Participant(localParticipant));
-
+            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, roomCreateForm.WithPortForwarding, lifeTimeCts.Token);
             await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
 
             chatPanelManager.RegisterChat(roomInfo, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId)>(

@@ -24,6 +24,10 @@ public static class IpAddressParser
             port = parsedPort;
             ipAddress = parts[0];
         }
+        else
+        {
+            return false;
+        }
 
         return true;
     }

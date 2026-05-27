@@ -28,10 +28,10 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     private readonly IMessageDispatcher dispatcher;
     private readonly IMessageEncryptor encryptor;
     private readonly IHeaderManager headerManager;
-    private readonly ILoggerProvider logger;
     private readonly IRoomFactory roomFactory;
     private readonly IChunkBufferAssembler chunkBufferAssembler;
     private readonly IStreamManager streamManager;
+    private readonly ILoggerProvider logger;
     private CancellationTokenSource cts = null!;
 
     /// <summary>
@@ -44,10 +44,10 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         IMessageDispatcher dispatcher,
         IMessageEncryptor encryptor,
         IHeaderManager headerManager,
-        ILoggerProvider logger,
         IRoomFactory roomFactory,
         IChunkBufferAssembler chunkBufferAssembler,
-        IStreamManager streamManager)
+        IStreamManager streamManager,
+        ILoggerProvider logger)
     {
         this.roomHoster = roomHoster;
         this.roomConnector = roomConnector;
@@ -56,10 +56,10 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         this.dispatcher = dispatcher;
         this.encryptor = encryptor;
         this.headerManager = headerManager;
-        this.logger = logger;
         this.roomFactory = roomFactory;
         this.chunkBufferAssembler = chunkBufferAssembler;
         this.streamManager = streamManager;
+        this.logger = logger;
     }
 
     async Task IHostedService.StartAsync(CancellationToken cancellationToken)

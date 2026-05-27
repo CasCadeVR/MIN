@@ -30,13 +30,13 @@ public sealed class MinProtocolHandler : IProtocolHandler
     {
         var tcs = new TaskCompletionSource<PreambleResult>();
 
-        void Handler(object? sender, RawMessageReceivedEventArgs e)
+        void RawMessageReceivedHandler(object? sender, RawMessageReceivedEventArgs e)
         {
             if (e.ConnectionId != connectionId)
             {
                 return;
             }
-            transport.RawMessageReceived -= Handler;
+            transport.RawMessageReceived -= RawMessageReceivedHandler;
 
             var response = Encoding.UTF8.GetString(e.Data);
             if (!response.StartsWith(ResponseStarter))
@@ -59,7 +59,26 @@ public sealed class MinProtocolHandler : IProtocolHandler
             tcs.TrySetResult(new PreambleResult { IsSuccess = true, RoomInfo = roomInfo! });
         }
 
-        transport.RawMessageReceived += Handler;
+        transport.RawMessageReceived += RawMessageReceivedHandler;
+
+        void ConnectionStateChangedHandler(object? sender, ConnectionStateChangedEventArgs e)
+        {
+            if (e.ConnectionId != connectionId)
+            {
+                return;
+            }
+
+            transport.ConnectionStateChanged -= ConnectionStateChangedHandler;
+
+            if (!e.IsConnected)
+            {
+                logger.Log("Protocol client: сервер разорвал соединения");
+                tcs.TrySetResult(new PreambleResult { IsSuccess = false, ErrorMessage = "Конечное подключение не соответсвует MIN протоколу" });
+                return;
+            }
+        }
+
+        transport.ConnectionStateChanged += ConnectionStateChangedHandler;
 
         var request = Encoding.UTF8.GetBytes(ResponseStarter);
         logger.Log($"Protocol client: отправляю запрос на соединение {connectionId}");
@@ -73,9 +92,10 @@ public sealed class MinProtocolHandler : IProtocolHandler
         }
         catch (TimeoutException)
         {
-            transport.RawMessageReceived -= Handler;
+            transport.RawMessageReceived -= RawMessageReceivedHandler;
+            transport.ConnectionStateChanged -= ConnectionStateChangedHandler;
             logger.Log($"Protocol client: таймаут ожидания ответа от {connectionId}");
-            return new PreambleResult { IsSuccess = false, ErrorMessage = "Protocol timeout" };
+            return new PreambleResult { IsSuccess = false, ErrorMessage = "Время ожидания ответа вышло" };
         }
     }
 
@@ -94,7 +114,7 @@ public sealed class MinProtocolHandler : IProtocolHandler
             transport.RawMessageReceived -= Handler;
 
             var request = Encoding.UTF8.GetString(e.Data);
-            if (!request.StartsWith(ResponseStarter))
+            if (request != ResponseStarter)
             {
                 logger.Log($"Protocol server: неверный протокол от {clientConnectionId}");
                 tcs.TrySetResult(new PreambleResult
@@ -124,7 +144,7 @@ public sealed class MinProtocolHandler : IProtocolHandler
         {
             transport.RawMessageReceived -= Handler;
             logger.Log($"Protocol server: таймаут ожидания запроса от {clientConnectionId}");
-            return new PreambleResult { IsSuccess = false, ErrorMessage = "Protocol timeout" };
+            return new PreambleResult { IsSuccess = false, ErrorMessage = "Время ожидания запроса вышло" };
         }
     }
 }
