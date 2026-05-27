@@ -1,4 +1,5 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Events;
 
 namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -21,7 +22,7 @@ public interface IRoomHoster : IRoomConnectionRelated
     /// <summary>
     /// Начать хостинг комнаты
     /// </summary>
-    Task StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken = default);
+    Task<Room> StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Остановить хостинг комнаты

@@ -107,16 +107,18 @@ public sealed class RoomHoster : IRoomHoster
         RawMessageReceived?.Invoke(this, args);
     }
 
-    async Task IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
+    async Task<Room> IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
     {
-        if (activeRooms.ContainsKey(roomInfo.Id))
+        var roomId = roomInfo.Id;
+
+        if (activeRooms.ContainsKey(roomId))
         {
-            return;
+            return roomStore.GetRoom(roomId);
         }
 
-        roomCancellationTokenSources[roomInfo.Id] = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        roomCancellationTokenSources[roomId] = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        var context = roomFactory.GetOrCreateContext(roomInfo.Id);
+        var context = roomFactory.GetOrCreateContext(roomId);
 
         var localParticipant = identityService.SelfParticipant.ToParticipantInfo();
 
@@ -135,7 +137,7 @@ public sealed class RoomHoster : IRoomHoster
         context.Messages.AddMessage(new ParticipantJoinedMessage()
         {
             Participant = new Participant(localParticipant),
-            RoomId = roomInfo.Id
+            RoomId = roomId
         });
 
         var connectionId = await transport.StartHostingAsync(withPortForwarding, cancellationToken);
@@ -149,9 +151,11 @@ public sealed class RoomHoster : IRoomHoster
 
         logger.Log($"Комната создана: {endpoint} ({roomInfo.Name})");
 
-        activeRooms[roomInfo.Id] = connectionId;
+        activeRooms[roomId] = connectionId;
         activeConnections[connectionId] = roomInfo.Id;
-        readyRoomInfos[roomInfo.Id] = roomInfo;
+        readyRoomInfos[roomId] = roomInfo;
+
+        return roomStore.GetRoom(roomId);
     }
 
     Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)

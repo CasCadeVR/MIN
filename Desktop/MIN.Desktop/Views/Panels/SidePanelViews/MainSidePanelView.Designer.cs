@@ -53,7 +53,7 @@
             // splitContainer.Panel2
             // 
             splitContainer.Panel2.Controls.Add(flowLayoutPanelRooms);
-            splitContainer.Size = new Size(409, 800);
+            splitContainer.Size = new Size(250, 800);
             // 
             // roomSearchTextBox
             // 
@@ -65,7 +65,7 @@
             roomSearchTextBox.Location = new Point(51, 11);
             roomSearchTextBox.Name = "roomSearchTextBox";
             roomSearchTextBox.PlaceholderText = "Поиск";
-            roomSearchTextBox.Size = new Size(259, 26);
+            roomSearchTextBox.Size = new Size(100, 26);
             roomSearchTextBox.TabIndex = 6;
             roomSearchTextBox.TextChanged += roomSearchTextBox_TextChanged;
             // 
@@ -78,7 +78,7 @@
             searchButton.FlatStyle = FlatStyle.Flat;
             searchButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             searchButton.ForeColor = Color.FromArgb(248, 249, 255);
-            searchButton.Location = new Point(316, 3);
+            searchButton.Location = new Point(157, 3);
             searchButton.Name = "searchButton";
             searchButton.Size = new Size(42, 42);
             searchButton.TabIndex = 5;
@@ -94,7 +94,7 @@
             discoveryButton.FlatStyle = FlatStyle.Flat;
             discoveryButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
             discoveryButton.ForeColor = Color.FromArgb(248, 249, 255);
-            discoveryButton.Location = new Point(364, 3);
+            discoveryButton.Location = new Point(205, 3);
             discoveryButton.Name = "discoveryButton";
             discoveryButton.Size = new Size(42, 42);
             discoveryButton.TabIndex = 4;
@@ -135,7 +135,7 @@
             tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
             tableLayoutPanelHeader.RowCount = 1;
             tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
-            tableLayoutPanelHeader.Size = new Size(409, 48);
+            tableLayoutPanelHeader.Size = new Size(250, 48);
             tableLayoutPanelHeader.TabIndex = 1;
             // 
             // flowLayoutPanelRooms
@@ -144,7 +144,7 @@
             flowLayoutPanelRooms.Dock = DockStyle.Fill;
             flowLayoutPanelRooms.Location = new Point(0, 0);
             flowLayoutPanelRooms.Name = "flowLayoutPanelRooms";
-            flowLayoutPanelRooms.Size = new Size(409, 750);
+            flowLayoutPanelRooms.Size = new Size(250, 750);
             flowLayoutPanelRooms.TabIndex = 0;
             flowLayoutPanelRooms.Resize += flowLayoutPanelRooms_Resize;
             // 
@@ -154,7 +154,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             MinimumSize = new Size(250, 195);
             Name = "MainSidePanelView";
-            Size = new Size(409, 800);
+            Size = new Size(250, 800);
             Controls.SetChildIndex(splitContainer, 0);
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);

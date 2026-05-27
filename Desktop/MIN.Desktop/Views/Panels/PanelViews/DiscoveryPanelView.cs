@@ -235,12 +235,11 @@ public partial class DiscoveryPanelView : StyledPanelView
 
         try
         {
-            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, roomCreateForm.WithPortForwarding, lifeTimeCts.Token);
+            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, roomCreateForm.WithPortForwarding, lifeTimeCts.Token);
             await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
 
             chatPanelManager.RegisterChat(roomInfo, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId)>(
-                (featureCollection.Core.RoomStore.GetRoom(roomId),
-                CoreRegistryConstants.LocalConnectionId)
+                (room, CoreRegistryConstants.LocalConnectionId)
             ));
         }
         catch (Exception ex)

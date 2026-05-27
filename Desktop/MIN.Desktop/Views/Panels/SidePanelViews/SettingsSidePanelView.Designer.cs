@@ -32,17 +32,17 @@
             saveButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             tableLayoutPanel1 = new TableLayoutPanel();
+            clearCacheLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            clearCacheButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             discoveryPort = new MIN.Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown();
-            discoveryPortLabel = new MIN.Desktop.Components.Labels.Heading3Label();
-            ClassTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
             roomSearchTime = new MIN.Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown();
-            heading3Label2 = new MIN.Desktop.Components.Labels.Heading3Label();
             defaultName = new MIN.Desktop.Components.Controls.TextBoxes.DefaultTextBox();
             logButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             logDescriptionLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             labelVersion = new MIN.Desktop.Components.Labels.CaptionLabel();
-            clearCacheButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
-            clearCacheLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
+            captionLabel1 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            captionLabel2 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            captionLabel3 = new MIN.Desktop.Components.Labels.CaptionLabel();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -65,7 +65,7 @@
             // splitContainer.Panel2
             // 
             splitContainer.Panel2.Controls.Add(tableLayoutPanel1);
-            splitContainer.Size = new Size(294, 622);
+            splitContainer.Size = new Size(250, 622);
             // 
             // tableLayoutPanelHeader
             // 
@@ -79,7 +79,7 @@
             tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
             tableLayoutPanelHeader.RowCount = 1;
             tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelHeader.Size = new Size(294, 48);
+            tableLayoutPanelHeader.Size = new Size(250, 48);
             tableLayoutPanelHeader.TabIndex = 1;
             // 
             // saveButton
@@ -116,13 +116,13 @@
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(captionLabel3, 0, 2);
+            tableLayoutPanel1.Controls.Add(captionLabel2, 0, 1);
+            tableLayoutPanel1.Controls.Add(captionLabel1, 0, 0);
             tableLayoutPanel1.Controls.Add(clearCacheLabel, 1, 4);
             tableLayoutPanel1.Controls.Add(clearCacheButton, 0, 4);
             tableLayoutPanel1.Controls.Add(discoveryPort, 1, 2);
-            tableLayoutPanel1.Controls.Add(discoveryPortLabel, 0, 2);
-            tableLayoutPanel1.Controls.Add(ClassTitleInput, 0, 1);
             tableLayoutPanel1.Controls.Add(roomSearchTime, 1, 1);
-            tableLayoutPanel1.Controls.Add(heading3Label2, 0, 0);
             tableLayoutPanel1.Controls.Add(defaultName, 1, 0);
             tableLayoutPanel1.Controls.Add(logButton, 0, 3);
             tableLayoutPanel1.Controls.Add(logDescriptionLabel, 1, 3);
@@ -141,8 +141,39 @@
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new Size(294, 571);
+            tableLayoutPanel1.Size = new Size(250, 571);
             tableLayoutPanel1.TabIndex = 2;
+            // 
+            // clearCacheLabel
+            // 
+            clearCacheLabel.Anchor = AnchorStyles.Left;
+            clearCacheLabel.AutoSize = true;
+            clearCacheLabel.Enabled = false;
+            clearCacheLabel.Font = new Font("Segoe UI", 8.25F);
+            clearCacheLabel.ForeColor = Color.Black;
+            clearCacheLabel.Location = new Point(128, 220);
+            clearCacheLabel.Name = "clearCacheLabel";
+            clearCacheLabel.Size = new Size(116, 39);
+            clearCacheLabel.TabIndex = 19;
+            clearCacheLabel.Text = "Обычно нужен при неправильных настройках в кэше";
+            // 
+            // clearCacheButton
+            // 
+            clearCacheButton.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            clearCacheButton.BackColor = Color.FromArgb(248, 249, 255);
+            clearCacheButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
+            clearCacheButton.FlatAppearance.BorderSize = 2;
+            clearCacheButton.FlatStyle = FlatStyle.Flat;
+            clearCacheButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            clearCacheButton.ForeColor = Color.FromArgb(167, 157, 255);
+            clearCacheButton.Location = new Point(3, 223);
+            clearCacheButton.Margin = new Padding(3, 0, 0, 0);
+            clearCacheButton.Name = "clearCacheButton";
+            clearCacheButton.Size = new Size(122, 33);
+            clearCacheButton.TabIndex = 18;
+            clearCacheButton.Text = "Очистить кэш";
+            clearCacheButton.UseVisualStyleBackColor = false;
+            clearCacheButton.Click += clearCacheButton_Click;
             // 
             // discoveryPort
             // 
@@ -151,37 +182,13 @@
             discoveryPort.BorderStyle = BorderStyle.None;
             discoveryPort.Font = new Font("Segoe UI", 9.75F);
             discoveryPort.ForeColor = Color.FromArgb(122, 119, 143);
-            discoveryPort.Location = new Point(150, 97);
+            discoveryPort.Location = new Point(128, 97);
             discoveryPort.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
             discoveryPort.Minimum = new decimal(new int[] { 50, 0, 0, 0 });
             discoveryPort.Name = "discoveryPort";
             discoveryPort.Size = new Size(56, 21);
             discoveryPort.TabIndex = 17;
             discoveryPort.Value = new decimal(new int[] { 42069, 0, 0, 0 });
-            // 
-            // discoveryPortLabel
-            // 
-            discoveryPortLabel.Anchor = AnchorStyles.Right;
-            discoveryPortLabel.AutoSize = true;
-            discoveryPortLabel.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            discoveryPortLabel.ForeColor = Color.FromArgb(0, 0, 0);
-            discoveryPortLabel.Location = new Point(16, 74);
-            discoveryPortLabel.Name = "discoveryPortLabel";
-            discoveryPortLabel.Size = new Size(128, 68);
-            discoveryPortLabel.TabIndex = 16;
-            discoveryPortLabel.Text = "UDP Порт поиска комнат (Лучше не менять, по умолчанию 42069)";
-            // 
-            // ClassTitleInput
-            // 
-            ClassTitleInput.Anchor = AnchorStyles.Right;
-            ClassTitleInput.AutoSize = true;
-            ClassTitleInput.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            ClassTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
-            ClassTitleInput.Location = new Point(36, 31);
-            ClassTitleInput.Name = "ClassTitleInput";
-            ClassTitleInput.Size = new Size(108, 34);
-            ClassTitleInput.TabIndex = 0;
-            ClassTitleInput.Text = "Время поиска комнат (в мс.): ";
             // 
             // roomSearchTime
             // 
@@ -191,25 +198,13 @@
             roomSearchTime.Font = new Font("Segoe UI", 9.75F);
             roomSearchTime.ForeColor = Color.FromArgb(122, 119, 143);
             roomSearchTime.Increment = new decimal(new int[] { 50, 0, 0, 0 });
-            roomSearchTime.Location = new Point(150, 37);
+            roomSearchTime.Location = new Point(128, 37);
             roomSearchTime.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             roomSearchTime.Minimum = new decimal(new int[] { 50, 0, 0, 0 });
             roomSearchTime.Name = "roomSearchTime";
             roomSearchTime.Size = new Size(56, 21);
             roomSearchTime.TabIndex = 1;
             roomSearchTime.Value = new decimal(new int[] { 1000, 0, 0, 0 });
-            // 
-            // heading3Label2
-            // 
-            heading3Label2.Anchor = AnchorStyles.Right;
-            heading3Label2.AutoSize = true;
-            heading3Label2.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            heading3Label2.ForeColor = Color.FromArgb(0, 0, 0);
-            heading3Label2.Location = new Point(6, 3);
-            heading3Label2.Name = "heading3Label2";
-            heading3Label2.Size = new Size(138, 17);
-            heading3Label2.TabIndex = 14;
-            heading3Label2.Text = "Имя по умолчанию: ";
             // 
             // defaultName
             // 
@@ -218,9 +213,9 @@
             defaultName.BorderStyle = BorderStyle.None;
             defaultName.Font = new Font("Segoe UI", 9.75F);
             defaultName.ForeColor = Color.FromArgb(122, 119, 143);
-            defaultName.Location = new Point(150, 3);
+            defaultName.Location = new Point(128, 3);
             defaultName.Name = "defaultName";
-            defaultName.Size = new Size(141, 18);
+            defaultName.Size = new Size(119, 18);
             defaultName.TabIndex = 15;
             // 
             // logButton
@@ -235,7 +230,7 @@
             logButton.Location = new Point(3, 159);
             logButton.Margin = new Padding(3, 0, 0, 0);
             logButton.Name = "logButton";
-            logButton.Size = new Size(144, 33);
+            logButton.Size = new Size(122, 33);
             logButton.TabIndex = 12;
             logButton.Text = "Открыть окно логов";
             logButton.UseVisualStyleBackColor = false;
@@ -248,11 +243,11 @@
             logDescriptionLabel.Enabled = false;
             logDescriptionLabel.Font = new Font("Segoe UI", 8.25F);
             logDescriptionLabel.ForeColor = Color.Black;
-            logDescriptionLabel.Location = new Point(150, 150);
+            logDescriptionLabel.Location = new Point(128, 150);
             logDescriptionLabel.Name = "logDescriptionLabel";
-            logDescriptionLabel.Size = new Size(135, 52);
+            logDescriptionLabel.Size = new Size(112, 52);
             logDescriptionLabel.TabIndex = 11;
-            logDescriptionLabel.Text = "Окно логов - чисто для разраба, но можете и сами понаблюдать по приколу";
+            logDescriptionLabel.Text = "Чисто для разраба, но можете и сами понаблюдать по приколу";
             // 
             // labelVersion
             // 
@@ -262,51 +257,59 @@
             labelVersion.Enabled = false;
             labelVersion.Font = new Font("Segoe UI", 8.25F);
             labelVersion.ForeColor = Color.Black;
-            labelVersion.Location = new Point(123, 558);
+            labelVersion.Location = new Point(101, 558);
             labelVersion.Name = "labelVersion";
             labelVersion.Size = new Size(47, 13);
             labelVersion.TabIndex = 13;
             labelVersion.Text = "Версия:";
             // 
-            // clearCacheButton
+            // captionLabel1
             // 
-            clearCacheButton.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-            clearCacheButton.BackColor = Color.FromArgb(248, 249, 255);
-            clearCacheButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
-            clearCacheButton.FlatAppearance.BorderSize = 2;
-            clearCacheButton.FlatStyle = FlatStyle.Flat;
-            clearCacheButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
-            clearCacheButton.ForeColor = Color.FromArgb(167, 157, 255);
-            clearCacheButton.Location = new Point(3, 223);
-            clearCacheButton.Margin = new Padding(3, 0, 0, 0);
-            clearCacheButton.Name = "clearCacheButton";
-            clearCacheButton.Size = new Size(144, 33);
-            clearCacheButton.TabIndex = 18;
-            clearCacheButton.Text = "Очистить кэш";
-            clearCacheButton.UseVisualStyleBackColor = false;
-            clearCacheButton.Click += clearCacheButton_Click;
+            captionLabel1.Anchor = AnchorStyles.Right;
+            captionLabel1.AutoSize = true;
+            captionLabel1.Enabled = false;
+            captionLabel1.Font = new Font("Segoe UI", 8.25F);
+            captionLabel1.ForeColor = Color.Black;
+            captionLabel1.Location = new Point(11, 5);
+            captionLabel1.Name = "captionLabel1";
+            captionLabel1.Size = new Size(111, 13);
+            captionLabel1.TabIndex = 20;
+            captionLabel1.Text = "Имя по умолчанию";
             // 
-            // clearCacheLabel
+            // captionLabel2
             // 
-            clearCacheLabel.Anchor = AnchorStyles.Left;
-            clearCacheLabel.AutoSize = true;
-            clearCacheLabel.Enabled = false;
-            clearCacheLabel.Font = new Font("Segoe UI", 8.25F);
-            clearCacheLabel.ForeColor = Color.Black;
-            clearCacheLabel.Location = new Point(150, 220);
-            clearCacheLabel.Name = "clearCacheLabel";
-            clearCacheLabel.Size = new Size(116, 39);
-            clearCacheLabel.TabIndex = 19;
-            clearCacheLabel.Text = "Обычно нужен при неправильных настройках в кэше";
+            captionLabel2.Anchor = AnchorStyles.Right;
+            captionLabel2.AutoSize = true;
+            captionLabel2.Enabled = false;
+            captionLabel2.Font = new Font("Segoe UI", 8.25F);
+            captionLabel2.ForeColor = Color.Black;
+            captionLabel2.Location = new Point(38, 35);
+            captionLabel2.Name = "captionLabel2";
+            captionLabel2.Size = new Size(84, 26);
+            captionLabel2.TabIndex = 21;
+            captionLabel2.Text = "Время поиска комнат (в мс.)";
+            // 
+            // captionLabel3
+            // 
+            captionLabel3.Anchor = AnchorStyles.Right;
+            captionLabel3.AutoSize = true;
+            captionLabel3.Enabled = false;
+            captionLabel3.Font = new Font("Segoe UI", 8.25F);
+            captionLabel3.ForeColor = Color.Black;
+            captionLabel3.Location = new Point(17, 82);
+            captionLabel3.Name = "captionLabel3";
+            captionLabel3.Size = new Size(105, 52);
+            captionLabel3.TabIndex = 22;
+            captionLabel3.Text = "UDP Порт поиска комнат (Лучше не менять, по умолчанию 42069)";
             // 
             // SettingsSidePanelView
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
-            MinimumSize = new Size(294, 622);
+            MinimumSize = new Size(250, 622);
             Name = "SettingsSidePanelView";
-            Size = new Size(294, 622);
+            Size = new Size(250, 622);
             Controls.SetChildIndex(splitContainer, 0);
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);
@@ -329,14 +332,14 @@
         private Desktop.Components.Labels.CaptionLabel labelVersion;
         private Desktop.Components.Controls.Buttons.InvertedButton logButton;
         private Desktop.Components.Labels.CaptionLabel logDescriptionLabel;
-        private Desktop.Components.Labels.Heading3Label ClassTitleInput;
         private Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown roomSearchTime;
-        private Desktop.Components.Labels.Heading3Label heading3Label2;
         private Desktop.Components.Controls.TextBoxes.DefaultTextBox defaultName;
         private Desktop.Components.Controls.Buttons.CommonButton saveButton;
         private Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown discoveryPort;
-        private Desktop.Components.Labels.Heading3Label discoveryPortLabel;
         private Desktop.Components.Labels.CaptionLabel clearCacheLabel;
         private Desktop.Components.Controls.Buttons.InvertedButton clearCacheButton;
+        private Desktop.Components.Labels.CaptionLabel captionLabel1;
+        private Desktop.Components.Labels.CaptionLabel captionLabel3;
+        private Desktop.Components.Labels.CaptionLabel captionLabel2;
     }
 }

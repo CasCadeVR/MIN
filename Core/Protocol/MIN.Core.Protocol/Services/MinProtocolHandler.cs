@@ -73,7 +73,7 @@ public sealed class MinProtocolHandler : IProtocolHandler
             if (!e.IsConnected)
             {
                 logger.Log("Protocol client: сервер разорвал соединения");
-                tcs.TrySetResult(new PreambleResult { IsSuccess = false, ErrorMessage = "Конечное подключение не соответсвует MIN протоколу" });
+                tcs.TrySetResult(new PreambleResult { IsSuccess = false, ErrorMessage = "Конечное подключение не соответсвует MIN протоколу (Сервер разорвал соединение)" });
                 return;
             }
         }
