@@ -7,6 +7,8 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Registries.Models;
+using MIN.Core.SubRooms.Contracts.Interfaces;
+using MIN.Core.SubRooms.Contracts.Interfaces.Messages;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 
@@ -20,6 +22,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
     private readonly IIdentityService identityService;
     private readonly IRoomHoster roomHoster;
     private readonly IEventBus eventBus;
+    private readonly ISubRoomManager subRoomManager;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -30,6 +33,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
         IIdentityService identityService,
         IRoomHoster roomHoster,
         IEventBus eventBus,
+        ISubRoomManager subRoomManager,
         ILoggerProvider logger)
     {
         this.handlers = handlers;
@@ -37,6 +41,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
         this.identityService = identityService;
         this.roomHoster = roomHoster;
         this.eventBus = eventBus;
+        this.subRoomManager = subRoomManager;
         this.logger = logger;
     }
 
@@ -105,7 +110,19 @@ public sealed class MessageDispatcher : IMessageDispatcher
         if (message.IsPublic)
         {
             var senderConnectionId = context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId);
-            await messageSender.BroadcastAsync(message, context.RoomContext.RoomId, [senderConnectionId], context.CancellationToken);
+
+            var excludeParticipants = new List<Guid>
+            {
+                senderConnectionId
+            };
+
+            if (message is IWithinSubRoom withinSubRoomMessage)
+            {
+                var subRoomParticipants = subRoomManager.GetParticipantIds(context.RoomContext.RoomId, withinSubRoomMessage.SubRoomId);
+                excludeParticipants.AddRange(context.RoomContext.Participants.GetParticipants().Select(x => x.Id).Except(subRoomParticipants));
+            }
+
+            await messageSender.BroadcastAsync(message, context.RoomContext.RoomId, excludeParticipants, context.CancellationToken);
         }
         else if (message.RecipientId != null)
         {

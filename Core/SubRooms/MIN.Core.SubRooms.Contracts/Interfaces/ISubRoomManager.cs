@@ -1,5 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.SubRooms.Contracts.Enums;
+﻿using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Models;
 
 namespace MIN.Core.SubRooms.Contracts.Interfaces;
@@ -35,7 +34,7 @@ public interface ISubRoomManager
     /// <summary>
     /// Получить список участников подкомнаты
     /// </summary>
-    IReadOnlyList<ParticipantInfo> GetParticipants(Guid roomId, int subRoomId);
+    IReadOnlyList<Guid> GetParticipantIds(Guid roomId, int subRoomId);
 
     /// <summary>
     /// Получить информацию о подкомнате

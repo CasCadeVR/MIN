@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Entities\MIN.Core.Entities\MIN.Core.Entities.csproj" />
+    <ProjectReference Include="..\..\..\..\..\Common\MIN.Common.Mvc\MIN.Common.Mvc.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Chess.Messaging\MIN.Sessions.Chess.Messaging.csproj" />
   </ItemGroup>
 
 </Project>

@@ -108,7 +108,7 @@ public class SubRoomManager : ISubRoomManager
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<ParticipantInfo> GetParticipants(Guid roomId, int subRoomId)
+    public IReadOnlyList<Guid> GetParticipantIds(Guid roomId, int subRoomId)
     {
         if (!rooms.TryGetValue(roomId, out var room))
         {
@@ -122,7 +122,7 @@ public class SubRoomManager : ISubRoomManager
                 return [];
             }
 
-            return subRoom.Participants.ToList().AsReadOnly();
+            return subRoom.Participants.Select(x => x.Id).ToList().AsReadOnly();
         }
     }
 

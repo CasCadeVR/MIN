@@ -3,15 +3,15 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 
-namespace MIN.Core.Messaging.RoomRelated.SubRoomRelated;
+namespace MIN.Sessions.Core.Messaging.Contracts;
 
 /// <summary>
-/// Сообщение о присоединении участника к подкомнате
+/// Сообщение о присоединении участника к сессии
 /// </summary>
-public sealed class SubRoomParticipantJoinedMessage : BaseMessage, IDescribable
+public abstract class SessionParticipantJoinedMessage : BaseMessage, IDescribable
 {
     /// <inheritdoc />
-    public override MessageTypeTag TypeTag => MessageTypeTag.SubRoomParticipantJoined;
+    public override MessageTypeTag TypeTag { get; }
 
     /// <inheritdoc />
     public override bool IsPublic => true;
@@ -22,9 +22,9 @@ public sealed class SubRoomParticipantJoinedMessage : BaseMessage, IDescribable
     public int SubRoomId { get; set; }
 
     /// <summary>
-    /// Информация об участние
+    /// Информация об участнике
     /// </summary>
     public ParticipantInfo Participant { get; set; } = null!;
 
-    string IDescribable.GetDescription() => $"Участник {Participant.Name} присоединился к активности #{SubRoomId}";
+    string IDescribable.GetDescription() => $"Игрок {Participant.Name} присоединился к этой сессии";
 }

@@ -2,15 +2,15 @@
 using MIN.Core.Messaging.Contracts.Messages;
 using MIN.Core.SubRooms.Contracts.Enums;
 
-namespace MIN.Core.Messaging.RoomRelated.SubRoomRelated;
+namespace MIN.Sessions.Core.Messaging.Contracts;
 
 /// <summary>
-/// Сообщение запроса на хостинг подкомнаты
+/// Сообщение запроса на хостинг сессии
 /// </summary>
-public sealed class SubRoomHostRequestMessage : BaseMessage
+public abstract class SessionHostRequestMessage : BaseMessage
 {
     /// <inheritdoc />
-    public override MessageTypeTag TypeTag => MessageTypeTag.SubRoomHostRequest;
+    public override MessageTypeTag TypeTag { get; }
 
     /// <inheritdoc />
     public override bool IsPublic => false;
@@ -23,5 +23,5 @@ public sealed class SubRoomHostRequestMessage : BaseMessage
     /// <summary>
     /// Цель подкомнаты
     /// </summary>
-    public SubRoomPurpose Purpose { get; set; }
+    public SubRoomPurpose Purpose => SubRoomPurpose.Activity;
 }

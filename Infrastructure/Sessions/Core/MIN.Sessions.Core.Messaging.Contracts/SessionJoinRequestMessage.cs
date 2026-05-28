@@ -1,15 +1,15 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 
-namespace MIN.Core.Messaging.RoomRelated.SubRoomRelated;
+namespace MIN.Sessions.Core.Messaging.Contracts;
 
 /// <summary>
-/// Сообщение запроса на присоединение к подкомнате
+/// Сообщение запроса на присоединение к сессии
 /// </summary>
-public sealed class SubRoomJoinRequestMessage : BaseMessage
+public abstract class SessionJoinRequestMessage : BaseMessage
 {
     /// <inheritdoc />
-    public override MessageTypeTag TypeTag => MessageTypeTag.SubRoomJoinRequest;
+    public override MessageTypeTag TypeTag { get; }
 
     /// <inheritdoc />
     public override bool IsPublic => false;
