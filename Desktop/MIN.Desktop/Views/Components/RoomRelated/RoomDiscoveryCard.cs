@@ -4,7 +4,7 @@ using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
-using MIN.Helpers.Services;
+using MIN.Desktop.Infrastructure.Services;
 
 namespace MIN.Desktop.Components;
 
@@ -15,7 +15,6 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
 {
     private readonly IEventBus eventBus;
     private readonly RoomInfo room;
-    private readonly string computerName;
     private readonly SynchronizationContext uiContext;
     private readonly bool isOwner;
 
@@ -29,12 +28,11 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomDiscoveryCard"/>
     /// </summary>
-    public RoomDiscoveryCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room, string computerName)
+    public RoomDiscoveryCard(IEventBus eventBus, ParticipantInfo localParticipant, RoomInfo room)
     {
         InitializeComponent();
         this.eventBus = eventBus;
         this.room = room;
-        this.computerName = computerName;
         isOwner = room.HostParticipant.Id == localParticipant.Id;
 
         uiContext = SynchronizationContext.Current
@@ -43,6 +41,14 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
         ApplyStylings();
         UpdateStats();
         SubscribeToEvents();
+    }
+
+    /// <summary>
+    /// Включить кнопку подключения обратно
+    /// </summary>
+    public void EnableConnectButton()
+    {
+        connectButton.Enabled = true;
     }
 
     private void SubscribeToEvents()
@@ -54,7 +60,23 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
             eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent),
             eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
             eventBus.Subscribe<RoomJoinedEvent>(OnRoomJoined),
+            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
         ];
+    }
+
+    private async Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != eventMessage.RoomId)
+        {
+            return;
+        }
+
+        uiContext.Post(_ =>
+        {
+            connectButton.Enabled = true;
+        }, this);
+
+        await Task.CompletedTask;
     }
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
@@ -118,6 +140,7 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
             return;
         }
 
+        connectButton.Enabled = true;
         room.Name = eventMessage.RoomInfo.Name;
         room.MaximumParticipants = eventMessage.RoomInfo.MaximumParticipants;
         room.ParticipantCount = eventMessage.RoomInfo.ParticipantCount;
@@ -161,17 +184,17 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
         participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
         hostName.Text = room.HostParticipant.Name;
         createdAt.Text = room.CreatedAt.ToShortTimeString();
+        computer.Text = room.PcNumber.ToString();
 
-        if (CollegePCNameParser.TryParseComputerName(computerName, out var roomNumber, out var computerNumber))
+        if (IpAddressParser.TryParseIpAddress(room.ConnectionAddress, out var gottenIpAddress, out var port))
         {
-            computer.Text = computerNumber.ToString();
-            classroom.Text = roomNumber.ToString();
+            connectionPort.Text = port.ToString();
+            connectionAddress.Text = gottenIpAddress;
         }
-        else
-        {
-            computer.Text = DesktopConstants.UndefinedPCName;
-            classroom.Text = DesktopConstants.UndefinedPCName;
-        }
+
+        classroom.Text = string.IsNullOrEmpty(room.Cabinet)
+            ? DesktopConstants.UndefinedPcName
+            : room.Cabinet;
 
         ManageConnectButtonAccessability();
     }
@@ -197,6 +220,7 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
 
     private void connectButton_Click(object sender, EventArgs e)
     {
+        connectButton.Enabled = false;
         Clicked?.Invoke();
     }
 

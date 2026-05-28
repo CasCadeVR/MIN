@@ -26,6 +26,11 @@ public sealed class HandshakeMessage : BaseMessage
     public ParticipantInfo Participant { get; set; } = null!;
 
     /// <summary>
+    /// Версия приложения отправителя
+    /// </summary>
+    public Version Version { get; set; } = null!;
+
+    /// <summary>
     /// Публичный ключ
     /// </summary>
     public byte[] PublicKey { get; set; } = null!;

@@ -16,9 +16,9 @@ public sealed class MessageAssembledEventArgs : EventArgs
     public required Guid ConnectionId { get; init; }
 
     /// <summary>
-    /// Идентификатор комнаты
+    /// Идентификатор соединения сервера
     /// </summary>
-    public required Guid RoomId { get; init; }
+    public required Guid? ServerConnectionId { get; init; }
 
     /// <summary>
     /// Собранные данные (для не-raw потоков)

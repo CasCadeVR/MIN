@@ -1,9 +1,5 @@
-using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Events;
-using MIN.Core.Stores.Contracts.Registries.Models;
-using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
@@ -11,7 +7,6 @@ using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
-using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Extensions;
@@ -24,7 +19,6 @@ namespace MIN.Desktop.Views.Panels.SidePanelViews;
 public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
 {
     private readonly IMinFeatureCollection featureCollection;
-    private readonly ICtsProvider ctsProvider;
     private readonly INavigationService navigationService;
     private readonly Dictionary<Guid, RecentRoomCard> activeRecentRoomCards = [];
     private readonly Dictionary<Guid, ChatPanelView> activeChatPanels = [];
@@ -38,13 +32,11 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
     /// Инициализирует новый экземпляр <see cref="MainSidePanelView"/>
     /// </summary>
     public MainSidePanelView(IMinFeatureCollection featureCollection,
-        ICtsProvider ctsProvider,
         INavigationService navigationService)
     {
         InitializeComponent();
 
         this.featureCollection = featureCollection;
-        this.ctsProvider = ctsProvider;
         this.navigationService = navigationService;
 
         localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
@@ -77,83 +69,7 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         return Task.CompletedTask;
     }
 
-    private bool ResolveParticipant()
-    {
-        var settings = featureCollection.Helper.SettingsProvider.GetSettings();
-        var localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
-
-        if (settings.DefaultParticipantName != string.Empty)
-        {
-            localParticipant.Name = settings.DefaultParticipantName;
-            featureCollection.Helper.IdentityService.SetParticipant(localParticipant);
-        }
-        else
-        {
-            var participantCreateForm = new ParticipantCreateForm(featureCollection.Helper.IdentityService);
-            if (participantCreateForm.ShowDialog() != DialogResult.OK)
-            {
-                return false;
-            }
-            settings.DefaultParticipantName = featureCollection.Helper.IdentityService.SelfParticipant.Name;
-            featureCollection.Helper.SettingsProvider.SaveSettings(settings);
-        }
-        return true;
-    }
-
-    private async void createRoom_Click(object sender, EventArgs e)
-    {
-        var roomCreateForm = new RoomCreateForm();
-
-        if (roomCreateForm.ShowDialog() != DialogResult.OK)
-        {
-            return;
-        }
-
-        var roomInfo = roomCreateForm.Room;
-        var roomId = roomInfo.Id;
-
-        if (!ResolveParticipant())
-        {
-            return;
-        }
-
-        var localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
-        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
-
-        context.Connections.RegisterLocalParticipant(localParticipant);
-        roomInfo.HostParticipant = localParticipant;
-
-        var room = new Room(roomInfo);
-
-        try
-        {
-            featureCollection.Core.RoomStore.Register(room);
-
-            await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, ctsProvider.AppCts.Token);
-
-            context.Participants.AddParticipant(new Participant(localParticipant));
-
-            await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, ctsProvider.AppCts.Token);
-
-            RegisterChat(roomInfo, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>(
-                (featureCollection.Core.RoomStore.GetRoom(roomId),
-                CoreRegistryConstants.LocalConnectionId,
-                new NamedPipeEndpoint()
-                {
-                    MachineName = Environment.MachineName,
-                })));
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}",
-                "Ошибка",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
-        }
-    }
-
-    /// <inheritdoc />
-    public void RegisterChat(RoomInfo roomInfo, ChatPanelView panel)
+    void IChatPanelManager.RegisterChat(RoomInfo roomInfo, ChatPanelView panel)
     {
         var roomId = roomInfo.Id;
         var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);

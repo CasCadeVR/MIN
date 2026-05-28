@@ -112,7 +112,10 @@ public partial class ParticipantCard : UserControl, IDisposable
 
     private void UpdateStylesOutOfSelected()
     {
-        ContextMenuStrip?.Items[0].Text = selected ? StopPrivateChatText : StartPrivateChatText;
+        if (ContextMenuStrip != null)
+        {
+            ContextMenuStrip.Items[0].Text = selected ? StopPrivateChatText : StartPrivateChatText;
+        }
         BackColor = selected
             ? ColorScheme.PrivateParticipantCardBackground
             : ColorScheme.DefaultParticipantCardBackground;

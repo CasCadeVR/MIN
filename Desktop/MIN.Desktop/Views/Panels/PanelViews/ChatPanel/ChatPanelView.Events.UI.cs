@@ -184,7 +184,7 @@ public partial class ChatPanelView
 
     #region MesssageTextBox events
 
-    private async void messageTextBox_TextChanged(object sender, EventArgs e)
+    private void messageTextBox_TextChanged(object sender, EventArgs e)
     {
         ResizeMessageTextBox();
 

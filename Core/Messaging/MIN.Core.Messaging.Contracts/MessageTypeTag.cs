@@ -44,14 +44,19 @@ public enum MessageTypeTag : byte
     Disconnect = 4,
 
     /// <summary>
+    /// Ответ на закрытие соединения.
+    /// </summary>
+    DisconnectAck = 5,
+
+    /// <summary>
     /// Проверка доступности (ping).
     /// </summary>
-    Ping = 5,
+    Ping = 6,
 
     /// <summary>
     /// Ответ на ping (pong).
     /// </summary>
-    Pong = 6,
+    Pong = 7,
 
     // ===== Сообщения обнаружения (32-63) =====
 

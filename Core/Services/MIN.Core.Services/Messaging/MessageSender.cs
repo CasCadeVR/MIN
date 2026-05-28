@@ -4,6 +4,7 @@ using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Streaming.Contracts.Constants;
@@ -17,6 +18,7 @@ namespace MIN.Core.Services.Messaging;
 public sealed class MessageSender : IMessageSender, IAsyncDisposable
 {
     private readonly ITransport transport;
+    private readonly IRoomHoster roomHoster;
     private readonly IMessageEncryptor encryptor;
     private readonly IMessageSerializer serializer;
     private readonly IHeaderManager headerManager;
@@ -27,6 +29,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
     /// Инциализирует новый экземпляр <see cref="MessageSender"/>
     /// </summary>
     public MessageSender(ITransport transport,
+        IRoomHoster roomHoster,
         IMessageEncryptor encryptor,
         IMessageSerializer serializer,
         IHeaderManager headerManager,
@@ -34,6 +37,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         IStreamManager streamManager)
     {
         this.transport = transport;
+        this.roomHoster = roomHoster;
         this.encryptor = encryptor;
         this.serializer = serializer;
         this.headerManager = headerManager;
@@ -49,6 +53,13 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
             messageWithSecured.Sanitize();
         }
 
+        Guid? serverConnectionId = null;
+
+        if (roomHoster.IsHosting(roomId))
+        {
+            serverConnectionId = roomHoster.GetConnectionIdByRoomId(roomId);
+        }
+
         var serialized = serializer.Serialize(message);
 
         if (serialized.Length > StreamingConstants.ChunkDataSize)
@@ -59,13 +70,14 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
                 RequiresAcks = message.RequireStreamAcks,
                 RequiresEncryption = message.RequiresEncryption
             };
-            await streamManager.SendAsync(serialized.AsMemory(), options, roomId, recipientConnectionId, cancellationToken);
+            await streamManager.SendAsync(serialized.AsMemory(), options, roomId, recipientConnectionId, serverConnectionId, cancellationToken);
             return;
         }
 
         var dataWithMarker = headerManager.AddHeader(serialized, (byte)StreamChunkFlags.None);
         var dataToSend = EncryptDataIfRequired(message, dataWithMarker, roomId, recipientConnectionId);
-        await transport.SendAsync(dataToSend, roomId, recipientConnectionId, cancellationToken);
+
+        await transport.SendAsync(dataToSend, recipientConnectionId, serverConnectionId, cancellationToken);
     }
 
     async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken)

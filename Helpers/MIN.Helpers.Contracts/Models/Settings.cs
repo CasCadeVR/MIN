@@ -1,7 +1,4 @@
-﻿using MIN.Helpers.Contracts.Models.Enums;
-using MIN.Core.Transport.Contracts.Enum;
-
-namespace MIN.Helpers.Contracts.Models;
+﻿namespace MIN.Helpers.Contracts.Models;
 
 /// <summary>
 /// Настройки
@@ -19,17 +16,7 @@ public class Settings
     public int DiscoveryTimeout { get; set; } = 1500;
 
     /// <summary>
-    /// Метод поиска комнат
+    /// Порт для обнаружения в сети
     /// </summary>
-    public SearchMethod SearchMethod { get; set; } = SearchMethod.ClassRoom;
-
-    /// <summary>
-    /// Избранные компьютеры
-    /// </summary>
-    public IEnumerable<string> PreferredPCNames { get; set; } = [];
-
-    /// <summary>
-    /// Транспорт, который будет использоваться в локальной среде (NamedPipe, Tcp, ...)
-    /// </summary>
-    public TransportType TransportType { get; set; } = TransportType.NamedPipe;
+    public int DiscoveryPort { get; set; } = 42069;
 }

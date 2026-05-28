@@ -1,7 +1,6 @@
 ﻿using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.RoomRelated;
-using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Contracts.Views.PanelViews.Interfaces;
@@ -14,7 +13,7 @@ namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 /// <summary>
 /// Панель чата
 /// </summary>
-public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(Room room, Guid connectionId, IEndpoint endpoint)>, IAsyncDisposable
+public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(Room room, Guid connectionId)>, IAsyncDisposable
 {
     private readonly IMinFeatureCollection featureCollection;
     private readonly INavigationService navigationService;
@@ -24,7 +23,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     private Guid roomId;
     private Guid connectionId;
     private Room room = null!;
-    private IEndpoint endpoint = null!;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatPanelView"/>
@@ -80,13 +78,12 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     /// Room передаётся по ссылке прямо из store, так что его обновление повлияет на room ui,
     /// но придётся ещё и обновить данные
     /// </remarks>
-    public void Initialize((Room room, Guid connectionId, IEndpoint endpoint) parameters)
+    public void Initialize((Room room, Guid connectionId) parameters)
     {
         room = parameters.room;
         lastRoomName = room.Name;
         connectionId = parameters.connectionId;
         roomId = room.Id;
-        endpoint = parameters.endpoint;
 
         SubscribeToEvents(featureCollection.Core.EventBus);
         UpdateStats();

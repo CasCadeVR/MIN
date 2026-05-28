@@ -15,17 +15,12 @@ public interface IDiscoveryTransport
     /// <summary>
     /// Отправить данные
     /// </summary>
-    Task<bool> SendAsync(byte[] data, string? destination, TimeSpan? timeout, CancellationToken cancellationToken = default);
+    Task BroadcastAsync(byte[] data, TimeSpan timeout, CancellationToken ct = default);
 
     /// <summary>
     /// Начать прослушивание широковещательных сообщений, с отправкой ответа
     /// </summary>
     Task StartListeningAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Отправить ответные данные по идентификатору канала, или динамически определив отправителя
-    /// </summary>
-    Task ResponseWithData(byte[] responseData, Guid? connectionId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Остановить прослушивание

@@ -15,10 +15,9 @@ public class HelpersModule : Module
     protected override void Load(IServiceCollection services)
     {
         services.RegisterAsImplementedInterfaces<LoggerProvider>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<IdentityService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<AppDataProvider>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<IdentityService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<FileSystemSettingsStorage>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<CollegeNetworkComputerProvider>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<HelperFeatureCollection>(ServiceLifetime.Singleton);
     }
 }

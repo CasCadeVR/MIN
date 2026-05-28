@@ -16,9 +16,9 @@ public sealed class ChunkReceivedEventArgs : EventArgs
     public Guid ConnectionId { get; init; }
 
     /// <summary>
-    /// Идентфикатор комнаты
+    /// Идентфикатор соелинения сервера
     /// </summary>
-    public Guid RoomId { get; init; }
+    public Guid? ServerConnectionId { get; init; }
 
     /// <summary>
     /// Сколько уже загрузилось

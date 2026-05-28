@@ -7,8 +7,8 @@ using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Streaming.Services;
 
@@ -44,6 +44,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
         StreamOptions options,
         Guid roomId,
         Guid recipientConnectionId,
+        Guid? serverConnectionId,
         CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(disposed, nameof(StreamManager));
@@ -89,7 +90,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
                 };
 
                 var package = SerializeChunk(chunk);
-                var encrypted = EncryptChunkIfNeeded(package, roomId, recipientConnectionId, options);
+                var encrypted = EncryptChunkIfNeeded(package, recipientConnectionId, roomId, options);
 
                 if (options.RequiresAcks)
                 {
@@ -99,10 +100,9 @@ public sealed class StreamManager : IStreamManager, IDisposable
                         LastAcknowledgedIndex = i,
                         TotalChunks = totalChunks,
                     });
-                    StartAckTimer(ackKey);
                 }
 
-                await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
+                await transport.SendAsync(encrypted, recipientConnectionId, serverConnectionId, cancellationToken);
             }
 
             logger.Log($"Передача пакетов окончена");
@@ -120,6 +120,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
         StreamOptions options,
         Guid roomId,
         Guid recipientConnectionId,
+        Guid? serverConnectionId,
         CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(disposed, nameof(StreamManager));
@@ -167,7 +168,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
                 };
 
                 var package = SerializeChunk(chunk);
-                var encrypted = EncryptChunkIfNeeded(package, roomId, recipientConnectionId, options);
+                var encrypted = EncryptChunkIfNeeded(package, recipientConnectionId, roomId, options);
 
                 if (options.RequiresAcks)
                 {
@@ -177,10 +178,9 @@ public sealed class StreamManager : IStreamManager, IDisposable
                         LastAcknowledgedIndex = chunkIndex,
                         TotalChunks = totalChunks,
                     });
-                    StartAckTimer(ackKey);
                 }
 
-                await transport.SendAsync(encrypted, roomId, recipientConnectionId, cancellationToken);
+                await transport.SendAsync(encrypted, recipientConnectionId, serverConnectionId, cancellationToken);
                 chunkIndex++;
             }
 
@@ -236,25 +236,6 @@ public sealed class StreamManager : IStreamManager, IDisposable
         }
     }
 
-    private void StartAckTimer(ChunkAckKey ackKey)
-    {
-        var timer = new Timer(
-            OnAckTimeout,
-            ackKey,
-            StreamingConstants.DefaultChunkTimeoutMs,
-            Timeout.InfiniteTimeSpan.Seconds);
-
-        ackTimers.TryAdd(ackKey, timer);
-    }
-
-    private void OnAckTimeout(object? state)
-    {
-        if (state is ChunkAckKey ackKey)
-        {
-            logger.Log($"Таймаут ожидания ACK для пакета {ackKey.ChunkIndex}", LogLevel.Warning);
-        }
-    }
-
     private byte[] SerializeChunk(StreamChunk chunk)
     {
         var header = headerManager.BuildStreamChunkHeader(chunk.Flags, chunk.StreamId, chunk.Index, chunk.Total);
@@ -264,7 +245,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
         return result;
     }
 
-    private byte[] EncryptChunkIfNeeded(byte[] plainData, Guid roomId, Guid recipientConnectionId, StreamOptions options)
+    private byte[] EncryptChunkIfNeeded(byte[] plainData, Guid recipientConnectionId, Guid roomId, StreamOptions options)
     {
         byte[] resultBytes;
         if (options.RequiresEncryption)

@@ -16,6 +16,12 @@ public class Room : IRoomData
     public string Name { get; set; } = string.Empty;
 
     /// <inheritdoc />
+    public string Cabinet { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    public int PcNumber { get; set; }
+
+    /// <inheritdoc />
     public int MaximumParticipants { get; set; }
 
     /// <inheritdoc />
@@ -29,6 +35,9 @@ public class Room : IRoomData
 
     /// <inheritdoc />
     public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    /// <inheritdoc />
+    public string? ConnectionAddress { get; set; }
 
     /// <summary>
     /// Хост комнаты
@@ -82,9 +91,12 @@ public class Room : IRoomData
     {
         Id = roomData.Id;
         Name = roomData.Name;
+        Cabinet = roomData.Cabinet;
+        PcNumber = roomData.PcNumber;
         HostParticipant = roomData.HostParticipant;
         MaximumParticipants = roomData.MaximumParticipants;
         IsActive = roomData.IsActive;
         CreatedAt = roomData.CreatedAt;
+        ConnectionAddress = roomData.ConnectionAddress;
     }
 }

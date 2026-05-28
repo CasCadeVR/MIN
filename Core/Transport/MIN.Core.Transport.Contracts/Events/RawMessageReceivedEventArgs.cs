@@ -3,30 +3,30 @@
 /// <summary>
 /// Аргументы события получения сырых данных от транспорта
 /// </summary>
-public sealed class RawMessageReceivedEventArgs : EventArgs
+public class RawMessageReceivedEventArgs : EventArgs
 {
     /// <summary>
     /// Полученные данные (байты)
     /// </summary>
-    public byte[] Data { get; }
+    public byte[] Data { get; init; }
 
     /// <summary>
-    /// Идентификатор комнаты
+    /// Идентификатор сервера соединения
     /// </summary>
-    public Guid RoomId { get; }
+    public Guid? ServerConnectionId { get; init; }
 
     /// <summary>
     /// Идентификатор соединения отправителя сообщения
     /// </summary>
-    public Guid ConnectionId { get; }
+    public Guid ConnectionId { get; init; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RawMessageReceivedEventArgs"/>
     /// </summary>
-    public RawMessageReceivedEventArgs(byte[] data, Guid roomId, Guid сonnectionId)
+    public RawMessageReceivedEventArgs(byte[] data, Guid сonnectionId, Guid? serverConnectionId = null)
     {
         Data = data;
-        RoomId = roomId;
         ConnectionId = сonnectionId;
+        ServerConnectionId = serverConnectionId;
     }
 }

@@ -62,7 +62,7 @@ public partial class ChatTextMessageCard : BaseChatMessageCard, IResizableCompon
     {
         var wantedWidth = Math.Min(Convert.ToInt32(Parent!.Width * 0.85),
             Convert.ToInt32(TableLayoutPanel.ColumnStyles[1].Width)
-            + Math.Max(sendMessage.PreferredSize.Width, removeHeaders ? 0 : sendMessage.PreferredSize.Width)
+            + Math.Max(sendMessage.PreferredSize.Width, removeHeaders ? 0 : senderName.PreferredSize.Width)
             + sendMessage.Margin.Horizontal * 2);
 
         if (Width == wantedWidth)

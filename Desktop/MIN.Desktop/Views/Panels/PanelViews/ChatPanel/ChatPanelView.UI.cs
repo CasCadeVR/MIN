@@ -1,12 +1,12 @@
-﻿using MIN.Core.Messaging.Contracts.Interfaces;
+﻿using System.Net;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Constants;
-using MIN.Core.Transport.NamedPipes.Models;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
-using MIN.Helpers.Services;
+using MIN.Desktop.Infrastructure.Services;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -26,6 +26,8 @@ public partial class ChatPanelView
         tableLayoutPanelHeader.BackColor = ColorScheme.PrimaryAccent;
         tableLayoutPanelStats.BackColor = ColorScheme.PrimaryAccent;
         notificationComboBox.BackColor = ColorScheme.PrimaryAccent;
+        connectionPort.BackColor = ColorScheme.PrimaryAccent;
+        connectionAddress.BackColor = ColorScheme.PrimaryAccent;
         tableLayoutPanelButtons.BackColor = ColorScheme.DividerColor;
 
         participantsInfo.ForeColor = ColorScheme.TextOnAccent;
@@ -33,6 +35,8 @@ public partial class ChatPanelView
         computer.ForeColor = ColorScheme.TextOnAccent;
         classroom.ForeColor = ColorScheme.TextOnAccent;
         createdAt.ForeColor = ColorScheme.TextOnAccent;
+        connectionAddress.ForeColor = ColorScheme.TextOnAccent;
+        connectionPort.ForeColor = ColorScheme.TextOnAccent;
         notificationComboBox.ForeColor = ColorScheme.TextOnAccent;
         Title.ForeColor = ColorScheme.TextOnAccent;
         statusLabel.ForeColor = ColorScheme.TextPrimary;
@@ -41,7 +45,9 @@ public partial class ChatPanelView
         classroomLabel.ForeColor = ColorScheme.TextOnAccent;
         computerLabel.ForeColor = ColorScheme.TextOnAccent;
         onlineLabel.ForeColor = ColorScheme.TextOnAccent;
+        connectionPortLabel.ForeColor = ColorScheme.TextOnAccent;
         participantsLabel.ForeColor = ColorScheme.TextOnAccent;
+        connectionAddressLabel.ForeColor = ColorScheme.TextOnAccent;
         createdAtLabel.ForeColor = ColorScheme.TextOnAccent;
 
         participantsFlow.BackColor = ColorScheme.DividerColor;
@@ -66,23 +72,17 @@ public partial class ChatPanelView
         var isHost = room.HostParticipant?.Id == localParticipant.Id;
         hostName.Text = isHost ? "Ты" : room.HostParticipant?.Name ?? "Неизвестно";
         createdAt.Text = room.CreatedAt.ToShortTimeString();
+        computer.Text = room.PcNumber.ToString();
+        connectionAddress.Text = room.ConnectionAddress?.ToString();
+
+        if (IpAddressParser.TryParseIpAddress(room.ConnectionAddress, out var gottenIpAddress, out var port))
+        {
+            connectionPort.Text = port.ToString();
+            connectionAddress.Text = gottenIpAddress;
+        }
+
+        classroom.Text = string.IsNullOrEmpty(room.Cabinet) ? DesktopConstants.UndefinedPcName : room.Cabinet;
         editButton.Visible = isHost;
-
-        if (CollegePCNameParser.TryParseComputerName(endpoint is NamedPipeEndpoint npEndpoint
-                ? npEndpoint.MachineName
-                : string.Empty,
-            out var roomNumber,
-            out var computerNumber))
-        {
-            computer.Text = computerNumber.ToString();
-            classroom.Text = roomNumber.ToString();
-        }
-        else
-        {
-            computer.Text = DesktopConstants.UndefinedPCName;
-            classroom.Text = DesktopConstants.UndefinedPCName;
-        }
-
         UpdateParticipantFlow();
     }
 

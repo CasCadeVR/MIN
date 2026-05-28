@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using MIN.Core.Transport.Contracts.Enum;
+﻿using MIN.Core.Transport.Contracts.Enum;
 
 namespace MIN.Core.Transport.Contracts.Interfaces;
 
@@ -8,6 +7,11 @@ namespace MIN.Core.Transport.Contracts.Interfaces;
 /// </summary>
 public interface IEndpoint
 {
-    /// <inheritdoc />
+    /// <inheritdoc cref="TransportType"/>
     TransportType Type { get; }
+
+    /// <summary>
+    /// Получить строковое представление адреса
+    /// </summary>
+    string ToString();
 }

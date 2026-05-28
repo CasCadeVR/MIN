@@ -260,7 +260,14 @@ internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransfe
 
         logger.Log($"Отправляю файл через StreamManager: StreamId={request.TransferId}");
 
+        Guid? serverConnectionId = null;
+
+        if (roomHoster.IsHosting(request.RoomId))
+        {
+            serverConnectionId = roomHoster.GetConnectionIdByRoomId(request.RoomId);
+        }
+
         await using var fileStream = File.OpenRead(filePath);
-        await streamManager.SendAsync(fileStream, options, request.RoomId, context.ConnectionId, info.CancellationTokenSource.Token);
+        await streamManager.SendAsync(fileStream, options, request.RoomId, context.ConnectionId, serverConnectionId, info.CancellationTokenSource.Token);
     }
 }

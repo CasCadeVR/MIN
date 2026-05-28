@@ -8,7 +8,7 @@ namespace MIN.Core.Entities.Contracts.Models;
 public record ParticipantInfo() : IParticipantData
 {
     /// <inheritdoc />
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; }
 
     /// <inheritdoc />
     public string Name { get; set; } = string.Empty;

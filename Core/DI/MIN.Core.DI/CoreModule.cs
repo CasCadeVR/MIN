@@ -11,6 +11,7 @@ using MIN.Core.Handlers.Handlers;
 using MIN.Core.Headers.Services;
 using MIN.Core.Messaging;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Protocol.Services;
 using MIN.Core.Serialization.Json;
 using MIN.Core.Serialization.Json.Services;
 using MIN.Core.Services.Messaging;
@@ -19,8 +20,7 @@ using MIN.Core.Stores.Factories;
 using MIN.Core.Stores.Registries;
 using MIN.Core.Stores.Services;
 using MIN.Core.Streaming.Services;
-using MIN.Core.Transport.NamedPipes;
-using MIN.Core.Transport.NamedPipes.Services;
+using MIN.Core.Transport.TcpSockets;
 
 namespace MIN.Core.DI;
 
@@ -39,8 +39,8 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<FileSystemKeyStorage>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);
 
-        services.RegisterAsImplementedInterfaces<NamedPipeEndpointProvider>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<NamedPipeTransport>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<TcpTransport>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<MinProtocolHandler>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<HeaderManager>(ServiceLifetime.Singleton);
 
@@ -50,6 +50,9 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<RoomFactory>(ServiceLifetime.Singleton);
 
         // Room-scoped
+        services.RegisterAsImplementedInterfaces<GracefulDisconnector>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<RoomConnectionResolver>(ServiceLifetime.Singleton);
+
         services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Transient);
         services.RegisterAsImplementedInterfaces<MessageStore>(ServiceLifetime.Transient);
         services.RegisterAsImplementedInterfaces<ParticipantStore>(ServiceLifetime.Transient);

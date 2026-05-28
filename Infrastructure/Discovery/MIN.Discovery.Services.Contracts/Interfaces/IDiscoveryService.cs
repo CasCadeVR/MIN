@@ -18,5 +18,5 @@ public interface IDiscoveryService
     /// <summary>
     /// Обнаружить комнаты
     /// </summary>
-    Task DiscoverRoomsAsync(IEnumerable<string>? computers, TimeSpan timeout, CancellationToken cancellationToken = default);
+    Task DiscoverRoomsAsync(TimeSpan timeout, CancellationToken cancellationToken = default);
 }

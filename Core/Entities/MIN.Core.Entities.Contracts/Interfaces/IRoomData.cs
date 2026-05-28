@@ -23,6 +23,16 @@ public interface IRoomData
     ParticipantInfo HostParticipant { get; }
 
     /// <summary>
+    /// MODIFIED: Кабинет, в котором создалась комната
+    /// </summary>
+    string Cabinet { get; }
+
+    /// <summary>
+    /// MODIFIED: Номер компьютера, в котором создалась комната
+    /// </summary>
+    int PcNumber { get; }
+
+    /// <summary>
     /// Максимальное количество участников
     /// </summary>
     int MaximumParticipants { get; }
@@ -46,4 +56,9 @@ public interface IRoomData
     /// Дата создания комнаты
     /// </summary>
     DateTime CreatedAt { get; }
+
+    /// <summary>
+    /// Адрес комнаты
+    /// </summary>
+    string? ConnectionAddress { get; set; }
 }

@@ -9,4 +9,9 @@ public interface IAppDataProvider
     /// Корневая папка
     /// </summary>
     string BaseDirectory { get; }
+
+    /// <summary>
+    /// Очистить содежимое в папке
+    /// </summary>
+    void ClearFolder(string folderName);
 }

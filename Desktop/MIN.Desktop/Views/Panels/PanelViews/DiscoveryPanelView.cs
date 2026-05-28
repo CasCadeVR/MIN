@@ -1,5 +1,7 @@
-﻿using MIN.Core.Entities;
+using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Services.Contracts.Models;
+using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
@@ -14,8 +16,6 @@ using MIN.DI.FeatureCollection;
 using MIN.Discovery.Events;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Models;
-using MIN.Helpers.Contracts.Models.Enums;
-using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Views.Panels.SidePanelViews;
 
@@ -51,16 +51,7 @@ public partial class DiscoveryPanelView : StyledPanelView
 
         lifeTimeCts = new CancellationTokenSource();
 
-        ParseMachineName();
         SubscribeToEvents();
-    }
-
-    private void ParseMachineName()
-    {
-        if (CollegePCNameParser.TryParseComputerName(featureCollection.Helper.ComputerProvider.GetLocalMachineName(), out var roomNumber, out var _))
-        {
-            classNumber.Value = roomNumber;
-        }
     }
 
     private void SubscribeToEvents()
@@ -73,8 +64,6 @@ public partial class DiscoveryPanelView : StyledPanelView
         if (isDiscovering)
         {
             discoveryCts?.Cancel();
-            isDiscovering = false;
-            discoverRooms.Enabled = false;
         }
         else
         {
@@ -84,38 +73,21 @@ public partial class DiscoveryPanelView : StyledPanelView
 
     private async Task PerformDiscovery()
     {
-        var availablePCs = Settings.SearchMethod == SearchMethod.ClassRoom
-                ? featureCollection.Helper.ComputerProvider.GetLocalNetworkMachineNames(classNumber.Value.ToString())
-                : Settings.PreferredPCNames;
-
-        if (!availablePCs.Any())
-        {
-            return;
-        }
-
         isDiscovering = true;
 
         uiContext.Post(_ =>
         {
             discoverRooms.Text = "Остановить поиск";
             splitContainerDiscoverRoom.Panel2Collapsed = false;
-            discoveryProgressBar.Value = 1;
-            discoveryProgressBar.Maximum = availablePCs.Count() + 1;
             flowLayoutPanelDiscoveredRooms.Controls.Clear();
             totalRoomsCount.Text = "Поиск комнат...";
         }, null);
 
         discoveryCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
 
-        using var subscriptionToken = featureCollection.Core.EventBus.Subscribe((EndpointCheckedEvent _, CancellationToken _) =>
-        {
-            discoveryProgressBar.Value++;
-            return Task.CompletedTask;
-        });
-
         try
         {
-            await featureCollection.Discovery.DiscoveryService.DiscoverRoomsAsync(availablePCs,
+            await featureCollection.Discovery.DiscoveryService.DiscoverRoomsAsync(
                 TimeSpan.FromMilliseconds(Settings.DiscoveryTimeout), discoveryCts.Token);
         }
         catch (Exception ex)
@@ -140,12 +112,12 @@ public partial class DiscoveryPanelView : StyledPanelView
             foreach (var discoveryInfo in e.RoomDiscoveryInfos)
             {
                 var card = new RoomDiscoveryCard(featureCollection.Core.EventBus, localParticipant,
-                    discoveryInfo.Room, e.MachineName)
+                    discoveryInfo.Room)
                 {
                     Parent = flowLayoutPanelDiscoveredRooms
                 };
 
-                card.Clicked += () => OnRoomJoin(discoveryInfo.Room, discoveryInfo.Endpoint);
+                card.Clicked += () => OnRoomJoin(discoveryInfo.Endpoint, discoveryInfo.Room, card);
                 card.Disposed += (s, _) =>
                 {
                     totalRoomsCount.Text = $"Всего нашлось комнат: {flowLayoutPanelDiscoveredRooms.Controls.Count}";
@@ -179,25 +151,29 @@ public partial class DiscoveryPanelView : StyledPanelView
         return true;
     }
 
-    private async Task OnRoomJoin(RoomInfo roomInfo, IEndpoint endpoint)
+    private async Task OnRoomJoin(IEndpoint endpoint, RoomInfo? roomInfo = null, RoomDiscoveryCard? card = null)
     {
-        if (featureCollection.Core.RoomConnector.IsConnected(roomInfo.Id))
+        if (roomInfo != null && featureCollection.Core.RoomConnector.IsConnected(roomInfo.Id))
         {
             MessageBox.Show($"Вы уже подключены к этой комнате", "Ошибка",
                 MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            card?.EnableConnectButton();
             return;
         }
 
-        ResolveParticipant();
+        if (!ResolveParticipant())
+        {
+            return;
+        }
+
+        var connectCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
+        LoadingForm? loadingForm = null;
 
         try
         {
-            featureCollection.Core.RoomStore.Register(new Room(roomInfo));
+            ConnectionResult connectionResult = new();
 
-            var connectionId = Guid.Empty;
-            var connectCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
-
-            new LoadingForm(roomInfo.Id, featureCollection.Core.EventBus, async room =>
+            loadingForm = new LoadingForm(featureCollection.Core.EventBus, async room =>
             {
                 if (room == null)
                 {
@@ -206,23 +182,27 @@ public partial class DiscoveryPanelView : StyledPanelView
                 var newRoomInfo = new RoomInfo(room);
                 chatPanelManager.RegisterChat(newRoomInfo,
                     navigationService
-                    .NavigateTo<ChatPanelView, (Room room, Guid connectionId, IEndpoint endpoint)>((room, connectionId, endpoint)));
+                    .NavigateTo<ChatPanelView, (Room room, Guid connectionId)>((room, connectionResult.ConnectionId)));
                 await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent()
                 {
                     RoomId = room.Id,
                     RoomInfo = newRoomInfo,
                 });
-            }, connectCts, DesktopConstants.RoomConnectionTimeoutMs).Show();
+            }, connectCts, DesktopConstants.RoomConnectionTimeoutMs);
+            loadingForm.Show();
 
-            featureCollection.Core.RoomFactory.GetOrCreateContext(roomInfo.Id)
-                .Connections.RegisterLocalParticipant(localParticipant);
+            connectionResult = await featureCollection.Core.RoomConnector.ConnectAsync(endpoint, connectCts.Token);
 
-            connectionId = await featureCollection.Core.RoomConnector.ConnectAsync(roomInfo, endpoint,
-                DesktopConstants.RoomConnectionTimeoutMs, connectCts.Token);
+            loadingForm.RoomId = connectionResult.RoomId;
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Произошла ошибка: {ex.Message}");
+            loadingForm?.Close();
+            MessageBox.Show($"Произошла ошибка при подключении: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            card?.EnableConnectButton();
         }
     }
 
@@ -230,10 +210,54 @@ public partial class DiscoveryPanelView : StyledPanelView
     protected override void ApplyStylings()
     {
         tableLayoutPanel.BackColor = ColorScheme.PrimaryAccent;
-        classroomTitleInput.ForeColor = ColorScheme.TextOnAccent;
-        classNumber.ForeColor = ColorScheme.PrimaryAccent;
         statusStrip.BackColor = ColorScheme.SecondaryAccent;
         totalRoomsCount.ForeColor = ColorScheme.TextOnAccent;
         discoveryProgressBar.ForeColor = ColorScheme.PrimaryAccent;
+    }
+
+    private async void createRoom_Click(object sender, EventArgs e)
+    {
+        var roomCreateForm = new RoomCreateForm();
+
+        if (roomCreateForm.ShowDialog() != DialogResult.OK)
+        {
+            return;
+        }
+
+        var roomInfo = roomCreateForm.Room;
+        var roomId = roomInfo.Id;
+
+        if (!ResolveParticipant())
+        {
+            return;
+        }
+
+        try
+        {
+            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, roomCreateForm.WithPortForwarding, lifeTimeCts.Token);
+            await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
+
+            chatPanelManager.RegisterChat(roomInfo, navigationService.NavigateTo<ChatPanelView, (Room room, Guid connectionId)>(
+                (room, CoreRegistryConstants.LocalConnectionId)
+            ));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Создание комнаты прошло не успешно: {ex.Message}",
+                "Ошибка",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
+
+    private async void connectDirectButton_Click(object sender, EventArgs e)
+    {
+        var directConnectForm = new TcpDirectConnectForm();
+        directConnectForm.Show();
+        directConnectForm.OnConnect += async () =>
+        {
+            await OnRoomJoin(directConnectForm.Endpoint);
+            directConnectForm.EnableConnectButton();
+        };
     }
 }

@@ -11,8 +11,8 @@ public interface IHelperFeatureCollection
     /// <inheritdoc cref="ISettingsProvider"/>
     ISettingsProvider SettingsProvider { get; }
 
-    /// <inheritdoc cref="ILocalNetworkComputerProvider"/>
-    ILocalNetworkComputerProvider ComputerProvider { get; }
+    /// <inheritdoc cref="IAppDataProvider"/>
+    IAppDataProvider AppDataProvider { get; }
 
     /// <inheritdoc cref="INotificationService"/>
     INotificationService NotificationService { get; }

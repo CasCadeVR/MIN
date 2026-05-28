@@ -14,6 +14,12 @@ public record RoomInfo : IRoomData
     public string Name { get; set; } = string.Empty;
 
     /// <inheritdoc />
+    public string Cabinet { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    public int PcNumber { get; set; }
+
+    /// <inheritdoc />
     public int ParticipantCount { get; set; }
 
     /// <inheritdoc />
@@ -31,6 +37,9 @@ public record RoomInfo : IRoomData
     /// <inheritdoc />
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    /// <inheritdoc />
+    public string? ConnectionAddress { get; set; }
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfo"/>
     /// </summary>
@@ -38,12 +47,15 @@ public record RoomInfo : IRoomData
     {
         Id = room.Id;
         Name = room.Name;
+        Cabinet = room.Cabinet;
+        PcNumber = room.PcNumber;
         HostParticipant = room.HostParticipant;
         ParticipantCount = room.ParticipantCount;
         TotalMessageCount = room.TotalMessageCount;
         MaximumParticipants = room.MaximumParticipants;
         IsActive = room.IsActive;
         CreatedAt = room.CreatedAt;
+        ConnectionAddress = room.ConnectionAddress;
     }
 
     /// <summary>

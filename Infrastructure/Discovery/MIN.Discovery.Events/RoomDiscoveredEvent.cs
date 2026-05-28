@@ -9,11 +9,6 @@ namespace MIN.Discovery.Events;
 public class RoomDiscoveredEvent : BaseEvent
 {
     /// <summary>
-    /// Имя компьютера в сети, где было получено сообщение
-    /// </summary>
-    public string MachineName { get; set; } = string.Empty;
-
-    /// <summary>
     /// Информация о найденных комнатах
     /// </summary>
     public List<RoomDiscoveryInfo> RoomDiscoveryInfos { get; init; } = null!;

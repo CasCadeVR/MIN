@@ -11,20 +11,26 @@ namespace MIN.Desktop.Views.Forms.HelperForms;
 public partial class LoadingForm : StyledForm
 {
     private readonly IEventBus eventBus;
-    private readonly Guid roomId;
     private readonly Action<Room?> onRoomReady;
     private readonly SynchronizationContext uiContext;
     private readonly System.Windows.Forms.Timer timeoutTimer;
     private readonly CancellationTokenSource cts;
 
     private HashSet<IDisposable> eventTokens = null!;
-
     private bool gotRoom;
+
+    /// <summary>
+    /// Идентификатор комнаты
+    /// </summary>
+    /// <remarks>
+    /// null, если ещё не прошёл этап протокола
+    /// </remarks>
+    public Guid? RoomId { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="LoadingForm"/>
     /// </summary>
-    public LoadingForm(Guid roomId, IEventBus eventBus, Action<Room?> onRoomReady, CancellationTokenSource cts, int timeoutMs = 10000)
+    public LoadingForm(IEventBus eventBus, Action<Room?> onRoomReady, CancellationTokenSource cts, int timeoutMs = 10000)
     {
         InitializeComponent();
 
@@ -32,7 +38,6 @@ public partial class LoadingForm : StyledForm
             ?? throw new InvalidOperationException("Must be created on UI thread");
 
         this.onRoomReady = onRoomReady;
-        this.roomId = roomId;
         this.eventBus = eventBus;
         this.cts = cts;
 
@@ -48,10 +53,10 @@ public partial class LoadingForm : StyledForm
         timeoutTimer.Stop();
         uiContext.Post(_ =>
         {
-            MessageBox.Show("Не удалось подключиться: Время подключения истекло.\nВозможно, комнаты уже и нет", "Ошибка",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
             onRoomReady.Invoke(null!);
             Close();
+            MessageBox.Show("Не удалось подключиться: Время подключения истекло.\nВозможно, комнаты уже и нет", "Ошибка",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }, null);
     }
 
@@ -59,23 +64,23 @@ public partial class LoadingForm : StyledForm
     {
         eventTokens = [
             eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived),
-            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccurredEvent),
+            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
         ];
     }
 
-    private async Task OnErrorOccurredEvent(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
+    private async Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
+        if (eventMessage.RoomId != RoomId)
         {
             return;
         }
 
         uiContext.Post(_ =>
         {
-            MessageBox.Show(eventMessage.ErrorMessage, "Ошибка",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
             onRoomReady.Invoke(null!);
             Close();
+            MessageBox.Show(eventMessage.ErrorMessage, "Ошибка",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
         }, this);
 
         await Task.CompletedTask;
@@ -83,7 +88,7 @@ public partial class LoadingForm : StyledForm
 
     private async Task OnRoomStateChangedEventReceived(RoomStateChangedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Room.Id != roomId)
+        if (eventMessage.Room.Id != RoomId)
         {
             return;
         }

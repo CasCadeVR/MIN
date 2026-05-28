@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+﻿using MIN.Core.Entities;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
@@ -8,48 +8,37 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Messaging.Stateless.RoomRelated.Join;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
-using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
 internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnchor
 {
-    private const int TimeoutUponReceivingRejectionAck = 5000;
-
     private readonly IRoomStore roomStore;
-    private readonly ITransport transport;
     private readonly IRoomHoster roomHoster;
-    private readonly IMessageRouter messageRouter;
+    private readonly IGracefulDisconnector gracefulDisconnector;
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
-    private readonly IVersionProvider versionProvider;
     private readonly ILoggerProvider logger;
-    private readonly ConcurrentDictionary<Guid, Timer> rejectAckTimers = new();
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ParticipantJoinHandler"/>
     /// </summary>
     public ParticipantJoinHandler(
         IRoomStore roomStore,
-        ITransport transport,
         IRoomHoster roomHoster,
-        IMessageRouter messageRouter,
+        IGracefulDisconnector gracefulDisconnector,
         IIdentityService identityService,
         IEventBus eventBus,
-        IVersionProvider versionProvider,
         ILoggerProvider logger)
     {
         this.roomStore = roomStore;
-        this.transport = transport;
         this.roomHoster = roomHoster;
-        this.messageRouter = messageRouter;
+        this.gracefulDisconnector = gracefulDisconnector;
         this.identityService = identityService;
         this.eventBus = eventBus;
-        this.versionProvider = versionProvider;
         this.logger = logger;
     }
 
@@ -65,49 +54,24 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         switch (message)
         {
             case RoomJoinRequestMessage roomJoinRequestMessage:
-                var response = new RoomJoinResponseMessage()
+                if (roomStore.GetRoom(context.RoomContext.RoomId).IsFull)
+                {
+                    await gracefulDisconnector.DisconnectWithReasonAsync(context.ConnectionId,
+                        context.RoomContext.RoomId, "Комната заполнена");
+                    return HandlerResult.Success();
+                }
+
+                return HandlerResult.WithResponse(new RoomJoinResponseMessage()
                 {
                     RoomId = context.RoomContext.RoomId,
-                };
-                var isFull = roomStore.GetRoom(context.RoomContext.RoomId).IsFull;
-                var isDifferentVersion = versionProvider.Version != roomJoinRequestMessage.Version;
-
-                response.Allow = !isFull && !isDifferentVersion;
-                response.Reason = isFull
-                    ? "Комната заполнена"
-                    : isDifferentVersion ? "Вы на устаревшей версии" : null;
-
-                if (!response.Allow)
-                {
-                    StartRejectAckTimer(context, response.Id, response.Reason ?? "Вход был запрещён");
-                }
-
-                return HandlerResult.WithResponse(response);
+                });
 
             case RoomJoinResponseMessage roomJoinResponseMessage:
-                if (!roomJoinResponseMessage.Allow)
+                return HandlerResult.WithResponse(new ParticipantJoinedMessage()
                 {
-                    var reason = roomJoinResponseMessage.Reason ?? "Вход был запрещён";
-                    await messageRouter.RouteAsync(new RoomJoinRejectedAckMessage()
-                    {
-                        RejectionMessageId = roomJoinResponseMessage.Id,
-                        Reason = reason,
-                    }, context.RoomContext.RoomId, identityService.SelfParticipant.Id, context.CancellationToken);
-                    return HandlerResult.Failure(reason, stopPropagation: true, critical: true);
-                }
-
-                var selfparticipantJoinedMessage = new ParticipantJoinedMessage()
-                {
-                    Participant = new Entities.Participant(identityService.SelfParticipant),
+                    Participant = new Participant(identityService.SelfParticipant),
                     RoomId = context.RoomContext.RoomId
-                };
-
-                return HandlerResult.WithResponse(selfparticipantJoinedMessage);
-
-            case RoomJoinRejectedAckMessage rejectedAckMessage:
-                ResetRejectAckTimer(rejectedAckMessage.RejectionMessageId);
-                await transport.DisconnectClientAsync(context.RoomContext.RoomId, context.ConnectionId, rejectedAckMessage.Reason);
-                return HandlerResult.Success();
+                });
 
             case ParticipantAcceptedMessage participantAcceptedMessage:
                 return HandlerResult.WithResponse(new RoomInfoRequestMessage()
@@ -118,7 +82,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
             case ParticipantJoinedMessage participantJoinedMessage:
                 logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomContext.RoomId}");
 
-                context.RoomContext.Participants.AddParticipant(new Entities.Participant(participantJoinedMessage.Participant));
+                context.RoomContext.Participants.AddParticipant(new Participant(participantJoinedMessage.Participant));
                 context.RoomContext.Messages.AddMessage(message);
 
                 await eventBus.PublishAsync(new ParticipantJoinedEvent()
@@ -138,34 +102,6 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
 
             default:
                 return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ParticipantJoinHandler)} - {message.GetType()}");
-        }
-    }
-
-    private void StartRejectAckTimer(MessageContext context, Guid rejectedAckMessageId, string reason)
-    {
-        var timer = new Timer(
-            OnRejectAckTimeout,
-            (context, rejectedAckMessageId, reason),
-            DateTime.UtcNow.AddMilliseconds(TimeoutUponReceivingRejectionAck) - DateTime.UtcNow,
-            Timeout.InfiniteTimeSpan);
-
-        rejectAckTimers.TryAdd(rejectedAckMessageId, timer);
-    }
-
-    private async void OnRejectAckTimeout(object? state)
-    {
-        if (state is (MessageContext context, Guid rejectionMessageIdstream, string reason))
-        {
-            await transport.DisconnectClientAsync(context.RoomContext.RoomId, context.ConnectionId, reason);
-            ResetRejectAckTimer(rejectionMessageIdstream);
-        }
-    }
-
-    private void ResetRejectAckTimer(Guid rejectionMessageIdstream)
-    {
-        if (rejectAckTimers.TryGetValue(rejectionMessageIdstream, out var existingTimer))
-        {
-            existingTimer.Dispose();
         }
     }
 }

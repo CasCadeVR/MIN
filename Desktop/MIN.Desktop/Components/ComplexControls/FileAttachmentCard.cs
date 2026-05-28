@@ -63,6 +63,10 @@ public class FileAttachmentCard : Label
     protected override void OnSizeChanged(EventArgs e)
     {
         base.OnSizeChanged(e);
-        deleteButton?.Location = new Point(Width - ButtonSize + ButtonCornerPadding, ButtonCornerPadding);
+
+        if (deleteButton != null)
+        {
+            deleteButton.Location = new Point(Width - ButtonSize + ButtonCornerPadding, ButtonCornerPadding);
+        }
     }
 }

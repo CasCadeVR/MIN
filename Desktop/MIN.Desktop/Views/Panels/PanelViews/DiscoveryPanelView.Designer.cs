@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             tableLayoutPanel = new TableLayoutPanel();
+            connectDirectButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
+            createRoom = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             splitContainerDiscoverRoom = new SplitContainer();
             discoverRooms = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             discoveryProgressBar = new ProgressBar();
-            classroomTitleInput = new MIN.Desktop.Components.Labels.Heading3Label();
-            classNumber = new MIN.Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown();
             flowLayoutPanelDiscoveredRooms = new FlowLayoutPanel();
             statusStrip = new StatusStrip();
             totalRoomsCount = new ToolStripStatusLabel();
@@ -46,7 +46,6 @@
             splitContainerDiscoverRoom.Panel1.SuspendLayout();
             splitContainerDiscoverRoom.Panel2.SuspendLayout();
             splitContainerDiscoverRoom.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)classNumber).BeginInit();
             statusStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -67,13 +66,14 @@
             // 
             // tableLayoutPanel
             // 
-            tableLayoutPanel.ColumnCount = 3;
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200F));
+            tableLayoutPanel.ColumnCount = 4;
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
             tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 168F));
-            tableLayoutPanel.Controls.Add(splitContainerDiscoverRoom, 2, 0);
-            tableLayoutPanel.Controls.Add(classroomTitleInput, 0, 0);
-            tableLayoutPanel.Controls.Add(classNumber, 1, 0);
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 225F));
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            tableLayoutPanel.Controls.Add(connectDirectButton, 2, 0);
+            tableLayoutPanel.Controls.Add(createRoom, 0, 0);
+            tableLayoutPanel.Controls.Add(splitContainerDiscoverRoom, 3, 0);
             tableLayoutPanel.Dock = DockStyle.Fill;
             tableLayoutPanel.Location = new Point(0, 0);
             tableLayoutPanel.Margin = new Padding(0);
@@ -83,30 +83,66 @@
             tableLayoutPanel.Size = new Size(836, 48);
             tableLayoutPanel.TabIndex = 2;
             // 
+            // connectDirectButton
+            // 
+            connectDirectButton.BackColor = Color.FromArgb(248, 249, 255);
+            connectDirectButton.Dock = DockStyle.Fill;
+            connectDirectButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
+            connectDirectButton.FlatAppearance.BorderSize = 2;
+            connectDirectButton.FlatStyle = FlatStyle.Flat;
+            connectDirectButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            connectDirectButton.ForeColor = Color.FromArgb(167, 157, 255);
+            connectDirectButton.Location = new Point(464, 3);
+            connectDirectButton.Margin = new Padding(3, 3, 3, 5);
+            connectDirectButton.Name = "connectDirectButton";
+            connectDirectButton.Size = new Size(219, 42);
+            connectDirectButton.TabIndex = 10;
+            connectDirectButton.Text = "Подключиться напрямую";
+            connectDirectButton.UseVisualStyleBackColor = false;
+            connectDirectButton.Click += connectDirectButton_Click;
+            // 
+            // createRoom
+            // 
+            createRoom.BackColor = Color.FromArgb(192, 192, 255);
+            createRoom.BackgroundImage = Properties.Resources.plus;
+            createRoom.BackgroundImageLayout = ImageLayout.Zoom;
+            createRoom.Dock = DockStyle.Fill;
+            createRoom.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            createRoom.FlatStyle = FlatStyle.Flat;
+            createRoom.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            createRoom.ForeColor = Color.FromArgb(248, 249, 255);
+            createRoom.Location = new Point(3, 3);
+            createRoom.Margin = new Padding(3, 3, 3, 5);
+            createRoom.Name = "createRoom";
+            createRoom.Size = new Size(42, 42);
+            createRoom.TabIndex = 9;
+            createRoom.UseVisualStyleBackColor = false;
+            createRoom.Click += createRoom_Click;
+            // 
             // splitContainerDiscoverRoom
             // 
             splitContainerDiscoverRoom.Dock = DockStyle.Fill;
-            splitContainerDiscoverRoom.Location = new Point(671, 3);
+            splitContainerDiscoverRoom.Location = new Point(689, 3);
             splitContainerDiscoverRoom.Name = "splitContainerDiscoverRoom";
             splitContainerDiscoverRoom.Orientation = Orientation.Horizontal;
             // 
             // splitContainerDiscoverRoom.Panel1
             // 
             splitContainerDiscoverRoom.Panel1.Controls.Add(discoverRooms);
+            splitContainerDiscoverRoom.Panel1.Padding = new Padding(0, 0, 0, 2);
             // 
             // splitContainerDiscoverRoom.Panel2
             // 
             splitContainerDiscoverRoom.Panel2.Controls.Add(discoveryProgressBar);
             splitContainerDiscoverRoom.Panel2Collapsed = true;
-            splitContainerDiscoverRoom.Panel2MinSize = 8;
-            splitContainerDiscoverRoom.Size = new Size(162, 44);
+            splitContainerDiscoverRoom.Size = new Size(144, 44);
             splitContainerDiscoverRoom.SplitterDistance = 25;
             splitContainerDiscoverRoom.TabIndex = 5;
             // 
             // discoverRooms
             // 
             discoverRooms.BackColor = Color.FromArgb(248, 249, 255);
-            discoverRooms.Dock = DockStyle.Fill;
+            discoverRooms.Dock = DockStyle.Top;
             discoverRooms.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
             discoverRooms.FlatAppearance.BorderSize = 2;
             discoverRooms.FlatStyle = FlatStyle.Flat;
@@ -114,7 +150,7 @@
             discoverRooms.ForeColor = Color.FromArgb(167, 157, 255);
             discoverRooms.Location = new Point(0, 0);
             discoverRooms.Name = "discoverRooms";
-            discoverRooms.Size = new Size(162, 44);
+            discoverRooms.Size = new Size(144, 42);
             discoverRooms.TabIndex = 0;
             discoverRooms.Text = "Найти комнаты";
             discoverRooms.UseVisualStyleBackColor = false;
@@ -123,38 +159,13 @@
             // discoveryProgressBar
             // 
             discoveryProgressBar.Dock = DockStyle.Bottom;
-            discoveryProgressBar.Location = new Point(0, 7);
+            discoveryProgressBar.Location = new Point(0, 38);
             discoveryProgressBar.Margin = new Padding(0);
+            discoveryProgressBar.MarqueeAnimationSpeed = 5;
             discoveryProgressBar.Name = "discoveryProgressBar";
-            discoveryProgressBar.Size = new Size(162, 8);
+            discoveryProgressBar.Size = new Size(150, 8);
+            discoveryProgressBar.Style = ProgressBarStyle.Marquee;
             discoveryProgressBar.TabIndex = 0;
-            // 
-            // classroomTitleInput
-            // 
-            classroomTitleInput.Anchor = AnchorStyles.Right;
-            classroomTitleInput.AutoSize = true;
-            classroomTitleInput.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            classroomTitleInput.ForeColor = Color.FromArgb(0, 0, 0);
-            classroomTitleInput.Location = new Point(3, 14);
-            classroomTitleInput.Name = "classroomTitleInput";
-            classroomTitleInput.Size = new Size(194, 21);
-            classroomTitleInput.TabIndex = 0;
-            classroomTitleInput.Text = "Введи номер кабинета: ";
-            // 
-            // classNumber
-            // 
-            classNumber.Anchor = AnchorStyles.Left;
-            classNumber.BackColor = Color.White;
-            classNumber.BorderStyle = BorderStyle.None;
-            classNumber.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            classNumber.ForeColor = Color.Black;
-            classNumber.Location = new Point(203, 10);
-            classNumber.Maximum = new decimal(new int[] { 440, 0, 0, 0 });
-            classNumber.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
-            classNumber.Name = "classNumber";
-            classNumber.Size = new Size(53, 29);
-            classNumber.TabIndex = 1;
-            classNumber.Value = new decimal(new int[] { 100, 0, 0, 0 });
             // 
             // flowLayoutPanelDiscoveredRooms
             // 
@@ -197,12 +208,10 @@
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();
             splitContainer.ResumeLayout(false);
             tableLayoutPanel.ResumeLayout(false);
-            tableLayoutPanel.PerformLayout();
             splitContainerDiscoverRoom.Panel1.ResumeLayout(false);
             splitContainerDiscoverRoom.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainerDiscoverRoom).EndInit();
             splitContainerDiscoverRoom.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)classNumber).EndInit();
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
             ResumeLayout(false);
@@ -211,13 +220,13 @@
         #endregion
 
         private TableLayoutPanel tableLayoutPanel;
-        private Desktop.Components.Labels.Heading3Label classroomTitleInput;
-        private Desktop.Components.Controls.NumericUpDowns.DefaultNumericUpDown classNumber;
         private SplitContainer splitContainerDiscoverRoom;
         private ProgressBar discoveryProgressBar;
         private FlowLayoutPanel flowLayoutPanelDiscoveredRooms;
         private StatusStrip statusStrip;
         private ToolStripStatusLabel totalRoomsCount;
         private Desktop.Components.Controls.Buttons.InvertedButton discoverRooms;
+        private Desktop.Components.Controls.Buttons.CommonButton createRoom;
+        private Desktop.Components.Controls.Buttons.InvertedButton connectDirectButton;
     }
 }

@@ -9,8 +9,8 @@ public class HelperFeatureCollection : IHelperFeatureCollection
     /// <inheritdoc cref="ISettingsProvider"/>
     public ISettingsProvider SettingsProvider { get; }
 
-    /// <inheritdoc cref="ILocalNetworkComputerProvider"/>
-    public ILocalNetworkComputerProvider ComputerProvider { get; }
+    /// <inheritdoc cref="IAppDataProvider"/>
+    public IAppDataProvider AppDataProvider { get; }
 
     /// <inheritdoc cref="INotificationService"/>
     public INotificationService NotificationService { get; }
@@ -28,14 +28,14 @@ public class HelperFeatureCollection : IHelperFeatureCollection
     /// Инициализирует новый экземпляр <see cref="HelperFeatureCollection"/>
     /// </summary>
     public HelperFeatureCollection(ISettingsProvider settingsProvider,
-        ILocalNetworkComputerProvider computerProvider,
+        IAppDataProvider appDataProvider,
         INotificationService notificationService,
         ILoggerProvider logger,
         IIdentityService identityService,
         IVersionProvider versionProvider)
     {
         SettingsProvider = settingsProvider;
-        ComputerProvider = computerProvider;
+        AppDataProvider = appDataProvider;
         NotificationService = notificationService;
         Logger = logger;
         IdentityService = identityService;
