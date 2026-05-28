@@ -32,7 +32,7 @@ public class RoomConnectionResolver : IRoomConnectionResolver
 
     Guid IRoomConnectionResolver.GetRoomIdByConnectionId(Guid connectionId, Guid? serverConnectionId)
     {
-        var roomId = Guid.Empty;
+        Guid roomId;
 
         if (serverConnectionId != null)
         {

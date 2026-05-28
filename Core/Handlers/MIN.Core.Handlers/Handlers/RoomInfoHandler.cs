@@ -37,24 +37,20 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
     {
         if (message is RoomInfoRequestMessage roomInfoRequest)
         {
-            var room = roomStore.GetRoomFor(message.SenderId, roomInfoRequest.RoomId);
-
-            var response = new RoomInfoResponseMessage()
+            logger.Log($"Отправляю информацию о комнате с id {roomInfoRequest.RoomId}");
+            return HandlerResult.WithResponse(new RoomInfoResponseMessage()
             {
-                Room = room,
-            };
-
-            logger.Log($"Отправил информацию о комнате с id {roomInfoRequest.RoomId}");
-
-            return HandlerResult.WithResponse(response);
+                Room = roomStore.GetRoomFor(message.SenderId, roomInfoRequest.RoomId),
+            });
         }
         else if (message is RoomInfoResponseMessage roomInfoResponse)
         {
             roomStore.Register(roomInfoResponse.Room);
-            var history = roomInfoResponse.Room.ChatHistory;
-            for (var i = history.Count - 1; i >= 0; i--)
+
+            var history = roomInfoResponse.Room.ChatHistory.AsEnumerable().Reverse();
+            foreach (var roomMessage in history)
             {
-                context.RoomContext.Messages.AddMessage(history[i]);
+                context.RoomContext.Messages.AddMessage(roomMessage);
             }
 
             foreach (var roomParticipant in roomInfoResponse.Room.CurrentParticipants)

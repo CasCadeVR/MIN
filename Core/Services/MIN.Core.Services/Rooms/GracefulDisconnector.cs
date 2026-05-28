@@ -51,6 +51,7 @@ public class GracefulDisconnector : IGracefulDisconnector
         {
             Reason = reason
         };
+
         await messageSender.SendAsync(disconnectMessage, roomId, connectionId, CancellationToken.None);
         var timer = new Timer(
             OnRejectAckTimeout,

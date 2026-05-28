@@ -198,7 +198,6 @@ public partial class DiscoveryPanelView : StyledPanelView
         catch (Exception ex)
         {
             loadingForm?.Close();
-            loadingForm?.Dispose();
             MessageBox.Show($"Произошла ошибка при подключении: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally

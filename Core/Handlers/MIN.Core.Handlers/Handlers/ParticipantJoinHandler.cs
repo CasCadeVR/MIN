@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Entities;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
@@ -53,29 +54,24 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
         switch (message)
         {
             case RoomJoinRequestMessage roomJoinRequestMessage:
-                var response = new RoomJoinResponseMessage()
-                {
-                    RoomId = context.RoomContext.RoomId,
-                };
-                var isFull = roomStore.GetRoom(context.RoomContext.RoomId).IsFull;
-
-                if (isFull)
+                if (roomStore.GetRoom(context.RoomContext.RoomId).IsFull)
                 {
                     await gracefulDisconnector.DisconnectWithReasonAsync(context.ConnectionId,
                         context.RoomContext.RoomId, "Комната заполнена");
                     return HandlerResult.Success();
                 }
 
-                return HandlerResult.WithResponse(response);
+                return HandlerResult.WithResponse(new RoomJoinResponseMessage()
+                {
+                    RoomId = context.RoomContext.RoomId,
+                });
 
             case RoomJoinResponseMessage roomJoinResponseMessage:
-                var selfparticipantJoinedMessage = new ParticipantJoinedMessage()
+                return HandlerResult.WithResponse(new ParticipantJoinedMessage()
                 {
-                    Participant = new Entities.Participant(identityService.SelfParticipant),
+                    Participant = new Participant(identityService.SelfParticipant),
                     RoomId = context.RoomContext.RoomId
-                };
-
-                return HandlerResult.WithResponse(selfparticipantJoinedMessage);
+                });
 
             case ParticipantAcceptedMessage participantAcceptedMessage:
                 return HandlerResult.WithResponse(new RoomInfoRequestMessage()
@@ -86,7 +82,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnch
             case ParticipantJoinedMessage participantJoinedMessage:
                 logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomContext.RoomId}");
 
-                context.RoomContext.Participants.AddParticipant(new Entities.Participant(participantJoinedMessage.Participant));
+                context.RoomContext.Participants.AddParticipant(new Participant(participantJoinedMessage.Participant));
                 context.RoomContext.Messages.AddMessage(message);
 
                 await eventBus.PublishAsync(new ParticipantJoinedEvent()

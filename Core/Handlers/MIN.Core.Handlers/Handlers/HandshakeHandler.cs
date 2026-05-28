@@ -60,13 +60,11 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
             await encryptor.InitializeSessionWithPartnerAsync(handshakeMessage.Participant.Id, handshakeMessage.PublicKey);
             logger.Log($"Сессия с отправителем {handshakeMessage.Participant.Name} инициализирована");
 
-            var ackMessage = new HandshakeAckMessage()
+            return HandlerResult.WithResponse(new HandshakeAckMessage()
             {
                 Participant = identityService.SelfParticipant.ToParticipantInfo(),
                 PublicKey = await encryptor.GetLocalPublicKey(),
-            };
-
-            return HandlerResult.WithResponse(ackMessage);
+            });
         }
         else if (message is HandshakeAckMessage handshakeAckMessage)
         {

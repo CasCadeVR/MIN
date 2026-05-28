@@ -53,10 +53,10 @@ public partial class LoadingForm : StyledForm
         timeoutTimer.Stop();
         uiContext.Post(_ =>
         {
-            MessageBox.Show("Не удалось подключиться: Время подключения истекло.\nВозможно, комнаты уже и нет", "Ошибка",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
             onRoomReady.Invoke(null!);
             Close();
+            MessageBox.Show("Не удалось подключиться: Время подключения истекло.\nВозможно, комнаты уже и нет", "Ошибка",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }, null);
     }
 
@@ -77,10 +77,10 @@ public partial class LoadingForm : StyledForm
 
         uiContext.Post(_ =>
         {
-            MessageBox.Show(eventMessage.ErrorMessage, "Ошибка",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
             onRoomReady.Invoke(null!);
             Close();
+            MessageBox.Show(eventMessage.ErrorMessage, "Ошибка",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
         }, this);
 
         await Task.CompletedTask;

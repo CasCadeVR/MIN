@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	<SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
-	<Version>1.1.0.1</Version>
+	<Version>1.2.0.0</Version>
 	<ApplicationIcon>logo.ico</ApplicationIcon>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>

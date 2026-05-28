@@ -56,7 +56,7 @@ internal sealed class DisconnectHandler : IMessageHandler, ICoreHandlerAnchor
                 return HandlerResult.Success();
 
             default:
-                return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ParticipantJoinHandler)} - {message.GetType()}");
+                return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(DisconnectHandler)} - {message.GetType()}");
         }
     }
 }
