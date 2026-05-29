@@ -1,4 +1,5 @@
 ﻿using System.Drawing.Imaging;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
 using MIN.Desktop.Components;
@@ -7,7 +8,6 @@ using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Views.Components;
 using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Desktop.Views.Panels.SidePanelViews;
-using MIN.Core.Entities.Contracts.Enums;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -118,6 +118,34 @@ public partial class ChatPanelView
 
     #endregion
 
+    #region Context menu strips events
+
+    private void InitializeContextMenuStrips()
+    {
+        chatActionContextMenuStrip.UploadFileClick += () =>
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                foreach (var filePath in openFileDialog.FileNames)
+                {
+                    UploadFile(filePath);
+                }
+            }
+        };
+
+        chatActionContextMenuStrip.StartSessionClick += () =>
+        {
+            var choosingForm = new SessionChoosingForm(featureCollection.Sessions);
+            choosingForm.OnSelected += (session) =>
+            {
+                MessageBox.Show(session.Name);
+            };
+            choosingForm.ShowDialog();
+        };
+    }
+
+    #endregion
+
     #region Button event attachment
 
     private async void sendButton_Click(object sender, EventArgs e) => await SendMessage();
@@ -148,18 +176,11 @@ public partial class ChatPanelView
         }
     }
 
-    private void fileButton_Click(object sender, EventArgs e)
+    private void actionButton_Click(object sender, EventArgs e)
     {
-        uiContext.Post(_ =>
-        {
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                foreach (var filePath in openFileDialog.FileNames)
-                {
-                    UploadFile(filePath);
-                }
-            }
-        }, this);
+        var location = actionButton.Location;
+        location.Y -= Convert.ToInt32(actionButton.Height * 1.5);
+        chatActionContextMenuStrip.Show(actionButton, location);
     }
 
     private async void disconnectButton_Click(object sender, EventArgs e)

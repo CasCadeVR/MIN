@@ -23,5 +23,5 @@ public abstract class SessionHostRequestMessage : BaseMessage
     /// <summary>
     /// Цель подкомнаты
     /// </summary>
-    public SubRoomPurpose Purpose => SubRoomPurpose.Activity;
+    public static SubRoomPurpose Purpose => SubRoomPurpose.Activity;
 }

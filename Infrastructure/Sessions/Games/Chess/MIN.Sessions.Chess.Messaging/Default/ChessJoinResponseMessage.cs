@@ -1,7 +1,7 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Sessions.Core.Messaging.Contracts;
 
-namespace MIN.Sessions.Chess.Messaging;
+namespace MIN.Sessions.Chess.Messaging.Default;
 
 /// <summary>
 /// Сообщение ответа на присоединение к подкомнате
@@ -13,7 +13,6 @@ public sealed class ChessJoinResponseMessage : SessionJoinResponseMessage
 
     /// <inheritdoc />
     public override bool IsPublic => false;
-
 
     /// <summary>
     /// Текущая ситуация на доске

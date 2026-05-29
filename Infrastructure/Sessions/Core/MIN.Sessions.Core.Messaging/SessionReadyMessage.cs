@@ -1,15 +1,16 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
+using MIN.Sessions.Core.Services.Contracts.Models;
 
-namespace MIN.Sessions.Core.Messaging.Contracts;
+namespace MIN.Sessions.Core.Messaging;
 
 /// <summary>
 /// Сообщение готовности хостинга сессии
 /// </summary>
-public abstract class SessionReadyMessage : BaseMessage
+public sealed class SessionReadyMessage : BaseMessage
 {
     /// <inheritdoc />
-    public override MessageTypeTag TypeTag { get; }
+    public override MessageTypeTag TypeTag => MessageTypeTag.SessionReady;
 
     /// <inheritdoc />
     public override bool IsPublic => true;
@@ -18,4 +19,9 @@ public abstract class SessionReadyMessage : BaseMessage
     /// Идентификатор подкомнаты
     /// </summary>
     public int SubRoomId { get; set; }
+
+    /// <summary>
+    /// Выбранная сессия
+    /// </summary>
+    public Session Session { get; set; } = null!;
 }

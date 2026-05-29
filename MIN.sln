@@ -194,6 +194,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Sessions.Core.Messaging
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Sessions.Chess.DI", "Infrastructure\Sessions\Games\Chess\MIN.Sessions.Chess.DI\MIN.Sessions.Chess.DI.csproj", "{088920BF-5ED8-4ED9-B5AA-A5DA31D5ECE4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Sessions.Chess.Services", "Infrastructure\Sessions\Games\Chess\MIN.Sessions.Chess.Services\MIN.Sessions.Chess.Services.csproj", "{66394002-8706-4FCA-9D1A-710B8714140D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -452,6 +454,10 @@ Global
 		{088920BF-5ED8-4ED9-B5AA-A5DA31D5ECE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{088920BF-5ED8-4ED9-B5AA-A5DA31D5ECE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{088920BF-5ED8-4ED9-B5AA-A5DA31D5ECE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66394002-8706-4FCA-9D1A-710B8714140D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66394002-8706-4FCA-9D1A-710B8714140D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66394002-8706-4FCA-9D1A-710B8714140D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66394002-8706-4FCA-9D1A-710B8714140D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -543,6 +549,7 @@ Global
 		{85F61922-1F4E-4297-BA2C-1330149B1619} = {82EB055C-13AA-4B89-9802-FB7534618CD3}
 		{2C121089-3A46-4919-A526-E51E8579BA6A} = {93FB0576-CB99-48BF-9A9B-A287B3DA4AD3}
 		{088920BF-5ED8-4ED9-B5AA-A5DA31D5ECE4} = {82EB055C-13AA-4B89-9802-FB7534618CD3}
+		{66394002-8706-4FCA-9D1A-710B8714140D} = {82EB055C-13AA-4B89-9802-FB7534618CD3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57E9A443-C4F6-4D77-AEA8-F7D953811002}

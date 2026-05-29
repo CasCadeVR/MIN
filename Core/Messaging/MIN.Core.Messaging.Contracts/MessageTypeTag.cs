@@ -99,9 +99,19 @@ public enum MessageTypeTag : byte
     SessionJoinFailed = 49,
 
     /// <summary>
-    /// Выходе из сессии.
+    /// Ошибка внутри сессии.
     /// </summary>
-    SessionLeave = 50,
+    SessionError = 50,
+
+    /// <summary>
+    /// Готовность хостинга сессии.
+    /// </summary>
+    SessionReady = 51,
+
+    /// <summary>
+    /// Выход из сессии.
+    /// </summary>
+    SessionLeave = 52,
 
     // ===== Сообщения чата (64-95) =====
 

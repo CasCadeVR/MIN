@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\MIN.Sessions.Core.Messaging.Contracts\MIN.Sessions.Core.Messaging.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

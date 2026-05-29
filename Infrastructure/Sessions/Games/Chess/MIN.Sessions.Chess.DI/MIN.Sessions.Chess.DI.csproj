@@ -9,6 +9,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\Common\MIN.Common.Mvc\MIN.Common.Mvc.csproj" />
     <ProjectReference Include="..\MIN.Sessions.Chess.Messaging\MIN.Sessions.Chess.Messaging.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Chess.Services\MIN.Sessions.Chess.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="FeatureCollection\" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Infrastructure.Services;
+﻿using System.Net;
+
+namespace MIN.Desktop.Infrastructure.Services;
 
 /// <summary>
 /// Помошник в парсировании ip адреса на адрес и порт
@@ -30,5 +32,35 @@ public static class IpAddressParser
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Валидировать IP адрес и вернуть ip адрес в случае DNS резолвинга
+    /// </summary>
+    public static string ValidateIP(string ipAddress)
+    {
+        if (!IPAddress.TryParse(ipAddress, out _))
+        {
+            try
+            {
+                var iPHostEntry = Dns.GetHostEntry(ipAddress);
+                if (iPHostEntry.AddressList.Length == 0)
+                {
+                    throw new InvalidOperationException("IP Адрес задан в неккоретном формате");
+                }
+                else
+                {
+                    return iPHostEntry.AddressList.First().ToString();
+                }
+            }
+            catch (Exception)
+            {
+                throw new InvalidOperationException("DNS не смог распознать IP адрес");
+            }
+        }
+        else
+        {
+            return ipAddress;
+        }
     }
 }

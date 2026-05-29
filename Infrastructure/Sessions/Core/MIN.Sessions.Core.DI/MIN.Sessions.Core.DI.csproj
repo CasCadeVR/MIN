@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Common\MIN.Common.Mvc\MIN.Common.Mvc.csproj" />
     <ProjectReference Include="..\MIN.Sessions.Core.Messaging\MIN.Sessions.Core.Messaging.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Services.Contracts\MIN.Sessions.Core.Services.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

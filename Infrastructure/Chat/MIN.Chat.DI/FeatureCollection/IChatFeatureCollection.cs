@@ -15,4 +15,7 @@ public interface IChatFeatureCollection
 
     /// <inheritdoc cref="IChatFileService"/>
     IChatFileService ChatFileService { get; }
+
+    /// <inheritdoc cref="IChatSessionService"/>
+    IChatSessionService ChatSesssionService { get; }
 }

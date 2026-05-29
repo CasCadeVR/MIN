@@ -1,7 +1,8 @@
 ﻿using MIN.Core.Messaging.Contracts;
+using MIN.Sessions.Chess.Services.Contracts.Models;
 using MIN.Sessions.Core.Messaging.Contracts;
 
-namespace MIN.Sessions.Chess.Messaging;
+namespace MIN.Sessions.Chess.Messaging.Default;
 
 /// <summary>
 /// Сообщение запроса на хостинг шахмат
@@ -10,4 +11,9 @@ public sealed class ChessHostRequestMessage : SessionHostRequestMessage
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.ChessHostRequest;
+
+    /// <summary>
+    /// Настройки хостинга шахмат
+    /// </summary>
+    public ChessHostRequestOptions? Options { get; set; }
 }

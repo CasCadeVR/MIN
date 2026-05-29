@@ -36,6 +36,9 @@
     <Compile Update="Components\Controls\ContextMenuStrips\FileMessageContextMenuStrip.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="Components\Controls\ContextMenuStrips\ChatActionContextMenuStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="Components\Controls\DGVs\OneColumnDataGridView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -80,10 +83,16 @@
     <Compile Update="Views\Components\RoomRelated\RecentRoomCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Views\Components\SessionRelated\SessionCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Views\Forms\HelperForms\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Views\Forms\HelperForms\ParticipantCreateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Views\Forms\HelperForms\SessionChoosingForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Views\Forms\HelperForms\TcpDirectConnectForm.cs">

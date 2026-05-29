@@ -44,6 +44,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         InitializeNotifications();
         InitializeResizeTimer();
         InitializeTypingTimer();
+        InitializeContextMenuStrips();
         InitializeParentFormWindowStateEvents();
         HideMultiFileAttachmentUploader();
         HideStatusRow();

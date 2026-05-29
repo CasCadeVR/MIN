@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Messaging\MIN.Core.Messaging.Contracts\MIN.Core.Messaging.Contracts.csproj" />
     <ProjectReference Include="..\..\..\..\Core\SubRooms\MIN.Core.SubRooms.Contracts\MIN.Core.SubRooms.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Services.Contracts\MIN.Sessions.Core.Services.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

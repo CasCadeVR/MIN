@@ -1,7 +1,7 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Sessions.Core.Messaging.Contracts;
 
-namespace MIN.Sessions.Chess.Messaging;
+namespace MIN.Sessions.Chess.Messaging.Default;
 
 /// <summary>
 /// Сообщение о присоединении участника к шахматам

@@ -232,7 +232,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             Controls.Add(splitContainer);
             MinimumSize = new Size(379, 241);
             Name = "TcpDirectConnectForm";
-            StartPosition = FormStartPosition.CenterParent;
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "MIN - Подключение напрямую";
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);

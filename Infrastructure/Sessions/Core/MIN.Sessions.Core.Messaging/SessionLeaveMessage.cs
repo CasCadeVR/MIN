@@ -1,12 +1,12 @@
 ﻿using MIN.Core.Messaging.Contracts;
-using MIN.Core.Messaging.Contracts.Messages;
+using MIN.Sessions.Core.Messaging.Contracts;
 
 namespace MIN.Sessions.Core.Messaging;
 
 /// <summary>
-/// Сообщение о выходе из подкомнаты
+/// Сообщение о выходе из сессии
 /// </summary>
-public sealed class SessionLeaveMessage : BaseMessage
+public sealed class SessionLeaveMessage : BaseSessionMessage
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.SessionLeave;
@@ -18,9 +18,4 @@ public sealed class SessionLeaveMessage : BaseMessage
     /// Идентификатор комнаты
     /// </summary>
     public Guid RoomId { get; set; }
-
-    /// <summary>
-    /// Идентификатор подкомнаты
-    /// </summary>
-    public int SubRoomId { get; set; }
 }

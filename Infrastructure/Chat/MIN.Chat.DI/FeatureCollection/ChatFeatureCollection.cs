@@ -14,15 +14,20 @@ public class ChatFeatureCollection : IChatFeatureCollection
     /// <inheritdoc cref="IChatFileService"/>
     public IChatFileService ChatFileService { get; }
 
+    /// <inheritdoc cref="IChatSessionService"/>
+    public IChatSessionService ChatSesssionService { get; }
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatFeatureCollection"/>
     /// </summary>
     public ChatFeatureCollection(IChatTextService chatTextService,
         IChatStatusService chatStatusService,
-        IChatFileService chatFileService)
+        IChatFileService chatFileService,
+        IChatSessionService chatSessionService)
     {
         ChatTextService = chatTextService;
         ChatStatusService = chatStatusService;
         ChatFileService = chatFileService;
+        ChatSesssionService = chatSessionService;
     }
 }

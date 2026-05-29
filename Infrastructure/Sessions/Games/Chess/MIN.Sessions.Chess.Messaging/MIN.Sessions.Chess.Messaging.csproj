@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\MIN.Sessions.Core.Messaging.Contracts\MIN.Sessions.Core.Messaging.Contracts.csproj" />
+    <Folder Include="WithinSession\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MIN.Sessions.Chess.Services.Contracts\MIN.Sessions.Chess.Services.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
