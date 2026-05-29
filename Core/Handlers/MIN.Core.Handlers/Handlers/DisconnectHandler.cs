@@ -11,7 +11,7 @@ using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class DisconnectHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class DisconnectHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;

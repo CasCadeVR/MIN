@@ -14,7 +14,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
-internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandlerAnchor
+internal sealed class FileMetadataHandler : IMessageHandler
 {
     private readonly IFileTransferService fileTransferService;
     private readonly IEventBus eventBus;

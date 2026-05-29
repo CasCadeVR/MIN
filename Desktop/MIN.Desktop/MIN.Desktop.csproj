@@ -45,6 +45,12 @@
     <Compile Update="Components\Controls\ListBoxes\DefaultListBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="Components\Controls\PictureBoxes\BasePictureBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Components\Controls\PictureBoxes\DefaultPictureBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="Components\Controls\RadioButtons\DefaultRadioButton.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -74,10 +80,13 @@
     <Compile Update="Views\Components\ChatMessages\Files\ChatFileMessageCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Views\Components\ChatMessages\Sessions\ChatSessionMessageCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Views\Components\ParticipantCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Views\Components\ChatMessages\ChatTextMessageCard.cs">
+    <Compile Update="Views\Components\ChatMessages\ChatTexts\ChatTextMessageCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Views\Components\RoomRelated\RecentRoomCard.cs">

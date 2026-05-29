@@ -10,7 +10,7 @@ using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class ChatHistoryHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class ChatHistoryHandler : IMessageHandler
 {
     private readonly IRoomStore roomStore;
     private readonly IRoomHoster roomHoster;

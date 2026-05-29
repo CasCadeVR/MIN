@@ -2,6 +2,7 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.FileTransfer.Messaging;
+using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -68,6 +69,11 @@ public partial class ChatPanelView
             );
         }
         catch { }
+    }
+
+    private async void SendSessionStartMessage(Session session)
+    {
+        await featureCollection.Chat.ChatSesssionService.SendSessionRequestAsync(roomId, session, null, formCts.Token);
     }
 
     private async Task SendMessage()

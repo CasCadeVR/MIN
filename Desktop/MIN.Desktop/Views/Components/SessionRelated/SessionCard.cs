@@ -1,6 +1,5 @@
 ﻿using MIN.Desktop.Contracts.Schemes;
-using MIN.Desktop.Properties;
-using MIN.Sessions.Core.Services.Contracts.Enums;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Desktop.Components;
@@ -67,11 +66,7 @@ public partial class SessionCard : UserControl
         sessionName.Text = Session.Name;
         sessionDescription.Text = Session.Description;
 
-        sessionImage.Image = Session.SessionType switch
-        {
-            SessionType.Chess => Resources.rocket,
-            _ => throw new ArgumentOutOfRangeException(nameof(SessionType), $"Not expected sessionType value: {Session.SessionType}"),
-        };
+        sessionImage.Image = SessionImageProvider.LoadImageOutOfSessionType(Session.SessionType);
     }
 
     private void card_Click(object sender, EventArgs e)

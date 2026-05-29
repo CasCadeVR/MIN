@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
+using MIN.Core.Handlers.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Sessions.Core.DI.FeatureCollection;
+using MIN.Sessions.Core.Handlers;
 using MIN.Sessions.Core.Messaging;
 
 namespace MIN.Sessions.Core.DI;
@@ -16,6 +18,7 @@ public class SessionModule : Module
     protected override void Load(IServiceCollection services)
     {
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, ISessionsMessagingAnchor>(ServiceLifetime.Singleton);
+        services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, ISessionsHandlerAnchor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionFeatureCollection>(ServiceLifetime.Singleton);
     }
 }

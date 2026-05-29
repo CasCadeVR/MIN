@@ -14,7 +14,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class ParticipantJoinHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class ParticipantJoinHandler : IMessageHandler
 {
     private readonly IRoomStore roomStore;
     private readonly IRoomHoster roomHoster;

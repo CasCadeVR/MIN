@@ -2,14 +2,14 @@
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Helpers.Contracts.Interfaces;
-using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class ParticipantLeftHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class ParticipantLeftHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;

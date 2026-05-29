@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
+using MIN.Core.Handlers.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Sessions.Chess.Handlers;
 using MIN.Sessions.Chess.Messaging;
 using MIN.Sessions.Chess.Services.Services;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
@@ -17,6 +19,7 @@ public class ChessModule : Module
     protected override void Load(IServiceCollection services)
     {
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IChessMessagingAnchor>(ServiceLifetime.Singleton);
+        services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, IChessHandlerAnchor>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableTo<ISessionPresenter, ChessSessionPresenter>(ServiceLifetime.Singleton);
     }
 }

@@ -11,6 +11,7 @@ using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Components;
 using MIN.FileTransfer.Messaging;
+using MIN.Sessions.Core.Messaging;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -47,6 +48,9 @@ public partial class ChatPanelView
             {
                 case ChatTextMessage m:
                     rowControl = CreateTextMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                    break;
+                case SessionReadyMessage m:
+                    rowControl = CreateSessionMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
                     break;
                 case FileMetadataMessage m:
                     rowControl = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
@@ -204,6 +208,28 @@ public partial class ChatPanelView
         var minutesPassed = CalculateTimePadding(msg.Timestamp);
 
         var card = new ChatTextMessageCard(msg, isSelf, isHost, removeHeaders)
+        {
+            Anchor = isSelf ? AnchorStyles.Right : AnchorStyles.Left,
+            Margin = new Padding(20, 0, 20, 0),
+        };
+
+        if (!withAppendOnTop)
+        {
+            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+        }
+        ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
+        lastChatMessage = msg;
+        return card;
+    }
+
+    private ChatSessionMessageCard CreateSessionMessageCard(SessionReadyMessage msg, ChatMessageRow row,
+           bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
+    {
+        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
+        var minutesPassed = CalculateTimePadding(msg.Timestamp);
+
+        var card = new ChatSessionMessageCard(featureCollection.Core.EventBus,
+            msg, localParticipant, isHost, removeHeaders)
         {
             Anchor = isSelf ? AnchorStyles.Right : AnchorStyles.Left,
             Margin = new Padding(20, 0, 20, 0),

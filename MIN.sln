@@ -196,6 +196,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Sessions.Chess.DI", "In
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Sessions.Chess.Services", "Infrastructure\Sessions\Games\Chess\MIN.Sessions.Chess.Services\MIN.Sessions.Chess.Services.csproj", "{66394002-8706-4FCA-9D1A-710B8714140D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Sessions.Chess.Handlers", "Infrastructure\Sessions\Games\Chess\MIN.Sessions.Chess.Handlers\MIN.Sessions.Chess.Handlers.csproj", "{206ABC97-51AF-4D06-BFAE-C20D1E7FA978}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Sessions.Chess.Events", "Infrastructure\Sessions\Games\Chess\MIN.Sessions.Chess.Events\MIN.Sessions.Chess.Events.csproj", "{2739989A-3D2F-405C-904A-8383C5BAD275}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Sessions.Core.Events", "Infrastructure\Sessions\Core\MIN.Sessions.Core.Events\MIN.Sessions.Core.Events.csproj", "{86C3B35B-680A-4F51-8D61-A6F78AF51F67}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MIN.Sessions.Core.Handlers", "Infrastructure\Sessions\Core\MIN.Sessions.Core.Handlers\MIN.Sessions.Core.Handlers.csproj", "{3B5E9CC3-6841-4BD3-BAC2-3042A2FEEAD7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -458,6 +466,22 @@ Global
 		{66394002-8706-4FCA-9D1A-710B8714140D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66394002-8706-4FCA-9D1A-710B8714140D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66394002-8706-4FCA-9D1A-710B8714140D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{206ABC97-51AF-4D06-BFAE-C20D1E7FA978}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{206ABC97-51AF-4D06-BFAE-C20D1E7FA978}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{206ABC97-51AF-4D06-BFAE-C20D1E7FA978}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{206ABC97-51AF-4D06-BFAE-C20D1E7FA978}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2739989A-3D2F-405C-904A-8383C5BAD275}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2739989A-3D2F-405C-904A-8383C5BAD275}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2739989A-3D2F-405C-904A-8383C5BAD275}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2739989A-3D2F-405C-904A-8383C5BAD275}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86C3B35B-680A-4F51-8D61-A6F78AF51F67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86C3B35B-680A-4F51-8D61-A6F78AF51F67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86C3B35B-680A-4F51-8D61-A6F78AF51F67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86C3B35B-680A-4F51-8D61-A6F78AF51F67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B5E9CC3-6841-4BD3-BAC2-3042A2FEEAD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B5E9CC3-6841-4BD3-BAC2-3042A2FEEAD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B5E9CC3-6841-4BD3-BAC2-3042A2FEEAD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B5E9CC3-6841-4BD3-BAC2-3042A2FEEAD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -550,6 +574,10 @@ Global
 		{2C121089-3A46-4919-A526-E51E8579BA6A} = {93FB0576-CB99-48BF-9A9B-A287B3DA4AD3}
 		{088920BF-5ED8-4ED9-B5AA-A5DA31D5ECE4} = {82EB055C-13AA-4B89-9802-FB7534618CD3}
 		{66394002-8706-4FCA-9D1A-710B8714140D} = {82EB055C-13AA-4B89-9802-FB7534618CD3}
+		{206ABC97-51AF-4D06-BFAE-C20D1E7FA978} = {82EB055C-13AA-4B89-9802-FB7534618CD3}
+		{2739989A-3D2F-405C-904A-8383C5BAD275} = {82EB055C-13AA-4B89-9802-FB7534618CD3}
+		{86C3B35B-680A-4F51-8D61-A6F78AF51F67} = {93FB0576-CB99-48BF-9A9B-A287B3DA4AD3}
+		{3B5E9CC3-6841-4BD3-BAC2-3042A2FEEAD7} = {93FB0576-CB99-48BF-9A9B-A287B3DA4AD3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57E9A443-C4F6-4D77-AEA8-F7D953811002}

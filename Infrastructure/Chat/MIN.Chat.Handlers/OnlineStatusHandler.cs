@@ -10,7 +10,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Handlers;
 
-internal sealed class OnlineStatusHandler : IMessageHandler, IChatHandlerAnchor
+internal sealed class OnlineStatusHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;

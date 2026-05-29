@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Common\MIN.Common.Mvc\MIN.Common.Mvc.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Events\MIN.Sessions.Core.Events.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Handlers\MIN.Sessions.Core.Handlers.csproj" />
     <ProjectReference Include="..\MIN.Sessions.Core.Messaging\MIN.Sessions.Core.Messaging.csproj" />
     <ProjectReference Include="..\MIN.Sessions.Core.Services.Contracts\MIN.Sessions.Core.Services.Contracts.csproj" />
   </ItemGroup>

@@ -31,7 +31,7 @@
             tableLayoutPanelLabels = new TableLayoutPanel();
             sessionName = new MIN.Desktop.Components.Labels.Heading3Label();
             sessionDescription = new MIN.Desktop.Components.Labels.PrimaryLabel();
-            sessionImage = new PictureBox();
+            sessionImage = new MIN.Desktop.Components.Controls.PictureBoxes.DefaultPictureBox();
             tableLayoutPanelLabels.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)sessionImage).BeginInit();
             SuspendLayout();
@@ -85,11 +85,11 @@
             // 
             // sessionImage
             // 
+            sessionImage.BackColor = Color.FromArgb(248, 249, 255);
             sessionImage.Dock = DockStyle.Fill;
-            sessionImage.Location = new Point(0, 0);
-            sessionImage.Margin = new Padding(0);
+            sessionImage.Location = new Point(3, 3);
             sessionImage.Name = "sessionImage";
-            sessionImage.Size = new Size(205, 205);
+            sessionImage.Size = new Size(199, 199);
             sessionImage.SizeMode = PictureBoxSizeMode.Zoom;
             sessionImage.TabIndex = 2;
             sessionImage.TabStop = false;
@@ -114,6 +114,6 @@
         private TableLayoutPanel tableLayoutPanelLabels;
         private Labels.Heading3Label sessionName;
         private Labels.PrimaryLabel sessionDescription;
-        private PictureBox sessionImage;
+        private Controls.PictureBoxes.DefaultPictureBox sessionImage;
     }
 }

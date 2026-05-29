@@ -10,7 +10,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
-internal sealed class FileTransferResponseHandler : IMessageHandler, IFileTransferHandlerAnchor
+internal sealed class FileTransferResponseHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly IFileTransferService fileTransferService;

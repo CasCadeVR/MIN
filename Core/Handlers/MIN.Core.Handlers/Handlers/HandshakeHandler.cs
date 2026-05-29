@@ -11,7 +11,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class HandshakeHandler : IMessageHandler
 {
     private readonly IMessageEncryptor encryptor;
     private readonly IGracefulDisconnector gracefulDisconnector;

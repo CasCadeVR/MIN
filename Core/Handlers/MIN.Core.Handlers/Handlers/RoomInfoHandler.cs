@@ -10,7 +10,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class RoomInfoHandler : IMessageHandler
 {
     private readonly IRoomStore roomStore;
     private readonly IEventBus eventBus;

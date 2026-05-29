@@ -34,14 +34,23 @@ public sealed class ChatSessionService : IChatSessionService
         switch (selectedSession.SessionType)
         {
             case SessionType.Chess:
-                if (hostRequestOptions is not ChessHostRequestOptions chessHostRequestOptions)
+                ChessHostRequestOptions? chessOptions = null;
+
+                if (hostRequestOptions != null)
                 {
-                    throw new ArgumentException("Несоответсвие типов параметров хостинга");
+                    if (hostRequestOptions is not ChessHostRequestOptions chessHostRequestOptions)
+                    {
+                        throw new ArgumentException("Несоответсвие типов параметров хостинга");
+                    }
+                    else
+                    {
+                        chessOptions = chessHostRequestOptions;
+                    }
                 }
 
                 message = new ChessHostRequestMessage()
                 {
-                    Options = chessHostRequestOptions,
+                    Options = chessOptions,
                 };
                 break;
         }
@@ -56,14 +65,23 @@ public sealed class ChatSessionService : IChatSessionService
         switch (sessionReadyMessage.Session.SessionType)
         {
             case SessionType.Chess:
-                if (joinRequestOptions is not ChessJoinRequestOptions chessJoinRequestOptions)
+                ChessJoinRequestOptions? chessOptions = null;
+
+                if (joinRequestOptions != null)
                 {
-                    throw new ArgumentException("Несоответсвие типов параметров хостинга");
+                    if (joinRequestOptions is not ChessJoinRequestOptions chessJoinRequestOptions)
+                    {
+                        throw new ArgumentException("Несоответсвие типов параметров хостинга");
+                    }
+                    else
+                    {
+                        chessOptions = chessJoinRequestOptions;
+                    }
                 }
 
                 message = new ChessJoinRequestMessage()
                 {
-                    Options = chessJoinRequestOptions,
+                    Options = chessOptions,
                 };
                 break;
         }

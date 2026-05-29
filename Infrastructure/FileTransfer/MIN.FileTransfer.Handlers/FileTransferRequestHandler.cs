@@ -16,7 +16,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
-internal sealed class FileTransferRequestHandler : IMessageHandler, IFileTransferHandlerAnchor
+internal sealed class FileTransferRequestHandler : IMessageHandler
 {
     private readonly IIdentityService identityService;
     private readonly IFileTransferService fileTransferService;

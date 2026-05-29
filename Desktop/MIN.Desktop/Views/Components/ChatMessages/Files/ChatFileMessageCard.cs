@@ -78,7 +78,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
         downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
         uiContext = SynchronizationContext.Current
-            ?? throw new InvalidOperationException("");
+            ?? throw new InvalidOperationException("Must be created on UI thread");
 
         FillLabels();
         ApplyStylings();
