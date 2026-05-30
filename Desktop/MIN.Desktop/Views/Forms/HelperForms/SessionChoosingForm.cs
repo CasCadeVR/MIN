@@ -69,6 +69,7 @@ public partial class SessionChoosingForm : StyledForm
     {
         if (SelectedSession != null)
         {
+            selectButton.Enabled = false;
             OnSelected?.Invoke(SelectedSession);
         }
     }

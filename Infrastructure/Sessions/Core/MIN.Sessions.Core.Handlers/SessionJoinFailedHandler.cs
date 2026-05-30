@@ -19,7 +19,7 @@ internal sealed class SessionJoinFailedHandler : IMessageHandler
         this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionHostFailed];
+    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionJoinFailed];
 
     int IMessageHandler.Priority => 15;
 

@@ -79,7 +79,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     result.Response.SenderId = identityService.SelfParticipant.Id;
                     if (context.ConnectionId == CoreRegistryConstants.LocalConnectionId)
                     {
-                        await DispatchAsync(message, context);
+                        await DispatchAsync(result.Response, context);
                     }
                     else
                     {

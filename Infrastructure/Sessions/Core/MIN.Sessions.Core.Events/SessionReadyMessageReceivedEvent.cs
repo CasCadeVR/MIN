@@ -4,7 +4,7 @@ using MIN.Sessions.Core.Messaging;
 namespace MIN.Sessions.Core.Events;
 
 /// <summary>
-/// Получена информация о файле в комнате
+/// Получена информация о готовой сессии в комнате
 /// </summary>
 public sealed class SessionReadyMessageReceivedEvent : BaseEvent
 {

@@ -45,14 +45,14 @@
             tableLayoutPanelLabels.Controls.Add(sessionDescription, 0, 2);
             tableLayoutPanelLabels.Controls.Add(sessionImage, 0, 0);
             tableLayoutPanelLabels.Dock = DockStyle.Fill;
-            tableLayoutPanelLabels.Location = new Point(10, 10);
+            tableLayoutPanelLabels.Location = new Point(5, 5);
             tableLayoutPanelLabels.Margin = new Padding(0);
             tableLayoutPanelLabels.Name = "tableLayoutPanelLabels";
             tableLayoutPanelLabels.RowCount = 3;
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 205F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelLabels.Size = new Size(205, 303);
+            tableLayoutPanelLabels.Size = new Size(215, 313);
             tableLayoutPanelLabels.TabIndex = 2;
             tableLayoutPanelLabels.Click += card_Click;
             // 
@@ -62,7 +62,7 @@
             sessionName.AutoSize = true;
             sessionName.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             sessionName.ForeColor = Color.FromArgb(45, 43, 58);
-            sessionName.Location = new Point(59, 212);
+            sessionName.Location = new Point(64, 212);
             sessionName.Name = "sessionName";
             sessionName.Size = new Size(86, 21);
             sessionName.TabIndex = 0;
@@ -75,7 +75,7 @@
             sessionDescription.AutoSize = true;
             sessionDescription.Font = new Font("Segoe UI", 9.75F);
             sessionDescription.ForeColor = Color.FromArgb(45, 43, 58);
-            sessionDescription.Location = new Point(69, 263);
+            sessionDescription.Location = new Point(74, 268);
             sessionDescription.Name = "sessionDescription";
             sessionDescription.Size = new Size(66, 17);
             sessionDescription.TabIndex = 1;
@@ -89,7 +89,7 @@
             sessionImage.Dock = DockStyle.Fill;
             sessionImage.Location = new Point(3, 3);
             sessionImage.Name = "sessionImage";
-            sessionImage.Size = new Size(199, 199);
+            sessionImage.Size = new Size(209, 199);
             sessionImage.SizeMode = PictureBoxSizeMode.Zoom;
             sessionImage.TabIndex = 2;
             sessionImage.TabStop = false;
@@ -102,7 +102,7 @@
             Controls.Add(tableLayoutPanelLabels);
             Margin = new Padding(0);
             Name = "SessionCard";
-            Padding = new Padding(10);
+            Padding = new Padding(5);
             Size = new Size(225, 323);
             tableLayoutPanelLabels.ResumeLayout(false);
             tableLayoutPanelLabels.PerformLayout();

@@ -138,6 +138,7 @@ public partial class ChatPanelView
             var choosingForm = new SessionChoosingForm(featureCollection.Sessions);
             choosingForm.OnSelected += (session) =>
             {
+                choosingForm.Close();
                 SendSessionStartMessage(session);
             };
             choosingForm.ShowDialog();

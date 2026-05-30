@@ -234,12 +234,14 @@ public partial class ChatPanelView
             Anchor = isSelf ? AnchorStyles.Right : AnchorStyles.Left,
             Margin = new Padding(20, 0, 20, 0),
         };
+        card.OnJoinRequested += () => OnSessionJoinRequested(msg);
 
         if (!withAppendOnTop)
         {
             InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
         }
         ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
+        row.Height = card.Height;
         lastChatMessage = msg;
         return card;
     }

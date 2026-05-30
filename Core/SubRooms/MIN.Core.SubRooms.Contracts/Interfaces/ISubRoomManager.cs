@@ -1,4 +1,5 @@
-﻿using MIN.Core.SubRooms.Contracts.Enums;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Models;
 
 namespace MIN.Core.SubRooms.Contracts.Interfaces;
@@ -11,12 +12,12 @@ public interface ISubRoomManager
     /// <summary>
     /// Захостить подкомнаты
     /// </summary>
-    SubRoomInfo HostSubRoom(Guid roomId, Guid creatorId, SubRoomPurpose purpose);
+    SubRoomInfo HostSubRoom(Guid roomId, ParticipantInfo creator, SubRoomPurpose purpose);
 
     /// <summary>
     /// Попытаться войти в подкомнату
     /// </summary>
-    bool TryJoinSubRoom(Guid roomId, int subRoomId, Guid participantId);
+    bool TryJoinSubRoom(Guid roomId, int subRoomId, ParticipantInfo participant);
 
     /// <summary>
     /// Уйти из подкомнаты

@@ -90,19 +90,19 @@
             // 
             // joinButton
             // 
-            joinButton.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             joinButton.BackColor = Color.FromArgb(167, 157, 255);
+            joinButton.Dock = DockStyle.Fill;
             joinButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             joinButton.FlatStyle = FlatStyle.Flat;
             joinButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             joinButton.ForeColor = Color.FromArgb(248, 249, 255);
             joinButton.Location = new Point(131, 67);
             joinButton.Name = "joinButton";
-            joinButton.Size = new Size(184, 23);
+            joinButton.Size = new Size(184, 58);
             joinButton.TabIndex = 7;
             joinButton.Text = "Присоединиться";
             joinButton.UseVisualStyleBackColor = false;
-            joinButton.Click += this.joinButton_Click;
+            joinButton.Click += joinButton_Click;
             // 
             // ChatSessionMessageCard
             // 

@@ -3,6 +3,7 @@ using MIN.Core.Events.Contracts;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Components.ChatMessages;
+using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging;
 
 namespace MIN.Desktop.Components;
@@ -16,6 +17,7 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
     private readonly SessionReadyMessage sessionReadyMessage = null!;
     private readonly SynchronizationContext uiContext = null!;
     private HashSet<IDisposable> eventTokens = null!;
+    private int currentAmount;
 
     /// <summary>
     /// Событие, возникающее по нажатию на кнопку присоединиться
@@ -45,15 +47,18 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
             removeHeaders)
     {
         InitializeComponent();
+
         this.eventBus = eventBus;
         this.sessionReadyMessage = sessionReadyMessage;
+
+        currentAmount = sessionReadyMessage.CurrentParticipantAmount;
 
         uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("Must be created on UI thread");
 
         FillLabels();
         ApplyStylings();
-
+        PerformLayout();
         SubscribeToEvents();
     }
 
@@ -61,7 +66,43 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
     {
         eventTokens =
         [
+            eventBus.Subscribe<SessionParticipantJoinedEvent>(OnSessionParticipantJoined),
+            eventBus.Subscribe<SessionParticipantLeftEvent>(OnSessionParticipantLeft)
         ];
+    }
+
+    private async Task OnSessionParticipantJoined(SessionParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != sessionReadyMessage.RoomId
+            || eventMessage.SubRoomId != sessionReadyMessage.SubRoomId)
+        {
+            return;
+        }
+
+        currentAmount++;
+
+        uiContext.Post(_ =>
+        {
+            UpdateStats();
+        }, null);
+        await Task.CompletedTask;
+    }
+
+    private async Task OnSessionParticipantLeft(SessionParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != sessionReadyMessage.RoomId
+            || eventMessage.SubRoomId != sessionReadyMessage.SubRoomId)
+        {
+            return;
+        }
+
+        currentAmount--;
+
+        uiContext.Post(_ =>
+        {
+            UpdateStats();
+        }, null);
+        await Task.CompletedTask;
     }
 
     ///<inheritdoc />
@@ -74,14 +115,20 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
         base.ApplyStylings();
 
         tableLayoutPanelLabels.BackColor = SenderColor;
-        sessionName.Font = FontScheme.Default;
+        sessionName.Font = FontScheme.Heading3;
+        joinButton.Font = FontScheme.Default;
     }
 
     private void FillLabels()
     {
         sessionName.Text = sessionReadyMessage.Session.Name;
         sessionImage.Image = SessionImageProvider.LoadImageOutOfSessionType(sessionReadyMessage.Session.SessionType);
-        joinButton.Text = $"Присоединиться (Учавствуют: {sessionReadyMessage.CurrentParticipantAmount})";
+        UpdateStats();
+    }
+
+    private void UpdateStats()
+    {
+        joinButton.Text = $"Присоединиться (Учавствуют: {currentAmount})";
     }
 
     private void joinButton_Click(object sender, EventArgs e)

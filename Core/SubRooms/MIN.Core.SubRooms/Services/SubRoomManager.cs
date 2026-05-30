@@ -11,8 +11,7 @@ public class SubRoomManager : ISubRoomManager
 {
     private readonly ConcurrentDictionary<Guid, SubRoomState> rooms = new();
 
-    /// <inheritdoc />
-    public SubRoomInfo HostSubRoom(Guid roomId, Guid creatorId, SubRoomPurpose purpose)
+    SubRoomInfo ISubRoomManager.HostSubRoom(Guid roomId, ParticipantInfo creator, SubRoomPurpose purpose)
     {
         var room = rooms.GetOrAdd(roomId, _ => new SubRoomState());
 
@@ -23,8 +22,8 @@ public class SubRoomManager : ISubRoomManager
             {
                 Id = room.NextId++,
                 Purpose = purpose,
-                CreatorId = creatorId,
-                Participants = [],
+                CreatorId = creator.Id,
+                Participants = [creator],
                 CreatedAt = DateTime.Now
             };
             room.SubRooms[subRoom.Id] = subRoom;
@@ -33,8 +32,7 @@ public class SubRoomManager : ISubRoomManager
         return subRoom;
     }
 
-    /// <inheritdoc />
-    public bool TryJoinSubRoom(Guid roomId, int subRoomId, Guid participantId)
+    bool ISubRoomManager.TryJoinSubRoom(Guid roomId, int subRoomId, ParticipantInfo participant)
     {
         if (!rooms.TryGetValue(roomId, out var room))
         {
@@ -48,18 +46,17 @@ public class SubRoomManager : ISubRoomManager
                 return false;
             }
 
-            if (subRoom.Participants.Any(p => p.Id == participantId))
+            if (subRoom.Participants.Any(p => p.Id == participant.Id))
             {
                 return false;
             }
 
-            subRoom.Participants.Add(new ParticipantInfo { Id = participantId });
+            subRoom.Participants.Add(participant);
             return true;
         }
     }
 
-    /// <inheritdoc />
-    public void LeaveSubRoom(Guid roomId, int subRoomId, Guid participantId)
+    void ISubRoomManager.LeaveSubRoom(Guid roomId, int subRoomId, Guid participantId)
     {
         if (!rooms.TryGetValue(roomId, out var room))
         {
@@ -82,8 +79,7 @@ public class SubRoomManager : ISubRoomManager
         }
     }
 
-    /// <inheritdoc />
-    public bool TryStopSubRoom(Guid roomId, int subRoomId, Guid requesterId)
+    bool ISubRoomManager.TryStopSubRoom(Guid roomId, int subRoomId, Guid requesterId)
     {
         if (!rooms.TryGetValue(roomId, out var room))
         {
@@ -107,8 +103,7 @@ public class SubRoomManager : ISubRoomManager
         }
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<Guid> GetParticipantIds(Guid roomId, int subRoomId)
+    IReadOnlyList<Guid> ISubRoomManager.GetParticipantIds(Guid roomId, int subRoomId)
     {
         if (!rooms.TryGetValue(roomId, out var room))
         {
@@ -126,8 +121,7 @@ public class SubRoomManager : ISubRoomManager
         }
     }
 
-    /// <inheritdoc />
-    public SubRoomInfo? GetSubRoom(Guid roomId, int subRoomId)
+    SubRoomInfo? ISubRoomManager.GetSubRoom(Guid roomId, int subRoomId)
     {
         if (!rooms.TryGetValue(roomId, out var room))
         {
@@ -145,8 +139,7 @@ public class SubRoomManager : ISubRoomManager
         }
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<SubRoomInfo> GetRoomSubRooms(Guid roomId)
+    IReadOnlyList<SubRoomInfo> ISubRoomManager.GetRoomSubRooms(Guid roomId)
     {
         if (!rooms.TryGetValue(roomId, out var room))
         {

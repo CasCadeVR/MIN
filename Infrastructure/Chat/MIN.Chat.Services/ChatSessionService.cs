@@ -81,6 +81,7 @@ public sealed class ChatSessionService : IChatSessionService
 
                 message = new ChessJoinRequestMessage()
                 {
+                    SubRoomId = sessionReadyMessage.SubRoomId,
                     Options = chessOptions,
                 };
                 break;

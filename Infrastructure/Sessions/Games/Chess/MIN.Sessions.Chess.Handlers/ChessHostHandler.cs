@@ -1,5 +1,4 @@
-﻿using MIN.Core.Events.Contracts;
-using MIN.Core.Handlers.Contracts;
+﻿using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -14,24 +13,21 @@ using MIN.Sessions.Core.Messaging;
 
 namespace MIN.Sessions.Chess.Handlers;
 
-internal sealed class ChessHostRequestHandler : IMessageHandler
+internal sealed class ChessHostHandler : IMessageHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IMessageRouter messageRouter;
-    private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
     /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="ChessHostRequestHandler"/>
+    /// Инициализирует новый экземлпяр <see cref="ChessHostHandler"/>
     /// </summary>
-    public ChessHostRequestHandler(ISubRoomManager subRoomManager,
+    public ChessHostHandler(ISubRoomManager subRoomManager,
         IMessageRouter messageRouter,
-        IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.subRoomManager = subRoomManager;
         this.messageRouter = messageRouter;
-        this.eventBus = eventBus;
         this.logger = logger;
     }
 
@@ -43,8 +39,8 @@ internal sealed class ChessHostRequestHandler : IMessageHandler
     {
         if (message is not ChessHostRequestMessage chessHostRequestMessage)
         {
-            logger.Log($"Неизвестный тип сообщения в {nameof(ChessHostRequestHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ChessHostRequestHandler)} - {message.GetType()}");
+            logger.Log($"Неизвестный тип сообщения в {nameof(ChessHostHandler)} - {message.GetType()}");
+            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ChessHostHandler)} - {message.GetType()}");
         }
 
         if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
@@ -66,14 +62,17 @@ internal sealed class ChessHostRequestHandler : IMessageHandler
             return HandlerResult.WithResponse(hostFailedMessage);
         }
 
-        var subRoomInfo = subRoomManager.HostSubRoom(context.RoomContext.RoomId, message.SenderId, SubRoomPurpose.Activity);
+        var senderParicipantInfo = sender!.ToParticipantInfo();
+
+        var subRoomInfo = subRoomManager.HostSubRoom(context.RoomContext.RoomId, senderParicipantInfo, SubRoomPurpose.Activity);
 
         var hostReadyMessage = new SessionReadyMessage()
         {
+            RoomId = context.RoomContext.RoomId,
             SubRoomId = subRoomInfo.Id,
             CurrentParticipantAmount = 1,
             Session = ChessSessionProvider.GetChessSession(),
-            Sender = sender!.ToParticipantInfo(),
+            Sender = senderParicipantInfo,
         };
 
         await messageRouter.RouteAsync(hostReadyMessage, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);

@@ -1,4 +1,5 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
@@ -6,6 +7,8 @@ using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Models;
+using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Rooms;
@@ -84,14 +87,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
                 }
                 else if (context.Participants.TryGetParticipantById(leavingParticipant.Id, out _))
                 {
-                    context.Connections.Unregister(e.ConnectionId);
-                    var participantLeftMessage = new ParticipantLeftMessage()
-                    {
-                        Participant = leavingParticipant,
-                        RoomId = e.RoomId,
-                    };
-
-                    await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, cts.Token);
+                    await HandleConnectionLoss(context, e, hostParticipantId, leavingParticipant);
                 }
             }
 
@@ -108,6 +104,19 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         {
             logger.Log($"Произошла ошибка во время обработки изменения состояния подключения: {ex.Message}");
         }
+    }
+
+    private async Task HandleConnectionLoss(RoomContext context, RoomConnectionStateChangedEventArgs e,
+        Guid hostParticipantId, ParticipantInfo leavingParticipant)
+    {
+        context.Connections.Unregister(e.ConnectionId);
+        var participantLeftMessage = new ParticipantLeftMessage()
+        {
+            Participant = leavingParticipant,
+            RoomId = e.RoomId,
+        };
+
+        await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, cts.Token);
     }
 
     /// <inheritdoc />

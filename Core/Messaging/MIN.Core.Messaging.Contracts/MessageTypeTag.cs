@@ -113,6 +113,16 @@ public enum MessageTypeTag : byte
     /// </summary>
     SessionLeave = 52,
 
+    /// <summary>
+    /// Участник вошёл в сессию.
+    /// </summary>
+    SessionParticipantJoined = 53,
+
+    /// <summary>
+    /// Участник вышел из сессии.
+    /// </summary>
+    SessionParticipantLeft = 54,
+
     // ===== Сообщения чата (64-95) =====
 
     /// <summary>
