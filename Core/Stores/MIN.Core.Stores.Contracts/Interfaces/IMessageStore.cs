@@ -14,6 +14,16 @@ public interface IMessageStore
     void AddMessage(IMessage message, bool appendOnStart = false);
 
     /// <summary>
+    /// Обновить сообщение
+    /// </summary>
+    void UpdateMessage(Guid id, IMessage message);
+
+    /// <summary>
+    /// Получить сообщение по Id
+    /// </summary>
+    IMessage? GetMessageById(Guid id);
+
+    /// <summary>
     /// Получить количество сохранённых сообщений
     /// </summary>
     int GetMessageCount();

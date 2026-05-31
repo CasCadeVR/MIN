@@ -14,6 +14,7 @@ namespace MIN.Desktop.Components;
 public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
 {
     private readonly IEventBus eventBus = null!;
+    private readonly Guid roomId;
     private readonly SessionReadyMessage sessionReadyMessage = null!;
     private readonly SynchronizationContext uiContext = null!;
     private HashSet<IDisposable> eventTokens = null!;
@@ -36,6 +37,7 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
     /// Инициализирует новый экземпляр <see cref="ChatFileMessageCard"/>
     /// </summary>
     public ChatSessionMessageCard(IEventBus eventBus,
+        Guid roomId,
         SessionReadyMessage sessionReadyMessage,
         ParticipantInfo localParticipant,
         bool isHostMessage,
@@ -49,6 +51,7 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
         InitializeComponent();
 
         this.eventBus = eventBus;
+        this.roomId = roomId;
         this.sessionReadyMessage = sessionReadyMessage;
 
         currentAmount = sessionReadyMessage.CurrentParticipantAmount;
@@ -73,7 +76,7 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
 
     private async Task OnSessionParticipantJoined(SessionParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != sessionReadyMessage.RoomId
+        if (eventMessage.RoomId != roomId
             || eventMessage.SubRoomId != sessionReadyMessage.SubRoomId)
         {
             return;
@@ -90,7 +93,7 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
 
     private async Task OnSessionParticipantLeft(SessionParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != sessionReadyMessage.RoomId
+        if (eventMessage.RoomId != roomId
             || eventMessage.SubRoomId != sessionReadyMessage.SubRoomId)
         {
             return;
@@ -114,6 +117,7 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
         }
         base.ApplyStylings();
 
+        sessionName.ForeColor = ColorScheme.TextPrimary;
         tableLayoutPanelLabels.BackColor = SenderColor;
         sessionName.Font = FontScheme.Heading3;
         joinButton.Font = FontScheme.Default;
@@ -129,6 +133,18 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
     private void UpdateStats()
     {
         joinButton.Text = $"Присоединиться (Учавствуют: {currentAmount})";
+        if (currentAmount <= 0)
+        {
+            sessionName.ForeColor = ColorScheme.TextOnAccent;
+            TableLayoutPanel.BackColor = ColorScheme.ConnectionDisabled;
+            tableLayoutPanelLabels.BackColor = ColorScheme.ConnectionDisabled;
+        }
+        else
+        {
+            sessionName.ForeColor = ColorScheme.TextPrimary;
+            TableLayoutPanel.BackColor = SenderColor;
+            tableLayoutPanelLabels.BackColor = SenderColor;
+        }
     }
 
     private void joinButton_Click(object sender, EventArgs e)

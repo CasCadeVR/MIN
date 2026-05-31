@@ -23,11 +23,6 @@ public sealed class SessionReadyMessage : BaseMessage, IDescribable
     public int SubRoomId { get; set; }
 
     /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Текущее количество участников в ней
     /// </summary>
     public int CurrentParticipantAmount { get; set; }

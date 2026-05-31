@@ -16,9 +16,6 @@ public interface ICoreFeatureCollection
     /// <inheritdoc cref="IRoomHoster"/>
     IRoomHoster RoomHoster { get; }
 
-    /// <inheritdoc cref="IRoomStore"/>
-    IRoomStore RoomStore { get; }
-
     /// <inheritdoc cref="IRoomFactory"/>
     IRoomFactory RoomFactory { get; }
 

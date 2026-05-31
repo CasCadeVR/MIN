@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MIN.Sessions.Chess.Services.Contracts\MIN.Sessions.Chess.Services.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

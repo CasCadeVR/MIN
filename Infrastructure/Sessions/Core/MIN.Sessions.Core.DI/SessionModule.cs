@@ -4,7 +4,6 @@ using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Services.Rooms;
 using MIN.Sessions.Core.DI.FeatureCollection;
 using MIN.Sessions.Core.Handlers;
 using MIN.Sessions.Core.Messaging;
@@ -24,5 +23,6 @@ public class SessionModule : Module
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, ISessionsHandlerAnchor>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, SessionMonitor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionFeatureCollection>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<SessionReadyMessageResolver>(ServiceLifetime.Singleton);
     }
 }

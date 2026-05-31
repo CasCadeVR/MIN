@@ -22,6 +22,7 @@ public class SubRoomManager : ISubRoomManager
             {
                 Id = room.NextId++,
                 Purpose = purpose,
+                IsActive = true,
                 CreatorId = creator.Id,
                 Participants = [creator],
                 CreatedAt = DateTime.Now
@@ -32,7 +33,7 @@ public class SubRoomManager : ISubRoomManager
         return subRoom;
     }
 
-    bool ISubRoomManager.TryJoinSubRoom(Guid roomId, int subRoomId, ParticipantInfo participant)
+    bool ISubRoomManager.ActivateSubRoom(Guid roomId, int subRoomId, ParticipantInfo participant)
     {
         if (!rooms.TryGetValue(roomId, out var room))
         {
@@ -52,7 +53,55 @@ public class SubRoomManager : ISubRoomManager
             }
 
             subRoom.Participants.Add(participant);
+            subRoom.IsActive = true;
             return true;
+        }
+    }
+
+    SubRoomJoinOutcome ISubRoomManager.TryJoinSubRoom(Guid roomId, int subRoomId, ParticipantInfo participant)
+    {
+        if (!rooms.TryGetValue(roomId, out var room))
+        {
+            return SubRoomJoinOutcome.RoomNotFound;
+        }
+
+        lock (room)
+        {
+            if (!room.SubRooms.TryGetValue(subRoomId, out var subRoom))
+            {
+                return SubRoomJoinOutcome.SubRoomNotFound;
+            }
+
+            if (!subRoom.IsActive)
+            {
+                return SubRoomJoinOutcome.SubRoomNotActive;
+            }
+
+            if (subRoom.Participants.Any(p => p.Id == participant.Id))
+            {
+                return SubRoomJoinOutcome.AlreadyJoined;
+            }
+
+            subRoom.Participants.Add(participant);
+            return SubRoomJoinOutcome.Success;
+        }
+    }
+
+    bool ISubRoomManager.IsInSubRoom(Guid roomId, int subRoomId, Guid participantId)
+    {
+        if (!rooms.TryGetValue(roomId, out var room))
+        {
+            return false;
+        }
+
+        lock (room)
+        {
+            if (!room.SubRooms.TryGetValue(subRoomId, out var subRoom))
+            {
+                return false;
+            }
+
+            return subRoom.Participants.Any(p => p.Id == participantId);
         }
     }
 
@@ -74,7 +123,7 @@ public class SubRoomManager : ISubRoomManager
 
             if (subRoom.Participants.Count == 0)
             {
-                room.SubRooms.Remove(subRoomId);
+                subRoom.IsActive = false;
             }
         }
     }
@@ -98,7 +147,7 @@ public class SubRoomManager : ISubRoomManager
                 return false;
             }
 
-            room.SubRooms.Remove(subRoomId);
+            subRoom.IsActive = false;
             return true;
         }
     }
@@ -149,9 +198,22 @@ public class SubRoomManager : ISubRoomManager
         lock (room)
         {
             return room.SubRooms.Values
-                .Select(sr => sr with { Participants = [.. sr.Participants] })
+                .Select(sr => sr with { Participants = sr.Participants.ToList() })
                 .ToList()
                 .AsReadOnly();
+        }
+    }
+
+    void ISubRoomManager.ClearRoomSubRooms(Guid roomId)
+    {
+        if (!rooms.TryGetValue(roomId, out var room))
+        {
+            return;
+        }
+
+        lock (room)
+        {
+            room.SubRooms.Clear();
         }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Sessions.Core.Messaging;
 
 namespace MIN.Sessions.Core.Services;
 
@@ -13,6 +15,8 @@ public class SessionMonitor : IHostedService
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
+    private readonly IMessageRouter messageRouter;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -20,10 +24,14 @@ public class SessionMonitor : IHostedService
     /// </summary>
     public SessionMonitor(ISubRoomManager subRoomManager,
         IEventBus eventBus,
+        IMessageRouter messageRouter,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
+        this.messageRouter = messageRouter;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
@@ -35,10 +43,24 @@ public class SessionMonitor : IHostedService
 
     private async Task OnParticipantLeft(ParticipantLeftEvent e, CancellationToken cancellationToken)
     {
-        var activeSubRooms = subRoomManager.GetRoomSubRooms(e.Message.RoomId);
+        var roomId = e.Message.RoomId;
+        var participantId = e.Message.Participant.Id;
+
+        var activeSubRooms = subRoomManager.GetRoomSubRooms(roomId);
         foreach (var subRoom in activeSubRooms)
         {
-            subRoomManager.LeaveSubRoom(e.Message.RoomId, subRoom.Id, e.Message.Participant.Id);
+            if (subRoomManager.IsInSubRoom(roomId, subRoom.Id, participantId))
+            {
+                subRoomManager.LeaveSubRoom(roomId, subRoom.Id, participantId);
+
+                var leaveMessage = new SessionParticipantLeftMessage()
+                {
+                    SubRoomId = subRoom.Id,
+                    Participant = e.Message.Participant,
+                };
+
+                await messageRouter.RouteAsync(leaveMessage, roomId, identityService.SelfParticipant.Id, cancellationToken);
+            }
         }
     }
 

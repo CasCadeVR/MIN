@@ -14,9 +14,6 @@ public class CoreFeatureCollection : ICoreFeatureCollection
     /// <inheritdoc cref="IRoomHoster"/>
     public IRoomHoster RoomHoster { get; }
 
-    /// <inheritdoc cref="IRoomStore"/>
-    public IRoomStore RoomStore { get; }
-
     /// <inheritdoc cref="IRoomFactory"/>
     public IRoomFactory RoomFactory { get; }
 
@@ -31,14 +28,12 @@ public class CoreFeatureCollection : ICoreFeatureCollection
     /// </summary>
     public CoreFeatureCollection(IRoomConnector roomConnector,
         IRoomHoster roomHoster,
-        IRoomStore roomStore,
         IRoomFactory roomFactory,
         IEventBus eventBus,
         IMessageRouter messageRouter)
     {
         RoomConnector = roomConnector;
         RoomHoster = roomHoster;
-        RoomStore = roomStore;
         RoomFactory = roomFactory;
         EventBus = eventBus;
         MessageRouter = messageRouter;

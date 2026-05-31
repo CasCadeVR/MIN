@@ -19,6 +19,11 @@ public record SubRoomInfo
     public SubRoomPurpose Purpose { get; init; }
 
     /// <summary>
+    /// Активна ли сейчас подкомната
+    /// </summary>
+    public bool IsActive { get; set; }
+
+    /// <summary>
     /// Идентификатора запросидшего создания подкомнаты
     /// </summary>
     public Guid CreatorId { get; init; }

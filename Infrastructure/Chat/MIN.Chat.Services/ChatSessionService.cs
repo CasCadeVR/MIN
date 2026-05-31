@@ -94,7 +94,7 @@ public sealed class ChatSessionService : IChatSessionService
     {
         if (message == null)
         {
-            throw new InvalidOperationException("Чё у тебя в коде происходит");
+            throw new NotImplementedException();
         }
 
         await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);

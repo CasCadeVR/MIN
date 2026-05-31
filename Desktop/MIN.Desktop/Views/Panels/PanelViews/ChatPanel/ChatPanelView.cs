@@ -95,8 +95,8 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     {
         if (isHost)
         {
-            await featureCollection.Core.RoomHoster.StopHostingAsync(roomId);
             await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
+            await featureCollection.Core.RoomHoster.StopHostingAsync(roomId);
         }
         else
         {
@@ -105,7 +105,6 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
 
         await featureCollection.Core.EventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
         featureCollection.Core.RoomFactory.DestroyContext(roomId);
-        featureCollection.Core.RoomStore.Remove(roomId);
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>

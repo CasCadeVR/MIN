@@ -3,7 +3,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 
-namespace MIN.Sessions.Core.Messaging.Contracts;
+namespace MIN.Sessions.Core.Messaging;
 
 /// <summary>
 /// Сообщение об уходе участника из сессии

@@ -8,6 +8,8 @@ using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.SubRooms.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
@@ -21,6 +23,7 @@ public sealed class RoomHoster : IRoomHoster
     private readonly IProtocolHandler protocolHandler;
     private readonly ITransport transport;
     private readonly IRoomStore roomStore;
+    private readonly ISubRoomManager subRoomManager;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
     private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
@@ -42,6 +45,7 @@ public sealed class RoomHoster : IRoomHoster
         IProtocolHandler protocolHandler,
         ITransport transport,
         IRoomStore roomStore,
+        ISubRoomManager subRoomManager,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
@@ -49,6 +53,7 @@ public sealed class RoomHoster : IRoomHoster
         this.protocolHandler = protocolHandler;
         this.transport = transport;
         this.roomStore = roomStore;
+        this.subRoomManager = subRoomManager;
         this.identityService = identityService;
         this.logger = logger;
 
@@ -61,7 +66,7 @@ public sealed class RoomHoster : IRoomHoster
         transport.ConnectionStateChanged += Transport_ConnectionStateChanged;
     }
 
-    private async void Transport_ConnectionStateChanged(object? sender, Transport.Contracts.Events.ConnectionStateChangedEventArgs e)
+    private async void Transport_ConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
     {
         if (!activeConnections.TryGetValue(e.ServerConnectionId ?? Guid.Empty, out var roomId))
         {
@@ -92,7 +97,7 @@ public sealed class RoomHoster : IRoomHoster
         ConnectionStateChanged?.Invoke(this, args);
     }
 
-    private void Transport_RawMessageReceived(object? sender, Transport.Contracts.Events.RawMessageReceivedEventArgs e)
+    private void Transport_RawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
     {
         if (!activeConnections.TryGetValue(e.ServerConnectionId ?? Guid.Empty, out var roomId))
         {
@@ -185,9 +190,13 @@ public sealed class RoomHoster : IRoomHoster
         }
 
         await transport.StopHostingAsync(connectionId);
+        subRoomManager.ClearRoomSubRooms(roomId);
         activeRooms.Remove(roomId);
+
         activeConnections.Remove(connectionId);
         readyRoomInfos.TryRemove(roomId, out _);
+
+        roomStore.Remove(roomId);
     }
 
     bool IRoomHoster.IsHosting(Guid roomId)

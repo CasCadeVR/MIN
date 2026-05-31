@@ -15,9 +15,19 @@ public interface ISubRoomManager
     SubRoomInfo HostSubRoom(Guid roomId, ParticipantInfo creator, SubRoomPurpose purpose);
 
     /// <summary>
+    /// Запустить подкомнату
+    /// </summary>
+    bool ActivateSubRoom(Guid roomId, int subRoomId, ParticipantInfo participant);
+
+    /// <summary>
     /// Попытаться войти в подкомнату
     /// </summary>
-    bool TryJoinSubRoom(Guid roomId, int subRoomId, ParticipantInfo participant);
+    SubRoomJoinOutcome TryJoinSubRoom(Guid roomId, int subRoomId, ParticipantInfo participant);
+
+    /// <summary>
+    /// Находиться ли участник внутри подкомнаты
+    /// </summary>
+    bool IsInSubRoom(Guid roomId, int subRoomId, Guid participantId);
 
     /// <summary>
     /// Уйти из подкомнаты
@@ -46,4 +56,9 @@ public interface ISubRoomManager
     /// Получить все подкомнаты комнаты
     /// </summary>
     IReadOnlyList<SubRoomInfo> GetRoomSubRooms(Guid roomId);
+
+    /// <summary>
+    /// Очистить все подкомнаты для комнаты
+    /// </summary>
+    void ClearRoomSubRooms(Guid roomId);
 }

@@ -1,6 +1,5 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
-using MIN.Core.SubRooms.Contracts.Enums;
 
 namespace MIN.Sessions.Core.Messaging.Contracts;
 
@@ -21,7 +20,10 @@ public abstract class SessionHostRequestMessage : BaseMessage
     public Guid RoomId { get; set; }
 
     /// <summary>
-    /// Цель подкомнаты
+    /// Идентификатор подкомнаты
     /// </summary>
-    public static SubRoomPurpose Purpose => SubRoomPurpose.Activity;
+    /// <remarks>
+    /// null, если хостинг впервые, иначе - id неактивной подкомнаты
+    /// </remarks>
+    public int? SubRoomId { get; set; }
 }

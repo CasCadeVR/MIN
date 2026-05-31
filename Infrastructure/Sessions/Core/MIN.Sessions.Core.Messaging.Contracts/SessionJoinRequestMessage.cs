@@ -15,11 +15,6 @@ public abstract class SessionJoinRequestMessage : BaseMessage
     public override bool IsPublic => false;
 
     /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Идентификатор подкомнаты
     /// </summary>
     public int SubRoomId { get; set; }

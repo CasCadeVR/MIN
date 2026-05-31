@@ -177,6 +177,7 @@ public sealed class RoomConnector : IRoomConnector
         await transport.DisconnectAsync(connectionId);
         activeRooms.Remove(roomId);
         activeConnections.Remove(connectionId);
+        roomStore.Remove(roomId);
     }
 
     bool IRoomConnector.IsConnected(Guid roomId) => activeRooms.ContainsKey(roomId);

@@ -23,6 +23,21 @@ public sealed class MessageStore : IMessageStore
         }
     }
 
+    IMessage? IMessageStore.GetMessageById(Guid id)
+        => messages.FirstOrDefault(p => p.Id == id);
+
+    void IMessageStore.UpdateMessage(Guid id, IMessage message)
+    {
+        lock (messages)
+        {
+            var existing = messages.FirstOrDefault(p => p.Id == id);
+            if (existing != null)
+            {
+                existing = message;
+            }
+        }
+    }
+
     int IMessageStore.GetMessageCount()
     {
         lock (messages)
