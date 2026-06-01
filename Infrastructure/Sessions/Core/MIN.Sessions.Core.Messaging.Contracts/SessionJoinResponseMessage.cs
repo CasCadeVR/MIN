@@ -15,6 +15,11 @@ public abstract class SessionJoinResponseMessage : BaseMessage
     public override bool IsPublic => false;
 
     /// <summary>
+    /// Флаг, указывающий, нужно ли оповещать остальных
+    /// </summary>
+    public bool NeedToAnnounce { get; set; }
+
+    /// <summary>
     /// Идентификатор подкомнаты
     /// </summary>
     public int SubRoomId { get; set; }

@@ -49,7 +49,7 @@ public partial class ChatPanelView
 
         uiContext.Post(_ =>
         {
-            var form = new TestChessForm();
+            var form = new TestChessForm(localParticipant.Id == room.HostParticipant.Id ? "Как хост" : "Как клиент");
             form.Show();
             form.OnClose += async () =>
             {
@@ -77,10 +77,9 @@ public partial class ChatPanelView
             });
             NotifyIfNeeded(eventMessage.Message);
         }, null);
-        await Task.CompletedTask;
     }
 
-    private async Task OnSessionReadyMessageReceived(SessionReadyMessageReceivedEvent eventMessage, CancellationToken ct)
+    private async Task OnSessionReadyMessageReceived(SessionReadyMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.RoomId != roomId)
         {
@@ -97,7 +96,6 @@ public partial class ChatPanelView
             });
             NotifyIfNeeded(eventMessage.Message);
         }, null);
-        await Task.CompletedTask;
     }
 
     #region File related

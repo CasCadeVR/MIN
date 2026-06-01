@@ -40,7 +40,7 @@ public partial class ChatPanelView
 
     private async Task OnSessionJoinRequested(SessionReadyMessage sessionReadyMessage)
     {
-        await featureCollection.Chat.ChatSesssionService.SendSessionJoinRequest(roomId,
+        await featureCollection.Chat.ChatSessionService.SendSessionJoinRequest(roomId,
             sessionReadyMessage,
             null,
             formCts.Token
@@ -71,6 +71,9 @@ public partial class ChatPanelView
 
     private async Task SendSelfStatusChangedMessage(OnlineStatus newStatus)
     {
+#if DEBUG
+        return;
+#else
         try
         {
             await featureCollection.Chat.ChatStatusService.SendSelfOnlineStatusChangedAsync(roomId,
@@ -79,11 +82,12 @@ public partial class ChatPanelView
             );
         }
         catch { }
+#endif
     }
 
     private async void SendSessionStartMessage(Session session)
     {
-        await featureCollection.Chat.ChatSesssionService.SendSessionRequestAsync(roomId, session, null, formCts.Token);
+        await featureCollection.Chat.ChatSessionService.SendSessionRequestAsync(roomId, session, null, formCts.Token);
     }
 
     private async Task SendMessage()

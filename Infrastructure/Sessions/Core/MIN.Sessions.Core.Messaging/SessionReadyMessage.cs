@@ -37,5 +37,5 @@ public sealed class SessionReadyMessage : BaseMessage, IDescribable
     /// </summary>
     public ParticipantInfo Sender { get; set; } = null!;
 
-    string IDescribable.GetDescription() => $"{Sender.Name} запустил активность \"{Session.Name}\"";
+    string IDescribable.GetDescription() => $"{Sender.Name} запустил \"{Session.Name}\"";
 }

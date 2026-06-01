@@ -19,7 +19,7 @@ namespace MIN.Desktop.Components.Controls.PictureBoxes
         /// <inheritdoc cref="BaseRadioButton.ApplyBaseStyles"/>
         protected override void ApplyBaseStyles()
         {
-            BackColor = ColorScheme.InputFieldBackground;
+            BackColor = ColorScheme.ConnectionDisabled;
             SizeMode = PictureBoxSizeMode.Zoom;
         }
     }

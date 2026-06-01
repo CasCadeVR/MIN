@@ -67,6 +67,33 @@ public partial class BaseChatMessageCard : UserControl, IStyled
     /// </summary>
     protected Color SenderColor;
 
+    /// <summary>
+    /// Раскрасить всю карту этим цветом
+    /// </summary>
+    /// <param name="color"></param>
+    protected void RecolorEntireCard(Color color)
+    {
+        var isDefault = SenderColor == color;
+
+        foreach (Control control in Controls)
+        {
+            control.BackColor = color;
+        }
+
+        foreach (Control control in TableLayoutPanel.Controls)
+        {
+            control.BackColor = color;
+            if (!isDefault)
+            {
+                control.ForeColor = ColorScheme.TextOnAccent;
+            }
+            else
+            {
+                control.ForeColor = ColorScheme.TextPrimary;
+            }
+        }
+    }
+
     private void FillHeaderLabels(string name, string role, DateTime time)
     {
         senderName.Text = name;

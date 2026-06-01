@@ -16,6 +16,9 @@ public class SessionParticipantJoinedMessage : BaseMessage, IDescribable
     /// <inheritdoc />
     public override bool IsPublic => true;
 
+    /// <inheritdoc />
+    public override bool RequiresLocalDuplication => true;
+
     /// <summary>
     /// Информация об участнике
     /// </summary>

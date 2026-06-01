@@ -59,10 +59,10 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
         uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("Must be created on UI thread");
 
-        FillLabels();
         ApplyStylings();
         PerformLayout();
         SubscribeToEvents();
+        FillLabels();
     }
 
     private void SubscribeToEvents()
@@ -136,14 +136,14 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
         if (currentAmount <= 0)
         {
             sessionName.ForeColor = ColorScheme.TextOnAccent;
-            TableLayoutPanel.BackColor = ColorScheme.ConnectionDisabled;
             tableLayoutPanelLabels.BackColor = ColorScheme.ConnectionDisabled;
+            RecolorEntireCard(ColorScheme.ConnectionDisabled);
         }
         else
         {
             sessionName.ForeColor = ColorScheme.TextPrimary;
-            TableLayoutPanel.BackColor = SenderColor;
             tableLayoutPanelLabels.BackColor = SenderColor;
+            RecolorEntireCard(SenderColor);
         }
     }
 

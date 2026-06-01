@@ -47,6 +47,11 @@ public class SubRoomManager : ISubRoomManager
                 return false;
             }
 
+            if (subRoom.IsActive)
+            {
+                return false;
+            }
+
             if (subRoom.Participants.Any(p => p.Id == participant.Id))
             {
                 return false;

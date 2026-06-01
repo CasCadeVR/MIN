@@ -90,13 +90,12 @@ internal sealed class ChessJoinHandler : IMessageHandler
                     return SendErrorMessage(error);
                 }
 
-                var joinResponseMessage = new ChessJoinResponseMessage()
+                return HandlerResult.WithResponse(new ChessJoinResponseMessage()
                 {
+                    NeedToAnnounce = true,
                     SubRoomId = subRoomInfo.Id,
                     CurrentPositionOnBoard = "And at this position Magnus carlson plays ROOK D7",
-                };
-
-                return HandlerResult.WithResponse(joinResponseMessage);
+                });
 
             case ChessJoinResponseMessage chessJoinResponseMessage:
                 await eventBus.PublishAsync(new ChessJoinResponseReceivedEvent()
@@ -106,6 +105,11 @@ internal sealed class ChessJoinHandler : IMessageHandler
                     CurrentPositionOnBoard = chessJoinResponseMessage.CurrentPositionOnBoard,
                 });
 
+                if (!chessJoinResponseMessage.NeedToAnnounce)
+                {
+                    return HandlerResult.Success();
+                }
+
                 var selfParticipant = identityService.SelfParticipant.ToParticipantInfo();
 
                 var sessionParticipantJoinedMessage = new SessionParticipantJoinedMessage()
@@ -114,7 +118,7 @@ internal sealed class ChessJoinHandler : IMessageHandler
                     Participant = selfParticipant,
                 };
 
-                await messageRouter.RouteAsync(sessionParticipantJoinedMessage, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
+                await messageRouter.RouteAsync(sessionParticipantJoinedMessage, context.RoomContext.RoomId, selfParticipant.Id, context.CancellationToken);
 
                 return HandlerResult.WithResponse(new ChessParticipantJoinedMessage()
                 {

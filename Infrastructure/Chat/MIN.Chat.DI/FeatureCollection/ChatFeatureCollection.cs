@@ -15,7 +15,7 @@ public class ChatFeatureCollection : IChatFeatureCollection
     public IChatFileService ChatFileService { get; }
 
     /// <inheritdoc cref="IChatSessionService"/>
-    public IChatSessionService ChatSesssionService { get; }
+    public IChatSessionService ChatSessionService { get; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatFeatureCollection"/>
@@ -28,6 +28,6 @@ public class ChatFeatureCollection : IChatFeatureCollection
         ChatTextService = chatTextService;
         ChatStatusService = chatStatusService;
         ChatFileService = chatFileService;
-        ChatSesssionService = chatSessionService;
+        ChatSessionService = chatSessionService;
     }
 }

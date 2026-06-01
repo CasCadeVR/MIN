@@ -19,6 +19,7 @@ internal sealed class ChessHostHandler : IMessageHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
+    private readonly IMessageSender messageSender;
     private readonly IMessageRouter messageRouter;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -28,12 +29,14 @@ internal sealed class ChessHostHandler : IMessageHandler
     /// </summary>
     public ChessHostHandler(ISubRoomManager subRoomManager,
         IEventBus eventBus,
+        IMessageSender messageSender,
         IMessageRouter messageRouter,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
+        this.messageSender = messageSender;
         this.messageRouter = messageRouter;
         this.identityService = identityService;
         this.logger = logger;
@@ -73,7 +76,7 @@ internal sealed class ChessHostHandler : IMessageHandler
 
         var subRoomId = chessHostRequestMessage.SubRoomId;
 
-        if (chessHostRequestMessage.SubRoomId == null)
+        if (subRoomId == null)
         {
             var subRoomInfo = subRoomManager.HostSubRoom(context.RoomContext.RoomId, senderParicipantInfo, SubRoomPurpose.Activity);
             subRoomId = subRoomInfo.Id;
@@ -83,33 +86,54 @@ internal sealed class ChessHostHandler : IMessageHandler
                 CurrentParticipantAmount = 1,
                 Session = ChessSessionProvider.GetChessSession(),
                 Sender = senderParicipantInfo,
+                SenderId = message.SenderId,
             };
-
-            await eventBus.PublishAsync(new ChessJoinResponseReceivedEvent()
-            {
-                RoomId = context.RoomContext.RoomId,
-                SubRoomId = subRoomInfo.Id,
-                CurrentPositionOnBoard = currentPositionOnBoard,
-            });
 
             await messageRouter.RouteAsync(hostReadyMessage, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
 
             if (identityService.SelfParticipant.Id == message.SenderId)
             {
+                await eventBus.PublishAsync(new ChessJoinResponseReceivedEvent()
+                {
+                    RoomId = context.RoomContext.RoomId,
+                    SubRoomId = subRoomInfo.Id,
+                    CurrentPositionOnBoard = currentPositionOnBoard,
+                });
+
                 return HandlerResult.Success();
             }
             else
             {
-                return HandlerResult.WithResponse(hostReadyMessage);
+                await messageSender.SendAsync(hostReadyMessage, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
+
+                return HandlerResult.WithResponse(new ChessJoinResponseMessage()
+                {
+                    NeedToAnnounce = false,
+                    SubRoomId = subRoomId.Value,
+                    CurrentPositionOnBoard = currentPositionOnBoard,
+                });
             }
         }
 
-        var joinResponseMessage = new ChessJoinResponseMessage()
+        if (identityService.SelfParticipant.Id == message.SenderId)
         {
-            SubRoomId = subRoomId!.Value,
-            CurrentPositionOnBoard = currentPositionOnBoard,
-        };
+            await messageRouter.RouteAsync(new ChessJoinResponseMessage()
+            {
+                NeedToAnnounce = true,
+                SubRoomId = subRoomId.Value,
+                CurrentPositionOnBoard = currentPositionOnBoard,
+            }, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
+        }
+        else
+        {
+            await messageSender.SendAsync(new ChessJoinResponseMessage()
+            {
+                NeedToAnnounce = true,
+                SubRoomId = subRoomId.Value,
+                CurrentPositionOnBoard = currentPositionOnBoard,
+            }, context.RoomContext.RoomId, context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId), context.CancellationToken);
+        }
 
-        return HandlerResult.WithResponse(joinResponseMessage);
+        return HandlerResult.Success();
     }
 }

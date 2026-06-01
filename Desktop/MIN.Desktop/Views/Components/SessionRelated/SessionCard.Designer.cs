@@ -85,7 +85,7 @@
             // 
             // sessionImage
             // 
-            sessionImage.BackColor = Color.FromArgb(248, 249, 255);
+            sessionImage.BackColor = Color.Gray;
             sessionImage.Dock = DockStyle.Fill;
             sessionImage.Location = new Point(3, 3);
             sessionImage.Name = "sessionImage";

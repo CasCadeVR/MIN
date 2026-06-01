@@ -14,7 +14,7 @@ public static class SessionImageProvider
     public static Image LoadImageOutOfSessionType(SessionType sessionType)
         => sessionType switch
         {
-            SessionType.Chess => Resources.rocket,
+            SessionType.Chess => Resources.chesslogo,
             _ => throw new ArgumentOutOfRangeException(nameof(SessionType), $"Not expected sessionType value: {sessionType}"),
         };
 }

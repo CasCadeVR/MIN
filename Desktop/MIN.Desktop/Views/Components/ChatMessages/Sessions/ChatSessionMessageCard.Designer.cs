@@ -55,8 +55,8 @@
             tableLayoutPanelLabels.Margin = new Padding(0);
             tableLayoutPanelLabels.Name = "tableLayoutPanelLabels";
             tableLayoutPanelLabels.RowCount = 2;
-            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanelLabels.Size = new Size(318, 128);
             tableLayoutPanelLabels.TabIndex = 3;
             // 
@@ -68,7 +68,7 @@
             sessionName.BackColor = Color.Transparent;
             sessionName.Font = new Font("Segoe UI", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sessionName.ForeColor = Color.FromArgb(0, 0, 0);
-            sessionName.Location = new Point(131, 44);
+            sessionName.Location = new Point(131, 28);
             sessionName.MaximumSize = new Size(0, 20);
             sessionName.Name = "sessionName";
             sessionName.Size = new Size(184, 20);
@@ -78,7 +78,7 @@
             // 
             // sessionImage
             // 
-            sessionImage.BackColor = Color.FromArgb(248, 249, 255);
+            sessionImage.BackColor = Color.Gray;
             sessionImage.Dock = DockStyle.Fill;
             sessionImage.Location = new Point(3, 3);
             sessionImage.Name = "sessionImage";
@@ -91,12 +91,11 @@
             // joinButton
             // 
             joinButton.BackColor = Color.FromArgb(167, 157, 255);
-            joinButton.Dock = DockStyle.Fill;
             joinButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             joinButton.FlatStyle = FlatStyle.Flat;
             joinButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             joinButton.ForeColor = Color.FromArgb(248, 249, 255);
-            joinButton.Location = new Point(131, 67);
+            joinButton.Location = new Point(131, 51);
             joinButton.Name = "joinButton";
             joinButton.Size = new Size(184, 58);
             joinButton.TabIndex = 7;

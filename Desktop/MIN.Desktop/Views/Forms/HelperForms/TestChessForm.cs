@@ -15,9 +15,10 @@ namespace MIN.Desktop.Views.Forms.HelperForms
         /// <summary>
         /// Тест - удалить
         /// </summary>
-        public TestChessForm()
+        public TestChessForm(string title)
         {
             InitializeComponent();
+            heading1Label1.Text += " " + title;
         }
 
         private void TestChessForm_FormClosed(object sender, FormClosedEventArgs e)
