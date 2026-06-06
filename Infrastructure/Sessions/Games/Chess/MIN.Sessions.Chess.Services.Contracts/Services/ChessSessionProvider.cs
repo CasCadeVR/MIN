@@ -16,5 +16,7 @@ public static class ChessSessionProvider
         SessionType = SessionType.Chess,
         Name = "Шахматы",
         Description = "Сыграй с друзьями в шахматы!",
+        ServerPath = "Sessions/Chess/MIN.Chess.Server.exe",
+        ClientPath = "Sessions/Chess/MIN.Chess.Client.exe",
     };
 }

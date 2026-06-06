@@ -32,7 +32,11 @@ public interface ISubRoomManager
     /// <summary>
     /// Уйти из подкомнаты
     /// </summary>
-    void LeaveSubRoom(Guid roomId, int subRoomId, Guid participantId);
+    /// <returns>
+    /// true - если комната ещё активна
+    /// false - если нет
+    /// </returns>
+    bool LeaveSubRoom(Guid roomId, int subRoomId, Guid participantId);
 
     /// <summary>
     /// Попытаться остановить подкомнаты

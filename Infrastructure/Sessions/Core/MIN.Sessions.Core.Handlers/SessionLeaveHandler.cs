@@ -1,4 +1,5 @@
-﻿using MIN.Core.Handlers.Contracts;
+﻿using MIN.Core.Events.Contracts;
+using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -6,6 +7,7 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging;
 
 namespace MIN.Sessions.Core.Handlers;
@@ -14,6 +16,7 @@ internal sealed class SessionLeaveHandler : IMessageHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IMessageRouter messageRouter;
+    private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
     private readonly IIdentityService identityService;
 
@@ -22,11 +25,13 @@ internal sealed class SessionLeaveHandler : IMessageHandler
     /// </summary>
     public SessionLeaveHandler(ISubRoomManager subRoomManager,
         IMessageRouter messageRouter,
+        IEventBus eventBus,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.subRoomManager = subRoomManager;
         this.messageRouter = messageRouter;
+        this.eventBus = eventBus;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -58,7 +63,14 @@ internal sealed class SessionLeaveHandler : IMessageHandler
             }, stopPropagation: true);
         }
 
-        subRoomManager.LeaveSubRoom(roomId, sessionLeaveMessage.SubRoomId, message.SenderId);
+        if (!subRoomManager.LeaveSubRoom(roomId, sessionLeaveMessage.SubRoomId, message.SenderId))
+        {
+            await eventBus.PublishAsync(new SessionDeactivatedEvent()
+            {
+                RoomId = roomId,
+                SubRoomId = sessionLeaveMessage.SubRoomId,
+            });
+        }
 
         var leaveMessage = new SessionParticipantLeftMessage()
         {

@@ -4,7 +4,10 @@ using MIN.Core.Events.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Services.Contracts.Enums;
+using MIN.Sessions.Core.Services.Contracts.Interfaces;
 
 namespace MIN.Sessions.Core.Services;
 
@@ -16,6 +19,7 @@ public class SessionMonitor : IHostedService
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
+    private readonly ISessionProcessInitializer sessionProcessInitializer;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -25,20 +29,43 @@ public class SessionMonitor : IHostedService
     public SessionMonitor(ISubRoomManager subRoomManager,
         IEventBus eventBus,
         IMessageRouter messageRouter,
+        ISessionProcessInitializer sessionProcessInitializer,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
+        this.sessionProcessInitializer = sessionProcessInitializer;
         this.identityService = identityService;
         this.logger = logger;
     }
 
     Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
+        eventBus.Subscribe<JoinResponseReceivedEvent>(OnJoinResponseReceived);
         eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
+        eventBus.Subscribe<SessionDeactivatedEvent>(OnSessionDeactivated);
         return Task.CompletedTask;
+    }
+
+    private async Task OnJoinResponseReceived(JoinResponseReceivedEvent e, CancellationToken cancellationToken)
+    {
+        var hostResult = await sessionProcessInitializer.StartAsync(e.RoomId, e.SubRoomId,
+            e.Session.ClientPath, SessionProcessRole.Client, cancellationToken);
+
+        if (hostResult == false)
+        {
+            await eventBus.PublishAsync(new ErrorOccurredEvent()
+            {
+                ErrorMessage = $"У вас повреждёна или утеряна программа для {e.Session.Name}"
+            }, cancellationToken);
+        }
+    }
+
+    private async Task OnSessionDeactivated(SessionDeactivatedEvent e, CancellationToken cancellationToken)
+    {
+        await sessionProcessInitializer.StopAsync(e.RoomId, e.SubRoomId);
     }
 
     private async Task OnParticipantLeft(ParticipantLeftEvent e, CancellationToken cancellationToken)

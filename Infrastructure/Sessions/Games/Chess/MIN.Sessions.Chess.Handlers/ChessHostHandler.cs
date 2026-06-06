@@ -8,10 +8,12 @@ using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Sessions.Chess.Events;
 using MIN.Sessions.Chess.Messaging.Default;
 using MIN.Sessions.Chess.Services.Contracts.Services;
+using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Services.Contracts.Enums;
+using MIN.Sessions.Core.Services.Contracts.Interfaces;
 
 namespace MIN.Sessions.Chess.Handlers;
 
@@ -21,6 +23,7 @@ internal sealed class ChessHostHandler : IMessageHandler
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
     private readonly IMessageRouter messageRouter;
+    private readonly ISessionProcessInitializer sessionProcessInitializer;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -31,6 +34,7 @@ internal sealed class ChessHostHandler : IMessageHandler
         IEventBus eventBus,
         IMessageSender messageSender,
         IMessageRouter messageRouter,
+        ISessionProcessInitializer sessionProcessInitializer,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
@@ -38,6 +42,7 @@ internal sealed class ChessHostHandler : IMessageHandler
         this.eventBus = eventBus;
         this.messageSender = messageSender;
         this.messageRouter = messageRouter;
+        this.sessionProcessInitializer = sessionProcessInitializer;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -75,16 +80,35 @@ internal sealed class ChessHostHandler : IMessageHandler
         var currentPositionOnBoard = "And at this position Magnus carlson plays ROOK D7";
 
         var subRoomId = chessHostRequestMessage.SubRoomId;
+        var isHosted = false;
 
         if (subRoomId == null)
         {
             var subRoomInfo = subRoomManager.HostSubRoom(context.RoomContext.RoomId, senderParicipantInfo, SubRoomPurpose.Activity);
+            isHosted = true;
             subRoomId = subRoomInfo.Id;
+        }
+
+        var session = ChessSessionProvider.GetChessSession();
+
+        var hostResult = await sessionProcessInitializer.StartAsync(context.RoomContext.RoomId, subRoomId.Value,
+            session.ServerPath, SessionProcessRole.Server, context.CancellationToken);
+
+        if (hostResult == false)
+        {
+            return HandlerResult.WithResponse(new SessionHostFailedMessage()
+            {
+                ErrorMessage = "У хоста повреждён или утеряна программа сервера"
+            });
+        }
+
+        if (isHosted)
+        {
             var hostReadyMessage = new SessionReadyMessage()
             {
-                SubRoomId = subRoomInfo.Id,
+                SubRoomId = subRoomId.Value,
                 CurrentParticipantAmount = 1,
-                Session = ChessSessionProvider.GetChessSession(),
+                Session = session,
                 Sender = senderParicipantInfo,
                 SenderId = message.SenderId,
             };
@@ -93,11 +117,11 @@ internal sealed class ChessHostHandler : IMessageHandler
 
             if (identityService.SelfParticipant.Id == message.SenderId)
             {
-                await eventBus.PublishAsync(new ChessJoinResponseReceivedEvent()
+                await eventBus.PublishAsync(new JoinResponseReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
-                    SubRoomId = subRoomInfo.Id,
-                    CurrentPositionOnBoard = currentPositionOnBoard,
+                    SubRoomId = subRoomId.Value,
+                    Session = ChessSessionProvider.GetChessSession(),
                 });
 
                 return HandlerResult.Success();

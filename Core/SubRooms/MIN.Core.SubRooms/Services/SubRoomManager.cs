@@ -3,6 +3,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Core.SubRooms.Contracts.Models;
+using MIN.Core.SubRooms.Models;
 
 namespace MIN.Core.SubRooms.Services;
 
@@ -110,18 +111,18 @@ public class SubRoomManager : ISubRoomManager
         }
     }
 
-    void ISubRoomManager.LeaveSubRoom(Guid roomId, int subRoomId, Guid participantId)
+    bool ISubRoomManager.LeaveSubRoom(Guid roomId, int subRoomId, Guid participantId)
     {
         if (!rooms.TryGetValue(roomId, out var room))
         {
-            return;
+            return false;
         }
 
         lock (room)
         {
             if (!room.SubRooms.TryGetValue(subRoomId, out var subRoom))
             {
-                return;
+                return false;
             }
 
             subRoom.Participants.RemoveAll(p => p.Id == participantId);
@@ -130,6 +131,8 @@ public class SubRoomManager : ISubRoomManager
             {
                 subRoom.IsActive = false;
             }
+
+            return subRoom.IsActive;
         }
     }
 

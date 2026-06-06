@@ -12,7 +12,7 @@ internal sealed class SessionJoinFailedHandler : IMessageHandler
     private readonly ILoggerProvider logger;
 
     /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="SessionReadyHandler"/>
+    /// Инициализирует новый экземлпяр <see cref="SessionJoinFailedHandler"/>
     /// </summary>
     public SessionJoinFailedHandler(ILoggerProvider logger)
     {

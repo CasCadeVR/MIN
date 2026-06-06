@@ -5,13 +5,10 @@ using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Infrastructure.Events;
-using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Desktop.Views.Panels.SidePanelViews;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
-using MIN.Sessions.Chess.Events;
 using MIN.Sessions.Core.Events;
-using MIN.Sessions.Core.Messaging;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -24,7 +21,6 @@ public partial class ChatPanelView
     {
         eventTokens =
         [
-            eventBus.Subscribe<ChessJoinResponseReceivedEvent>(OnChessJoinResponseReceived),
             eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived),
             eventBus.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived),
             eventBus.Subscribe<FileMetaDataMessageReceivedEvent>(OnFileMetaDataMessageReceived),
@@ -40,26 +36,6 @@ public partial class ChatPanelView
         ];
     }
 
-    private async Task OnChessJoinResponseReceived(ChessJoinResponseReceivedEvent eventMessage, CancellationToken cancellationToken)
-    {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
-        uiContext.Post(_ =>
-        {
-            var form = new TestChessForm(localParticipant.Id == room.HostParticipant.Id ? "Как хост" : "Как клиент");
-            form.Show();
-            form.OnClose += async () =>
-            {
-                await featureCollection.Core.MessageRouter.RouteAsync(new SessionLeaveMessage()
-                {
-                    SubRoomId = eventMessage.SubRoomId,
-                }, roomId, localParticipant.Id, cancellationToken);
-            };
-        }, null);
-    }
     private async Task OnChatTextMessageReceived(ChatTextMessageReceivedEvent eventMessage, CancellationToken ct)
     {
         if (eventMessage.RoomId != roomId)

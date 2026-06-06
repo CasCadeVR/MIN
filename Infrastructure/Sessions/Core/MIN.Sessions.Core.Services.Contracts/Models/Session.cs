@@ -15,10 +15,20 @@ public class Session
     /// <summary>
     /// Название сессии
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public required string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Описание сессии
     /// </summary>
     public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Путь к серверу сессии
+    /// </summary>
+    public string ServerPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Путь к клиенту сессии
+    /// </summary>
+    public string ClientPath { get; set; } = string.Empty;
 }

@@ -8,8 +8,9 @@ using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Sessions.Chess.Events;
 using MIN.Sessions.Chess.Messaging.Default;
+using MIN.Sessions.Chess.Services.Contracts.Services;
+using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging;
 using MIN.Sessions.Core.Messaging.Contracts;
 
@@ -98,11 +99,11 @@ internal sealed class ChessJoinHandler : IMessageHandler
                 });
 
             case ChessJoinResponseMessage chessJoinResponseMessage:
-                await eventBus.PublishAsync(new ChessJoinResponseReceivedEvent()
+                await eventBus.PublishAsync(new JoinResponseReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
                     SubRoomId = chessJoinResponseMessage.SubRoomId,
-                    CurrentPositionOnBoard = chessJoinResponseMessage.CurrentPositionOnBoard,
+                    Session = ChessSessionProvider.GetChessSession(),
                 });
 
                 if (!chessJoinResponseMessage.NeedToAnnounce)

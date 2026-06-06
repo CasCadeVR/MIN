@@ -272,29 +272,24 @@ public enum MessageTypeTag : byte
     ChessHostRequest = 160,
 
     /// <summary>
-    /// Оповещение готовности шахмат.
-    /// </summary>
-    ChessReady = 161,
-
-    /// <summary>
     /// Запроса на присоединения к шахматам.
     /// </summary>
-    ChessJoinRequest = 162,
+    ChessJoinRequest = 161,
 
     /// <summary>
     /// Ответ на присоединения к шахматам.
     /// </summary>
-    ChessJoinResponse = 163,
+    ChessJoinResponse = 162,
 
     /// <summary>
     /// Ответ на присоединения к шахматам.
     /// </summary>
-    ChessParticipantJoined = 164,
+    ChessParticipantJoined = 163,
 
     /// <summary>
     /// Ответ на присоединения к шахматам.
     /// </summary>
-    ChessParticipantLeft = 165,
+    ChessParticipantLeft = 164,
 
     // ===== Зарезервировано (192-255) =====
     // Свободные диапазоны для будущих категорий

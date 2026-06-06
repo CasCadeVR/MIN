@@ -12,7 +12,7 @@ internal sealed class SessionHostFailedHandler : IMessageHandler
     private readonly ILoggerProvider logger;
 
     /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="SessionReadyHandler"/>
+    /// Инициализирует новый экземлпяр <see cref="SessionHostFailedHandler"/>
     /// </summary>
     public SessionHostFailedHandler(ILoggerProvider logger)
     {
