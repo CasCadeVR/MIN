@@ -1,16 +1,18 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
-using MIN.Core.SubRooms.Contracts.Interfaces.Messages;
 
-namespace MIN.Sessions.Core.Messaging.Contracts;
+namespace MIN.Sessions.Core.Messaging.Contracts.Models;
 
 /// <summary>
-/// Базовое сообщение внутри сессии
+/// Сообщение запроса на присоединение к сессии
 /// </summary>
-public abstract class BaseSessionMessage : BaseMessage, IWithinSubRoom
+public abstract class SessionJoinRequestMessage : BaseMessage
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag { get; }
+
+    /// <inheritdoc />
+    public override bool IsPublic => false;
 
     /// <summary>
     /// Идентификатор подкомнаты

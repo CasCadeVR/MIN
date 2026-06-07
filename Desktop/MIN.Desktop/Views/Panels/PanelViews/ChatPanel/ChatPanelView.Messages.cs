@@ -11,7 +11,7 @@ using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Components;
 using MIN.FileTransfer.Messaging;
-using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 

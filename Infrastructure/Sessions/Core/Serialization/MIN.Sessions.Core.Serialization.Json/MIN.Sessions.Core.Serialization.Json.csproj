@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\DI\MIN.Core.DI\MIN.Core.DI.csproj" />
-    <ProjectReference Include="..\Transport\MIN.Sessions.Core.Transport.Contracts\MIN.Sessions.Core.Transport.Contracts.csproj" />
+    <ProjectReference Include="..\..\MIN.Sessions.Core.Messaging\MIN.Sessions.Core.Messaging.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Serialization.Contracts\MIN.Sessions.Core.Serialization.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

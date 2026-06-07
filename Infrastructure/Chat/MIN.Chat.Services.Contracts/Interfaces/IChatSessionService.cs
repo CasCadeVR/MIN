@@ -1,4 +1,4 @@
-﻿using MIN.Sessions.Core.Messaging;
+﻿using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Services.Contracts.Models;
 

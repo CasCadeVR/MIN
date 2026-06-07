@@ -5,9 +5,10 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
-using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
+using MIN.Sessions.Core.Transport.Contracts.Enums;
 
 namespace MIN.Sessions.Core.Services;
 
@@ -65,7 +66,7 @@ public class SessionMonitor : IHostedService
 
     private async Task OnSessionDeactivated(SessionDeactivatedEvent e, CancellationToken cancellationToken)
     {
-        await sessionProcessInitializer.StopAsync(e.RoomId, e.SubRoomId);
+        await sessionProcessInitializer.StopAsync(e.RoomId, e.SubRoomId, SessionProcessRole.Server);
     }
 
     private async Task OnParticipantLeft(ParticipantLeftEvent e, CancellationToken cancellationToken)

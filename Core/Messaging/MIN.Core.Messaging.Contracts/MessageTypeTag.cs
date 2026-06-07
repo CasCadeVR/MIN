@@ -99,9 +99,9 @@ public enum MessageTypeTag : byte
     SessionJoinFailed = 49,
 
     /// <summary>
-    /// Ошибка внутри сессии.
+    /// Специфичное сообщение внутри сессии.
     /// </summary>
-    SessionError = 50,
+    SessionSpecific = 50,
 
     /// <summary>
     /// Готовность хостинга сессии.
@@ -122,6 +122,11 @@ public enum MessageTypeTag : byte
     /// Участник вышел из сессии.
     /// </summary>
     SessionParticipantLeft = 54,
+
+    /// <summary>
+    /// Закрытие сервера сессии.
+    /// </summary>
+    SessionServerShutdown = 55,
 
     // ===== Сообщения чата (64-95) =====
 

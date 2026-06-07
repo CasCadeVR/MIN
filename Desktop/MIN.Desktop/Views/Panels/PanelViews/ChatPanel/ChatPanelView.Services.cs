@@ -2,7 +2,7 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.FileTransfer.Messaging;
-using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;

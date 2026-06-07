@@ -4,7 +4,7 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Chess.Messaging.Default;
 using MIN.Sessions.Chess.Services.Contracts.Models;
-using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Services.Contracts.Models;

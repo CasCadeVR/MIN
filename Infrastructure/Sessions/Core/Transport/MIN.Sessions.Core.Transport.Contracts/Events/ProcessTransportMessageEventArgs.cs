@@ -1,4 +1,6 @@
-﻿namespace MIN.Sessions.Core.Transport.Contracts.Events;
+﻿using MIN.Sessions.Core.Transport.Contracts.Enums;
+
+namespace MIN.Sessions.Core.Transport.Contracts.Events;
 
 /// <summary>
 /// Аргументы событие получения данных от приложения
@@ -18,7 +20,7 @@ public sealed class ProcessTransportMessageEventArgs : EventArgs
     /// <summary>
     /// Роль 
     /// </summary>
-    public string Role { get; init; } = null!;     // "server" | "client"
+    public SessionProcessRole Role { get; init; }
 
     /// <summary>
     /// Полученные данные

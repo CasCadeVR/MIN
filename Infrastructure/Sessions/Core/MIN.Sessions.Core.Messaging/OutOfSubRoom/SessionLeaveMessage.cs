@@ -1,7 +1,7 @@
 ﻿using MIN.Core.Messaging.Contracts;
-using MIN.Sessions.Core.Messaging.Contracts;
+using MIN.Sessions.Core.Messaging.Contracts.Models;
 
-namespace MIN.Sessions.Core.Messaging;
+namespace MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 /// <summary>
 /// Сообщение о выходе из сессии
@@ -13,9 +13,4 @@ public sealed class SessionLeaveMessage : BaseSessionMessage
 
     /// <inheritdoc />
     public override bool IsPublic => false;
-
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
 }

@@ -4,7 +4,7 @@ using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Components.ChatMessages;
 using MIN.Sessions.Core.Events;
-using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Desktop.Components;
 

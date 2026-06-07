@@ -12,8 +12,10 @@ using MIN.Sessions.Chess.Messaging.Default;
 using MIN.Sessions.Chess.Services.Contracts.Services;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
+using MIN.Sessions.Core.Transport.Contracts.Enums;
 
 namespace MIN.Sessions.Chess.Handlers;
 

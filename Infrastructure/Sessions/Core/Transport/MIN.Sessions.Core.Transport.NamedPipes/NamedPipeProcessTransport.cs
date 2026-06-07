@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.IO.Pipes;
 using System.Text.Json;
-using MIN.Chess.Server.Models;
+using MIN.Sessions.Core.Transport.Contracts.Enums;
 using MIN.Sessions.Core.Transport.Contracts.Events;
 using MIN.Sessions.Core.Transport.Contracts.Interfaces;
 using MIN.Sessions.Core.Transport.Contracts.Models;
@@ -13,7 +13,7 @@ namespace MIN.Sessions.Core.Transport.NamedPipes;
 /// </summary>
 public sealed class NamedPipeProcessTransport : ISessionProcessTransport
 {
-    private readonly ConcurrentDictionary<(Guid, int, string), NamedPipeServerStream> connections = [];
+    private readonly ConcurrentDictionary<(Guid, int, SessionProcessRole), NamedPipeServerStream> connections = [];
     private readonly CancellationTokenSource cts = new();
     private string pipeName = string.Empty;
 
@@ -34,7 +34,7 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         });
 
     async Task<TransportConnection> ISessionProcessTransport.WaitForConnectionAsync(
-        Guid roomId, int subRoomId, string role, CancellationToken ct)
+        Guid roomId, int subRoomId, SessionProcessRole role, CancellationToken ct)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -53,11 +53,11 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         connections.TryAdd(key, server);
         _ = ReadLoopAsync(key, server, cts.Token);
 
-        return new TransportConnection(role, subRoomId, server, server);
+        return new TransportConnection(roomId, role, subRoomId, server, server);
     }
 
     private async Task ReadLoopAsync(
-        (Guid, int, string) key, NamedPipeServerStream stream, CancellationToken ct)
+        (Guid, int, SessionProcessRole) key, NamedPipeServerStream stream, CancellationToken ct)
     {
         try
         {
@@ -84,7 +84,7 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         }
     }
 
-    async Task ISessionProcessTransport.SendAsync(Guid roomId, int subRoomId, string role, byte[] data, CancellationToken ct)
+    async Task ISessionProcessTransport.SendAsync(Guid roomId, int subRoomId, SessionProcessRole role, byte[] data, CancellationToken ct)
     {
         if (connections.TryGetValue((roomId, subRoomId, role), out var stream))
         {
@@ -95,7 +95,7 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         }
     }
 
-    Task ISessionProcessTransport.DisconnectAsync(Guid roomId, int subRoomId, string role)
+    Task ISessionProcessTransport.DisconnectAsync(Guid roomId, int subRoomId, SessionProcessRole role)
     {
         if (connections.TryRemove((roomId, subRoomId, role), out var stream))
         {

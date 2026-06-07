@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.SubRooms.Contracts.Interfaces.Messages;
-using MIN.Sessions.Core.Messaging.Contracts;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Sessions.Chess.Messaging.Default;
 

@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Sessions.Chess.Services.Contracts.Models;
-using MIN.Sessions.Core.Messaging.Contracts;
+using MIN.Sessions.Core.Messaging.Contracts.Models;
 
 namespace MIN.Sessions.Chess.Messaging.Default;
 

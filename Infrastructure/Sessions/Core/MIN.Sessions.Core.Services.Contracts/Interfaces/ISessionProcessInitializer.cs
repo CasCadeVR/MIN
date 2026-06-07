@@ -1,4 +1,4 @@
-﻿using MIN.Sessions.Core.Services.Contracts.Enums;
+﻿using MIN.Sessions.Core.Transport.Contracts.Enums;
 
 namespace MIN.Sessions.Core.Services.Contracts.Interfaces;
 
@@ -19,5 +19,5 @@ public interface ISessionProcessInitializer
     /// <summary>
     /// Остоновить приложение сессии
     /// </summary>
-    Task StopAsync(Guid roomId, int subRoomId);
+    Task StopAsync(Guid roomId, int subRoomId, SessionProcessRole sessionProcessRole);
 }

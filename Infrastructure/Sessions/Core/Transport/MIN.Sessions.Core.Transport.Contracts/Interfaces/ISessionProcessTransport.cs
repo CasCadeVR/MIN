@@ -1,4 +1,5 @@
-﻿using MIN.Sessions.Core.Transport.Contracts.Events;
+﻿using MIN.Sessions.Core.Transport.Contracts.Enums;
+using MIN.Sessions.Core.Transport.Contracts.Events;
 using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Transport.Contracts.Interfaces;
@@ -11,7 +12,7 @@ public interface ISessionProcessTransport : IAsyncDisposable
     /// <summary>
     /// Запустить серверную часть транспорта
     /// </summary>
-    Task StartAsync(Guid roomId, CancellationToken ct = default);
+    Task StartAsync(Guid roomId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Событие: получены сырые данные от подключения
@@ -30,17 +31,17 @@ public interface ISessionProcessTransport : IAsyncDisposable
     /// Ждать подключения одного процесса (server или client)
     /// </summary>
     Task<TransportConnection> WaitForConnectionAsync(
-        Guid roomId, int subRoomId, string role, CancellationToken ct = default);
+        Guid roomId, int subRoomId, SessionProcessRole role, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Отправить данные приложению
     /// </summary>
-    Task SendAsync(Guid roomId, int subRoomId, string role, byte[] data, CancellationToken ct);
+    Task SendAsync(Guid roomId, int subRoomId, SessionProcessRole role, byte[] data, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Закрыть конкретное подключение
     /// </summary>
-    Task DisconnectAsync(Guid roomId, int subRoomId, string role);
+    Task DisconnectAsync(Guid roomId, int subRoomId, SessionProcessRole role);
 
     /// <summary>
     /// Остановить транспорт, разорвать все соединения

@@ -1,5 +1,5 @@
 ﻿using MIN.Core.Events.Contracts;
-using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Sessions.Core.Events;
 

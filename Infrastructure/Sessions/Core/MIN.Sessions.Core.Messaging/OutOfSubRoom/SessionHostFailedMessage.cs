@@ -1,7 +1,7 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 
-namespace MIN.Sessions.Core.Messaging;
+namespace MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 /// <summary>
 /// Сообщение ошибки на хостинг подкомнаты

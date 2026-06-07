@@ -1,5 +1,5 @@
 ﻿using MIN.Core.Stores.Contracts.Models;
-using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 
 namespace MIN.Sessions.Core.Services;

@@ -4,7 +4,7 @@ using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
-namespace MIN.Sessions.Core.Messaging;
+namespace MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 /// <summary>
 /// Сообщение готовности хостинга сессии

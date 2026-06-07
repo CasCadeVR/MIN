@@ -8,7 +8,7 @@ using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
-using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Sessions.Core.Handlers;
 
@@ -57,10 +57,7 @@ internal sealed class SessionLeaveHandler : IMessageHandler
 
         if (subRoomManager.GetSubRoom(roomId, sessionLeaveMessage.SubRoomId) == null)
         {
-            return HandlerResult.WithResponse(new SessionJoinFailedMessage()
-            {
-                ErrorMessage = "Не нашлась информацию о сессии",
-            }, stopPropagation: true);
+            return HandlerResult.Failure("Клиент отправил запрос на выход из неизвестной сессии", stopPropagation: true);
         }
 
         if (!subRoomManager.LeaveSubRoom(roomId, sessionLeaveMessage.SubRoomId, message.SenderId))

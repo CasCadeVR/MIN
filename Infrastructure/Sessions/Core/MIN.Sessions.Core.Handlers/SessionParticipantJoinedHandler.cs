@@ -5,8 +5,7 @@ using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
-using MIN.Sessions.Core.Messaging;
-using MIN.Sessions.Core.Messaging.Contracts;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 
 namespace MIN.Sessions.Core.Handlers;

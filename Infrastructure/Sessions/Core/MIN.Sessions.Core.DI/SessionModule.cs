@@ -7,6 +7,7 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Sessions.Core.DI.FeatureCollection;
 using MIN.Sessions.Core.Handlers;
 using MIN.Sessions.Core.Messaging;
+using MIN.Sessions.Core.Serialization.Json;
 using MIN.Sessions.Core.Services;
 using MIN.Sessions.Core.Transport.NamedPipes;
 
@@ -27,5 +28,6 @@ public class SessionModule : Module
         services.RegisterAsImplementedInterfaces<SessionProcessInitializer>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionReadyMessageResolver>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NamedPipeProcessTransport>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<IpcJsonSerializer>(ServiceLifetime.Singleton);
     }
 }

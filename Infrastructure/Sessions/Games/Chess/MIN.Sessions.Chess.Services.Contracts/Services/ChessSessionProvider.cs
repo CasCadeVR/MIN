@@ -18,7 +18,7 @@ public static class ChessSessionProvider
         Description = "Сыграй с друзьями в шахматы!",
         //ServerPath = "Sessions/Chess/MIN.Chess.Server.exe",
         //ClientPath = "Sessions/Chess/MIN.Chess.Client.exe",
-        ServerPath = "C:\\Users\\Admin\\Documents\\CSharpProjects\\Learning\\Projects\\MinChess\\Network\\MIN.Chess.Client\\bin\\Debug\\net8.0-windows\\MIN.Chess.Client.exe",
-        ClientPath = "C:\\Users\\Admin\\Documents\\CSharpProjects\\Learning\\Projects\\MinChess\\Network\\MIN.Chess.Sever\\bin\\Debug\\net8.0-windows\\MIN.Chess.Sever.exe",
+        ClientPath = "C:\\Users\\Admin\\Documents\\CSharpProjects\\Learning\\Projects\\MinChess\\Network\\MIN.Chess.Client\\bin\\Debug\\net8.0-windows\\win-x64\\MIN.Chess.Client.exe",
+        ServerPath = "C:\\Users\\Admin\\Documents\\CSharpProjects\\Learning\\Projects\\MinChess\\Network\\MIN.Chess.Server\\bin\\Debug\\net8.0\\win-x64\\MIN.Chess.Server.exe",
     };
 }
