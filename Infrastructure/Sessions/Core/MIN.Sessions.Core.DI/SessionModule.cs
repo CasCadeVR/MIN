@@ -8,6 +8,7 @@ using MIN.Sessions.Core.DI.FeatureCollection;
 using MIN.Sessions.Core.Handlers;
 using MIN.Sessions.Core.Messaging;
 using MIN.Sessions.Core.Services;
+using MIN.Sessions.Core.Transport.NamedPipes;
 
 namespace MIN.Sessions.Core.DI;
 
@@ -25,5 +26,6 @@ public class SessionModule : Module
         services.RegisterAsImplementedInterfaces<SessionFeatureCollection>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionProcessInitializer>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionReadyMessageResolver>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<NamedPipeProcessTransport>(ServiceLifetime.Singleton);
     }
 }
