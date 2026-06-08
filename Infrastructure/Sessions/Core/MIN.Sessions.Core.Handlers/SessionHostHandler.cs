@@ -8,34 +8,32 @@ using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Sessions.Chess.Messaging.Default;
-using MIN.Sessions.Chess.Services.Contracts.Services;
 using MIN.Sessions.Core.Events;
-using MIN.Sessions.Core.Messaging;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
-using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Transport.Contracts.Enums;
 
-namespace MIN.Sessions.Chess.Handlers;
+namespace MIN.Sessions.Core.Handlers;
 
-internal sealed class ChessHostHandler : IMessageHandler
+internal sealed class SessionHostHandler : IMessageHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
     private readonly IMessageRouter messageRouter;
+    private readonly ISessionResolver sessionResolver;
     private readonly ISessionProcessInitializer sessionProcessInitializer;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="ChessHostHandler"/>
+    /// Инициализирует новый экземлпяр <see cref="SessionHostHandler"/>
     /// </summary>
-    public ChessHostHandler(ISubRoomManager subRoomManager,
+    public SessionHostHandler(ISubRoomManager subRoomManager,
         IEventBus eventBus,
         IMessageSender messageSender,
         IMessageRouter messageRouter,
+        ISessionResolver sessionResolver,
         ISessionProcessInitializer sessionProcessInitializer,
         IIdentityService identityService,
         ILoggerProvider logger)
@@ -44,21 +42,22 @@ internal sealed class ChessHostHandler : IMessageHandler
         this.eventBus = eventBus;
         this.messageSender = messageSender;
         this.messageRouter = messageRouter;
+        this.sessionResolver = sessionResolver;
         this.sessionProcessInitializer = sessionProcessInitializer;
         this.identityService = identityService;
         this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.ChessHostRequest];
+    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionHostRequest];
 
     int IMessageHandler.Priority => 12;
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not ChessHostRequestMessage chessHostRequestMessage)
+        if (message is not SessionHostRequestMessage sessionHostRequestMessage)
         {
-            logger.Log($"Неизвестный тип сообщения в {nameof(ChessHostHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ChessHostHandler)} - {message.GetType()}");
+            logger.Log($"Неизвестный тип сообщения в {nameof(SessionHostHandler)} - {message.GetType()}");
+            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionHostHandler)} - {message.GetType()}");
         }
 
         if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
@@ -68,8 +67,8 @@ internal sealed class ChessHostHandler : IMessageHandler
 
         var senderParicipantInfo = sender!.ToParticipantInfo();
 
-        if (chessHostRequestMessage.SubRoomId != null
-            && !subRoomManager.ActivateSubRoom(context.RoomContext.RoomId, chessHostRequestMessage.SubRoomId.Value, senderParicipantInfo))
+        if (sessionHostRequestMessage.SubRoomId != null
+            && !subRoomManager.ActivateSubRoom(context.RoomContext.RoomId, sessionHostRequestMessage.SubRoomId.Value, senderParicipantInfo))
         {
             return HandlerResult.WithResponse(new SessionHostFailedMessage()
             {
@@ -79,9 +78,7 @@ internal sealed class ChessHostHandler : IMessageHandler
 
         // Здесь хост должен запустить сервер шахмат
 
-        var currentPositionOnBoard = "And at this position Magnus carlson plays ROOK D7";
-
-        var subRoomId = chessHostRequestMessage.SubRoomId;
+        var subRoomId = sessionHostRequestMessage.SubRoomId;
         var isHosted = false;
 
         if (subRoomId == null)
@@ -91,7 +88,7 @@ internal sealed class ChessHostHandler : IMessageHandler
             subRoomId = subRoomInfo.Id;
         }
 
-        var session = ChessSessionProvider.GetChessSession();
+        var session = sessionResolver.GetSessionByType(sessionHostRequestMessage.SessionType);
 
         var hostResult = await sessionProcessInitializer.StartAsync(context.RoomContext.RoomId, subRoomId.Value,
             session.ServerPath, SessionProcessRole.Server, context.CancellationToken);
@@ -100,7 +97,7 @@ internal sealed class ChessHostHandler : IMessageHandler
         {
             return HandlerResult.WithResponse(new SessionHostFailedMessage()
             {
-                ErrorMessage = "У хоста повреждён или утеряна программа сервера"
+                ErrorMessage = "У хоста повреждёна или утеряна программа сервера"
             });
         }
 
@@ -123,7 +120,7 @@ internal sealed class ChessHostHandler : IMessageHandler
                 {
                     RoomId = context.RoomContext.RoomId,
                     SubRoomId = subRoomId.Value,
-                    Session = ChessSessionProvider.GetChessSession(),
+                    Session = session,
                 });
 
                 return HandlerResult.Success();
@@ -132,31 +129,28 @@ internal sealed class ChessHostHandler : IMessageHandler
             {
                 await messageSender.SendAsync(hostReadyMessage, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
 
-                return HandlerResult.WithResponse(new ChessJoinResponseMessage()
+                return HandlerResult.WithResponse(new SessionJoinResponseMessage()
                 {
                     NeedToAnnounce = false,
                     SubRoomId = subRoomId.Value,
-                    CurrentPositionOnBoard = currentPositionOnBoard,
                 });
             }
         }
 
         if (identityService.SelfParticipant.Id == message.SenderId)
         {
-            await messageRouter.RouteAsync(new ChessJoinResponseMessage()
+            await messageRouter.RouteAsync(new SessionJoinResponseMessage()
             {
                 NeedToAnnounce = true,
                 SubRoomId = subRoomId.Value,
-                CurrentPositionOnBoard = currentPositionOnBoard,
             }, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
         }
         else
         {
-            await messageSender.SendAsync(new ChessJoinResponseMessage()
+            await messageSender.SendAsync(new SessionJoinResponseMessage()
             {
                 NeedToAnnounce = true,
                 SubRoomId = subRoomId.Value,
-                CurrentPositionOnBoard = currentPositionOnBoard,
             }, context.RoomContext.RoomId, context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId), context.CancellationToken);
         }
 

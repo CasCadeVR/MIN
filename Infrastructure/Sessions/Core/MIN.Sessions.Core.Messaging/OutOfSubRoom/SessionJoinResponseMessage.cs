@@ -1,18 +1,24 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
+using MIN.Sessions.Core.Services.Contracts.Enums;
 
-namespace MIN.Sessions.Core.Messaging.Contracts.Models;
+namespace MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 /// <summary>
 /// Сообщение ответа на присоединение к сессии
 /// </summary>
-public abstract class SessionJoinResponseMessage : BaseMessage
+public sealed class SessionJoinResponseMessage : BaseMessage
 {
     /// <inheritdoc />
-    public override MessageTypeTag TypeTag { get; }
+    public override MessageTypeTag TypeTag => MessageTypeTag.SessionJoinResponse;
 
     /// <inheritdoc />
     public override bool IsPublic => false;
+
+    /// <summary>
+    /// Тип сессии
+    /// </summary>
+    public SessionType SessionType { get; set; }
 
     /// <summary>
     /// Флаг, указывающий, нужно ли оповещать остальных

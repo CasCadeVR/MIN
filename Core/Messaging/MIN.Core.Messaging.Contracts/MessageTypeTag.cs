@@ -12,8 +12,7 @@
 /// 64-95  - Сообщения чата
 /// 96-127 - Сообщения управления комнатой
 /// 128-159 - Сообщения для передачи файлов
-/// 160-191 - Сообщения для интеграций/шахматы
-/// 192-255 - Зарезервировано для будущих категорий
+/// 160-255 - Зарезервировано для будущих категорий
 /// </remarks>
 public enum MessageTypeTag : byte
 {
@@ -89,44 +88,60 @@ public enum MessageTypeTag : byte
     // ===== Сообщения сессий (48-63) =====
 
     /// <summary>
+    /// Запроса на хостинг шахмат.
+    /// </summary>
+    SessionHostRequest = 48,
+
+    /// <summary>
     /// Ошибка на запрос хостинг сессии.
     /// </summary>
-    SessionHostFailed = 48,
-
-    /// <summary>
-    /// Ошибка на запрос присоединения к сессии.
-    /// </summary>
-    SessionJoinFailed = 49,
-
-    /// <summary>
-    /// Специфичное сообщение внутри сессии.
-    /// </summary>
-    SessionSpecific = 50,
+    SessionHostFailed = 49,
 
     /// <summary>
     /// Готовность хостинга сессии.
     /// </summary>
-    SessionReady = 51,
+    SessionReady = 50,
+
+    /// <summary>
+    /// Запроса на присоединения к сессии.
+    /// </summary>
+    SessionJoinRequest = 51,
+
+    /// <summary>
+    /// Ошибка на запрос присоединения к сессии.
+    /// </summary>
+    SessionJoinFailed = 52,
+
+    /// <summary>
+    /// Ответ на присоединения к сессии.
+    /// </summary>
+    SessionJoinResponse = 53,
+
+    /// <summary>
+    /// Специфичное сообщение внутри сессии.
+    /// </summary>
+    SessionSpecific = 54,
 
     /// <summary>
     /// Выход из сессии.
     /// </summary>
-    SessionLeave = 52,
+    SessionLeave = 55,
 
     /// <summary>
     /// Участник вошёл в сессию.
     /// </summary>
-    SessionParticipantJoined = 53,
+    SessionParticipantJoined = 56,
 
     /// <summary>
     /// Участник вышел из сессии.
     /// </summary>
-    SessionParticipantLeft = 54,
+    SessionParticipantLeft = 57,
 
     /// <summary>
     /// Закрытие сервера сессии.
     /// </summary>
-    SessionServerShutdown = 55,
+    SessionServerShutdown = 58,
+
 
     // ===== Сообщения чата (64-95) =====
 
@@ -269,33 +284,6 @@ public enum MessageTypeTag : byte
     /// </summary>
     FileTransferCancel = 134,
 
-    // ===== Сообщения для интеграций/шахматы (160-191) =====
-
-    /// <summary>
-    /// Запроса на хостинг шахмат.
-    /// </summary>
-    ChessHostRequest = 160,
-
-    /// <summary>
-    /// Запроса на присоединения к шахматам.
-    /// </summary>
-    ChessJoinRequest = 161,
-
-    /// <summary>
-    /// Ответ на присоединения к шахматам.
-    /// </summary>
-    ChessJoinResponse = 162,
-
-    /// <summary>
-    /// Ответ на присоединения к шахматам.
-    /// </summary>
-    ChessParticipantJoined = 163,
-
-    /// <summary>
-    /// Ответ на присоединения к шахматам.
-    /// </summary>
-    ChessParticipantLeft = 164,
-
-    // ===== Зарезервировано (192-255) =====
+    // ===== Зарезервировано (160-255) =====
     // Свободные диапазоны для будущих категорий
 }

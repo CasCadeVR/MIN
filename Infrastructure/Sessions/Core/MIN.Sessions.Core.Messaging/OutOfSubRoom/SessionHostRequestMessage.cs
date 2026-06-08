@@ -1,15 +1,16 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
+using MIN.Sessions.Core.Services.Contracts.Enums;
 
-namespace MIN.Sessions.Core.Messaging.Contracts.Models;
+namespace MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 /// <summary>
 /// Сообщение запроса на хостинг сессии
 /// </summary>
-public abstract class SessionHostRequestMessage : BaseMessage
+public sealed class SessionHostRequestMessage : BaseMessage
 {
     /// <inheritdoc />
-    public override MessageTypeTag TypeTag { get; }
+    public override MessageTypeTag TypeTag => MessageTypeTag.SessionHostRequest;
 
     /// <inheritdoc />
     public override bool IsPublic => false;
@@ -18,6 +19,11 @@ public abstract class SessionHostRequestMessage : BaseMessage
     /// Идентификатор комнаты
     /// </summary>
     public Guid RoomId { get; set; }
+
+    /// <summary>
+    /// Тип сессии
+    /// </summary>
+    public SessionType SessionType { get; set; }
 
     /// <summary>
     /// Идентификатор подкомнаты

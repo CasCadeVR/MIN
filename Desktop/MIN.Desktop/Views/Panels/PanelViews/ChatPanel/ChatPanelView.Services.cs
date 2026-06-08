@@ -42,7 +42,6 @@ public partial class ChatPanelView
     {
         await featureCollection.Chat.ChatSessionService.SendSessionJoinRequest(roomId,
             sessionReadyMessage,
-            null,
             formCts.Token
         );
     }
@@ -87,7 +86,7 @@ public partial class ChatPanelView
 
     private async void SendSessionStartMessage(Session session)
     {
-        await featureCollection.Chat.ChatSessionService.SendSessionRequestAsync(roomId, session, null, formCts.Token);
+        await featureCollection.Chat.ChatSessionService.SendSessionRequestAsync(roomId, session, formCts.Token);
     }
 
     private async Task SendMessage()

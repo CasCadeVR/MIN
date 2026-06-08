@@ -8,38 +8,40 @@ using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Sessions.Chess.Messaging.Default;
-using MIN.Sessions.Chess.Services.Contracts.Services;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
+using MIN.Sessions.Core.Services.Contracts.Interfaces;
 
-namespace MIN.Sessions.Chess.Handlers;
+namespace MIN.Sessions.Core.Handlers;
 
-internal sealed class ChessJoinHandler : IMessageHandler
+internal sealed class SessionJoinHandler : IMessageHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
+    private readonly ISessionResolver sessionResolver;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="ChessJoinHandler"/>
+    /// Инициализирует новый экземлпяр <see cref="SessionJoinHandler"/>
     /// </summary>
-    public ChessJoinHandler(ISubRoomManager subRoomManager,
+    public SessionJoinHandler(ISubRoomManager subRoomManager,
         IEventBus eventBus,
         IMessageRouter messageRouter,
+        ISessionResolver sessionResolver,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
+        this.sessionResolver = sessionResolver;
         this.identityService = identityService;
         this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.ChessJoinRequest, MessageTypeTag.ChessJoinResponse];
+    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionJoinRequest, MessageTypeTag.SessionJoinResponse];
 
     int IMessageHandler.Priority => 15;
 
@@ -47,7 +49,7 @@ internal sealed class ChessJoinHandler : IMessageHandler
     {
         switch (message)
         {
-            case ChessJoinRequestMessage chessJoinRequestMessage:
+            case SessionJoinRequestMessage sessionJoinRequestMessage:
                 if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
                 {
                     return HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false, critical: true);
@@ -55,7 +57,7 @@ internal sealed class ChessJoinHandler : IMessageHandler
 
                 var roomId = context.RoomContext.RoomId;
 
-                var subRoomInfo = subRoomManager.GetSubRoom(roomId, chessJoinRequestMessage.SubRoomId);
+                var subRoomInfo = subRoomManager.GetSubRoom(roomId, sessionJoinRequestMessage.SubRoomId);
 
                 if (subRoomInfo == null)
                 {
@@ -64,17 +66,17 @@ internal sealed class ChessJoinHandler : IMessageHandler
 
                 var senderParicipantInfo = sender!.ToParticipantInfo();
 
-                var joinResult = subRoomManager.TryJoinSubRoom(roomId, chessJoinRequestMessage.SubRoomId, senderParicipantInfo);
+                var joinResult = subRoomManager.TryJoinSubRoom(roomId, sessionJoinRequestMessage.SubRoomId, senderParicipantInfo);
 
                 if (joinResult != SubRoomJoinOutcome.Success)
                 {
                     if (joinResult == SubRoomJoinOutcome.SubRoomNotActive)
                     {
-                        await messageRouter.RouteAsync(new ChessHostRequestMessage()
+                        await messageRouter.RouteAsync(new SessionHostRequestMessage()
                         {
                             RoomId = roomId,
-                            Options = null,
                             SubRoomId = subRoomInfo.Id,
+                            SessionType = sessionJoinRequestMessage.SessionType
                         }, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
 
                         return HandlerResult.Success();
@@ -90,22 +92,22 @@ internal sealed class ChessJoinHandler : IMessageHandler
                     return SendErrorMessage(error);
                 }
 
-                return HandlerResult.WithResponse(new ChessJoinResponseMessage()
+                return HandlerResult.WithResponse(new SessionJoinResponseMessage()
                 {
                     NeedToAnnounce = true,
                     SubRoomId = subRoomInfo.Id,
-                    CurrentPositionOnBoard = "And at this position Magnus carlson plays ROOK D7",
+                    SessionType = sessionJoinRequestMessage.SessionType
                 });
 
-            case ChessJoinResponseMessage chessJoinResponseMessage:
+            case SessionJoinResponseMessage sessionJoinResponseMessage:
                 await eventBus.PublishAsync(new JoinResponseReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
-                    SubRoomId = chessJoinResponseMessage.SubRoomId,
-                    Session = ChessSessionProvider.GetChessSession(),
+                    SubRoomId = sessionJoinResponseMessage.SubRoomId,
+                    Session = sessionResolver.GetSessionByType(sessionJoinResponseMessage.SessionType),
                 });
 
-                if (!chessJoinResponseMessage.NeedToAnnounce)
+                if (!sessionJoinResponseMessage.NeedToAnnounce)
                 {
                     return HandlerResult.Success();
                 }
@@ -114,20 +116,18 @@ internal sealed class ChessJoinHandler : IMessageHandler
 
                 var sessionParticipantJoinedMessage = new SessionParticipantJoinedMessage()
                 {
-                    SubRoomId = chessJoinResponseMessage.SubRoomId,
+                    SubRoomId = sessionJoinResponseMessage.SubRoomId,
                     Participant = selfParticipant,
                 };
 
                 await messageRouter.RouteAsync(sessionParticipantJoinedMessage, context.RoomContext.RoomId, selfParticipant.Id, context.CancellationToken);
 
-                return HandlerResult.WithResponse(new ChessParticipantJoinedMessage()
-                {
-                    Participant = selfParticipant,
-                    SubRoomId = chessJoinResponseMessage.SubRoomId,
-                });
+                // Тут надо оповестить приложение
+
+                return HandlerResult.Success();
 
             default:
-                return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ChessJoinHandler)} - {message.GetType()}");
+                return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionJoinHandler)} - {message.GetType()}");
         }
     }
 
