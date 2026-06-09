@@ -1,6 +1,5 @@
-﻿using MIN.Sessions.Core.Transport.Contracts.Enums;
+﻿using MIN.Sessions.Core.Services.Contracts.Models;
 using MIN.Sessions.Core.Transport.Contracts.Events;
-using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Transport.Contracts.Interfaces;
 
@@ -30,18 +29,17 @@ public interface ISessionProcessTransport : IAsyncDisposable
     /// <summary>
     /// Ждать подключения одного процесса (server или client)
     /// </summary>
-    Task<TransportConnection> WaitForConnectionAsync(
-        Guid roomId, int subRoomId, SessionProcessRole role, CancellationToken cancellationToken = default);
+    Task WaitForConnectionAsync(ProcessContext context, int timeOutMs, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Отправить данные приложению
     /// </summary>
-    Task SendAsync(Guid roomId, int subRoomId, SessionProcessRole role, byte[] data, CancellationToken cancellationToken = default);
+    Task SendAsync(byte[] data, ProcessContext context, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Закрыть конкретное подключение
     /// </summary>
-    Task DisconnectAsync(Guid roomId, int subRoomId, SessionProcessRole role);
+    Task DisconnectAsync(ProcessContext context);
 
     /// <summary>
     /// Остановить транспорт, разорвать все соединения

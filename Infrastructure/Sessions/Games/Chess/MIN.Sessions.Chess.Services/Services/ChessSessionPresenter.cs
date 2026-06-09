@@ -1,4 +1,5 @@
-﻿using MIN.Sessions.Core.Services.Contracts.Enums;
+﻿using MIN.Sessions.Core.Messaging.Contracts.Enums;
+using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Services.Contracts.Models;
 

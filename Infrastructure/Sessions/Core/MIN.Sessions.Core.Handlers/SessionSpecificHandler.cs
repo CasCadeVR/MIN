@@ -2,32 +2,24 @@
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
-using MIN.Sessions.Core.Transport.Contracts.Interfaces;
+using MIN.Sessions.Core.Services.Contracts.Interfaces;
+using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Sessions.Core.Handlers;
 
 internal sealed class SessionSpecificHandler : IMessageHandler
 {
-    private readonly ISubRoomManager subRoomManager;
-    private readonly ISessionProcessTransport sessionProcessTransport;
-    private readonly IRoomHoster roomHoster;
+    private readonly ISessionProcessBridge sessionProcessBridge;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="SessionSpecificHandler"/>
     /// </summary>
-    public SessionSpecificHandler(ISubRoomManager subRoomManager,
-        ISessionProcessTransport sessionProcessTransport,
-        IRoomHoster roomHoster,
-        ILoggerProvider logger)
+    public SessionSpecificHandler(ISessionProcessBridge sessionProcessBridge, ILoggerProvider logger)
     {
-        this.subRoomManager = subRoomManager;
-        this.sessionProcessTransport = sessionProcessTransport;
-        this.roomHoster = roomHoster;
+        this.sessionProcessBridge = sessionProcessBridge;
         this.logger = logger;
     }
 
@@ -46,8 +38,7 @@ internal sealed class SessionSpecificHandler : IMessageHandler
         var roomId = context.RoomContext.RoomId;
         var subRoomId = sessionSpecificMessage.SubRoomId;
 
-        await sessionProcessTransport.SendAsync(roomId, subRoomId, sessionSpecificMessage.SessionProcessRole, sessionSpecificMessage.Body, context.CancellationToken);
-
+        await sessionProcessBridge.SendData(sessionSpecificMessage.Body, new ProcessContext(roomId, subRoomId, sessionSpecificMessage.SessionProcessRole), context.CancellationToken);
         return HandlerResult.Success();
     }
 }

@@ -1,4 +1,4 @@
-﻿using MIN.Sessions.Core.Transport.Contracts.Enums;
+﻿using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Sessions.Core.Services.Contracts.Interfaces;
 
@@ -14,10 +14,15 @@ public interface ISessionProcessInitializer
     /// true - если успешно инициализировано и приложение готово слушать запросы
     /// false - если обратное
     /// </returns>
-    Task<bool> StartAsync(Guid roomId, int subRoomId, string gameExePath, SessionProcessRole sessionProcessRole, CancellationToken cancellationToken = default);
+    Task<bool> StartAsync(string gameExePath, ProcessContext context, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Остоновить приложение сессии
+    /// Остановить приложение сессии
     /// </summary>
-    Task StopAsync(Guid roomId, int subRoomId, SessionProcessRole sessionProcessRole);
+    Task StopAsync(ProcessContext context);
+
+    /// <summary>
+    /// Остановить все приложения сессии
+    /// </summary>
+    Task StopAll();
 }

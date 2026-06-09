@@ -6,8 +6,9 @@ using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
+using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
-using MIN.Sessions.Core.Transport.Contracts.Enums;
+using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Sessions.Core.Services;
 
@@ -20,6 +21,7 @@ public class SessionMonitor : IHostedService
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
     private readonly ISessionProcessInitializer sessionProcessInitializer;
+    private readonly ISessionProcessBridge sessionProcessBridge;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -30,6 +32,7 @@ public class SessionMonitor : IHostedService
         IEventBus eventBus,
         IMessageRouter messageRouter,
         ISessionProcessInitializer sessionProcessInitializer,
+        ISessionProcessBridge sessionProcessBridge,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
@@ -37,12 +40,14 @@ public class SessionMonitor : IHostedService
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
         this.sessionProcessInitializer = sessionProcessInitializer;
+        this.sessionProcessBridge = sessionProcessBridge;
         this.identityService = identityService;
         this.logger = logger;
     }
 
     Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
+        sessionProcessBridge.StartListeningAsync(cancellationToken);
         eventBus.Subscribe<JoinResponseReceivedEvent>(OnJoinResponseReceived);
         eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
         eventBus.Subscribe<SessionDeactivatedEvent>(OnSessionDeactivated);
@@ -51,8 +56,8 @@ public class SessionMonitor : IHostedService
 
     private async Task OnJoinResponseReceived(JoinResponseReceivedEvent e, CancellationToken cancellationToken)
     {
-        var hostResult = await sessionProcessInitializer.StartAsync(e.RoomId, e.SubRoomId,
-            e.Session.ClientPath, SessionProcessRole.Client, cancellationToken);
+        var hostResult = await sessionProcessInitializer.StartAsync(e.Session.ClientPath,
+            new ProcessContext(e.RoomId, e.SubRoomId, SessionProcessRole.Client), cancellationToken);
 
         if (hostResult == false)
         {
@@ -65,7 +70,7 @@ public class SessionMonitor : IHostedService
 
     private async Task OnSessionDeactivated(SessionDeactivatedEvent e, CancellationToken cancellationToken)
     {
-        await sessionProcessInitializer.StopAsync(e.RoomId, e.SubRoomId, SessionProcessRole.Server);
+        await sessionProcessInitializer.StopAsync(new ProcessContext(e.RoomId, e.SubRoomId, SessionProcessRole.Server));
     }
 
     private async Task OnParticipantLeft(ParticipantLeftEvent e, CancellationToken cancellationToken)
@@ -93,6 +98,8 @@ public class SessionMonitor : IHostedService
 
     Task IHostedService.StopAsync(CancellationToken cancellationToken)
     {
+        sessionProcessBridge.StopListeningAsync(cancellationToken);
+        sessionProcessInitializer.StopAll();
         return Task.CompletedTask;
     }
 }

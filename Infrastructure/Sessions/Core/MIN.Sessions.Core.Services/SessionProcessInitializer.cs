@@ -1,9 +1,15 @@
 ﻿using System.Diagnostics;
+using System.Text.Json;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Sessions.Core.Messaging.Contracts.Enums;
+using MIN.Sessions.Core.Messaging.Contracts.Models;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
+using MIN.Sessions.Core.Serialization.Contracts;
+using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
-using MIN.Sessions.Core.Transport.Contracts.Enums;
+using MIN.Sessions.Core.Services.Contracts.Models;
+using MIN.Sessions.Core.Transport.Contracts.Events;
 using MIN.Sessions.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Sessions.Core.Services;
@@ -11,8 +17,11 @@ namespace MIN.Sessions.Core.Services;
 /// <inheritdoc cref="ISessionProcessInitializer"/>
 public class SessionProcessInitializer : ISessionProcessInitializer
 {
-    private readonly Dictionary<string, Process> runningProcesses = [];
+    private const int ProcessWaitingTimeOutMs = 10_000;
+    private readonly Dictionary<ProcessContext, Process> runningProcesses = [];
+    private readonly Dictionary<ProcessContext, TaskCompletionSource> pendingProcesses = [];
     private readonly IMessageRouter messageRouter;
+    private readonly IIpcSerializer ipcSerializer;
     private readonly ISessionProcessTransport processTransport;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -21,17 +30,19 @@ public class SessionProcessInitializer : ISessionProcessInitializer
     /// Инициализирует новый экземпляр <see cref="SessionProcessInitializer"/>
     /// </summary>
     public SessionProcessInitializer(IMessageRouter messageRouter,
+        IIpcSerializer ipcSerializer,
         ISessionProcessTransport processTransport,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.messageRouter = messageRouter;
+        this.ipcSerializer = ipcSerializer;
         this.processTransport = processTransport;
         this.identityService = identityService;
         this.logger = logger;
     }
 
-    async Task<bool> ISessionProcessInitializer.StartAsync(Guid roomId, int subRoomId, string gameExePath, SessionProcessRole sessionProcessRole, CancellationToken cancellationToken)
+    async Task<bool> ISessionProcessInitializer.StartAsync(string gameExePath, ProcessContext context, CancellationToken cancellationToken)
     {
         logger.Log($"Стартую {gameExePath} как {SessionProcessRole.Server}");
 
@@ -42,7 +53,7 @@ public class SessionProcessInitializer : ISessionProcessInitializer
             return false;
         }
 
-        await processTransport.StartAsync(roomId, cancellationToken);
+        await processTransport.StartAsync(context.RoomId, cancellationToken);
         var connectionString = processTransport.GetConnectionString();
 
         var startedProcess = Process.Start(new ProcessStartInfo
@@ -57,38 +68,86 @@ public class SessionProcessInitializer : ISessionProcessInitializer
             return false;
         }
 
-        var connection = await processTransport.WaitForConnectionAsync(roomId, subRoomId, sessionProcessRole, cancellationToken);
+        runningProcesses[context] = startedProcess;
+
+        await processTransport.WaitForConnectionAsync(context, ProcessWaitingTimeOutMs, cancellationToken);
+        var readySuccess = await WaitForReadyMessage(context, cancellationToken);
+        if (readySuccess == false)
+        {
+            return false;
+        }
 
         startedProcess.EnableRaisingEvents = true;
         startedProcess.Exited += async (_, _) =>
         {
-            if (sessionProcessRole == SessionProcessRole.Server)
+            if (context.Role == SessionProcessRole.Server)
             {
                 await messageRouter.RouteAsync(new SessionServerShutdownMessage()
                 {
-                    SubRoomId = subRoomId,
+                    SubRoomId = context.SubRoomId,
                     Reason = "Сервер сессии был закрыт хостом"
-                }, roomId, identityService.SelfParticipant.Id, cancellationToken);
+                }, context.RoomId, identityService.SelfParticipant.Id, cancellationToken);
             }
             else
             {
                 await messageRouter.RouteAsync(new SessionLeaveMessage()
                 {
-                    SubRoomId = subRoomId,
-                }, roomId, identityService.SelfParticipant.Id, cancellationToken);
+                    SubRoomId = context.SubRoomId,
+                }, context.RoomId, identityService.SelfParticipant.Id, cancellationToken);
             }
         };
-
-        var key = string.Join('/', roomId, subRoomId, sessionProcessRole);
-        runningProcesses[key] = startedProcess;
 
         return true;
     }
 
-    Task ISessionProcessInitializer.StopAsync(Guid roomId, int subRoomId, SessionProcessRole sessionProcessRole)
+    private async void OnTransportMessage(object? sender, ProcessTransportMessageEventArgs e)
     {
-        var key = string.Join('/', roomId, subRoomId, sessionProcessRole);
-        if (runningProcesses.TryGetValue(key, out var process))
+        var envelope = JsonSerializer.Deserialize<IpcMessageEnvelope>(e.Data);
+        if (envelope == null)
+        {
+            return;
+        }
+
+        var message = ipcSerializer.Deserialize(envelope.Body);
+        if (message.Type == IpcMessageType.Ready)
+        {
+            pendingProcesses[e.Context].TrySetResult();
+        }
+    }
+
+    private async Task<bool> WaitForReadyMessage(ProcessContext context, CancellationToken cancellationToken)
+    {
+        pendingProcesses[context] = new TaskCompletionSource();
+
+        try
+        {
+            processTransport.MessageReceived += OnTransportMessage;
+            await pendingProcesses[context].Task.WaitAsync(TimeSpan.FromMilliseconds(ProcessWaitingTimeOutMs), cancellationToken);
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            processTransport.MessageReceived -= OnTransportMessage;
+            pendingProcesses[context] = null!;
+        }
+        return true;
+    }
+
+    Task ISessionProcessInitializer.StopAsync(ProcessContext context)
+    {
+        if (runningProcesses.TryGetValue(context, out var process))
+        {
+            process.Kill();
+        }
+        return Task.CompletedTask;
+    }
+
+    Task ISessionProcessInitializer.StopAll()
+    {
+        foreach (var process in runningProcesses.Values)
         {
             process.Kill();
         }

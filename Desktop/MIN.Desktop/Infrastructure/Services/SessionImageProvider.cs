@@ -1,4 +1,5 @@
 ﻿using MIN.Desktop.Properties;
+using MIN.Sessions.Core.Messaging.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Enums;
 
 namespace MIN.Desktop.Infrastructure.Services;

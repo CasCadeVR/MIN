@@ -31,7 +31,9 @@ static internal class Program
 
         var appLifeTimeCts = serviceProvider.GetRequiredService<ICtsProvider>().AppCts;
 
-        foreach (var hostedService in serviceProvider.GetServices<IHostedService>())
+        var hostedServices = serviceProvider.GetServices<IHostedService>();
+
+        foreach (var hostedService in hostedServices)
         {
             Task.Run(() => hostedService.StartAsync(appLifeTimeCts.Token));
         }
@@ -41,6 +43,11 @@ static internal class Program
         {
             appLifeTimeCts.Cancel();
             appLifeTimeCts.Dispose();
+
+            foreach (var hostedService in hostedServices)
+            {
+                Task.Run(() => hostedService.StopAsync());
+            }
         };
 
         Application.Run(mainForm);

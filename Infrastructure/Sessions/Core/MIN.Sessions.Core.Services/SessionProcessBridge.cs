@@ -1,13 +1,13 @@
 ﻿using System.Text;
 using System.Text.Json;
-using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.Contracts.Models;
 using MIN.Sessions.Core.Messaging.Ipc;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Serialization.Contracts;
-using MIN.Sessions.Core.Transport.Contracts.Enums;
+using MIN.Sessions.Core.Services.Contracts.Interfaces;
+using MIN.Sessions.Core.Services.Contracts.Models;
 using MIN.Sessions.Core.Transport.Contracts.Events;
 using MIN.Sessions.Core.Transport.Contracts.Interfaces;
 
@@ -16,7 +16,7 @@ namespace MIN.Sessions.Core.Services;
 /// <summary>
 /// Сервис для отслеживания состояния сессий
 /// </summary>
-public class SessionProcessBridge : IHostedService
+public class SessionProcessBridge : ISessionProcessBridge
 {
     private readonly IMessageRouter messageRouter;
     private readonly IIpcSerializer ipcSerializer;
@@ -41,7 +41,7 @@ public class SessionProcessBridge : IHostedService
         this.logger = logger;
     }
 
-    Task IHostedService.StartAsync(CancellationToken cancellationToken)
+    Task ISessionProcessBridge.StartListeningAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         processTransport.MessageReceived += OnTransportMessage;
@@ -57,10 +57,10 @@ public class SessionProcessBridge : IHostedService
         }
 
         var message = ipcSerializer.Deserialize(envelope.Body);
-        await HandleIpcMessage(message, e.RoomId, e.Role, envelope.RecipientId);
+        await HandleIpcMessage(message, e.Context, envelope.RecipientId);
     }
 
-    private async Task HandleIpcMessage(IpcMessage message, Guid roomId, SessionProcessRole role, Guid? recipientId)
+    private async Task HandleIpcMessage(IpcMessage message, ProcessContext context, Guid? recipientId)
     {
         switch (message)
         {
@@ -68,10 +68,10 @@ public class SessionProcessBridge : IHostedService
                 await messageRouter.RouteAsync(new SessionSpecificMessage()
                 {
                     SubRoomId = inSessionMessage.SubRoomId,
-                    SessionProcessRole = role,
+                    SessionProcessRole = context.Role,
                     Body = Encoding.UTF8.GetBytes(inSessionMessage.Body),
                     RecipientId = recipientId,
-                }, roomId, identityService.SelfParticipant.Id, cts.Token);
+                }, context.RoomId, identityService.SelfParticipant.Id, cts.Token);
                 break;
 
             case ServerShutdownMessage serverShutdownMessage:
@@ -79,7 +79,7 @@ public class SessionProcessBridge : IHostedService
                 {
                     SubRoomId = serverShutdownMessage.SubRoomId,
                     Reason = serverShutdownMessage.Reason,
-                }, roomId, identityService.SelfParticipant.Id, cts.Token);
+                }, context.RoomId, identityService.SelfParticipant.Id, cts.Token);
                 break;
 
             default:
@@ -87,8 +87,22 @@ public class SessionProcessBridge : IHostedService
         }
     }
 
-    Task IHostedService.StopAsync(CancellationToken cancellationToken)
+    async Task ISessionProcessBridge.SendIpcMessage(IpcMessage message, ProcessContext context, CancellationToken cancellationToken)
     {
+        var data = ipcSerializer.Serialize(message);
+        await SendData(data, context, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task SendData(byte[] data, ProcessContext context, CancellationToken cancellationToken)
+    {
+        await processTransport.SendAsync(data, context, cancellationToken);
+    }
+
+    Task ISessionProcessBridge.StopListeningAsync(CancellationToken cancellationToken)
+    {
+        cts.Cancel();
+        cts.Dispose();
         return Task.CompletedTask;
     }
 }

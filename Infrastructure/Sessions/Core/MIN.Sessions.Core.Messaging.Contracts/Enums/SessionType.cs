@@ -1,4 +1,4 @@
-﻿namespace MIN.Sessions.Core.Services.Contracts.Enums;
+﻿namespace MIN.Sessions.Core.Messaging.Contracts.Enums;
 
 /// <summary>
 /// Тип сессий

@@ -10,8 +10,9 @@ using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
+using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
-using MIN.Sessions.Core.Transport.Contracts.Enums;
+using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Sessions.Core.Handlers;
 
@@ -90,8 +91,8 @@ internal sealed class SessionHostHandler : IMessageHandler
 
         var session = sessionResolver.GetSessionByType(sessionHostRequestMessage.SessionType);
 
-        var hostResult = await sessionProcessInitializer.StartAsync(context.RoomContext.RoomId, subRoomId.Value,
-            session.ServerPath, SessionProcessRole.Server, context.CancellationToken);
+        var hostResult = await sessionProcessInitializer.StartAsync(session.ServerPath,
+            new ProcessContext(context.RoomContext.RoomId, subRoomId.Value, SessionProcessRole.Server), context.CancellationToken);
 
         if (hostResult == false)
         {

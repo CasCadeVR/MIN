@@ -1,4 +1,4 @@
-﻿namespace MIN.Sessions.Core.Transport.Contracts.Enums;
+﻿namespace MIN.Sessions.Core.Services.Contracts.Enums;
 
 /// <summary>
 /// Тип приложения сессии

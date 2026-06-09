@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.IO.Pipes;
 using System.Text.Json;
-using MIN.Sessions.Core.Transport.Contracts.Enums;
+using MIN.Sessions.Core.Services.Contracts.Models;
 using MIN.Sessions.Core.Transport.Contracts.Events;
 using MIN.Sessions.Core.Transport.Contracts.Interfaces;
 using MIN.Sessions.Core.Transport.Contracts.Models;
@@ -13,7 +13,7 @@ namespace MIN.Sessions.Core.Transport.NamedPipes;
 /// </summary>
 public sealed class NamedPipeProcessTransport : ISessionProcessTransport
 {
-    private readonly ConcurrentDictionary<(Guid, int, SessionProcessRole), NamedPipeServerStream> connections = [];
+    private readonly ConcurrentDictionary<ProcessContext, NamedPipeServerStream> connections = [];
     private readonly CancellationTokenSource cts = new();
     private string pipeName = string.Empty;
 
@@ -33,8 +33,7 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
             Value = pipeName,
         });
 
-    async Task<TransportConnection> ISessionProcessTransport.WaitForConnectionAsync(
-        Guid roomId, int subRoomId, SessionProcessRole role, CancellationToken ct)
+    async Task ISessionProcessTransport.WaitForConnectionAsync(ProcessContext context, int timeOutMs, CancellationToken cancellationToken)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -47,57 +46,53 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
             NamedPipeServerStream.MaxAllowedServerInstances,
             PipeTransmissionMode.Message);
 
-        await server.WaitForConnectionAsync(ct);
+        var connectionCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        connectionCts.CancelAfter(timeOutMs);
+        await server.WaitForConnectionAsync(connectionCts.Token);
 
-        var key = (roomId, subRoomId, role);
-        connections.TryAdd(key, server);
-        _ = ReadLoopAsync(key, server, cts.Token);
-
-        return new TransportConnection(roomId, role, subRoomId, server, server);
+        connections.TryAdd(context, server);
+        _ = ReadLoopAsync(context, server, cts.Token);
     }
 
-    private async Task ReadLoopAsync(
-        (Guid, int, SessionProcessRole) key, NamedPipeServerStream stream, CancellationToken ct)
+    private async Task ReadLoopAsync(ProcessContext context, NamedPipeServerStream stream, CancellationToken cancellationToken)
     {
         try
         {
             var lengthBuf = new byte[4];
-            while (!ct.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                await stream.ReadExactlyAsync(lengthBuf, ct);
+                await stream.ReadExactlyAsync(lengthBuf, cancellationToken);
                 var length = BitConverter.ToInt32(lengthBuf);
                 var body = new byte[length];
-                await stream.ReadExactlyAsync(body, ct);
+                await stream.ReadExactlyAsync(body, cancellationToken);
 
                 MessageReceived?.Invoke(this, new ProcessTransportMessageEventArgs
                 {
-                    RoomId = key.Item1,
-                    SubRoomId = key.Item2,
-                    Role = key.Item3,
+                    Context = context,
                     Data = body,
                 });
             }
         }
         catch (Exception)
         {
-            connections.TryRemove(key, out _);
+            connections.TryRemove(context, out _);
         }
     }
 
-    async Task ISessionProcessTransport.SendAsync(Guid roomId, int subRoomId, SessionProcessRole role, byte[] data, CancellationToken ct)
+    async Task ISessionProcessTransport.SendAsync(byte[] data, ProcessContext context, CancellationToken cancellationToken)
     {
-        if (connections.TryGetValue((roomId, subRoomId, role), out var stream))
+        if (connections.TryGetValue(context, out var stream))
         {
             var lengthBuf = BitConverter.GetBytes(data.Length);
-            await stream.WriteAsync(lengthBuf, ct);
-            await stream.WriteAsync(data, ct);
-            await stream.FlushAsync(ct);
+            await stream.WriteAsync(lengthBuf, cancellationToken);
+            await stream.WriteAsync(data, cancellationToken);
+            await stream.FlushAsync(cancellationToken);
         }
     }
 
-    Task ISessionProcessTransport.DisconnectAsync(Guid roomId, int subRoomId, SessionProcessRole role)
+    Task ISessionProcessTransport.DisconnectAsync(ProcessContext context)
     {
-        if (connections.TryRemove((roomId, subRoomId, role), out var stream))
+        if (connections.TryRemove(context, out var stream))
         {
             stream.Dispose();
         }

@@ -6,8 +6,9 @@ using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
+using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
-using MIN.Sessions.Core.Transport.Contracts.Enums;
+using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Sessions.Core.Handlers;
 
@@ -58,7 +59,7 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
             }
         }
 
-        await sessionProcessInitializer.StopAsync(roomId, subRoomId, SessionProcessRole.Client);
+        await sessionProcessInitializer.StopAsync(new ProcessContext(roomId, subRoomId, SessionProcessRole.Client));
 
         return HandlerResult.Success();
     }

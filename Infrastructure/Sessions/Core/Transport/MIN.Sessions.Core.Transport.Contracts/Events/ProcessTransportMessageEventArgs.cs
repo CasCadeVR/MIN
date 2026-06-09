@@ -1,4 +1,4 @@
-﻿using MIN.Sessions.Core.Transport.Contracts.Enums;
+﻿using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Sessions.Core.Transport.Contracts.Events;
 
@@ -8,19 +8,9 @@ namespace MIN.Sessions.Core.Transport.Contracts.Events;
 public sealed class ProcessTransportMessageEventArgs : EventArgs
 {
     /// <summary>
-    /// Идентификатор комнаты
+    /// Контекст общения с приложением
     /// </summary>
-    public Guid RoomId { get; init; }
-
-    /// <summary>
-    /// Идентификатор подкомнаты
-    /// </summary>
-    public int SubRoomId { get; init; }
-
-    /// <summary>
-    /// Роль 
-    /// </summary>
-    public SessionProcessRole Role { get; init; }
+    public ProcessContext Context { get; init; }
 
     /// <summary>
     /// Полученные данные
