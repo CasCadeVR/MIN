@@ -54,6 +54,9 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         _ = ReadLoopAsync(context, server, cts.Token);
     }
 
+    bool ISessionProcessTransport.IsConnectionExists(ProcessContext context)
+        => connections.ContainsKey(context);
+
     private async Task ReadLoopAsync(ProcessContext context, NamedPipeServerStream stream, CancellationToken cancellationToken)
     {
         try

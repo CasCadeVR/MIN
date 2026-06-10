@@ -122,8 +122,6 @@ internal sealed class SessionJoinHandler : IMessageHandler
 
                 await messageRouter.RouteAsync(sessionParticipantJoinedMessage, context.RoomContext.RoomId, selfParticipant.Id, context.CancellationToken);
 
-                // Тут надо оповестить приложение
-
                 return HandlerResult.Success();
 
             default:

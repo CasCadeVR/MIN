@@ -27,6 +27,11 @@ public interface ISessionProcessTransport : IAsyncDisposable
     string GetConnectionString();
 
     /// <summary>
+    /// Соединено ли приложение
+    /// </summary>
+    bool IsConnectionExists(ProcessContext context);
+
+    /// <summary>
     /// Ждать подключения одного процесса (server или client)
     /// </summary>
     Task WaitForConnectionAsync(ProcessContext context, int timeOutMs, CancellationToken cancellationToken = default);

@@ -4,6 +4,4 @@ using MIN.Sessions.Core.Messaging.Contracts.Models;
 namespace MIN.Sessions.Core.Messaging.Ipc;
 
 /// <inheritdoc cref="IpcMessageType.ParticipantDisconnected"/>
-public sealed record ParticipantDisconnectedMessage(int SubRoomId,
-    string ParticipantId
-) : IpcMessage(IpcMessageType.ParticipantDisconnected);
+public sealed record ParticipantDisconnectedMessage(string ParticipantId) : IpcMessage(IpcMessageType.ParticipantDisconnected);

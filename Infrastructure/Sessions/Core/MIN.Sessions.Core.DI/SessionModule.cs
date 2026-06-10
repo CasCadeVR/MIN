@@ -26,7 +26,7 @@ public class SessionModule : Module
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, SessionMonitor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionProcessBridge>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionFeatureCollection>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<SessionProcessInitializer>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<SessionProcessManager>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionReadyMessageResolver>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NamedPipeProcessTransport>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionResolver>(ServiceLifetime.Singleton);

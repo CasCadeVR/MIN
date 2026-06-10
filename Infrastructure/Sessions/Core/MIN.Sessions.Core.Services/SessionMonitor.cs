@@ -20,7 +20,7 @@ public class SessionMonitor : IHostedService
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
-    private readonly ISessionProcessInitializer sessionProcessInitializer;
+    private readonly ISessionProcessManager sessionProcessInitializer;
     private readonly ISessionProcessBridge sessionProcessBridge;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -31,7 +31,7 @@ public class SessionMonitor : IHostedService
     public SessionMonitor(ISubRoomManager subRoomManager,
         IEventBus eventBus,
         IMessageRouter messageRouter,
-        ISessionProcessInitializer sessionProcessInitializer,
+        ISessionProcessManager sessionProcessInitializer,
         ISessionProcessBridge sessionProcessBridge,
         IIdentityService identityService,
         ILoggerProvider logger)

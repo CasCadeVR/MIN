@@ -6,6 +6,7 @@ using MIN.Sessions.Core.Messaging.Contracts.Models;
 using MIN.Sessions.Core.Messaging.Ipc;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Serialization.Contracts;
+using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Services.Contracts.Models;
 using MIN.Sessions.Core.Transport.Contracts.Events;
@@ -18,6 +19,7 @@ namespace MIN.Sessions.Core.Services;
 /// </summary>
 public class SessionProcessBridge : ISessionProcessBridge
 {
+    private readonly Dictionary<ProcessContext, TaskCompletionSource> pendingProcesses = [];
     private readonly IMessageRouter messageRouter;
     private readonly IIpcSerializer ipcSerializer;
     private readonly ISessionProcessTransport processTransport;
@@ -26,7 +28,7 @@ public class SessionProcessBridge : ISessionProcessBridge
     private CancellationTokenSource cts = null!;
 
     /// <summary>
-    /// Инициализирует новый экзепмляр <see cref="SessionMonitor"/>
+    /// Инициализирует новый экзепмляр <see cref="SessionProcessBridge"/>
     /// </summary>
     public SessionProcessBridge(IMessageRouter messageRouter,
         IIpcSerializer ipcSerializer,
@@ -67,7 +69,7 @@ public class SessionProcessBridge : ISessionProcessBridge
             case InSessionMessage inSessionMessage:
                 await messageRouter.RouteAsync(new SessionSpecificMessage()
                 {
-                    SubRoomId = inSessionMessage.SubRoomId,
+                    SubRoomId = context.SubRoomId,
                     SessionProcessRole = context.Role,
                     Body = Encoding.UTF8.GetBytes(inSessionMessage.Body),
                     RecipientId = recipientId,
@@ -77,13 +79,51 @@ public class SessionProcessBridge : ISessionProcessBridge
             case ServerShutdownMessage serverShutdownMessage:
                 await messageRouter.RouteAsync(new SessionServerShutdownMessage()
                 {
-                    SubRoomId = serverShutdownMessage.SubRoomId,
+                    SubRoomId = context.SubRoomId,
                     Reason = serverShutdownMessage.Reason,
                 }, context.RoomId, identityService.SelfParticipant.Id, cts.Token);
                 break;
 
+            case ReadyMessage:
+                pendingProcesses[context].TrySetResult();
+                break;
+
             default:
                 return;
+        }
+    }
+
+    async Task<bool> ISessionProcessBridge.WaitForReadyMessage(ProcessContext context, int timeOutMs, CancellationToken cancellationToken)
+    {
+        pendingProcesses[context] = new TaskCompletionSource();
+
+        try
+        {
+            processTransport.MessageReceived += OnTransportMessage;
+            await pendingProcesses[context].Task.WaitAsync(TimeSpan.FromMilliseconds(timeOutMs), cancellationToken);
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            processTransport.MessageReceived -= OnTransportMessage;
+            pendingProcesses.Remove(context);
+        }
+        return true;
+    }
+
+
+    IEnumerable<ProcessContext> ISessionProcessBridge.GetConnections(Guid roomId, int subRoomId)
+    {
+        foreach (SessionProcessRole role in Enum.GetValues(typeof(SessionProcessRole)))
+        {
+            var context = new ProcessContext(roomId, subRoomId, role);
+            if (processTransport.IsConnectionExists(context) && !pendingProcesses.ContainsKey(context))
+            {
+                yield return context;
+            }
         }
     }
 

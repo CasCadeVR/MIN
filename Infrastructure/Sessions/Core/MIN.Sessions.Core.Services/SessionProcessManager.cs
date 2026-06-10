@@ -1,48 +1,43 @@
 ﻿using System.Diagnostics;
-using System.Text.Json;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Sessions.Core.Messaging.Contracts.Enums;
-using MIN.Sessions.Core.Messaging.Contracts.Models;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
-using MIN.Sessions.Core.Serialization.Contracts;
 using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Services.Contracts.Models;
-using MIN.Sessions.Core.Transport.Contracts.Events;
 using MIN.Sessions.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Sessions.Core.Services;
 
-/// <inheritdoc cref="ISessionProcessInitializer"/>
-public class SessionProcessInitializer : ISessionProcessInitializer
+/// <inheritdoc cref="ISessionProcessManager"/>
+public class SessionProcessManager : ISessionProcessManager
 {
-    private const int ProcessWaitingTimeOutMs = 10_000;
+    private const int ProcessWaitingTimeOutMs = 5000;
+    private readonly Dictionary<ProcessContext, Process> pendingProcesses = [];
     private readonly Dictionary<ProcessContext, Process> runningProcesses = [];
-    private readonly Dictionary<ProcessContext, TaskCompletionSource> pendingProcesses = [];
     private readonly IMessageRouter messageRouter;
-    private readonly IIpcSerializer ipcSerializer;
+    private readonly ISessionProcessBridge processBridge;
     private readonly ISessionProcessTransport processTransport;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="SessionProcessInitializer"/>
+    /// Инициализирует новый экземпляр <see cref="SessionProcessManager"/>
     /// </summary>
-    public SessionProcessInitializer(IMessageRouter messageRouter,
-        IIpcSerializer ipcSerializer,
+    public SessionProcessManager(IMessageRouter messageRouter,
+        ISessionProcessBridge processBridge,
         ISessionProcessTransport processTransport,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.messageRouter = messageRouter;
-        this.ipcSerializer = ipcSerializer;
+        this.processBridge = processBridge;
         this.processTransport = processTransport;
         this.identityService = identityService;
         this.logger = logger;
     }
 
-    async Task<bool> ISessionProcessInitializer.StartAsync(string gameExePath, ProcessContext context, CancellationToken cancellationToken)
+    async Task<bool> ISessionProcessManager.StartAsync(string gameExePath, ProcessContext context, CancellationToken cancellationToken)
     {
         logger.Log($"Стартую {gameExePath} как {SessionProcessRole.Server}");
 
@@ -68,14 +63,19 @@ public class SessionProcessInitializer : ISessionProcessInitializer
             return false;
         }
 
-        runningProcesses[context] = startedProcess;
+        pendingProcesses[context] = startedProcess;
 
         await processTransport.WaitForConnectionAsync(context, ProcessWaitingTimeOutMs, cancellationToken);
-        var readySuccess = await WaitForReadyMessage(context, cancellationToken);
+        var readySuccess = await processBridge.WaitForReadyMessage(context, ProcessWaitingTimeOutMs, cancellationToken);
+        pendingProcesses.Remove(context);
         if (readySuccess == false)
         {
+            startedProcess.Kill();
             return false;
         }
+
+        pendingProcesses.Remove(context);
+        runningProcesses[context] = startedProcess;
 
         startedProcess.EnableRaisingEvents = true;
         startedProcess.Exited += async (_, _) =>
@@ -100,43 +100,7 @@ public class SessionProcessInitializer : ISessionProcessInitializer
         return true;
     }
 
-    private async void OnTransportMessage(object? sender, ProcessTransportMessageEventArgs e)
-    {
-        var envelope = JsonSerializer.Deserialize<IpcMessageEnvelope>(e.Data);
-        if (envelope == null)
-        {
-            return;
-        }
-
-        var message = ipcSerializer.Deserialize(envelope.Body);
-        if (message.Type == IpcMessageType.Ready)
-        {
-            pendingProcesses[e.Context].TrySetResult();
-        }
-    }
-
-    private async Task<bool> WaitForReadyMessage(ProcessContext context, CancellationToken cancellationToken)
-    {
-        pendingProcesses[context] = new TaskCompletionSource();
-
-        try
-        {
-            processTransport.MessageReceived += OnTransportMessage;
-            await pendingProcesses[context].Task.WaitAsync(TimeSpan.FromMilliseconds(ProcessWaitingTimeOutMs), cancellationToken);
-        }
-        catch
-        {
-            return false;
-        }
-        finally
-        {
-            processTransport.MessageReceived -= OnTransportMessage;
-            pendingProcesses[context] = null!;
-        }
-        return true;
-    }
-
-    Task ISessionProcessInitializer.StopAsync(ProcessContext context)
+    Task ISessionProcessManager.StopAsync(ProcessContext context)
     {
         if (runningProcesses.TryGetValue(context, out var process))
         {
@@ -145,10 +109,16 @@ public class SessionProcessInitializer : ISessionProcessInitializer
         return Task.CompletedTask;
     }
 
-    Task ISessionProcessInitializer.StopAll()
+    Task ISessionProcessManager.StopAll()
     {
+        foreach (var process in pendingProcesses.Values)
+        {
+            process.EnableRaisingEvents = false;
+            process.Kill();
+        }
         foreach (var process in runningProcesses.Values)
         {
+            process.EnableRaisingEvents = false;
             process.Kill();
         }
         return Task.CompletedTask;

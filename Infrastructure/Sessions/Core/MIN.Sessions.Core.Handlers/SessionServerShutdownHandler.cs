@@ -15,7 +15,7 @@ namespace MIN.Sessions.Core.Handlers;
 internal sealed class SessionServerShutdownHandler : IMessageHandler
 {
     private readonly ISubRoomManager subRoomManager;
-    private readonly ISessionProcessInitializer sessionProcessInitializer;
+    private readonly ISessionProcessManager sessionProcessInitializer;
     private readonly IRoomHoster roomHoster;
     private readonly ILoggerProvider logger;
 
@@ -23,7 +23,7 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
     /// Инициализирует новый экземлпяр <see cref="SessionServerShutdownHandler"/>
     /// </summary>
     public SessionServerShutdownHandler(ISubRoomManager subRoomManager,
-        ISessionProcessInitializer sessionProcessInitializer,
+        ISessionProcessManager sessionProcessInitializer,
         IRoomHoster roomHoster,
         ILoggerProvider logger)
     {

@@ -23,7 +23,7 @@ internal sealed class SessionHostHandler : IMessageHandler
     private readonly IMessageSender messageSender;
     private readonly IMessageRouter messageRouter;
     private readonly ISessionResolver sessionResolver;
-    private readonly ISessionProcessInitializer sessionProcessInitializer;
+    private readonly ISessionProcessManager sessionProcessInitializer;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -35,7 +35,7 @@ internal sealed class SessionHostHandler : IMessageHandler
         IMessageSender messageSender,
         IMessageRouter messageRouter,
         ISessionResolver sessionResolver,
-        ISessionProcessInitializer sessionProcessInitializer,
+        ISessionProcessManager sessionProcessInitializer,
         IIdentityService identityService,
         ILoggerProvider logger)
     {

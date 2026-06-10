@@ -4,6 +4,4 @@ using MIN.Sessions.Core.Messaging.Contracts.Models;
 namespace MIN.Sessions.Core.Messaging.Ipc;
 
 /// <inheritdoc cref="IpcMessageType.ServerShutdown"/>
-public sealed record ServerShutdownMessage(int SubRoomId,
-    string Reason
-) : IpcMessage(IpcMessageType.ServerShutdown);
+public sealed record ServerShutdownMessage(string Reason) : IpcMessage(IpcMessageType.ServerShutdown);

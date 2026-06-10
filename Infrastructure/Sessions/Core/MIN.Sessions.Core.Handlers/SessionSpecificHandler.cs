@@ -25,7 +25,7 @@ internal sealed class SessionSpecificHandler : IMessageHandler
 
     IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionSpecific];
 
-    int IMessageHandler.Priority => 5;
+    int IMessageHandler.Priority => 2;
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {

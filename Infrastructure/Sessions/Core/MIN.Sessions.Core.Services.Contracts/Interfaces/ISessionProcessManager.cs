@@ -5,7 +5,7 @@ namespace MIN.Sessions.Core.Services.Contracts.Interfaces;
 /// <summary>
 /// Инициализатор приложений для сессии
 /// </summary>
-public interface ISessionProcessInitializer
+public interface ISessionProcessManager
 {
     /// <summary>
     /// Запустить приложение сессии
