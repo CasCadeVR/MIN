@@ -37,14 +37,15 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new InvalidOperationException("Windowns only");
+            throw new InvalidOperationException("Windows only");
         }
 
         var server = new NamedPipeServerStream(
             pipeName,
             PipeDirection.InOut,
             NamedPipeServerStream.MaxAllowedServerInstances,
-            PipeTransmissionMode.Message);
+            PipeTransmissionMode.Message,
+            options: PipeOptions.Asynchronous);
 
         var connectionCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         connectionCts.CancelAfter(timeOutMs);

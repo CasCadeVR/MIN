@@ -15,7 +15,7 @@ public sealed class SessionSpecificMessage : BaseSessionMessage
     /// <summary>
     /// Содержимое сообщения
     /// </summary>
-    public required byte[] Body { get; set; }
+    public required string Body { get; set; }
 
     /// <summary>
     /// Роль приложения отправителя сообщения

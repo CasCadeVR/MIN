@@ -3,7 +3,9 @@ using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Sessions.Core.Messaging.Ipc;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
+using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
@@ -38,7 +40,9 @@ internal sealed class SessionSpecificHandler : IMessageHandler
         var roomId = context.RoomContext.RoomId;
         var subRoomId = sessionSpecificMessage.SubRoomId;
 
-        await sessionProcessBridge.SendData(sessionSpecificMessage.Body, new ProcessContext(roomId, subRoomId, sessionSpecificMessage.SessionProcessRole), context.CancellationToken);
+        await sessionProcessBridge.SendIpcMessage(new InSessionMessage(sessionSpecificMessage.Body),
+            new ProcessContext(roomId, subRoomId, sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Client
+            ? SessionProcessRole.Server : SessionProcessRole.Client), context.CancellationToken);
         return HandlerResult.Success();
     }
 }

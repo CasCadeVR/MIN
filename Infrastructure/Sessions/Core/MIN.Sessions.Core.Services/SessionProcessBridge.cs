@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.Contracts.Models;
@@ -71,7 +70,7 @@ public class SessionProcessBridge : ISessionProcessBridge
                 {
                     SubRoomId = context.SubRoomId,
                     SessionProcessRole = context.Role,
-                    Body = Encoding.UTF8.GetBytes(inSessionMessage.Body),
+                    Body = inSessionMessage.Body,
                     RecipientId = recipientId,
                 }, context.RoomId, identityService.SelfParticipant.Id, cts.Token);
                 break;
@@ -85,7 +84,10 @@ public class SessionProcessBridge : ISessionProcessBridge
                 break;
 
             case ReadyMessage:
-                pendingProcesses[context].TrySetResult();
+                if (pendingProcesses.TryGetValue(context, out var tcs))
+                {
+                    tcs.TrySetResult();
+                }
                 break;
 
             default:
@@ -99,7 +101,6 @@ public class SessionProcessBridge : ISessionProcessBridge
 
         try
         {
-            processTransport.MessageReceived += OnTransportMessage;
             await pendingProcesses[context].Task.WaitAsync(TimeSpan.FromMilliseconds(timeOutMs), cancellationToken);
         }
         catch
@@ -108,12 +109,10 @@ public class SessionProcessBridge : ISessionProcessBridge
         }
         finally
         {
-            processTransport.MessageReceived -= OnTransportMessage;
             pendingProcesses.Remove(context);
         }
         return true;
     }
-
 
     IEnumerable<ProcessContext> ISessionProcessBridge.GetConnections(Guid roomId, int subRoomId)
     {

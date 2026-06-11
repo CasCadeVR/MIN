@@ -22,14 +22,13 @@ public sealed class IpcJsonSerializer : IIpcSerializer
     byte[] IIpcSerializer.Serialize(IpcMessage message)
     {
         var json = JsonSerializer.Serialize(message, message.GetType());
-        var bytes = Encoding.UTF8.GetBytes(json);
-        return BitConverter.GetBytes(bytes.Length).Concat(bytes).ToArray();
+        return Encoding.UTF8.GetBytes(json);
     }
 
     IpcMessage IIpcSerializer.Deserialize(byte[] data)
     {
         using var doc = JsonDocument.Parse(data);
-        var type = (IpcMessageType)doc.RootElement.GetProperty("type").GetByte();
+        var type = (IpcMessageType)doc.RootElement.GetProperty(nameof(IpcMessage.Type)).GetByte();
         return (IpcMessage)JsonSerializer.Deserialize(data, typeMap[type])!;
     }
 }
