@@ -24,11 +24,6 @@ public interface ISessionProcessBridge
     Task SendIpcMessage(IpcMessage message, ProcessContext context, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Отправить междупроцессорные данные
-    /// </summary>
-    Task SendData(byte[] data, ProcessContext context, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Получить список соединений с приложением  
     /// </summary>
     IEnumerable<ProcessContext> GetConnections(Guid roomId, int subRoomId);

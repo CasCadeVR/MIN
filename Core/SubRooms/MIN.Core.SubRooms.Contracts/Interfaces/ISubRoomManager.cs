@@ -30,7 +30,7 @@ public interface ISubRoomManager
     bool IsInSubRoom(Guid roomId, int subRoomId, Guid participantId);
 
     /// <summary>
-    /// Уйти из подкомнаты
+    /// Уйти из подкомнаты и деактивирует в случае выхода последнего участника
     /// </summary>
     /// <returns>
     /// true - если комната ещё активна
@@ -50,6 +50,11 @@ public interface ISubRoomManager
     /// Получить список участников подкомнаты
     /// </summary>
     IReadOnlyList<Guid> GetParticipantIds(Guid roomId, int subRoomId);
+
+    /// <summary>
+    /// Получить количество участников подкомнаты
+    /// </summary>
+    int GetParticipantCount(Guid roomId, int subRoomId);
 
     /// <summary>
     /// Получить информацию о подкомнате

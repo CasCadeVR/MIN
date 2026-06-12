@@ -83,12 +83,13 @@ public class SessionMonitor : IHostedService
         {
             if (subRoomManager.IsInSubRoom(roomId, subRoom.Id, participantId))
             {
-                subRoomManager.LeaveSubRoom(roomId, subRoom.Id, participantId);
+                var isLast = !subRoomManager.LeaveSubRoom(roomId, subRoom.Id, participantId);
 
                 var leaveMessage = new SessionParticipantLeftMessage()
                 {
                     SubRoomId = subRoom.Id,
                     Participant = e.Message.Participant,
+                    IsLast = isLast
                 };
 
                 await messageRouter.RouteAsync(leaveMessage, roomId, identityService.SelfParticipant.Id, cancellationToken);

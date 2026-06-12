@@ -11,6 +11,9 @@ public sealed class SessionServerShutdownMessage : BaseSessionMessage
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.SessionServerShutdown;
 
+    /// <inheritdoc />
+    public override bool IsPublic => true;
+
     /// <summary>
     /// Причина закрытия
     /// </summary>

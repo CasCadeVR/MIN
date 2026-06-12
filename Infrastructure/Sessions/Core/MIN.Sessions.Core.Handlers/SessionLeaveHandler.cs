@@ -60,6 +60,8 @@ internal sealed class SessionLeaveHandler : IMessageHandler
             return HandlerResult.Failure("Клиент отправил запрос на выход из неизвестной сессии", stopPropagation: true);
         }
 
+        var isLast = false;
+
         if (!subRoomManager.LeaveSubRoom(roomId, sessionLeaveMessage.SubRoomId, message.SenderId))
         {
             await eventBus.PublishAsync(new SessionDeactivatedEvent()
@@ -67,12 +69,15 @@ internal sealed class SessionLeaveHandler : IMessageHandler
                 RoomId = roomId,
                 SubRoomId = sessionLeaveMessage.SubRoomId,
             });
+
+            isLast = true;
         }
 
         var leaveMessage = new SessionParticipantLeftMessage()
         {
             SubRoomId = sessionLeaveMessage.SubRoomId,
             Participant = sender!.ToParticipantInfo(),
+            IsLast = isLast
         };
 
         await messageRouter.RouteAsync(leaveMessage, roomId, identityService.SelfParticipant.Id, context.CancellationToken);

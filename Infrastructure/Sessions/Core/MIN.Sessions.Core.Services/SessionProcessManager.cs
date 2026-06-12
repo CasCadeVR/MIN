@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Enums;
@@ -18,6 +19,7 @@ public class SessionProcessManager : ISessionProcessManager
     private readonly IMessageRouter messageRouter;
     private readonly ISessionProcessBridge processBridge;
     private readonly ISessionProcessTransport processTransport;
+    private readonly ISubRoomManager subRoomManager;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -27,12 +29,14 @@ public class SessionProcessManager : ISessionProcessManager
     public SessionProcessManager(IMessageRouter messageRouter,
         ISessionProcessBridge processBridge,
         ISessionProcessTransport processTransport,
+        ISubRoomManager subRoomManager,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.messageRouter = messageRouter;
         this.processBridge = processBridge;
         this.processTransport = processTransport;
+        this.subRoomManager = subRoomManager;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -82,6 +86,11 @@ public class SessionProcessManager : ISessionProcessManager
         {
             if (context.Role == SessionProcessRole.Server)
             {
+                if (subRoomManager.GetParticipantCount(context.RoomId, context.SubRoomId) == 0)
+                {
+                    return;
+                }
+
                 await messageRouter.RouteAsync(new SessionServerShutdownMessage()
                 {
                     SubRoomId = context.SubRoomId,

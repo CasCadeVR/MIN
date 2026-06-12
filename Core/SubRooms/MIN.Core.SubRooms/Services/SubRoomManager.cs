@@ -155,6 +155,7 @@ public class SubRoomManager : ISubRoomManager
                 return false;
             }
 
+            subRoom.Participants.Clear();
             subRoom.IsActive = false;
             return true;
         }
@@ -175,6 +176,24 @@ public class SubRoomManager : ISubRoomManager
             }
 
             return subRoom.Participants.Select(x => x.Id).ToList().AsReadOnly();
+        }
+    }
+
+    int ISubRoomManager.GetParticipantCount(Guid roomId, int subRoomId)
+    {
+        if (!rooms.TryGetValue(roomId, out var room))
+        {
+            return 0;
+        }
+
+        lock (room)
+        {
+            if (!room.SubRooms.TryGetValue(subRoomId, out var subRoom))
+            {
+                return 0;
+            }
+
+            return subRoom.Participants.Count;
         }
     }
 

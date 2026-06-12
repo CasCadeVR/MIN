@@ -15,6 +15,7 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
 {
     private readonly ConcurrentDictionary<ProcessContext, NamedPipeServerStream> connections = [];
     private readonly CancellationTokenSource cts = new();
+    private readonly SemaphoreSlim writeLock = new(1, 1);
     private string pipeName = string.Empty;
 
     /// <inheritdoc/>
@@ -77,7 +78,9 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
                 });
             }
         }
-        catch (Exception)
+        catch (EndOfStreamException) { }
+        catch (OperationCanceledException) { }
+        finally
         {
             connections.TryRemove(context, out _);
         }
@@ -87,10 +90,18 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
     {
         if (connections.TryGetValue(context, out var stream))
         {
-            var lengthBuf = BitConverter.GetBytes(data.Length);
-            await stream.WriteAsync(lengthBuf, cancellationToken);
-            await stream.WriteAsync(data, cancellationToken);
-            await stream.FlushAsync(cancellationToken);
+            await writeLock.WaitAsync(cancellationToken);
+            try
+            {
+                var lengthBuf = BitConverter.GetBytes(data.Length);
+                await stream.WriteAsync(lengthBuf, cancellationToken);
+                await stream.WriteAsync(data, cancellationToken);
+                await stream.FlushAsync(cancellationToken);
+            }
+            finally
+            {
+                writeLock.Release();
+            }
         }
     }
 

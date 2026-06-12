@@ -26,5 +26,10 @@ public class SessionParticipantLeftMessage : BaseMessage, IDescribable
     /// </summary>
     public int SubRoomId { get; set; }
 
+    /// <summary>
+    /// Покинувший участник комнату был последним
+    /// </summary>
+    public bool IsLast { get; set; }
+
     string IDescribable.GetDescription() => $"Игрок {Participant.Name} покинул эту сессию";
 }

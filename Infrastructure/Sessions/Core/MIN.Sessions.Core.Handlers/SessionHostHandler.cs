@@ -9,6 +9,7 @@ using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
+using MIN.Sessions.Core.Messaging.Ipc;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
@@ -23,6 +24,7 @@ internal sealed class SessionHostHandler : IMessageHandler
     private readonly IMessageSender messageSender;
     private readonly IMessageRouter messageRouter;
     private readonly ISessionResolver sessionResolver;
+    private readonly ISessionProcessBridge sessionProcessBridge;
     private readonly ISessionProcessManager sessionProcessInitializer;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -35,6 +37,7 @@ internal sealed class SessionHostHandler : IMessageHandler
         IMessageSender messageSender,
         IMessageRouter messageRouter,
         ISessionResolver sessionResolver,
+        ISessionProcessBridge sessionProcessBridge,
         ISessionProcessManager sessionProcessInitializer,
         IIdentityService identityService,
         ILoggerProvider logger)
@@ -44,6 +47,7 @@ internal sealed class SessionHostHandler : IMessageHandler
         this.messageSender = messageSender;
         this.messageRouter = messageRouter;
         this.sessionResolver = sessionResolver;
+        this.sessionProcessBridge = sessionProcessBridge;
         this.sessionProcessInitializer = sessionProcessInitializer;
         this.identityService = identityService;
         this.logger = logger;
@@ -91,8 +95,10 @@ internal sealed class SessionHostHandler : IMessageHandler
 
         var session = sessionResolver.GetSessionByType(sessionHostRequestMessage.SessionType);
 
+        var processContext = new ProcessContext(context.RoomContext.RoomId, subRoomId.Value, SessionProcessRole.Server);
+
         var hostResult = await sessionProcessInitializer.StartAsync(session.ServerPath,
-            new ProcessContext(context.RoomContext.RoomId, subRoomId.Value, SessionProcessRole.Server), context.CancellationToken);
+            processContext, context.CancellationToken);
 
         if (hostResult == false)
         {
@@ -112,6 +118,8 @@ internal sealed class SessionHostHandler : IMessageHandler
                 Sender = senderParicipantInfo,
                 SenderId = message.SenderId,
             };
+
+            await sessionProcessBridge.SendIpcMessage(new ParticipantConnectedMessage(senderParicipantInfo.Id.ToString(), senderParicipantInfo.Name), processContext, context.CancellationToken);
 
             await messageRouter.RouteAsync(hostReadyMessage, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
 

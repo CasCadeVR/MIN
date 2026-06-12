@@ -116,14 +116,18 @@ public class SessionProcessBridge : ISessionProcessBridge
 
     IEnumerable<ProcessContext> ISessionProcessBridge.GetConnections(Guid roomId, int subRoomId)
     {
+        var result = new List<ProcessContext>();
+
         foreach (SessionProcessRole role in Enum.GetValues(typeof(SessionProcessRole)))
         {
             var context = new ProcessContext(roomId, subRoomId, role);
             if (processTransport.IsConnectionExists(context) && !pendingProcesses.ContainsKey(context))
             {
-                yield return context;
+                result.Add(context);
             }
         }
+
+        return result;
     }
 
     async Task ISessionProcessBridge.SendIpcMessage(IpcMessage message, ProcessContext context, CancellationToken cancellationToken)

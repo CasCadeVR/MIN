@@ -48,12 +48,14 @@ internal sealed class SessionParticipantLeftHandler : IMessageHandler
         var subRoomId = sessionParticipantLeftMessage.SubRoomId;
         var participant = sessionParticipantLeftMessage.Participant;
 
-        var processContexts = sessionProcessBridge.GetConnections(roomId, subRoomId);
-
-        foreach (var processContext in processContexts)
+        if (!sessionParticipantLeftMessage.IsLast)
         {
-            await sessionProcessBridge.SendIpcMessage(new ParticipantConnectedMessage(participant.Id.ToString(),
-                participant.Name), processContext, context.CancellationToken);
+            var processContexts = sessionProcessBridge.GetConnections(roomId, subRoomId);
+
+            foreach (var processContext in processContexts)
+            {
+                await sessionProcessBridge.SendIpcMessage(new ParticipantDisconnectedMessage(participant.Id.ToString()), processContext, context.CancellationToken);
+            }
         }
 
         var existingSessionReadyMessageId = sessionReadyMessageResolver.GetSessionReadyMessageIdOutOfSubRoomId(context.RoomContext, sessionParticipantLeftMessage.SubRoomId);
