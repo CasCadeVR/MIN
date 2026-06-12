@@ -53,7 +53,7 @@ internal sealed class SessionParticipantJoinedHandler : IMessageHandler
         foreach (var processContext in processContexts)
         {
             await sessionProcessBridge.SendIpcMessage(new ParticipantConnectedMessage(participant.Id.ToString(),
-                participant.Name), processContext, context.CancellationToken);
+                participant.Name), processContext, message.SenderId, context.CancellationToken);
         }
 
         var existingSessionReadyMessageId = sessionReadyMessageResolver.GetSessionReadyMessageIdOutOfSubRoomId(context.RoomContext, sessionParticipantJoinedMessage.SubRoomId);

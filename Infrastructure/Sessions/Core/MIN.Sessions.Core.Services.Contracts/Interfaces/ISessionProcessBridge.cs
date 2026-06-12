@@ -21,7 +21,7 @@ public interface ISessionProcessBridge
     /// <summary>
     /// Отправить междупроцессорное сообщение
     /// </summary>
-    Task SendIpcMessage(IpcMessage message, ProcessContext context, CancellationToken cancellationToken = default);
+    Task SendIpcMessage(IpcMessage message, ProcessContext context, Guid senderId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получить список соединений с приложением  

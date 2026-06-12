@@ -119,7 +119,8 @@ internal sealed class SessionHostHandler : IMessageHandler
                 SenderId = message.SenderId,
             };
 
-            await sessionProcessBridge.SendIpcMessage(new ParticipantConnectedMessage(senderParicipantInfo.Id.ToString(), senderParicipantInfo.Name), processContext, context.CancellationToken);
+            await sessionProcessBridge.SendIpcMessage(new ParticipantConnectedMessage(senderParicipantInfo.Id.ToString(), senderParicipantInfo.Name),
+                processContext, message.SenderId, context.CancellationToken);
 
             await messageRouter.RouteAsync(hostReadyMessage, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
 

@@ -42,7 +42,8 @@ internal sealed class SessionSpecificHandler : IMessageHandler
 
         await sessionProcessBridge.SendIpcMessage(new InSessionMessage(sessionSpecificMessage.Body),
             new ProcessContext(roomId, subRoomId, sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Client
-            ? SessionProcessRole.Server : SessionProcessRole.Client), context.CancellationToken);
+            ? SessionProcessRole.Server : SessionProcessRole.Client), message.SenderId, context.CancellationToken);
+
         return HandlerResult.Success();
     }
 }

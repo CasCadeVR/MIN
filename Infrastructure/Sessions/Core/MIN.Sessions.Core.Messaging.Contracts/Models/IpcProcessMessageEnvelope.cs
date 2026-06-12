@@ -1,9 +1,9 @@
 ﻿namespace MIN.Sessions.Core.Messaging.Contracts.Models;
 
 /// <summary>
-/// Обёртка над между-процессорными сообщениями
+/// Обёртка над между-процессорными сообщениями, поставляемые приложением в MIN
 /// </summary>
-public class IpcMessageEnvelope
+public class IpcProcessMessageEnvelope
 {
     /// <summary>
     /// Получатель сообщения внутри подкомнаты
@@ -17,9 +17,4 @@ public class IpcMessageEnvelope
     /// Содержимое сообщения
     /// </summary>
     public required byte[] Body { get; init; }
-
-    /// <summary>
-    /// Является ли сообщение широковещательным
-    /// </summary>
-    public bool IsBroadcast => RecipientId == null;
 }

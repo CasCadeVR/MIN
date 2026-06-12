@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.Contracts.Models;
@@ -51,7 +52,7 @@ public class SessionProcessBridge : ISessionProcessBridge
 
     private async void OnTransportMessage(object? sender, ProcessTransportMessageEventArgs e)
     {
-        var envelope = JsonSerializer.Deserialize<IpcMessageEnvelope>(e.Data);
+        var envelope = JsonSerializer.Deserialize<IpcProcessMessageEnvelope>(e.Data);
         if (envelope == null)
         {
             return;
@@ -130,14 +131,22 @@ public class SessionProcessBridge : ISessionProcessBridge
         return result;
     }
 
-    async Task ISessionProcessBridge.SendIpcMessage(IpcMessage message, ProcessContext context, CancellationToken cancellationToken)
+    async Task ISessionProcessBridge.SendIpcMessage(IpcMessage message, ProcessContext context, Guid senderId, CancellationToken cancellationToken)
     {
-        var data = ipcSerializer.Serialize(message);
+        var messageData = ipcSerializer.Serialize(message);
+        var envelope = new IpcMinMessageEnvelope()
+        {
+            Body = messageData,
+            SenderId = senderId,
+        };
+
+        var json = JsonSerializer.Serialize(envelope);
+        var data = Encoding.UTF8.GetBytes(json);
+
         await SendData(data, context, cancellationToken);
     }
 
-    /// <inheritdoc />
-    public async Task SendData(byte[] data, ProcessContext context, CancellationToken cancellationToken)
+    private async Task SendData(byte[] data, ProcessContext context, CancellationToken cancellationToken)
     {
         await processTransport.SendAsync(data, context, cancellationToken);
     }

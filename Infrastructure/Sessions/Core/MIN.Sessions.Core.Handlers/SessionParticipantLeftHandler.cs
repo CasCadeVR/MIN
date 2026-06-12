@@ -54,7 +54,8 @@ internal sealed class SessionParticipantLeftHandler : IMessageHandler
 
             foreach (var processContext in processContexts)
             {
-                await sessionProcessBridge.SendIpcMessage(new ParticipantDisconnectedMessage(participant.Id.ToString()), processContext, context.CancellationToken);
+                await sessionProcessBridge.SendIpcMessage(new ParticipantDisconnectedMessage(participant.Id.ToString()),
+                    processContext, message.SenderId, context.CancellationToken);
             }
         }
 
