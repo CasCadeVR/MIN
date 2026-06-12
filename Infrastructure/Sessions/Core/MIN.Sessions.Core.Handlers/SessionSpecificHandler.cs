@@ -14,14 +14,18 @@ namespace MIN.Sessions.Core.Handlers;
 internal sealed class SessionSpecificHandler : IMessageHandler
 {
     private readonly ISessionProcessBridge sessionProcessBridge;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="SessionSpecificHandler"/>
     /// </summary>
-    public SessionSpecificHandler(ISessionProcessBridge sessionProcessBridge, ILoggerProvider logger)
+    public SessionSpecificHandler(ISessionProcessBridge sessionProcessBridge,
+        IIdentityService identityService,
+        ILoggerProvider logger)
     {
         this.sessionProcessBridge = sessionProcessBridge;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
@@ -40,9 +44,15 @@ internal sealed class SessionSpecificHandler : IMessageHandler
         var roomId = context.RoomContext.RoomId;
         var subRoomId = sessionSpecificMessage.SubRoomId;
 
+        if (sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Server
+            && message.RecipientId != identityService.SelfParticipant.Id && !message.IsPublic)
+        {
+            return HandlerResult.Success();
+        }
+
         await sessionProcessBridge.SendIpcMessage(new InSessionMessage(sessionSpecificMessage.Body),
-            new ProcessContext(roomId, subRoomId, sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Client
-            ? SessionProcessRole.Server : SessionProcessRole.Client), message.SenderId, context.CancellationToken);
+                new ProcessContext(roomId, subRoomId, sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Client
+                ? SessionProcessRole.Server : SessionProcessRole.Client), message.SenderId, context.CancellationToken);
 
         return HandlerResult.Success();
     }
