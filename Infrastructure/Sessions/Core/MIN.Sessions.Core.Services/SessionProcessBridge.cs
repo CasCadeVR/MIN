@@ -59,10 +59,10 @@ public class SessionProcessBridge : ISessionProcessBridge
         }
 
         var message = ipcSerializer.Deserialize(envelope.Body);
-        await HandleIpcMessage(message, e.Context, envelope.RecipientId);
+        await HandleIpcMessage(message, e.Context, envelope.RecipientId, envelope.BroadcastExcludeIds);
     }
 
-    private async Task HandleIpcMessage(IpcMessage message, ProcessContext context, Guid? recipientId)
+    private async Task HandleIpcMessage(IpcMessage message, ProcessContext context, Guid? recipientId, IEnumerable<Guid>? broadcastExcludeIds)
     {
         switch (message)
         {
@@ -73,7 +73,7 @@ public class SessionProcessBridge : ISessionProcessBridge
                     SessionProcessRole = context.Role,
                     Body = inSessionMessage.Body,
                     RecipientId = recipientId,
-                }, context.RoomId, identityService.SelfParticipant.Id, cts.Token);
+                }, context.RoomId, identityService.SelfParticipant.Id, cts.Token, broadcastExcludeIds);
                 break;
 
             case ServerShutdownMessage serverShutdownMessage:

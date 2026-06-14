@@ -41,11 +41,13 @@ internal sealed class SessionSpecificHandler : IMessageHandler
             return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionLeaveHandler)} - {message.GetType()}");
         }
 
+        var selfId = identityService.SelfParticipant.Id;
+
         var roomId = context.RoomContext.RoomId;
         var subRoomId = sessionSpecificMessage.SubRoomId;
 
-        if (sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Server
-            && message.RecipientId != identityService.SelfParticipant.Id && !message.IsPublic)
+        if ((sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Server
+            && message.RecipientId != selfId && !message.IsPublic))
         {
             return HandlerResult.Success();
         }

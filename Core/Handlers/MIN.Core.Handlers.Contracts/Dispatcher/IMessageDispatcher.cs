@@ -1,5 +1,5 @@
-﻿using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts.Models;
+﻿using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Contracts.Dispatcher;
 
@@ -11,5 +11,5 @@ public interface IMessageDispatcher
     /// <summary>
     /// Асинхронно отправляет сообщение в диспетчер для обработки
     /// </summary>
-    Task DispatchAsync(IMessage message, MessageContext context);
+    Task DispatchAsync(IMessage message, MessageContext context, IEnumerable<Guid>? broadcastExcludeIds = null);
 }

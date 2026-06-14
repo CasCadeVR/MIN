@@ -14,6 +14,11 @@ public class IpcProcessMessageEnvelope
     public Guid? RecipientId { get; init; }
 
     /// <summary>
+    /// Список на исключение из broadcast
+    /// </summary>
+    public IEnumerable<Guid>? BroadcastExcludeIds { get; init; }
+
+    /// <summary>
     /// Содержимое сообщения
     /// </summary>
     public required byte[] Body { get; init; }

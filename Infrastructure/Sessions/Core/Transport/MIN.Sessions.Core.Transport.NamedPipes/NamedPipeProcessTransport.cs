@@ -14,8 +14,8 @@ namespace MIN.Sessions.Core.Transport.NamedPipes;
 public sealed class NamedPipeProcessTransport : ISessionProcessTransport
 {
     private readonly ConcurrentDictionary<ProcessContext, NamedPipeServerStream> connections = [];
-    private readonly CancellationTokenSource cts = new();
     private readonly SemaphoreSlim writeLock = new(1, 1);
+    private readonly CancellationTokenSource cts = new();
     private string pipeName = string.Empty;
 
     /// <inheritdoc/>
@@ -107,10 +107,9 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
 
     Task ISessionProcessTransport.DisconnectAsync(ProcessContext context)
     {
-        if (connections.TryRemove(context, out var stream))
-        {
-            stream.Dispose();
-        }
+        connections.TryRemove(context, out _);
+        writeLock.Dispose();
+
         return Task.CompletedTask;
     }
 
@@ -123,6 +122,8 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         {
             server.Dispose();
         }
+
+        writeLock.Dispose();
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>

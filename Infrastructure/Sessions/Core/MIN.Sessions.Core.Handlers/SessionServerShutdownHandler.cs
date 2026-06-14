@@ -56,8 +56,8 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
 
         if (roomHoster.IsHosting(roomId))
         {
-            var informParticipants = context.RoomContext.Participants.GetParticipants()
-                .Select(x => x.Id).Except(subRoomManager.GetParticipantIds(roomId, subRoomId));
+            var outOfSubRoomParticipants = context.RoomContext.Participants.GetParticipants()
+                .Select(x => x.Id).Except(subRoomManager.GetParticipantIds(roomId, subRoomId)).ToList();
 
             if (!subRoomManager.TryStopSubRoom(roomId, subRoomId, sessionServerShutdownMessage.SenderId))
             {
@@ -67,7 +67,7 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
                 });
             }
 
-            var informConnectionIds = informParticipants.Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId);
+            var informConnectionIds = outOfSubRoomParticipants.Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId);
             await messageSender.BroadcastAsync(sessionServerShutdownMessage, roomId, informConnectionIds, context.CancellationToken);
             return HandlerResult.Success(stopPropagation: true);
         }
