@@ -120,7 +120,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         var participantLeftMessage = new ParticipantLeftMessage()
         {
             Participant = leavingParticipant,
-            RoomId = e.RoomId,
             WasKicked = gracefulDisconnector.GetDisconnectDetailsFor(e.ConnectionId, e.RoomId) != null
         };
 

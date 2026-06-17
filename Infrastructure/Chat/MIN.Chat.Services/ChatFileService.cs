@@ -49,7 +49,6 @@ public sealed class ChatFileService : IChatFileService
         var message = new FileMetadataMessage
         {
             TransferId = transferId,
-            RoomId = roomId,
             Sender = identityService.SelfParticipant.ToParticipantInfo(),
             FileName = fileName,
             SenderId = identityService.SelfParticipant.Id,
@@ -113,7 +112,7 @@ public sealed class ChatFileService : IChatFileService
 
         await eventBus.PublishAsync(new FileTransferStartedEvent
         {
-            RoomId = fileMetadataMessage.RoomId,
+            RoomId = roomId,
             TransferId = fileMetadataMessage.TransferId,
             FileMetadataId = fileMetadataMessage.Id,
             FileName = fileMetadataMessage.FileName,
@@ -125,7 +124,6 @@ public sealed class ChatFileService : IChatFileService
         var message = new FileTransferRequestMessage
         {
             TransferId = transferId,
-            RoomId = roomId,
             FileName = fileMetadataMessage.FileName,
             FileMetadataId = fileMetadataMessage.Id,
             Direction = FileTransferDirection.Download,
@@ -139,7 +137,6 @@ public sealed class ChatFileService : IChatFileService
         var message = new FileTransferCancelMessage
         {
             TransferId = fileMessage.TransferId,
-            RoomId = roomId,
             FileMetadataId = fileMessage.Id,
         };
 

@@ -31,7 +31,6 @@ public sealed class ChatTextService : IChatTextService
 
         var message = new ChatTextMessage
         {
-            RoomId = roomId,
             Sender = identityService.SelfParticipant.ToParticipantInfo(),
             Content = content,
             RecipientId = recipientId,

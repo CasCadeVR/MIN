@@ -151,7 +151,7 @@ public partial class ChatPanelView
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != roomId)
+        if (eventMessage.RoomId != roomId)
         {
             return;
         }
@@ -174,7 +174,7 @@ public partial class ChatPanelView
 
     private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != roomId)
+        if (eventMessage.RoomId != roomId)
         {
             return;
         }

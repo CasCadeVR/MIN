@@ -74,7 +74,6 @@ internal sealed class SessionJoinHandler : IMessageHandler
                     {
                         await messageRouter.RouteAsync(new SessionHostRequestMessage()
                         {
-                            RoomId = roomId,
                             SubRoomId = subRoomInfo.Id,
                             SessionType = sessionJoinRequestMessage.SessionType
                         }, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);

@@ -81,7 +81,7 @@ public class SessionMonitor : IHostedService
 
     private async Task OnParticipantLeft(ParticipantLeftEvent e, CancellationToken cancellationToken)
     {
-        var roomId = e.Message.RoomId;
+        var roomId = e.RoomId;
         var participantId = e.Message.Participant.Id;
 
         var activeSubRooms = subRoomManager.GetRoomSubRooms(roomId);

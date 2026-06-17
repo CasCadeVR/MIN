@@ -26,11 +26,6 @@ public sealed class ChatTextMessage : BaseMessage, IDescribable, IReplyable
     public ParticipantInfo Sender { get; set; } = null!;
 
     /// <summary>
-    /// Идентификатор комнаты, в которую отправлено сообщение
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Содержимое сообщения
     /// </summary>
     public string Content { get; set; } = string.Empty;

@@ -17,11 +17,6 @@ public sealed class ParticipantLeftMessage : BaseMessage, IDescribable
     public override bool IsPublic => true;
 
     /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Информация о покинувшем участнике
     /// </summary>
     public ParticipantInfo Participant { get; set; } = null!;

@@ -43,6 +43,7 @@ internal sealed class ParticipantLeftHandler : IMessageHandler
 
         await eventBus.PublishAsync(new ParticipantLeftEvent()
         {
+            RoomId = context.RoomContext.RoomId,
             Message = participantLeftMessage,
         }, context.CancellationToken);
 

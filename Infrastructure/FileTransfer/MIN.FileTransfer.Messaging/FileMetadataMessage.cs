@@ -26,11 +26,6 @@ public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable, IMessa
     public ParticipantInfo Sender { get; set; } = null!;
 
     /// <summary>
-    /// Идентификатор комнаты, в которую отправлено сообщение
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Идентификатор потока, по которому придёт файл
     /// </summary>
     public Guid TransferId { get; set; }
@@ -91,7 +86,6 @@ public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable, IMessa
         FilePath = metadata.FilePath;
         RecipientId = metadata.RecipientId;
         ReplyToMessageId = metadata.ReplyToMessageId;
-        RoomId = metadata.RoomId;
         TransferId = metadata.TransferId;
         AsDownloaded = metadata.AsDownloaded;
     }

@@ -16,11 +16,6 @@ public sealed class OnlineStatusChangedMessage : BaseMessage
     public override bool IsPublic => true;
 
     /// <summary>
-    /// Идентификатор комнаты, в которую отправлено сообщение
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Статус действия в сети
     /// </summary>
     public OnlineStatus Status { get; set; }

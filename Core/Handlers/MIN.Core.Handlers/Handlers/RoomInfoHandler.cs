@@ -36,12 +36,14 @@ internal sealed class RoomInfoHandler : IMessageHandler
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
+        var roomId = context.RoomContext.RoomId;
+
         if (message is RoomInfoRequestMessage roomInfoRequest)
         {
-            logger.Log($"Отправляю информацию о комнате с id {roomInfoRequest.RoomId}");
+            logger.Log($"Отправляю информацию о комнате с id {roomId}");
             return HandlerResult.WithResponse(new RoomInfoResponseMessage()
             {
-                Room = roomStore.GetRoomFor(message.SenderId, roomInfoRequest.RoomId),
+                Room = roomStore.GetRoomFor(message.SenderId, roomId),
             });
         }
         else if (message is RoomInfoResponseMessage roomInfoResponse)
@@ -76,7 +78,7 @@ internal sealed class RoomInfoHandler : IMessageHandler
         }
         else if (message is RoomInfoUpdatedMessage roomInfoUpdated)
         {
-            var existingRoom = roomStore.GetRoom(context.RoomContext.RoomId);
+            var existingRoom = roomStore.GetRoom(roomId);
             existingRoom.Name = roomInfoUpdated.Room.Name;
             existingRoom.MaximumParticipants = roomInfoUpdated.Room.MaximumParticipants;
 

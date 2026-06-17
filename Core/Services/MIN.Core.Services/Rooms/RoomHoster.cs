@@ -152,8 +152,7 @@ public sealed class RoomHoster : IRoomHoster
 
         context.Messages.AddMessage(new ParticipantJoinedMessage()
         {
-            Participant = new Participant(localParticipant),
-            RoomId = roomId
+            Participant = new Participant(localParticipant)
         });
 
         var connectionId = await transport.StartHostingAsync(withPortForwarding, cancellationToken);

@@ -80,7 +80,7 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != room.Id)
+        if (eventMessage.RoomId != room.Id)
         {
             return;
         }
@@ -96,7 +96,7 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
 
     private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != room.Id)
+        if (eventMessage.RoomId != room.Id)
         {
             return;
         }

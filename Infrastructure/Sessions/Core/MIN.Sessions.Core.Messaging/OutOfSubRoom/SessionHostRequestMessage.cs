@@ -16,11 +16,6 @@ public sealed class SessionHostRequestMessage : BaseMessage
     public override bool IsPublic => false;
 
     /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Тип сессии
     /// </summary>
     public SessionType SessionType { get; set; }

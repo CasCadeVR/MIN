@@ -110,6 +110,8 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
     private async Task<HandlerResult> HandleUpload(FileTransferRequestMessage request, Guid selfId, MessageContext context)
     {
+        var roomId = context.RoomContext.RoomId;
+
         if (request.RecipientId != selfId)
         {
             logger.Log($"Запрос на загрузку файла адресован не мне (мне: {selfId}, запрос: {request.RecipientId})");
@@ -122,19 +124,18 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
             return HandlerResult.Failure($"Не найдена информация о transfer {request.TransferId}", stopPropagation: false);
         }
 
-        var filePath = ResolveFilePath(request.FileMetadataId, info.RoomId, info.FileName);
+        var filePath = ResolveFilePath(request.FileMetadataId, roomId, info.FileName);
         if (filePath == null)
         {
             logger.Log($"Файл не найден для upload: {info.FileName} (TransferId: {request.TransferId})");
             var errorResponse = new FileTransferResponseMessage
             {
-                RoomId = request.RoomId,
                 TransferId = request.TransferId,
                 Success = false,
                 ErrorMessage = "Файл не найден во время загрузки",
             };
 
-            await messageSender.SendAsync(errorResponse, request.RoomId, context.ConnectionId, context.CancellationToken);
+            await messageSender.SendAsync(errorResponse, roomId, context.ConnectionId, context.CancellationToken);
             return HandlerResult.Failure("Файл не найден во время загрузки", stopPropagation: true);
         }
 
@@ -142,12 +143,11 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
         var response = new FileTransferResponseMessage
         {
-            RoomId = request.RoomId,
             TransferId = request.TransferId,
             Success = true,
         };
 
-        await messageSender.SendAsync(response, request.RoomId, context.ConnectionId, context.CancellationToken);
+        await messageSender.SendAsync(response, roomId, context.ConnectionId, context.CancellationToken);
 
         await StreamFileAsync(filePath, request, context);
 
@@ -156,6 +156,8 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
     private async Task<HandlerResult> HandleDownload(FileTransferRequestMessage request, Guid selfId, MessageContext context)
     {
+        var roomId = context.RoomContext.RoomId;
+
         if (!fileTransferService.TryGetTransferInfo(request.TransferId, out _))
         {
             logger.Log($"Регистрирую новый download transfer для файла {request.FileName} (TransferId: {request.TransferId})");
@@ -164,7 +166,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
             {
                 TransferId = request.TransferId,
                 FileMetadataId = request.FileMetadataId,
-                RoomId = request.RoomId,
+                RoomId = roomId,
                 SenderId = selfId,
                 Direction = FileTransferDirection.Download,
                 FileName = request.FileName,
@@ -177,19 +179,18 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
             logger.Log($"Transfer {request.TransferId} уже зарегистрирован, начинаю download");
         }
 
-        var filePath = ResolveFilePath(request.FileMetadataId, request.RoomId, request.FileName);
+        var filePath = ResolveFilePath(request.FileMetadataId, roomId, request.FileName);
         if (filePath == null)
         {
             logger.Log($"Файл не найден для download: {request.FileName} (TransferId: {request.TransferId})");
             var errorResponse = new FileTransferResponseMessage
             {
-                RoomId = request.RoomId,
                 TransferId = request.TransferId,
                 Success = false,
                 ErrorMessage = "Файл не найден у хоста",
             };
 
-            await messageSender.SendAsync(errorResponse, request.RoomId, context.ConnectionId, context.CancellationToken);
+            await messageSender.SendAsync(errorResponse, roomId, context.ConnectionId, context.CancellationToken);
             return HandlerResult.Failure("Файл не найден у хоста", stopPropagation: false, showErrorMessage: false);
         }
 
@@ -197,12 +198,11 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
         var response = new FileTransferResponseMessage
         {
-            RoomId = request.RoomId,
             TransferId = request.TransferId,
             Success = true,
         };
 
-        await messageSender.SendAsync(response, request.RoomId, context.ConnectionId, context.CancellationToken);
+        await messageSender.SendAsync(response, roomId, context.ConnectionId, context.CancellationToken);
 
         await StreamFileAsync(filePath, request, context);
 
@@ -239,6 +239,8 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
     private async Task StreamFileAsync(string filePath, FileTransferRequestMessage request, MessageContext context)
     {
+        var roomId = context.RoomContext.RoomId;
+
         if (!fileTransferService.TryGetTransferInfo(request.TransferId, out var info))
         {
             logger.Log($"Не найдена информация о передаче {request.TransferId} во время стриминга файла");
@@ -262,12 +264,12 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
         Guid? serverConnectionId = null;
 
-        if (roomHoster.IsHosting(request.RoomId))
+        if (roomHoster.IsHosting(roomId))
         {
-            serverConnectionId = roomHoster.GetConnectionIdByRoomId(request.RoomId);
+            serverConnectionId = roomHoster.GetConnectionIdByRoomId(roomId);
         }
 
         await using var fileStream = File.OpenRead(filePath);
-        await streamManager.SendAsync(fileStream, options, request.RoomId, context.ConnectionId, serverConnectionId, info.CancellationTokenSource.Token);
+        await streamManager.SendAsync(fileStream, options, roomId, context.ConnectionId, serverConnectionId, info.CancellationTokenSource.Token);
     }
 }

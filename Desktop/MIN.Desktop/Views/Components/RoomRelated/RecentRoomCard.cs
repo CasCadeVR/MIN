@@ -99,7 +99,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != roomInfo.Id)
+        if (eventMessage.RoomId != roomInfo.Id)
         {
             return;
         }
@@ -115,7 +115,7 @@ public partial class RecentRoomCard : UserControl, IDisposable
 
     private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != roomInfo.Id)
+        if (eventMessage.RoomId != roomInfo.Id)
         {
             return;
         }

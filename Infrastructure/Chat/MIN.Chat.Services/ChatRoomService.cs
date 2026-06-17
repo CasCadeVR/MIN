@@ -58,7 +58,6 @@ public sealed class ChatRoomService : IChatRoomService
     {
         var request = new ChatHistoryRequestMessage
         {
-            RoomId = roomId,
             Page = page,
             PageSize = StoreConstants.MessagesPageSize,
         };

@@ -9,6 +9,11 @@ namespace MIN.Core.Events.Events;
 public sealed class ParticipantJoinedEvent : BaseEvent
 {
     /// <summary>
+    /// Идентификатор комнаты
+    /// </summary>
+    public Guid RoomId { get; set; }
+
+    /// <summary>
     /// Сообщение о присоединившимся участнике
     /// </summary>
     public ParticipantJoinedMessage Message { get; init; } = null!;

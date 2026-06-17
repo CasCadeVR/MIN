@@ -18,11 +18,6 @@ public sealed class ChatHistoryRequestMessage : BaseMessage
     public override bool RequireStreamAcks => true;
 
     /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Страница
     /// </summary>
     public int Page { get; set; }

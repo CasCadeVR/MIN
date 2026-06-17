@@ -108,7 +108,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 
     private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+        if (eventMessage.FileMetadataId != fileMetadataMessage.Id)
         {
             return;
         }
@@ -117,7 +117,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 
         fileTransferProgressSubsciptionToken = eventBus.Subscribe((FileTransferProgressEvent e, CancellationToken _) =>
         {
-            if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+            if (eventMessage.FileMetadataId != fileMetadataMessage.Id)
             {
                 return Task.CompletedTask;
             }
@@ -145,8 +145,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId
-            || eventMessage.FileMetadataId != fileMetadataMessage.Id
+        if (eventMessage.FileMetadataId != fileMetadataMessage.Id
             || eventMessage.SenderId != localParticipant.Id)
         {
             return;
@@ -168,7 +167,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 
     private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+        if (eventMessage.FileMetadataId != fileMetadataMessage.Id)
         {
             return;
         }

@@ -73,10 +73,7 @@ internal sealed class HandshakeHandler : IMessageHandler
 
             logger.Log($"Сессия с получателем {handshakeAckMessage.Participant.Name} инициализирована");
 
-            return HandlerResult.WithResponse(new RoomJoinRequestMessage()
-            {
-                RoomId = context.RoomContext.RoomId
-            });
+            return HandlerResult.WithResponse(new RoomJoinRequestMessage());
         }
 
         return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(HandshakeHandler)} - {message.GetType()}");
