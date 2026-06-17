@@ -23,7 +23,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     private readonly IMessageRouter messageRouter;
     private readonly IRoomStore roomStore;
     private readonly IRoomFactory roomFactory;
-    private readonly IGracefulDisconnector gracefulDisconnector;
+    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly ILoggerProvider logger;
 
     private CancellationTokenSource cts = null!;
@@ -37,7 +37,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         IMessageRouter messageRouter,
         IRoomStore roomStore,
         IRoomFactory roomFactory,
-        IGracefulDisconnector gracefulDisconnector,
+        INetworkErrorHandler networkErrorHandler,
         ILoggerProvider logger)
     {
         this.roomConnector = roomConnector;
@@ -46,7 +46,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         this.messageRouter = messageRouter;
         this.roomStore = roomStore;
         this.roomFactory = roomFactory;
-        this.gracefulDisconnector = gracefulDisconnector;
+        this.networkErrorHandler = networkErrorHandler;
         this.logger = logger;
     }
 
@@ -120,7 +120,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         var participantLeftMessage = new ParticipantLeftMessage()
         {
             Participant = leavingParticipant,
-            WasKicked = gracefulDisconnector.GetDisconnectDetailsFor(e.ConnectionId, e.RoomId) != null
+            WasKicked = networkErrorHandler.GetDisconnectDetailsFor(leavingParticipant.Id, e.RoomId) != null
         };
 
         await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, cts.Token);

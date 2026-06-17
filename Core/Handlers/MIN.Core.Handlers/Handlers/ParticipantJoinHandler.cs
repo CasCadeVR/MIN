@@ -18,7 +18,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
 {
     private readonly IRoomStore roomStore;
     private readonly IRoomHoster roomHoster;
-    private readonly IGracefulDisconnector gracefulDisconnector;
+    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
@@ -29,14 +29,14 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
     public ParticipantJoinHandler(
         IRoomStore roomStore,
         IRoomHoster roomHoster,
-        IGracefulDisconnector gracefulDisconnector,
+        INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
         IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.roomStore = roomStore;
         this.roomHoster = roomHoster;
-        this.gracefulDisconnector = gracefulDisconnector;
+        this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
         this.eventBus = eventBus;
         this.logger = logger;
@@ -56,8 +56,8 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
             case RoomJoinRequestMessage roomJoinRequestMessage:
                 if (roomStore.GetRoom(context.RoomContext.RoomId).IsFull)
                 {
-                    await gracefulDisconnector.DisconnectWithReasonAsync(context.ConnectionId,
-                        context.RoomContext.RoomId, "Комната заполнена");
+                    await networkErrorHandler.SendErrorAsync("Комната заполнена",
+                        message.SenderId, context.RoomContext.RoomId, critical: true);
                     return HandlerResult.Success();
                 }
 

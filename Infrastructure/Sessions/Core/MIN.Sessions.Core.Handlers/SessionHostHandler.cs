@@ -4,6 +4,7 @@ using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
@@ -25,7 +26,8 @@ internal sealed class SessionHostHandler : IMessageHandler
     private readonly IMessageRouter messageRouter;
     private readonly ISessionResolver sessionResolver;
     private readonly ISessionProcessBridge sessionProcessBridge;
-    private readonly ISessionProcessManager sessionProcessInitializer;
+    private readonly ISessionProcessManager sessionProcessManager;
+    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -38,7 +40,8 @@ internal sealed class SessionHostHandler : IMessageHandler
         IMessageRouter messageRouter,
         ISessionResolver sessionResolver,
         ISessionProcessBridge sessionProcessBridge,
-        ISessionProcessManager sessionProcessInitializer,
+        ISessionProcessManager sessionProcessManager,
+        INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
@@ -48,7 +51,8 @@ internal sealed class SessionHostHandler : IMessageHandler
         this.messageRouter = messageRouter;
         this.sessionResolver = sessionResolver;
         this.sessionProcessBridge = sessionProcessBridge;
-        this.sessionProcessInitializer = sessionProcessInitializer;
+        this.sessionProcessManager = sessionProcessManager;
+        this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -75,10 +79,8 @@ internal sealed class SessionHostHandler : IMessageHandler
         if (sessionHostRequestMessage.SubRoomId != null
             && !subRoomManager.ActivateSubRoom(context.RoomContext.RoomId, sessionHostRequestMessage.SubRoomId.Value, senderParicipantInfo))
         {
-            return HandlerResult.WithResponse(new SessionHostFailedMessage()
-            {
-                ErrorMessage = "Что-то пошло не так"
-            });
+            await networkErrorHandler.SendErrorAsync("Хост не смог создать комнату", message.SenderId, context.RoomContext.RoomId);
+            return HandlerResult.Success();
         }
 
         // Здесь хост должен запустить сервер шахмат
@@ -97,15 +99,13 @@ internal sealed class SessionHostHandler : IMessageHandler
 
         var processContext = new ProcessContext(context.RoomContext.RoomId, subRoomId.Value, SessionProcessRole.Server);
 
-        var hostResult = await sessionProcessInitializer.StartAsync(session.ServerPath,
+        var hostResult = await sessionProcessManager.StartAsync(session.ServerPath,
             processContext, context.CancellationToken);
 
         if (hostResult == false)
         {
-            return HandlerResult.WithResponse(new SessionHostFailedMessage()
-            {
-                ErrorMessage = "У хоста повреждёна или утеряна программа сервера"
-            });
+            await networkErrorHandler.SendErrorAsync("У хоста повреждёна или утеряна программа сервера", message.SenderId, context.RoomContext.RoomId);
+            return HandlerResult.Success();
         }
 
         if (isHosted)

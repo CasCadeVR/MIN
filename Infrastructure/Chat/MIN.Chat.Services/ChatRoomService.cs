@@ -16,7 +16,7 @@ public sealed class ChatRoomService : IChatRoomService
     private readonly IMessageRouter messageRouter;
     private readonly IRoomFactory roomFactory;
     private readonly IRoomHoster roomHoster;
-    private readonly IGracefulDisconnector gracefulDisconnector;
+    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
 
     /// <summary>
@@ -25,13 +25,13 @@ public sealed class ChatRoomService : IChatRoomService
     public ChatRoomService(IMessageRouter messageRouter,
         IRoomFactory roomFactory,
         IRoomHoster roomHoster,
-        IGracefulDisconnector gracefulDisconnector,
+        INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
         this.roomFactory = roomFactory;
         this.roomHoster = roomHoster;
-        this.gracefulDisconnector = gracefulDisconnector;
+        this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
     }
 
@@ -51,7 +51,7 @@ public sealed class ChatRoomService : IChatRoomService
 
         var kickingParticipantConnectionId = context.Connections.GetConnectionIdFromParticipantId(participantId);
 
-        await gracefulDisconnector.DisconnectWithReasonAsync(kickingParticipantConnectionId, roomId, reason);
+        await networkErrorHandler.SendErrorAsync(reason, participantId, roomId, critical: true);
     }
 
     async Task IChatRoomService.SendChatHistoryRequest(Guid roomId, int page, CancellationToken cancellationToken)

@@ -71,9 +71,8 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
         this.fileMetadataMessage = fileMetadataMessage;
         this.localParticipant = localParticipant;
 
-        cachedFormat = fileInterractButton.Text = fileTransferFeatureCollection.FileHelperService
-            .GetFileType(fileMetadataMessage.FileName)
-            .Substring(1);
+        cachedFormat = fileTransferFeatureCollection.FileHelperService
+            .GetFileType(fileMetadataMessage.FileName);
 
         downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
@@ -212,9 +211,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
         fileName.Text = fileMetadataMessage.FileName;
         fileSize.Text = fileTransferFeatureCollection.FileHelperService
             .FormatFileSize(fileMetadataMessage.FileSize);
-        fileInterractButton.Text = fileTransferFeatureCollection.FileHelperService
-            .GetFileType(fileMetadataMessage.FileName)
-            .Substring(1);
+        fileInterractButton.Text = cachedFormat;
     }
 
     private void fileInterractButton_MouseEnter(object sender, EventArgs e)

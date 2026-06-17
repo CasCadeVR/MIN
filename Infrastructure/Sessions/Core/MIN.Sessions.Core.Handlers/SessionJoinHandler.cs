@@ -4,6 +4,7 @@ using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
@@ -20,6 +21,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
     private readonly ISessionResolver sessionResolver;
+    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -30,6 +32,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
         IEventBus eventBus,
         IMessageRouter messageRouter,
         ISessionResolver sessionResolver,
+        INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
@@ -37,6 +40,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
         this.sessionResolver = sessionResolver;
+        this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -61,7 +65,8 @@ internal sealed class SessionJoinHandler : IMessageHandler
 
                 if (subRoomInfo == null)
                 {
-                    return SendErrorMessage("Такая подкомната не нашлась");
+                    await networkErrorHandler.SendErrorAsync("Такая подкомната не нашлась", message.SenderId, roomId);
+                    return HandlerResult.Success();
                 }
 
                 var senderParicipantInfo = sender!.ToParticipantInfo();
@@ -88,7 +93,9 @@ internal sealed class SessionJoinHandler : IMessageHandler
                         SubRoomJoinOutcome.AlreadyJoined => "Вы уже учавствуете в этой сессии",
                         _ => "Не удалось войти"
                     };
-                    return SendErrorMessage(error);
+
+                    await networkErrorHandler.SendErrorAsync(error, message.SenderId, roomId);
+                    return HandlerResult.Success();
                 }
 
                 return HandlerResult.WithResponse(new SessionJoinResponseMessage()
@@ -126,13 +133,5 @@ internal sealed class SessionJoinHandler : IMessageHandler
             default:
                 return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionJoinHandler)} - {message.GetType()}");
         }
-    }
-
-    private HandlerResult SendErrorMessage(string error)
-    {
-        return HandlerResult.WithResponse(new SessionJoinFailedMessage()
-        {
-            ErrorMessage = error,
-        }, stopPropagation: true);
     }
 }

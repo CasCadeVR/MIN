@@ -93,54 +93,44 @@ public enum MessageTypeTag : byte
     SessionHostRequest = 48,
 
     /// <summary>
-    /// Ошибка на запрос хостинг сессии.
-    /// </summary>
-    SessionHostFailed = 49,
-
-    /// <summary>
     /// Готовность хостинга сессии.
     /// </summary>
-    SessionReady = 50,
+    SessionReady = 49,
 
     /// <summary>
     /// Запроса на присоединения к сессии.
     /// </summary>
-    SessionJoinRequest = 51,
-
-    /// <summary>
-    /// Ошибка на запрос присоединения к сессии.
-    /// </summary>
-    SessionJoinFailed = 52,
+    SessionJoinRequest = 50,
 
     /// <summary>
     /// Ответ на присоединения к сессии.
     /// </summary>
-    SessionJoinResponse = 53,
+    SessionJoinResponse = 51,
 
     /// <summary>
     /// Специфичное сообщение внутри сессии.
     /// </summary>
-    SessionSpecific = 54,
+    SessionSpecific = 52,
 
     /// <summary>
     /// Выход из сессии.
     /// </summary>
-    SessionLeave = 55,
+    SessionLeave = 53,
 
     /// <summary>
     /// Участник вошёл в сессию.
     /// </summary>
-    SessionParticipantJoined = 56,
+    SessionParticipantJoined = 54,
 
     /// <summary>
     /// Участник вышел из сессии.
     /// </summary>
-    SessionParticipantLeft = 57,
+    SessionParticipantLeft = 55,
 
     /// <summary>
     /// Закрытие сервера сессии.
     /// </summary>
-    SessionServerShutdown = 58,
+    SessionServerShutdown = 56,
 
 
     // ===== Сообщения чата (64-95) =====

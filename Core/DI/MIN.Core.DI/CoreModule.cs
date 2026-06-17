@@ -51,7 +51,7 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<RoomFactory>(ServiceLifetime.Singleton);
 
         // Room-scoped
-        services.RegisterAsImplementedInterfaces<GracefulDisconnector>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<NetworkErrorHandler>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<RoomConnectionResolver>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Transient);

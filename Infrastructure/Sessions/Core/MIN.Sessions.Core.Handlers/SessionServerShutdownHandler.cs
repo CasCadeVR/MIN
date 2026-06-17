@@ -19,6 +19,7 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
     private readonly ISessionProcessManager sessionProcessManager;
     private readonly IMessageSender messageSender;
     private readonly IRoomHoster roomHoster;
+    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -28,12 +29,14 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
         ISessionProcessManager sessionProcessManager,
         IMessageSender messageSender,
         IRoomHoster roomHoster,
+        INetworkErrorHandler networkErrorHandler,
         ILoggerProvider logger)
     {
         this.subRoomManager = subRoomManager;
         this.sessionProcessManager = sessionProcessManager;
         this.messageSender = messageSender;
         this.roomHoster = roomHoster;
+        this.networkErrorHandler = networkErrorHandler;
         this.logger = logger;
     }
 
@@ -61,10 +64,10 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
 
             if (!subRoomManager.TryStopSubRoom(roomId, subRoomId, sessionServerShutdownMessage.SenderId))
             {
-                return HandlerResult.WithResponse(new SessionHostFailedMessage()
-                {
-                    ErrorMessage = "Произошла попытка остановки сервера участником, не имеющего на это права, либо отправившего неккоректный id подкомнаты",
-                });
+                await networkErrorHandler.SendErrorAsync(
+                    "Произошла попытка остановки сервера участником, не имеющего на это права, либо отправившего неккоректный id подкомнаты",
+                    message.SenderId, roomId);
+                return HandlerResult.Success();
             }
 
             var informConnectionIds = outOfSubRoomParticipants.Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId);
