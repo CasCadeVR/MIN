@@ -30,9 +30,14 @@ public partial class ParticipantCard : UserControl, IDisposable
     public Guid ParticipantId => participant.Id;
 
     /// <summary>
-    /// Событие по нажатию на контекстное меню карточки
+    /// Событие по нажатию на кнопку начала приватного общения у участника
     /// </summary>
-    public Action<bool, Participant>? OnCardContextMenuStripClicked { get; set; }
+    public Action<bool, Participant>? OnPrivateChatMenuStripClicked { get; set; }
+
+    /// <summary>
+    /// Событие по нажатию на кнопку кика участника
+    /// </summary>
+    public Action<Participant>? OnKickParticipantClicked { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantCard"/>
@@ -41,7 +46,8 @@ public partial class ParticipantCard : UserControl, IDisposable
         IEventBus eventBus,
         Guid roomId,
         bool isHost,
-        bool isSelf)
+        bool isSelf,
+        bool asHost)
     {
         InitializeComponent();
         ApplyStylings();
@@ -59,8 +65,10 @@ public partial class ParticipantCard : UserControl, IDisposable
         if (!isSelf)
         {
             var participantCardContextMenuStrip = new ParticipantCardContextMenuStrip();
-            participantCardContextMenuStrip.OnItemClick += CardContextMenuStripClicked;
+            participantCardContextMenuStrip.OnPrivateChatClick += OnPrivateChatClickMenuStripClicked;
             participantCardContextMenuStrip.Items[0].Text = StartPrivateChatText;
+            participantCardContextMenuStrip.OnKickClick += OnKickParticipantClickMenuStripClicked;
+            participantCardContextMenuStrip.Items[1].Visible = asHost;
             ContextMenuStrip = participantCardContextMenuStrip;
         }
         if (!isSelf)
@@ -103,11 +111,16 @@ public partial class ParticipantCard : UserControl, IDisposable
         UpdateStylesOutOfSelected();
     }
 
-    private void CardContextMenuStripClicked()
+    private void OnPrivateChatClickMenuStripClicked()
     {
         selected = !selected;
         UpdateStylesOutOfSelected();
-        OnCardContextMenuStripClicked?.Invoke(selected, participant);
+        OnPrivateChatMenuStripClicked?.Invoke(selected, participant);
+    }
+
+    private void OnKickParticipantClickMenuStripClicked()
+    {
+        OnKickParticipantClicked?.Invoke(participant);
     }
 
     private void UpdateStylesOutOfSelected()

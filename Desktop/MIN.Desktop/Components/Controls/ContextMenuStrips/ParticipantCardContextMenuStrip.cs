@@ -10,20 +10,35 @@ public class ParticipantCardContextMenuStrip : ContextMenuStrip
     /// <summary>
     /// Событие по нажатию на <see cref="ParticipantCardContextMenuStrip"/>
     /// </summary>
-    public Action? OnItemClick { get; set; }
+    public Action? OnPrivateChatClick { get; set; }
+
+    /// <summary>
+    /// Событие по нажатию на <see cref="ParticipantCardContextMenuStrip"/>
+    /// </summary>
+    public Action? OnKickClick { get; set; }
 
     /// <summary>
     /// Иницилизирует новый экземпляр <see cref="ParticipantCardContextMenuStrip"/>
     /// </summary>
     public ParticipantCardContextMenuStrip()
     {
-        var showPictureToolStripMenuItem = new BaseToolStripMenuItem();
-        showPictureToolStripMenuItem.Click += PictureBoxContextMenuStrip_Click;
-        Items.AddRange(new ToolStripItem[] { showPictureToolStripMenuItem });
+        var startPrivateChatToolStripMenuItem = new BaseToolStripMenuItem();
+        startPrivateChatToolStripMenuItem.Click += StartPrivateChatContextMenuStrip_Click;
+
+        var kickParticipantToolStripMenuItem = new BaseToolStripMenuItem();
+        kickParticipantToolStripMenuItem.Text = "Кикнуть участника";
+        kickParticipantToolStripMenuItem.Click += KickParticipantContextMenuStrip_Click;
+
+        Items.AddRange(new ToolStripItem[] { startPrivateChatToolStripMenuItem, kickParticipantToolStripMenuItem });
     }
 
-    private void PictureBoxContextMenuStrip_Click(object? sender, EventArgs e)
+    private void StartPrivateChatContextMenuStrip_Click(object? sender, EventArgs e)
     {
-        OnItemClick?.Invoke();
+        OnPrivateChatClick?.Invoke();
+    }
+
+    private void KickParticipantContextMenuStrip_Click(object? sender, EventArgs e)
+    {
+        OnKickClick?.Invoke();
     }
 }

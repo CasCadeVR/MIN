@@ -34,8 +34,14 @@ public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
         }
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
-        var tasks = handlers.Select(handler => SafeExecuteHandler(handler, eventMessage, linkedCts.Token));
 
+        List<Func<object, CancellationToken, Task>> snapshot;
+        lock (handlers)
+        {
+            snapshot = [.. handlers];
+        }
+
+        var tasks = snapshot.Select(handler => SafeExecuteHandler(handler, eventMessage, linkedCts.Token));
         await Task.WhenAll(tasks);
     }
 

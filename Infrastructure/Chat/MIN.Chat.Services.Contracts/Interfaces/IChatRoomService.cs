@@ -1,0 +1,24 @@
+﻿using MIN.Core.Entities.Contracts.Models;
+
+namespace MIN.Chat.Services.Contracts.Interfaces;
+
+/// <summary>
+/// Сервис для работы с возможностями комнаты (кик, запрос на историю сообщений и т.д.)
+/// </summary>
+public interface IChatRoomService
+{
+    /// <summary>
+    /// Кикнуть участника с причиной
+    /// </summary>
+    Task KickParticipantAsync(Guid roomId, Guid participantId, string reason, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Отправить обновлённые данные о комнате
+    /// </summary>
+    Task SendUpdatedRoomInfoAsync(RoomInfo updatedRoomInfo, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Отправить запрос на обновление чата
+    /// </summary>
+    Task SendChatHistoryRequest(Guid roomId, int page, CancellationToken cancellationToken = default);
+}

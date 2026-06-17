@@ -14,7 +14,8 @@ namespace MIN.Sessions.Core.Transport.NamedPipes;
 public sealed class NamedPipeProcessTransport : ISessionProcessTransport
 {
     private readonly ConcurrentDictionary<ProcessContext, NamedPipeServerStream> connections = [];
-    private readonly SemaphoreSlim writeLock = new(1, 1);
+    private readonly ConcurrentDictionary<ProcessContext, SemaphoreSlim> connectionWriteLocks = [];
+    private readonly ConcurrentDictionary<ProcessContext, SemaphoreSlim> connectionReadLocks = [];
     private readonly CancellationTokenSource cts = new();
     private string pipeName = string.Empty;
 
@@ -53,6 +54,8 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         await server.WaitForConnectionAsync(connectionCts.Token);
 
         connections.TryAdd(context, server);
+        connectionWriteLocks.TryAdd(context, new(1, 1));
+        connectionReadLocks.TryAdd(context, new(1, 1));
         _ = ReadLoopAsync(context, server, cts.Token);
     }
 
@@ -64,12 +67,23 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         try
         {
             var lengthBuf = new byte[4];
-            while (!cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested && connectionReadLocks.TryGetValue(context, out var readlock))
             {
-                await stream.ReadExactlyAsync(lengthBuf, cancellationToken);
-                var length = BitConverter.ToInt32(lengthBuf);
-                var body = new byte[length];
-                await stream.ReadExactlyAsync(body, cancellationToken);
+                await readlock.WaitAsync(cancellationToken);
+
+                byte[] body;
+
+                try
+                {
+                    await stream.ReadExactlyAsync(lengthBuf, cancellationToken);
+                    var length = BitConverter.ToInt32(lengthBuf);
+                    body = new byte[length];
+                    await stream.ReadExactlyAsync(body, cancellationToken);
+                }
+                finally
+                {
+                    readlock.Release();
+                }
 
                 MessageReceived?.Invoke(this, new ProcessTransportMessageEventArgs
                 {
@@ -88,9 +102,10 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
 
     async Task ISessionProcessTransport.SendAsync(byte[] data, ProcessContext context, CancellationToken cancellationToken)
     {
-        if (connections.TryGetValue(context, out var stream))
+        if (connections.TryGetValue(context, out var stream) && connectionWriteLocks.TryGetValue(context, out var writeLock))
         {
             await writeLock.WaitAsync(cancellationToken);
+
             try
             {
                 var lengthBuf = BitConverter.GetBytes(data.Length);
@@ -108,7 +123,8 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
     Task ISessionProcessTransport.DisconnectAsync(ProcessContext context)
     {
         connections.TryRemove(context, out _);
-        writeLock.Dispose();
+        connectionWriteLocks.TryRemove(context, out _);
+        connectionReadLocks.TryRemove(context, out _);
 
         return Task.CompletedTask;
     }
@@ -123,7 +139,15 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
             server.Dispose();
         }
 
-        writeLock.Dispose();
+        foreach (var writeLock in connectionWriteLocks.Values)
+        {
+            writeLock.Dispose();
+        }
+
+        foreach (var readLock in connectionReadLocks.Values)
+        {
+            readLock.Dispose();
+        }
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>

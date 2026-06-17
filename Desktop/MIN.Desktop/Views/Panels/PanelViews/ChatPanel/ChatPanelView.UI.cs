@@ -1,5 +1,4 @@
-﻿using System.Net;
-using MIN.Core.Messaging.Contracts.Interfaces;
+﻿using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Constants;
@@ -7,6 +6,7 @@ using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Services;
+using MIN.Desktop.Views.Forms.HelperForms;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -101,12 +101,13 @@ public partial class ChatPanelView
                 featureCollection.Core.EventBus,
                 roomId,
                 isHost: participant.Id == room.HostParticipant.Id,
-                isSelf: participant.Id == localParticipant.Id)
+                isSelf: participant.Id == localParticipant.Id,
+                asHost: localParticipant.Id == room.HostParticipant.Id)
             {
                 Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2,
             };
 
-            card.OnCardContextMenuStripClicked += (selected, particpant) =>
+            card.OnPrivateChatMenuStripClicked += (selected, particpant) =>
             {
                 foreach (var participantsFlowControl in participantsFlow.Controls)
                 {
@@ -120,6 +121,23 @@ public partial class ChatPanelView
                 }
 
                 privateChatParticipantId = selected ? participant.Id : null;
+            };
+
+            card.OnKickParticipantClicked += async (participant) =>
+            {
+                var kickForm = new ParticipantKickForm(participant.Name);
+                if (kickForm.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        await featureCollection.Chat.ChatRoomService.KickParticipantAsync(roomId,
+                        participant.Id, kickForm.Reason, formCts.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
             };
 
             participantsFlow.Controls.Add(card);

@@ -2,7 +2,6 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
-using MIN.Core.Messaging.Stateless.RoomRelated.History;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
@@ -142,26 +141,14 @@ public partial class ChatPanelView
         loadMoreLabel = null;
     }
 
-    async void OnLoadMoreClicked(object? sender, EventArgs e)
+    private async void OnLoadMoreClicked(object? sender, EventArgs e)
     {
         var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
         var memoryCount = context.Messages.GetMessageCount();
 
-        var messageRouter = featureCollection.Core.MessageRouter;
-
         if (memoryCount < room.TotalMessageCount)
         {
-            var request = new ChatHistoryRequestMessage
-            {
-                RoomId = roomId,
-                Page = loadedPage + 1,
-                PageSize = StoreConstants.MessagesPageSize,
-            };
-
-            await messageRouter.RouteAsync(request,
-                roomId,
-                localParticipant.Id,
-                formCts.Token);
+            await featureCollection.Chat.ChatRoomService.SendChatHistoryRequest(roomId, loadedPage + 1, formCts.Token);
         }
         else
         {

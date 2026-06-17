@@ -45,7 +45,9 @@ internal sealed class DisconnectHandler : IMessageHandler
                 {
                     Reason = reason,
                 }, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
-                return HandlerResult.Failure(reason, stopPropagation: true, critical: true);
+
+                var uiToShow = "Хост кикнул тебя" + (reason != string.Empty ? $": {reason}" : string.Empty);
+                return HandlerResult.Failure(uiToShow, stopPropagation: true, critical: true);
 
             case DisconnectAckMessage disconnectAckMessage:
                 await eventBus.PublishAsync(new DisconnectAckReceived()

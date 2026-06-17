@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
@@ -64,6 +65,12 @@ internal sealed class RoomInfoHandler : IMessageHandler
             {
                 Room = roomInfoResponse.Room,
             }, context.CancellationToken);
+
+            await eventBus.PublishAsync(new RoomJoinedEvent()
+            {
+                RoomId = roomInfoResponse.Room.Id,
+                RoomInfo = new RoomInfo(roomInfoResponse.Room),
+            });
 
             return HandlerResult.Success();
         }

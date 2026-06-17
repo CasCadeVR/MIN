@@ -101,6 +101,9 @@
     <Compile Update="Views\Forms\HelperForms\ParticipantCreateForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Views\Forms\HelperForms\ParticipantKickForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Views\Forms\HelperForms\SessionChoosingForm.cs">
       <SubType>Form</SubType>
     </Compile>

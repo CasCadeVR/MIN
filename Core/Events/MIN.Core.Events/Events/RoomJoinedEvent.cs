@@ -1,10 +1,10 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 
-namespace MIN.Desktop.Infrastructure.Events;
+namespace MIN.Core.Events.Events;
 
 /// <summary>
-/// Событие, возникающее при заходе в комнату как клиент
+/// Событие, возникающее при заходе в комнату как клиент, получив всю необходимую для показа информацию
 /// </summary>
 public sealed class RoomJoinedEvent : BaseEvent
 {

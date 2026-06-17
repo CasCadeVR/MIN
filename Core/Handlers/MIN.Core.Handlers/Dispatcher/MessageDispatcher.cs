@@ -117,18 +117,19 @@ public sealed class MessageDispatcher : IMessageDispatcher
     {
         if (message.IsPublic)
         {
+            var roomParticipantsIds = context.RoomContext.Participants.GetParticipants().Select(x => x.Id);
             var senderConnectionId = context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId);
 
             var excludeConnectionIds = new List<Guid>
             {
                 senderConnectionId
-            }.Concat(broadcastExcludeIds?.Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId) ?? []).ToList();
+            }.Concat(broadcastExcludeIds?.Where(roomParticipantsIds.Contains).Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId) ?? []).ToList();
 
             if (message is IWithinSubRoom withinSubRoomMessage)
             {
                 var subRoomParticipants = subRoomManager.GetParticipantIds(context.RoomContext.RoomId, withinSubRoomMessage.SubRoomId);
-                excludeConnectionIds.AddRange(context.RoomContext.Participants.GetParticipants()
-                    .Select(x => x.Id).Except(subRoomParticipants).Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId));
+                excludeConnectionIds.AddRange(roomParticipantsIds.Except(subRoomParticipants)
+                    .Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId));
             }
 
             await messageSender.BroadcastAsync(message, context.RoomContext.RoomId, excludeConnectionIds, context.CancellationToken);

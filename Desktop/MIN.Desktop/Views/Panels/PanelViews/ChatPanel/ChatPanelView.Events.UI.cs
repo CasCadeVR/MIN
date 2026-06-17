@@ -1,7 +1,6 @@
 ﻿using System.Drawing.Imaging;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
@@ -170,12 +169,17 @@ public partial class ChatPanelView
             && (editForm.Room.Name != room.Name
             || editForm.Room.MaximumParticipants != room.MaximumParticipants))
         {
-            await featureCollection.Core.MessageRouter.RouteAsync(new RoomInfoUpdatedMessage
+            try
             {
-                Room = editForm.Room
-            }, roomId, localParticipant.Id, formCts.Token);
+                await featureCollection.Chat.ChatRoomService.SendUpdatedRoomInfoAsync(editForm.Room, formCts.Token);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
+
 
     private void actionButton_Click(object sender, EventArgs e)
     {

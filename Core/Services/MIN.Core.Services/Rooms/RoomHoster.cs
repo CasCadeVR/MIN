@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Protocol.Contracts.Interfaces;
@@ -23,6 +25,7 @@ public sealed class RoomHoster : IRoomHoster
     private readonly IProtocolHandler protocolHandler;
     private readonly ITransport transport;
     private readonly IRoomStore roomStore;
+    private readonly IEventBus eventBus;
     private readonly ISubRoomManager subRoomManager;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -45,6 +48,7 @@ public sealed class RoomHoster : IRoomHoster
         IProtocolHandler protocolHandler,
         ITransport transport,
         IRoomStore roomStore,
+        IEventBus eventBus,
         ISubRoomManager subRoomManager,
         IIdentityService identityService,
         ILoggerProvider logger)
@@ -53,6 +57,7 @@ public sealed class RoomHoster : IRoomHoster
         this.protocolHandler = protocolHandler;
         this.transport = transport;
         this.roomStore = roomStore;
+        this.eventBus = eventBus;
         this.subRoomManager = subRoomManager;
         this.identityService = identityService;
         this.logger = logger;
@@ -197,6 +202,8 @@ public sealed class RoomHoster : IRoomHoster
         readyRoomInfos.TryRemove(roomId, out _);
 
         roomStore.Remove(roomId);
+
+        await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
     }
 
     bool IRoomHoster.IsHosting(Guid roomId)

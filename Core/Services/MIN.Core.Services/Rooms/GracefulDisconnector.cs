@@ -17,6 +17,7 @@ public class GracefulDisconnector : IGracefulDisconnector
     private readonly IMessageSender messageSender;
     private readonly IEventBus eventBus;
     private readonly ConcurrentDictionary<Guid, Timer> rejectAckTimers = new();
+    private readonly ConcurrentDictionary<Guid, string> kickHistory = new();
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="GracefulDisconnector"/>
@@ -39,11 +40,8 @@ public class GracefulDisconnector : IGracefulDisconnector
         eventBus.Subscribe<DisconnectAckReceived>(OnDisconnectAckReceived);
     }
 
-    private async Task OnDisconnectAckReceived(DisconnectAckReceived e, CancellationToken cancellationToken)
-    {
-        ResetRejectAckTimer(e.ConnectionId);
-        await DisconnectClient(e.ConnectionId, e.RoomId);
-    }
+    string? IGracefulDisconnector.GetDisconnectDetailsFor(Guid connectionId, Guid roomId)
+        => kickHistory.TryGetValue(connectionId, out var reason) ? reason : null;
 
     async Task IGracefulDisconnector.DisconnectWithReasonAsync(Guid connectionId, Guid roomId, string reason, int timeoutMs)
     {
@@ -51,6 +49,8 @@ public class GracefulDisconnector : IGracefulDisconnector
         {
             Reason = reason
         };
+
+        kickHistory.TryAdd(connectionId, reason);
 
         await messageSender.SendAsync(disconnectMessage, roomId, connectionId, CancellationToken.None);
         var timer = new Timer(
@@ -60,6 +60,12 @@ public class GracefulDisconnector : IGracefulDisconnector
             Timeout.InfiniteTimeSpan);
 
         rejectAckTimers.TryAdd(connectionId, timer);
+    }
+
+    private async Task OnDisconnectAckReceived(DisconnectAckReceived e, CancellationToken cancellationToken)
+    {
+        ResetRejectAckTimer(e.ConnectionId);
+        await DisconnectClient(e.ConnectionId, e.RoomId);
     }
 
     private async void OnRejectAckTimeout(object? state)

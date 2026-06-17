@@ -8,7 +8,6 @@ using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
-using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
@@ -183,11 +182,6 @@ public partial class DiscoveryPanelView : StyledPanelView
                 chatPanelManager.RegisterChat(newRoomInfo,
                     navigationService
                     .NavigateTo<ChatPanelView, (Room room, Guid connectionId)>((room, connectionResult.ConnectionId)));
-                await featureCollection.Core.EventBus.PublishAsync(new RoomJoinedEvent()
-                {
-                    RoomId = room.Id,
-                    RoomInfo = newRoomInfo,
-                });
             }, connectCts, DesktopConstants.RoomConnectionTimeoutMs);
             loadingForm.Show();
 

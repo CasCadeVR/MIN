@@ -3,7 +3,6 @@ using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Schemes;
-using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 
 namespace MIN.Desktop.Components;

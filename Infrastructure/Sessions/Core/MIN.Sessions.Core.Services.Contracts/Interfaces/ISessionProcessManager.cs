@@ -22,7 +22,12 @@ public interface ISessionProcessManager
     Task StopAsync(ProcessContext context);
 
     /// <summary>
+    /// Остановить все приложения сессии, связанные с комнатой
+    /// </summary>
+    Task StopForRoomAsync(Guid roomId);
+
+    /// <summary>
     /// Остановить все приложения сессии
     /// </summary>
-    Task StopAll();
+    Task StopAllAsync();
 }

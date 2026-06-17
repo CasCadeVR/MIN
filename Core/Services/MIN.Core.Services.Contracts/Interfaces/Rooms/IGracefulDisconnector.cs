@@ -6,6 +6,14 @@
 public interface IGracefulDisconnector
 {
     /// <summary>
+    /// Получить причину отключения
+    /// </summary>
+    /// <remarks>
+    /// null, если учатсник вышел добровольно
+    /// </remarks>
+    string? GetDisconnectDetailsFor(Guid connectionId, Guid roomId);
+
+    /// <summary>
     /// Отключить клиента, указав причину
     /// </summary>
     Task DisconnectWithReasonAsync(Guid connectionId, Guid roomId, string reason, int timeoutMs = 5000);

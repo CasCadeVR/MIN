@@ -43,7 +43,7 @@ public class SessionProcessManager : ISessionProcessManager
 
     async Task<bool> ISessionProcessManager.StartAsync(string gameExePath, ProcessContext context, CancellationToken cancellationToken)
     {
-        logger.Log($"Стартую {gameExePath} как {SessionProcessRole.Server}");
+        logger.Log($"Стартую {gameExePath} как {context.Role}");
 
         //var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, gameExePath);
         var fullPath = gameExePath;
@@ -118,7 +118,25 @@ public class SessionProcessManager : ISessionProcessManager
         return Task.CompletedTask;
     }
 
-    Task ISessionProcessManager.StopAll()
+    Task ISessionProcessManager.StopForRoomAsync(Guid roomId)
+    {
+        var roomPendingProcesses = pendingProcesses.Keys.Where(x => x.RoomId == roomId);
+        foreach (var context in roomPendingProcesses)
+        {
+            pendingProcesses[context].EnableRaisingEvents = false;
+            pendingProcesses[context].Kill();
+        }
+
+        var roomRunningProcesses = runningProcesses.Keys.Where(x => x.RoomId == roomId);
+        foreach (var context in roomRunningProcesses)
+        {
+            runningProcesses[context].EnableRaisingEvents = false;
+            runningProcesses[context].Kill();
+        }
+        return Task.CompletedTask;
+    }
+
+    Task ISessionProcessManager.StopAllAsync()
     {
         foreach (var process in pendingProcesses.Values)
         {

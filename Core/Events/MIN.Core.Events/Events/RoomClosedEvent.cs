@@ -1,9 +1,9 @@
 ﻿using MIN.Core.Events.Contracts;
 
-namespace MIN.Desktop.Infrastructure.Events;
+namespace MIN.Core.Events.Events;
 
 /// <summary>
-/// Событие, возникающее при закрытии комнаты как хост
+/// Событие, возникающее при закрытии комнаты
 /// </summary>
 public sealed class RoomClosedEvent : BaseEvent
 {

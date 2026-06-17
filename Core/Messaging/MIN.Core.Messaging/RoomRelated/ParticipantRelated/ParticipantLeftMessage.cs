@@ -26,5 +26,12 @@ public sealed class ParticipantLeftMessage : BaseMessage, IDescribable
     /// </summary>
     public ParticipantInfo Participant { get; set; } = null!;
 
-    string IDescribable.GetDescription() => $"Участник {Participant.Name} покинул комнату";
+    /// <summary>
+    /// Был ли участник кикнут или он добровольно вышел
+    /// </summary>
+    public bool WasKicked { get; set; }
+
+    string IDescribable.GetDescription() => WasKicked
+        ? $"Хост кикнул {Participant.Name}"
+        : $"Участник {Participant.Name} покинул комнату";
 }
