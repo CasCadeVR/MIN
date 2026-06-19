@@ -126,7 +126,7 @@ internal sealed class SessionHostHandler : IMessageHandler
 
             if (identityService.SelfParticipant.Id == message.SenderId)
             {
-                await eventBus.PublishAsync(new JoinResponseReceivedEvent()
+                await eventBus.PublishAsync(new SessionJoinResponseReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
                     SubRoomId = subRoomId.Value,

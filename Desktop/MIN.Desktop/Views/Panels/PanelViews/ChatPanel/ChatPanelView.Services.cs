@@ -40,10 +40,17 @@ public partial class ChatPanelView
 
     private async Task OnSessionJoinRequested(SessionReadyMessage sessionReadyMessage)
     {
-        await featureCollection.Chat.ChatSessionService.SendSessionJoinRequest(roomId,
-            sessionReadyMessage,
-            formCts.Token
-        );
+        try
+        {
+            await featureCollection.Chat.ChatSessionService.SendSessionJoinRequest(roomId,
+                sessionReadyMessage,
+                formCts.Token
+            );
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            MessageBox.Show(e.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
@@ -86,7 +93,14 @@ public partial class ChatPanelView
 
     private async void SendSessionStartMessage(Session session)
     {
-        await featureCollection.Chat.ChatSessionService.SendSessionRequestAsync(roomId, session, formCts.Token);
+        try
+        {
+            await featureCollection.Chat.ChatSessionService.SendSessionRequestAsync(roomId, session, formCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            MessageBox.Show(e.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private async Task SendMessage()

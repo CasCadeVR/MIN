@@ -17,6 +17,11 @@ public interface ISessionProcessManager
     Task<bool> StartAsync(string gameExePath, ProcessContext context, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Есть ли у пользователя программа сессии
+    /// </summary>
+    bool SessionClientAppExists(Session session);
+
+    /// <summary>
     /// Остановить приложение сессии
     /// </summary>
     Task StopAsync(ProcessContext context);

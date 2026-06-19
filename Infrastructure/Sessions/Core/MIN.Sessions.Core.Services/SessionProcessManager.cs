@@ -109,11 +109,14 @@ public class SessionProcessManager : ISessionProcessManager
         return true;
     }
 
+    bool ISessionProcessManager.SessionClientAppExists(Session session)
+        => Path.Exists(session.ClientPath);
+
     Task ISessionProcessManager.StopAsync(ProcessContext context)
     {
         if (runningProcesses.TryGetValue(context, out var process))
         {
-            process.Kill();
+            StopProcessWithTimeOut(process);
         }
         return Task.CompletedTask;
     }
@@ -124,14 +127,14 @@ public class SessionProcessManager : ISessionProcessManager
         foreach (var context in roomPendingProcesses)
         {
             pendingProcesses[context].EnableRaisingEvents = false;
-            pendingProcesses[context].Kill();
+            StopProcessWithTimeOut(pendingProcesses[context]);
         }
 
         var roomRunningProcesses = runningProcesses.Keys.Where(x => x.RoomId == roomId);
         foreach (var context in roomRunningProcesses)
         {
             runningProcesses[context].EnableRaisingEvents = false;
-            runningProcesses[context].Kill();
+            StopProcessWithTimeOut(pendingProcesses[context]);
         }
         return Task.CompletedTask;
     }
@@ -141,13 +144,22 @@ public class SessionProcessManager : ISessionProcessManager
         foreach (var process in pendingProcesses.Values)
         {
             process.EnableRaisingEvents = false;
-            process.Kill();
+            StopProcessWithTimeOut(process);
         }
         foreach (var process in runningProcesses.Values)
         {
             process.EnableRaisingEvents = false;
-            process.Kill();
+            StopProcessWithTimeOut(process);
         }
         return Task.CompletedTask;
+    }
+
+    private void StopProcessWithTimeOut(Process process)
+    {
+        process.Kill();
+        if (!process.WaitForExit(ProcessWaitingTimeOutMs))
+        {
+            process.Kill();
+        }
     }
 }

@@ -49,7 +49,7 @@ public class SessionMonitor : IHostedService
     {
         sessionProcessBridge.StartListeningAsync(cancellationToken);
         eventBus.Subscribe<RoomClosedEvent>(OnRoomClosed);
-        eventBus.Subscribe<JoinResponseReceivedEvent>(OnJoinResponseReceived);
+        eventBus.Subscribe<SessionJoinResponseReceivedEvent>(OnJoinResponseReceived);
         eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
         eventBus.Subscribe<SessionDeactivatedEvent>(OnSessionDeactivated);
         return Task.CompletedTask;
@@ -60,7 +60,7 @@ public class SessionMonitor : IHostedService
         await sessionProcessManager.StopForRoomAsync(e.RoomId);
     }
 
-    private async Task OnJoinResponseReceived(JoinResponseReceivedEvent e, CancellationToken cancellationToken)
+    private async Task OnJoinResponseReceived(SessionJoinResponseReceivedEvent e, CancellationToken cancellationToken)
     {
         var hostResult = await sessionProcessManager.StartAsync(e.Session.ClientPath,
             new ProcessContext(e.RoomId, e.SubRoomId, SessionProcessRole.Client), cancellationToken);

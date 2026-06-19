@@ -106,7 +106,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
                 });
 
             case SessionJoinResponseMessage sessionJoinResponseMessage:
-                await eventBus.PublishAsync(new JoinResponseReceivedEvent()
+                await eventBus.PublishAsync(new SessionJoinResponseReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
                     SubRoomId = sessionJoinResponseMessage.SubRoomId,

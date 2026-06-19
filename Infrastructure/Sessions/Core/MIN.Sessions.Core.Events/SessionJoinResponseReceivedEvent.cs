@@ -6,7 +6,7 @@ namespace MIN.Sessions.Core.Events;
 /// <summary>
 /// События получения ответа от присоединения к сессии
 /// </summary>
-public sealed class JoinResponseReceivedEvent : BaseEvent
+public sealed class SessionJoinResponseReceivedEvent : BaseEvent
 {
     /// <summary>
     /// Идентификатор комнаты
