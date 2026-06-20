@@ -95,7 +95,7 @@ public partial class ChatPanelView
     {
         try
         {
-            await featureCollection.Chat.ChatSessionService.SendSessionRequestAsync(roomId, session, formCts.Token);
+            await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, formCts.Token);
         }
         catch (DirectoryNotFoundException e)
         {

@@ -33,6 +33,14 @@ public sealed class SessionReadyMessage : BaseMessage, IDescribable
     public Session Session { get; set; } = null!;
 
     /// <summary>
+    /// Обложка сессии
+    /// </summary>
+    /// <remarks>
+    /// null, если её нет
+    /// </remarks>
+    public byte[]? ThumbnailData { get; set; }
+
+    /// <summary>
     /// Отправитель сообщения
     /// </summary>
     public ParticipantInfo Sender { get; set; } = null!;

@@ -5,14 +5,14 @@ namespace MIN.Sessions.Core.DI.FeatureCollection;
 /// <inheritdoc cref="ISessionFeatureCollection"/>
 public class SessionFeatureCollection : ISessionFeatureCollection
 {
-    /// Список <inheritdoc cref="ISessionPresenter"/>
-    public IEnumerable<ISessionPresenter> SessionPresenters { get; }
+    /// <inheritdoc cref="ISessionScanner"/>
+    public ISessionScanner SessionScanner { get; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="SessionFeatureCollection"/>
     /// </summary>
-    public SessionFeatureCollection(IEnumerable<ISessionPresenter> sessionPresenters)
+    public SessionFeatureCollection(ISessionScanner sessionScanner)
     {
-        SessionPresenters = sessionPresenters;
+        SessionScanner = sessionScanner;
     }
 }

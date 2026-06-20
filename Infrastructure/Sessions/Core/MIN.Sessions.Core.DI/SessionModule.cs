@@ -29,7 +29,7 @@ public class SessionModule : Module
         services.RegisterAsImplementedInterfaces<SessionProcessManager>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionReadyMessageResolver>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NamedPipeProcessTransport>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<SessionResolver>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<SessionScanner>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<IpcJsonSerializer>(ServiceLifetime.Singleton);
     }
 }

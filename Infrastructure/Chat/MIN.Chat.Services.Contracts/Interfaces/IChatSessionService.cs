@@ -11,7 +11,7 @@ public interface IChatSessionService
     /// <summary>
     /// Отправить запрос на хостинг сессии
     /// </summary>
-    Task SendSessionRequestAsync(Guid roomId, Session selectedSession, CancellationToken cancellationToken = default);
+    Task SendSessionHostRequestAsync(Guid roomId, Session selectedSession, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Запросить вход в сессию

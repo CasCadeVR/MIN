@@ -20,7 +20,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
-    private readonly ISessionResolver sessionResolver;
+    private readonly ISessionScanner sessionScanner;
     private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -31,7 +31,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
     public SessionJoinHandler(ISubRoomManager subRoomManager,
         IEventBus eventBus,
         IMessageRouter messageRouter,
-        ISessionResolver sessionResolver,
+        ISessionScanner sessionScanner,
         INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
         ILoggerProvider logger)
@@ -39,7 +39,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
-        this.sessionResolver = sessionResolver;
+        this.sessionScanner = sessionScanner;
         this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
         this.logger = logger;
@@ -80,7 +80,8 @@ internal sealed class SessionJoinHandler : IMessageHandler
                         await messageRouter.RouteAsync(new SessionHostRequestMessage()
                         {
                             SubRoomId = subRoomInfo.Id,
-                            SessionType = sessionJoinRequestMessage.SessionType
+                            SessionId = sessionJoinRequestMessage.SessionId,
+                            SessionVersion = sessionJoinRequestMessage.SessionVersion,
                         }, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
 
                         return HandlerResult.Success();
@@ -102,15 +103,22 @@ internal sealed class SessionJoinHandler : IMessageHandler
                 {
                     NeedToAnnounce = true,
                     SubRoomId = subRoomInfo.Id,
-                    SessionType = sessionJoinRequestMessage.SessionType
+                    SessionId = sessionJoinRequestMessage.SessionId
                 });
 
             case SessionJoinResponseMessage sessionJoinResponseMessage:
+                var session = sessionScanner.GetSessionById(sessionJoinResponseMessage.SessionId);
+
+                if (session == null)
+                {
+                    return HandlerResult.Failure($"У вас не установлена сессия с id {sessionJoinResponseMessage.SessionId}");
+                }
+
                 await eventBus.PublishAsync(new SessionJoinResponseReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
                     SubRoomId = sessionJoinResponseMessage.SubRoomId,
-                    Session = sessionResolver.GetSessionByType(sessionJoinResponseMessage.SessionType),
+                    Session = session,
                 });
 
                 if (!sessionJoinResponseMessage.NeedToAnnounce)

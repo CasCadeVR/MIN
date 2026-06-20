@@ -29,17 +29,16 @@ public partial class SessionChoosingForm : StyledForm
 
     private void InitializeImplementedSessions(ISessionFeatureCollection sessionFeatureCollection)
     {
-        var implementedSessionPresenters = sessionFeatureCollection.SessionPresenters;
+        var downloadedSessions = sessionFeatureCollection.SessionScanner.DownloadedSessions.Values;
 
-        foreach (var sessionPresenter in implementedSessionPresenters)
+        foreach (var session in downloadedSessions)
         {
-            var session = sessionPresenter.GetSession();
             var card = new SessionCard(session);
             card.OnClicked += (selected) =>
             {
                 foreach (SessionCard otherCard in flowPanel.Controls.OfType<SessionCard>())
                 {
-                    if (otherCard.Session.SessionType != session.SessionType)
+                    if (otherCard.Session.SessionId != session.SessionId)
                     {
                         otherCard.UnselectCard();
                     }

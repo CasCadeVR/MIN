@@ -110,7 +110,7 @@ public class SessionProcessManager : ISessionProcessManager
     }
 
     bool ISessionProcessManager.SessionClientAppExists(Session session)
-        => Path.Exists(session.ClientPath);
+        => Path.Exists(session.ClientExecutableFileName);
 
     Task ISessionProcessManager.StopAsync(ProcessContext context)
     {

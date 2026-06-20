@@ -1,5 +1,5 @@
 ﻿using MIN.Desktop.Contracts.Schemes;
-using MIN.Desktop.Infrastructure.Services;
+using MIN.Desktop.Properties;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Desktop.Components;
@@ -66,7 +66,9 @@ public partial class SessionCard : UserControl
         sessionName.Text = Session.Name;
         sessionDescription.Text = Session.Description;
 
-        sessionImage.Image = SessionImageProvider.LoadImageOutOfSessionType(Session.SessionType);
+        sessionImage.Image = Session.ThumbnailFileName == null
+            ? Resources.rocket
+            : Image.FromFile(Session.GeThumbnailPath());
     }
 
     private void card_Click(object sender, EventArgs e)

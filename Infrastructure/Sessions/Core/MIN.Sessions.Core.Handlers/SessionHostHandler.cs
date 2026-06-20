@@ -24,7 +24,7 @@ internal sealed class SessionHostHandler : IMessageHandler
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
     private readonly IMessageRouter messageRouter;
-    private readonly ISessionResolver sessionResolver;
+    private readonly ISessionScanner sessionScanner;
     private readonly ISessionProcessBridge sessionProcessBridge;
     private readonly ISessionProcessManager sessionProcessManager;
     private readonly INetworkErrorHandler networkErrorHandler;
@@ -38,7 +38,7 @@ internal sealed class SessionHostHandler : IMessageHandler
         IEventBus eventBus,
         IMessageSender messageSender,
         IMessageRouter messageRouter,
-        ISessionResolver sessionResolver,
+        ISessionScanner sessionScanner,
         ISessionProcessBridge sessionProcessBridge,
         ISessionProcessManager sessionProcessManager,
         INetworkErrorHandler networkErrorHandler,
@@ -49,7 +49,7 @@ internal sealed class SessionHostHandler : IMessageHandler
         this.eventBus = eventBus;
         this.messageSender = messageSender;
         this.messageRouter = messageRouter;
-        this.sessionResolver = sessionResolver;
+        this.sessionScanner = sessionScanner;
         this.sessionProcessBridge = sessionProcessBridge;
         this.sessionProcessManager = sessionProcessManager;
         this.networkErrorHandler = networkErrorHandler;
@@ -83,8 +83,6 @@ internal sealed class SessionHostHandler : IMessageHandler
             return HandlerResult.Success();
         }
 
-        // Здесь хост должен запустить сервер шахмат
-
         var subRoomId = sessionHostRequestMessage.SubRoomId;
         var isHosted = false;
 
@@ -95,11 +93,26 @@ internal sealed class SessionHostHandler : IMessageHandler
             subRoomId = subRoomInfo.Id;
         }
 
-        var session = sessionResolver.GetSessionByType(sessionHostRequestMessage.SessionType);
+        var session = sessionScanner.GetSessionById(sessionHostRequestMessage.SessionId);
+
+        if (session == null)
+        {
+            await networkErrorHandler.SendErrorAsync("У хоста не установлена программа сервера этой сессии", message.SenderId, context.RoomContext.RoomId);
+            return HandlerResult.Success();
+        }
+
+        if (session.Version != sessionHostRequestMessage.SessionVersion)
+        {
+            var clientOnOlderVersion = session.Version > sessionHostRequestMessage.SessionVersion ? "Вы" : "Хост";
+            await networkErrorHandler.SendErrorAsync($"{clientOnOlderVersion} на устаревшей версии: " +
+                $"\nВаша версия сессии - {sessionHostRequestMessage.SessionVersion}" +
+                $"\nВерсия сессии хоста комнаты - {session.Version}", message.SenderId, context.RoomContext.RoomId);
+            return HandlerResult.Success();
+        }
 
         var processContext = new ProcessContext(context.RoomContext.RoomId, subRoomId.Value, SessionProcessRole.Server);
 
-        var hostResult = await sessionProcessManager.StartAsync(session.ServerPath,
+        var hostResult = await sessionProcessManager.StartAsync(session.GetServerPath(),
             processContext, context.CancellationToken);
 
         if (hostResult == false)
@@ -117,6 +130,7 @@ internal sealed class SessionHostHandler : IMessageHandler
                 Session = session,
                 Sender = senderParicipantInfo,
                 SenderId = message.SenderId,
+                ThumbnailData = sessionScanner.LoadThumbnail(session.SessionId)
             };
 
             await sessionProcessBridge.SendIpcMessage(new ParticipantConnectedMessage(senderParicipantInfo.Id.ToString(), senderParicipantInfo.Name),
@@ -142,6 +156,7 @@ internal sealed class SessionHostHandler : IMessageHandler
                 return HandlerResult.WithResponse(new SessionJoinResponseMessage()
                 {
                     NeedToAnnounce = false,
+                    SessionId = session.SessionId,
                     SubRoomId = subRoomId.Value,
                 });
             }
@@ -152,6 +167,7 @@ internal sealed class SessionHostHandler : IMessageHandler
             await messageRouter.RouteAsync(new SessionJoinResponseMessage()
             {
                 NeedToAnnounce = true,
+                SessionId = session.SessionId,
                 SubRoomId = subRoomId.Value,
             }, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
         }
@@ -160,6 +176,7 @@ internal sealed class SessionHostHandler : IMessageHandler
             await messageSender.SendAsync(new SessionJoinResponseMessage()
             {
                 NeedToAnnounce = true,
+                SessionId = session.SessionId,
                 SubRoomId = subRoomId.Value,
             }, context.RoomContext.RoomId, context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId), context.CancellationToken);
         }

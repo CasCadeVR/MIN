@@ -1,6 +1,5 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
-using MIN.Sessions.Core.Messaging.Contracts.Enums;
 
 namespace MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
@@ -16,9 +15,9 @@ public sealed class SessionJoinResponseMessage : BaseMessage
     public override bool IsPublic => false;
 
     /// <summary>
-    /// Тип сессии
+    /// Идентификатор сессии
     /// </summary>
-    public SessionType SessionType { get; set; }
+    public required string SessionId { get; set; }
 
     /// <summary>
     /// Флаг, указывающий, нужно ли оповещать остальных

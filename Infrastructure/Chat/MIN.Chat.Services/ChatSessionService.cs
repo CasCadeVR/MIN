@@ -12,31 +12,32 @@ namespace MIN.Chat.Services;
 public sealed class ChatSessionService : IChatSessionService
 {
     private readonly IMessageRouter messageRouter;
-    private readonly ISessionProcessManager sessionProcessManager;
+    private readonly ISessionScanner sessionScanner;
     private readonly IIdentityService identityService;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatSessionService"/>
     /// </summary>
     public ChatSessionService(IMessageRouter messageRouter,
-        ISessionProcessManager sessionProcessManager,
+        ISessionScanner sessionScanner,
         IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
-        this.sessionProcessManager = sessionProcessManager;
+        this.sessionScanner = sessionScanner;
         this.identityService = identityService;
     }
 
-    async Task IChatSessionService.SendSessionRequestAsync(Guid roomId, Session selectedSession, CancellationToken cancellationToken)
+    async Task IChatSessionService.SendSessionHostRequestAsync(Guid roomId, Session selectedSession, CancellationToken cancellationToken)
     {
-        if (!sessionProcessManager.SessionClientAppExists(selectedSession))
+        if (!sessionScanner.IsSessionInstalled(selectedSession.SessionId))
         {
             throw new DirectoryNotFoundException($"У вас не установлена программа для {selectedSession.Name}");
         }
 
         await SendAsync(new SessionHostRequestMessage()
         {
-            SessionType = selectedSession.SessionType,
+            SessionId = selectedSession.SessionId,
+            SessionVersion = selectedSession.Version,
         }, roomId, cancellationToken);
     }
 
@@ -44,15 +45,16 @@ public sealed class ChatSessionService : IChatSessionService
     {
         var session = sessionReadyMessage.Session;
 
-        if (!sessionProcessManager.SessionClientAppExists(session))
+        if (!sessionScanner.IsSessionInstalled(session.SessionId))
         {
             throw new DirectoryNotFoundException($"У вас не установлена программа для {session.Name}");
         }
 
         await SendAsync(new SessionJoinRequestMessage()
         {
+            SessionId = session.SessionId,
+            SessionVersion = session.Version,
             SubRoomId = sessionReadyMessage.SubRoomId,
-            SessionType = session.SessionType,
         }, roomId, cancellationToken);
     }
 

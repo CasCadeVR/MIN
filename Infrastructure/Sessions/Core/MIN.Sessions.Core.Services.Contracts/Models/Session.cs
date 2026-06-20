@@ -1,4 +1,4 @@
-﻿using MIN.Sessions.Core.Messaging.Contracts.Enums;
+﻿using System.Text.Json.Serialization;
 
 namespace MIN.Sessions.Core.Services.Contracts.Models;
 
@@ -8,14 +8,14 @@ namespace MIN.Sessions.Core.Services.Contracts.Models;
 public class Session
 {
     /// <summary>
-    /// Тип сессии
+    /// Идентификатор сессии
     /// </summary>
-    public SessionType SessionType { get; set; }
+    public required string SessionId { get; set; }
 
     /// <summary>
     /// Название сессии
     /// </summary>
-    public required string Name { get; set; } = string.Empty;
+    public required string Name { get; set; }
 
     /// <summary>
     /// Описание сессии
@@ -23,12 +23,62 @@ public class Session
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Путь к серверу сессии
+    /// Версия сессии (для совместимости)
     /// </summary>
-    public string ServerPath { get; set; } = string.Empty;
+    public required Version Version { get; set; }
 
     /// <summary>
-    /// Путь к клиенту сессии
+    /// Максимальное допустимое количество участников в одной сессии
     /// </summary>
-    public string ClientPath { get; set; } = string.Empty;
+    /// <remarks>
+    /// null если лимита нет
+    /// </remarks>
+    public int? MaximumParticipants { get; set; }
+
+    /// <summary>
+    /// Название программы сервера сессии
+    /// </summary>
+    public required string ServerExecutableFileName { get; set; }
+
+    /// <summary>
+    /// Название программы клиента сессии
+    /// </summary>
+    public required string ClientExecutableFileName { get; set; }
+
+    /// <summary>
+    /// Ссылка на скачивание сессии
+    /// </summary>
+    public required string DownloadLink { get; set; }
+
+    /// <summary>
+    /// Название файла обложки сессии
+    /// </summary>
+    /// <remarks>
+    /// null если её нет
+    /// </remarks>
+    public string? ThumbnailFileName { get; set; }
+
+    /// <summary>
+    /// Путь к директории сессии
+    /// </summary>
+    [JsonIgnore]
+    public string SessionDirectory { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Получить путь к программе сервера сессии
+    /// </summary>
+    public string GetServerPath()
+        => Path.Combine(SessionDirectory, ServerExecutableFileName);
+
+    /// <summary>
+    /// Получить путь к программе клиента сессии
+    /// </summary>
+    public string GetClientPath()
+        => Path.Combine(SessionDirectory, ClientExecutableFileName);
+
+    /// <summary>
+    /// Получить путь к программе клиента сессии
+    /// </summary>
+    public string GeThumbnailPath()
+        => Path.Combine(SessionDirectory, ThumbnailFileName ?? string.Empty);
 }

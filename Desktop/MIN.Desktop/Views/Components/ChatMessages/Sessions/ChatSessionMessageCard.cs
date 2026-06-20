@@ -1,7 +1,7 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Desktop.Contracts.Schemes;
-using MIN.Desktop.Infrastructure.Services;
+using MIN.Desktop.Properties;
 using MIN.Desktop.Views.Components.ChatMessages;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
@@ -126,7 +126,16 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
     private void FillLabels()
     {
         sessionName.Text = sessionReadyMessage.Session.Name;
-        sessionImage.Image = SessionImageProvider.LoadImageOutOfSessionType(sessionReadyMessage.Session.SessionType);
+
+        if (sessionReadyMessage.ThumbnailData != null)
+        {
+            using var ms = new MemoryStream(sessionReadyMessage.ThumbnailData);
+            sessionImage.Image = Image.FromStream(ms);
+        }
+        else
+        {
+            sessionImage.Image = Resources.rocket;
+        }
         UpdateStats();
     }
 
