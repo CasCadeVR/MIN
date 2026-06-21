@@ -1,4 +1,5 @@
 ﻿using MIN.Sessions.Core.Services.Contracts.Models;
+using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Services.Contracts.Interfaces;
 
@@ -14,7 +15,7 @@ public interface ISessionProcessManager
     /// true - если успешно инициализировано и приложение готово слушать запросы
     /// false - если обратное
     /// </returns>
-    Task<bool> StartAsync(string gameExePath, ProcessContext context, CancellationToken cancellationToken = default);
+    Task<bool> StartAsync(Session session, ProcessContext context, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Есть ли у пользователя программа сессии

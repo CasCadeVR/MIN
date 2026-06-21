@@ -6,11 +6,11 @@ using MIN.Sessions.Core.Messaging.Contracts.Models;
 using MIN.Sessions.Core.Messaging.Ipc;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Serialization.Contracts;
-using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
-using MIN.Sessions.Core.Services.Contracts.Models;
+using MIN.Sessions.Core.Transport.Contracts.Enums;
 using MIN.Sessions.Core.Transport.Contracts.Events;
 using MIN.Sessions.Core.Transport.Contracts.Interfaces;
+using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Services;
 
@@ -20,9 +20,9 @@ namespace MIN.Sessions.Core.Services;
 public class SessionProcessBridge : ISessionProcessBridge
 {
     private readonly Dictionary<ProcessContext, TaskCompletionSource> pendingProcesses = [];
+    private readonly Dictionary<ProcessContext, ISessionProcessTransport> transports = [];
     private readonly IMessageRouter messageRouter;
     private readonly IIpcSerializer ipcSerializer;
-    private readonly ISessionProcessTransport processTransport;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
     private CancellationTokenSource cts = null!;
@@ -32,21 +32,32 @@ public class SessionProcessBridge : ISessionProcessBridge
     /// </summary>
     public SessionProcessBridge(IMessageRouter messageRouter,
         IIpcSerializer ipcSerializer,
-        ISessionProcessTransport processTransport,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.messageRouter = messageRouter;
         this.ipcSerializer = ipcSerializer;
-        this.processTransport = processTransport;
         this.identityService = identityService;
         this.logger = logger;
+    }
+
+    void ISessionProcessBridge.RegisterTransport(ProcessContext context, ISessionProcessTransport transport)
+    {
+        transports[context] = transport;
+        transport.MessageReceived += OnTransportMessage;
+    }
+
+    void ISessionProcessBridge.UnregisterTransport(ProcessContext context)
+    {
+        if (transports.Remove(context, out var transport))
+        {
+            transport.MessageReceived -= OnTransportMessage;
+        }
     }
 
     Task ISessionProcessBridge.StartListeningAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        processTransport.MessageReceived += OnTransportMessage;
         return Task.CompletedTask;
     }
 
@@ -122,6 +133,7 @@ public class SessionProcessBridge : ISessionProcessBridge
         foreach (SessionProcessRole role in Enum.GetValues(typeof(SessionProcessRole)))
         {
             var context = new ProcessContext(roomId, subRoomId, role);
+            var processTransport = transports[context];
             if (processTransport.IsConnectionExists(context) && !pendingProcesses.ContainsKey(context))
             {
                 result.Add(context);
@@ -148,6 +160,7 @@ public class SessionProcessBridge : ISessionProcessBridge
 
     private async Task SendData(byte[] data, ProcessContext context, CancellationToken cancellationToken)
     {
+        var processTransport = transports[context];
         await processTransport.SendAsync(data, context, cancellationToken);
     }
 

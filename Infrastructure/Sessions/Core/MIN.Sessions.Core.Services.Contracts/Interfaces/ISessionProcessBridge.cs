@@ -1,5 +1,6 @@
 ﻿using MIN.Sessions.Core.Messaging.Contracts.Models;
-using MIN.Sessions.Core.Services.Contracts.Models;
+using MIN.Sessions.Core.Transport.Contracts.Interfaces;
+using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Services.Contracts.Interfaces;
 
@@ -8,6 +9,16 @@ namespace MIN.Sessions.Core.Services.Contracts.Interfaces;
 /// </summary>
 public interface ISessionProcessBridge
 {
+    /// <summary>
+    /// Зарегистрировать транспорт на контекст
+    /// </summary>
+    void RegisterTransport(ProcessContext context, ISessionProcessTransport transport);
+
+    /// <summary>
+    /// Отрегестрировать транспорт с контекста
+    /// </summary>
+    void UnregisterTransport(ProcessContext context);
+
     /// <summary>
     /// Запустить сервис, слушая все сообщения с приложениями
     /// </summary>

@@ -1,4 +1,4 @@
-﻿using MIN.Sessions.Core.Services.Contracts.Models;
+﻿using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Transport.Contracts.Events;
 

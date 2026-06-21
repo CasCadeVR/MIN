@@ -11,7 +11,6 @@
     <ProjectReference Include="..\MIN.Sessions.Core.Messaging\MIN.Sessions.Core.Messaging.csproj" />
     <ProjectReference Include="..\MIN.Sessions.Core.Services.Contracts\MIN.Sessions.Core.Services.Contracts.csproj" />
     <ProjectReference Include="..\Serialization\MIN.Sessions.Core.Serialization.Contracts\MIN.Sessions.Core.Serialization.Contracts.csproj" />
-    <ProjectReference Include="..\Transport\MIN.Sessions.Core.Transport.Contracts\MIN.Sessions.Core.Transport.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Messaging.Contracts;
 using MIN.Sessions.Core.Messaging.Contracts.Models;
-using MIN.Sessions.Core.Services.Contracts.Enums;
+using MIN.Sessions.Core.Transport.Contracts.Enums;
 
 namespace MIN.Sessions.Core.Messaging.OutOfSubRoom;
 

@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MIN.Sessions.Core.Transport.NamedPipes\MIN.Sessions.Core.Transport.NamedPipes.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Transport.Tcp\MIN.Sessions.Core.Transport.Tcp.csproj" />
+  </ItemGroup>
+
+</Project>

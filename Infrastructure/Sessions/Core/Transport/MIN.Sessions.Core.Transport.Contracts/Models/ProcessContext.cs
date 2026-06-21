@@ -1,6 +1,6 @@
-﻿using MIN.Sessions.Core.Services.Contracts.Enums;
+﻿using MIN.Sessions.Core.Transport.Contracts.Enums;
 
-namespace MIN.Sessions.Core.Services.Contracts.Models;
+namespace MIN.Sessions.Core.Transport.Contracts.Models;
 
 /// <summary>
 /// Контекст общения с приложением

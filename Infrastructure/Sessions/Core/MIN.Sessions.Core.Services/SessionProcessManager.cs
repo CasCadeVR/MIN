@@ -3,10 +3,11 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
-using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Services.Contracts.Models;
+using MIN.Sessions.Core.Transport.Contracts.Enums;
 using MIN.Sessions.Core.Transport.Contracts.Interfaces;
+using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Services;
 
@@ -14,11 +15,13 @@ namespace MIN.Sessions.Core.Services;
 public class SessionProcessManager : ISessionProcessManager
 {
     private const int ProcessWaitingTimeOutMs = 5000;
+
     private readonly Dictionary<ProcessContext, Process> pendingProcesses = [];
     private readonly Dictionary<ProcessContext, Process> runningProcesses = [];
+    private readonly Dictionary<ProcessContext, ISessionProcessTransport> transports = [];
     private readonly IMessageRouter messageRouter;
     private readonly ISessionProcessBridge processBridge;
-    private readonly ISessionProcessTransport processTransport;
+    private readonly ISessionTransportFactory transportFactory;
     private readonly ISubRoomManager subRoomManager;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -28,29 +31,34 @@ public class SessionProcessManager : ISessionProcessManager
     /// </summary>
     public SessionProcessManager(IMessageRouter messageRouter,
         ISessionProcessBridge processBridge,
-        ISessionProcessTransport processTransport,
+        ISessionTransportFactory transportFactory,
         ISubRoomManager subRoomManager,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.messageRouter = messageRouter;
         this.processBridge = processBridge;
-        this.processTransport = processTransport;
+        this.transportFactory = transportFactory;
         this.subRoomManager = subRoomManager;
         this.identityService = identityService;
         this.logger = logger;
     }
 
-    async Task<bool> ISessionProcessManager.StartAsync(string gameExePath, ProcessContext context, CancellationToken cancellationToken)
+    async Task<bool> ISessionProcessManager.StartAsync(Session session, ProcessContext context, CancellationToken cancellationToken)
     {
-        logger.Log($"Стартую {gameExePath} как {context.Role}");
+        var fullPath = context.Role == SessionProcessRole.Client
+            ? session.GetClientPath()
+            : session.GetServerPath();
+        logger.Log($"Стартую {session.Name} как {context.Role}");
 
-        //var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, gameExePath);
-        var fullPath = gameExePath;
         if (!Path.Exists(fullPath))
         {
             return false;
         }
+
+        var processTransport = transportFactory.Create(session.PreferredTransport);
+        transports[context] = processTransport;
+        processBridge.RegisterTransport(context, processTransport);
 
         await processTransport.StartAsync(context.RoomId, cancellationToken);
         var connectionString = processTransport.GetConnectionString();
@@ -64,6 +72,7 @@ public class SessionProcessManager : ISessionProcessManager
 
         if (startedProcess == null || startedProcess.HasExited)
         {
+            processBridge.UnregisterTransport(context);
             return false;
         }
 
@@ -75,6 +84,7 @@ public class SessionProcessManager : ISessionProcessManager
         pendingProcesses.Remove(context);
         if (readySuccess == false)
         {
+            processBridge.UnregisterTransport(context);
             startedProcess.Kill();
             return false;
         }
@@ -95,7 +105,7 @@ public class SessionProcessManager : ISessionProcessManager
                 await messageRouter.RouteAsync(new SessionServerShutdownMessage()
                 {
                     SubRoomId = context.SubRoomId,
-                    Reason = "Сервер сессии был закрыт хостом"
+                    Reason = $"Сервер сессии {session.Name} был закрыт хостом"
                 }, context.RoomId, identityService.SelfParticipant.Id, cancellationToken);
             }
             else
@@ -117,7 +127,7 @@ public class SessionProcessManager : ISessionProcessManager
     {
         if (runningProcesses.TryGetValue(context, out var process))
         {
-            StopProcessWithTimeOut(process);
+            StopProcessWithTimeOut(context, process);
         }
         return Task.CompletedTask;
     }
@@ -128,35 +138,40 @@ public class SessionProcessManager : ISessionProcessManager
         foreach (var context in roomPendingProcesses)
         {
             pendingProcesses[context].EnableRaisingEvents = false;
-            StopProcessWithTimeOut(pendingProcesses[context]);
+            StopProcessWithTimeOut(context, pendingProcesses[context]);
         }
 
         var roomRunningProcesses = runningProcesses.Keys.Where(x => x.RoomId == roomId);
         foreach (var context in roomRunningProcesses)
         {
             runningProcesses[context].EnableRaisingEvents = false;
-            StopProcessWithTimeOut(pendingProcesses[context]);
+            StopProcessWithTimeOut(context, runningProcesses[context]);
         }
         return Task.CompletedTask;
     }
 
     Task ISessionProcessManager.StopAllAsync()
     {
-        foreach (var process in pendingProcesses.Values)
+        foreach (var process in pendingProcesses)
         {
-            process.EnableRaisingEvents = false;
-            StopProcessWithTimeOut(process);
+            process.Value.EnableRaisingEvents = false;
+            StopProcessWithTimeOut(process.Key, process.Value);
         }
-        foreach (var process in runningProcesses.Values)
+        foreach (var process in runningProcesses)
         {
-            process.EnableRaisingEvents = false;
-            StopProcessWithTimeOut(process);
+            process.Value.EnableRaisingEvents = false;
+            StopProcessWithTimeOut(process.Key, process.Value);
         }
         return Task.CompletedTask;
     }
 
-    private void StopProcessWithTimeOut(Process process)
+    private void StopProcessWithTimeOut(ProcessContext context, Process process)
     {
+        if (transports.Remove(context, out var transport))
+        {
+            transportFactory.Destroy(transport);
+            processBridge.UnregisterTransport(context);
+        }
         process.Kill();
         if (!process.WaitForExit(ProcessWaitingTimeOutMs))
         {

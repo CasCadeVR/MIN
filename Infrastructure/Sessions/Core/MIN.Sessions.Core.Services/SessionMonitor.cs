@@ -6,9 +6,9 @@ using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
-using MIN.Sessions.Core.Services.Contracts.Enums;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
-using MIN.Sessions.Core.Services.Contracts.Models;
+using MIN.Sessions.Core.Transport.Contracts.Enums;
+using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Services;
 
@@ -65,7 +65,7 @@ public class SessionMonitor : IHostedService
 
     private async Task OnJoinResponseReceived(SessionJoinResponseReceivedEvent e, CancellationToken cancellationToken)
     {
-        var hostResult = await sessionProcessManager.StartAsync(e.Session.GetClientPath(),
+        var hostResult = await sessionProcessManager.StartAsync(e.Session,
             new ProcessContext(e.RoomId, e.SubRoomId, SessionProcessRole.Client), cancellationToken);
 
         if (hostResult == false)

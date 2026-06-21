@@ -13,8 +13,7 @@
     <ProjectReference Include="..\MIN.Sessions.Core.Messaging\MIN.Sessions.Core.Messaging.csproj" />
     <ProjectReference Include="..\MIN.Sessions.Core.Services\MIN.Sessions.Core.Services.csproj" />
     <ProjectReference Include="..\Serialization\MIN.Sessions.Core.Serialization.Json\MIN.Sessions.Core.Serialization.Json.csproj" />
-    <ProjectReference Include="..\Transport\MIN.Sessions.Core.Transport.NamedPipes\MIN.Sessions.Core.Transport.NamedPipes.csproj" />
-    <ProjectReference Include="..\Transport\MIN.Sessions.Core.Transport.Tcp\MIN.Sessions.Core.Transport.Tcp.csproj" />
+    <ProjectReference Include="..\Transport\MIN.Sessions.Core.Transport\MIN.Sessions.Core.Transport.csproj" />
   </ItemGroup>
 
 </Project>

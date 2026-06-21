@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
-using MIN.Sessions.Core.Services.Contracts.Models;
 using MIN.Sessions.Core.Transport.Contracts.Events;
 using MIN.Sessions.Core.Transport.Contracts.Interfaces;
 using MIN.Sessions.Core.Transport.Contracts.Models;
@@ -133,16 +132,6 @@ public sealed class TcpLoopbackTransport : ISessionProcessTransport
         foreach (var server in connections.Values)
         {
             server.Dispose();
-        }
-
-        foreach (var writeLock in writeLocks.Values)
-        {
-            writeLock.Dispose();
-        }
-
-        foreach (var readLock in readLocks.Values)
-        {
-            readLock.Dispose();
         }
     }
 
