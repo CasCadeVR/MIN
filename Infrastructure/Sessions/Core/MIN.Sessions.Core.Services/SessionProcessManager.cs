@@ -69,8 +69,9 @@ public class SessionProcessManager : ISessionProcessManager
 
         pendingProcesses[context] = startedProcess;
 
-        await processTransport.WaitForConnectionAsync(context, ProcessWaitingTimeOutMs, cancellationToken);
-        var readySuccess = await processBridge.WaitForReadyMessage(context, ProcessWaitingTimeOutMs, cancellationToken);
+        var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        await processTransport.WaitForConnectionAsync(context, ProcessWaitingTimeOutMs, connectCts.Token);
+        var readySuccess = await processBridge.WaitForReadyMessage(context, ProcessWaitingTimeOutMs, connectCts.Token);
         pendingProcesses.Remove(context);
         if (readySuccess == false)
         {

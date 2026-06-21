@@ -9,7 +9,9 @@ using MIN.Sessions.Core.Handlers;
 using MIN.Sessions.Core.Messaging;
 using MIN.Sessions.Core.Serialization.Json;
 using MIN.Sessions.Core.Services;
+using MIN.Sessions.Core.Transport.Contracts.Interfaces;
 using MIN.Sessions.Core.Transport.NamedPipes;
+using MIN.Sessions.Core.Transport.Tcp;
 
 namespace MIN.Sessions.Core.DI;
 
@@ -31,5 +33,11 @@ public class SessionModule : Module
         services.RegisterAsImplementedInterfaces<NamedPipeProcessTransport>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionScanner>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<IpcJsonSerializer>(ServiceLifetime.Singleton);
+        services.AddSingleton<ISessionProcessTransport>(sp =>
+        {
+            return !OperatingSystem.IsWindows()
+                ? new NamedPipeProcessTransport()
+                : new TcpLoopbackTransport();
+        });
     }
 }

@@ -1,69 +1,62 @@
 ﻿using System.Collections.Concurrent;
-using System.IO.Pipes;
+using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
 using MIN.Sessions.Core.Services.Contracts.Models;
 using MIN.Sessions.Core.Transport.Contracts.Events;
 using MIN.Sessions.Core.Transport.Contracts.Interfaces;
 using MIN.Sessions.Core.Transport.Contracts.Models;
 
-namespace MIN.Sessions.Core.Transport.NamedPipes;
+namespace MIN.Sessions.Core.Transport.Tcp;
 
-/// <inheritdoc cref="ISessionProcessTransport"/> на основе Named Pipes (Только для Windows)
-public sealed class NamedPipeProcessTransport : ISessionProcessTransport
+/// <inheritdoc cref="ISessionProcessTransport"/> на основе TCP Loopback
+public sealed class TcpLoopbackTransport : ISessionProcessTransport
 {
-    private readonly ConcurrentDictionary<ProcessContext, NamedPipeServerStream> connections = [];
+    private readonly ConcurrentDictionary<ProcessContext, TcpClient> connections = [];
     private readonly ConcurrentDictionary<ProcessContext, SemaphoreSlim> writeLocks = [];
     private readonly ConcurrentDictionary<ProcessContext, SemaphoreSlim> readLocks = [];
     private readonly CancellationTokenSource cts = new();
-    private string pipeName = string.Empty;
+    private TcpListener? listener;
+    private int port;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public event EventHandler<ProcessTransportMessageEventArgs>? MessageReceived;
 
-    Task ISessionProcessTransport.StartAsync(Guid roomId, CancellationToken cancellationToken)
+    Task ISessionProcessTransport.StartAsync(Guid roomId, CancellationToken ct)
     {
-        pipeName = $"MIN_{roomId}";
+        listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        port = ((IPEndPoint)listener.LocalEndpoint).Port;
         return Task.CompletedTask;
     }
 
     string ISessionProcessTransport.GetConnectionString() =>
         JsonSerializer.Serialize(new ConnectionInfo
         {
-            Type = "pipe",
-            Value = pipeName,
+            Type = "tcp",
+            Value = $"127.0.0.1:{port}",
         });
 
-    async Task ISessionProcessTransport.WaitForConnectionAsync(ProcessContext context, int timeOutMs, CancellationToken cancellationToken)
+    async Task ISessionProcessTransport.WaitForConnectionAsync(
+        ProcessContext context, int timeOutMs, CancellationToken ct)
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            throw new InvalidOperationException("Windows only");
-        }
-
-        var server = new NamedPipeServerStream(
-            pipeName,
-            PipeDirection.InOut,
-            NamedPipeServerStream.MaxAllowedServerInstances,
-            PipeTransmissionMode.Message,
-            options: PipeOptions.Asynchronous);
-
-        var connectionCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        connectionCts.CancelAfter(timeOutMs);
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeoutCts.CancelAfter(timeOutMs);
         try
         {
-            await server.WaitForConnectionAsync(connectionCts.Token);
+            var client = await listener!.AcceptTcpClientAsync(timeoutCts.Token);
+            connections[context] = client;
+            writeLocks[context] = new(1, 1);
+            readLocks[context] = new(1, 1);
+            _ = ReadLoopAsync(context, client.GetStream(), cts.Token);
         }
         catch (OperationCanceledException) { }
-        connections.TryAdd(context, server);
-        writeLocks.TryAdd(context, new(1, 1));
-        readLocks.TryAdd(context, new(1, 1));
-        _ = ReadLoopAsync(context, server, cts.Token);
     }
 
     bool ISessionProcessTransport.IsConnectionExists(ProcessContext context)
         => connections.ContainsKey(context);
 
-    private async Task ReadLoopAsync(ProcessContext context, NamedPipeServerStream stream, CancellationToken cancellationToken)
+    private async Task ReadLoopAsync(ProcessContext context, NetworkStream stream, CancellationToken cancellationToken)
     {
         try
         {
@@ -103,9 +96,11 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
 
     async Task ISessionProcessTransport.SendAsync(byte[] data, ProcessContext context, CancellationToken cancellationToken)
     {
-        if (connections.TryGetValue(context, out var stream) && writeLocks.TryGetValue(context, out var writeLock))
+        if (connections.TryGetValue(context, out var client) && writeLocks.TryGetValue(context, out var writeLock))
         {
             await writeLock.WaitAsync(cancellationToken);
+
+            var stream = client.GetStream();
 
             try
             {

@@ -13,12 +13,11 @@ public class SessionScanner : ISessionScanner
     private readonly string sessionsDirectory;
     private readonly ILoggerProvider logger;
 
-    private static readonly JsonSerializerOptions jsonOptions = new()
+    private readonly static JsonSerializerOptions jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
-
 
     private Dictionary<string, Session> downloadedSessions = [];
 

@@ -59,7 +59,7 @@ public class Session
     public string? ThumbnailFileName { get; set; }
 
     /// <summary>
-    /// Путь к директории сессии
+    /// Путь к папке сессии
     /// </summary>
     [JsonIgnore]
     public string SessionDirectory { get; set; } = string.Empty;
@@ -68,13 +68,22 @@ public class Session
     /// Получить путь к программе сервера сессии
     /// </summary>
     public string GetServerPath()
+#if DEBUG
+        // Для тестирования программ сюда вставлять путь туда, где она собирается
+        => "C:\\Users\\Admin\\Documents\\CSharpProjects\\Learning\\Projects\\MinChess\\Network\\MIN.Chess.Server\\bin\\Debug\\net8.0-windows\\win-x64\\MIN.Chess.Server.exe";
+#else
         => Path.Combine(SessionDirectory, ServerExecutableFileName);
+#endif
 
     /// <summary>
     /// Получить путь к программе клиента сессии
     /// </summary>
     public string GetClientPath()
-        => Path.Combine(SessionDirectory, ClientExecutableFileName);
+#if DEBUG
+        => "C:\\Users\\Admin\\Documents\\CSharpProjects\\Learning\\Projects\\MinChess\\Network\\MIN.Chess.Client\\bin\\Debug\\net8.0-windows\\win-x64\\MIN.Chess.Client.exe";
+#else
+        => Path.Combine(SessionDirectory, ServerExecutableFileName);
+#endif
 
     /// <summary>
     /// Получить путь к программе клиента сессии
