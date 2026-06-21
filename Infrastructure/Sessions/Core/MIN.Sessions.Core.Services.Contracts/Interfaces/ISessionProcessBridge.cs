@@ -30,6 +30,11 @@ public interface ISessionProcessBridge
     Task<bool> WaitForReadyMessage(ProcessContext context, int timeOutMs, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Отправить запрос на закрытие приложения
+    /// </summary>
+    Task SendCloseMessage(ProcessContext context, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Отправить междупроцессорное сообщение
     /// </summary>
     Task SendIpcMessage(IpcMessage message, ProcessContext context, Guid senderId, CancellationToken cancellationToken = default);

@@ -1,4 +1,6 @@
-﻿namespace MIN.Sessions.Core.Messaging.Contracts.Models;
+﻿using MIN.Sessions.Core.Messaging.Contracts.Enums;
+
+namespace MIN.Sessions.Core.Messaging.Contracts.Models;
 
 /// <summary>
 /// Обёртка над между-процессорными сообщениями, поставляемые приложением в MIN
@@ -17,6 +19,11 @@ public class IpcProcessMessageEnvelope
     /// Список на исключение из broadcast
     /// </summary>
     public IEnumerable<Guid>? BroadcastExcludeIds { get; init; }
+
+    /// <summary>
+    /// Направление сообщения сессии
+    /// </summary>
+    public SessionMessageRoute Route { get; init; }
 
     /// <summary>
     /// Содержимое сообщения

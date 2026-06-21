@@ -29,4 +29,9 @@ public enum IpcMessageType : byte
     /// Закрытие сервера
     /// </summary>
     ServerShutdown,
+
+    /// <summary>
+    /// Просьба закрыть приложение
+    /// </summary>
+    Close,
 }

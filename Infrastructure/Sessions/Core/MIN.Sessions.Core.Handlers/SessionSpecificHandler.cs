@@ -3,6 +3,7 @@ using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Sessions.Core.Messaging.Contracts.Enums;
 using MIN.Sessions.Core.Messaging.Ipc;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
@@ -42,7 +43,6 @@ internal sealed class SessionSpecificHandler : IMessageHandler
         }
 
         var selfId = identityService.SelfParticipant.Id;
-
         var roomId = context.RoomContext.RoomId;
         var subRoomId = sessionSpecificMessage.SubRoomId;
 
@@ -52,10 +52,33 @@ internal sealed class SessionSpecificHandler : IMessageHandler
             return HandlerResult.Success();
         }
 
-        await sessionProcessBridge.SendIpcMessage(new InSessionMessage(sessionSpecificMessage.Body),
-                new ProcessContext(roomId, subRoomId, sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Client
-                ? SessionProcessRole.Server : SessionProcessRole.Client), message.SenderId, context.CancellationToken);
+        var connections = sessionProcessBridge.GetConnections(roomId, subRoomId);
 
-        return HandlerResult.Success();
+        if (sessionSpecificMessage.Route == SessionMessageRoute.Direct)
+        {
+            // Direct: отправить всем локальным процессам подкомнаты
+
+            foreach (var conn in connections)
+            {
+                await sessionProcessBridge.SendIpcMessage(
+                    new InSessionMessage(sessionSpecificMessage.Body), conn, message.SenderId, context.CancellationToken);
+            }
+            return HandlerResult.Success(stopPropagation: true);
+        }
+
+        var isClientRequest = sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Client;
+
+        // ViaServer: role-swap логика
+
+        var processContext = new ProcessContext(roomId, subRoomId,
+            isClientRequest ? SessionProcessRole.Server : SessionProcessRole.Client);
+
+        if (connections.Contains(processContext))
+        {
+            await sessionProcessBridge.SendIpcMessage(new InSessionMessage(sessionSpecificMessage.Body),
+                processContext, message.SenderId, context.CancellationToken);
+        }
+
+        return HandlerResult.Success(stopPropagation: isClientRequest);
     }
 }

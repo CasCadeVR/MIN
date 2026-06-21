@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using System.Text.Json;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Sessions.Core.Messaging.Contracts.Enums;
 using MIN.Sessions.Core.Messaging.Contracts.Models;
 using MIN.Sessions.Core.Messaging.Ipc;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
@@ -23,6 +25,7 @@ public class SessionProcessBridge : ISessionProcessBridge
     private readonly Dictionary<ProcessContext, ISessionProcessTransport> transports = [];
     private readonly IMessageRouter messageRouter;
     private readonly IIpcSerializer ipcSerializer;
+    private readonly IRoomStore roomStore;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
     private CancellationTokenSource cts = null!;
@@ -32,11 +35,13 @@ public class SessionProcessBridge : ISessionProcessBridge
     /// </summary>
     public SessionProcessBridge(IMessageRouter messageRouter,
         IIpcSerializer ipcSerializer,
+        IRoomStore roomStore,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.messageRouter = messageRouter;
         this.ipcSerializer = ipcSerializer;
+        this.roomStore = roomStore;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -70,10 +75,10 @@ public class SessionProcessBridge : ISessionProcessBridge
         }
 
         var message = ipcSerializer.Deserialize(envelope.Body);
-        await HandleIpcMessage(message, e.Context, envelope.RecipientId, envelope.BroadcastExcludeIds);
+        await HandleIpcMessage(message, e.Context, envelope.RecipientId, envelope.BroadcastExcludeIds, envelope.Route);
     }
 
-    private async Task HandleIpcMessage(IpcMessage message, ProcessContext context, Guid? recipientId, IEnumerable<Guid>? broadcastExcludeIds)
+    private async Task HandleIpcMessage(IpcMessage message, ProcessContext context, Guid? recipientId, IEnumerable<Guid>? broadcastExcludeIds, SessionMessageRoute route)
     {
         switch (message)
         {
@@ -83,6 +88,7 @@ public class SessionProcessBridge : ISessionProcessBridge
                     SubRoomId = context.SubRoomId,
                     SessionProcessRole = context.Role,
                     Body = inSessionMessage.Body,
+                    Route = route,
                     RecipientId = recipientId,
                 }, context.RoomId, identityService.SelfParticipant.Id, cts.Token, broadcastExcludeIds);
                 break;
@@ -133,8 +139,8 @@ public class SessionProcessBridge : ISessionProcessBridge
         foreach (SessionProcessRole role in Enum.GetValues(typeof(SessionProcessRole)))
         {
             var context = new ProcessContext(roomId, subRoomId, role);
-            var processTransport = transports[context];
-            if (processTransport.IsConnectionExists(context) && !pendingProcesses.ContainsKey(context))
+            transports.TryGetValue(context, out var processTransport);
+            if (processTransport != null && processTransport.IsConnectionExists(context) && !pendingProcesses.ContainsKey(context))
             {
                 result.Add(context);
             }
@@ -143,7 +149,11 @@ public class SessionProcessBridge : ISessionProcessBridge
         return result;
     }
 
-    async Task ISessionProcessBridge.SendIpcMessage(IpcMessage message, ProcessContext context, Guid senderId, CancellationToken cancellationToken)
+    async Task ISessionProcessBridge.SendCloseMessage(ProcessContext context, CancellationToken cancellationToken)
+        => await SendIpcMessage(new CloseMessage(), context, identityService.SelfParticipant.Id, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task SendIpcMessage(IpcMessage message, ProcessContext context, Guid senderId, CancellationToken cancellationToken)
     {
         var messageData = ipcSerializer.Serialize(message);
         var envelope = new IpcMinMessageEnvelope()

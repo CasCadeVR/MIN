@@ -26,6 +26,8 @@ public class SessionProcessManager : ISessionProcessManager
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
+    private EventHandler? currentExitHandler;
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="SessionProcessManager"/>
     /// </summary>
@@ -93,89 +95,100 @@ public class SessionProcessManager : ISessionProcessManager
         runningProcesses[context] = startedProcess;
 
         startedProcess.EnableRaisingEvents = true;
-        startedProcess.Exited += async (_, _) =>
-        {
-            if (context.Role == SessionProcessRole.Server)
-            {
-                if (subRoomManager.GetParticipantCount(context.RoomId, context.SubRoomId) == 0)
-                {
-                    return;
-                }
+        currentExitHandler = async (_, _) => await AnnounceExit(session, context, cancellationToken);
+        startedProcess.Exited += currentExitHandler;
 
-                await messageRouter.RouteAsync(new SessionServerShutdownMessage()
-                {
-                    SubRoomId = context.SubRoomId,
-                    Reason = $"Сервер сессии {session.Name} был закрыт хостом"
-                }, context.RoomId, identityService.SelfParticipant.Id, cancellationToken);
-            }
-            else
-            {
-                await messageRouter.RouteAsync(new SessionLeaveMessage()
-                {
-                    SubRoomId = context.SubRoomId,
-                }, context.RoomId, identityService.SelfParticipant.Id, cancellationToken);
-            }
-        };
 
         return true;
+    }
+
+    private async Task AnnounceExit(Session session, ProcessContext context, CancellationToken cancellationToken)
+    {
+        if (context.Role == SessionProcessRole.Server)
+        {
+            if (subRoomManager.GetParticipantCount(context.RoomId, context.SubRoomId) == 0)
+            {
+                return;
+            }
+
+            await messageRouter.RouteAsync(new SessionServerShutdownMessage()
+            {
+                SubRoomId = context.SubRoomId,
+                Reason = $"Сервер сессии {session.Name} был закрыт хостом"
+            }, context.RoomId, identityService.SelfParticipant.Id, cancellationToken);
+        }
+        else
+        {
+            await messageRouter.RouteAsync(new SessionLeaveMessage()
+            {
+                SubRoomId = context.SubRoomId,
+            }, context.RoomId, identityService.SelfParticipant.Id, cancellationToken);
+        }
     }
 
     bool ISessionProcessManager.SessionClientAppExists(Session session)
         => Path.Exists(session.ClientExecutableFileName);
 
-    Task ISessionProcessManager.StopAsync(ProcessContext context)
+    async Task ISessionProcessManager.StopAsync(ProcessContext context)
     {
         if (runningProcesses.TryGetValue(context, out var process))
         {
-            StopProcessWithTimeOut(context, process);
+            await StopProcessWithTimeOut(context, process, clearAnnounce: false);
         }
-        return Task.CompletedTask;
     }
 
-    Task ISessionProcessManager.StopForRoomAsync(Guid roomId)
+    async Task ISessionProcessManager.StopForRoomAsync(Guid roomId)
     {
         var roomPendingProcesses = pendingProcesses.Keys.Where(x => x.RoomId == roomId);
         foreach (var context in roomPendingProcesses)
         {
-            pendingProcesses[context].EnableRaisingEvents = false;
-            StopProcessWithTimeOut(context, pendingProcesses[context]);
+            await StopProcessWithTimeOut(context, pendingProcesses[context]);
         }
 
         var roomRunningProcesses = runningProcesses.Keys.Where(x => x.RoomId == roomId);
         foreach (var context in roomRunningProcesses)
         {
-            runningProcesses[context].EnableRaisingEvents = false;
-            StopProcessWithTimeOut(context, runningProcesses[context]);
+            await StopProcessWithTimeOut(context, runningProcesses[context]);
         }
-        return Task.CompletedTask;
     }
 
-    Task ISessionProcessManager.StopAllAsync()
+    async Task ISessionProcessManager.StopAllAsync()
     {
         foreach (var process in pendingProcesses)
         {
-            process.Value.EnableRaisingEvents = false;
-            StopProcessWithTimeOut(process.Key, process.Value);
+            await StopProcessWithTimeOut(process.Key, process.Value);
         }
         foreach (var process in runningProcesses)
         {
-            process.Value.EnableRaisingEvents = false;
-            StopProcessWithTimeOut(process.Key, process.Value);
+            await StopProcessWithTimeOut(process.Key, process.Value);
         }
-        return Task.CompletedTask;
     }
 
-    private void StopProcessWithTimeOut(ProcessContext context, Process process)
+    private async Task StopProcessWithTimeOut(ProcessContext context, Process process, bool clearAnnounce = true)
     {
-        if (transports.Remove(context, out var transport))
+        if (currentExitHandler != null && clearAnnounce)
         {
-            transportFactory.Destroy(transport);
+            process.Exited -= currentExitHandler;
+        }
+
+        await processBridge.SendCloseMessage(context, CancellationToken.None);
+
+        var exited = await Task.WhenAny(
+            process.WaitForExitAsync(CancellationToken.None),
+            Task.Delay(ProcessWaitingTimeOutMs)
+        ) == process.WaitForExitAsync(CancellationToken.None);
+
+        if (exited)
+        {
+            transportFactory.Destroy(transports[context]);
             processBridge.UnregisterTransport(context);
         }
-        process.Kill();
-        if (!process.WaitForExit(ProcessWaitingTimeOutMs))
+        else
         {
             process.Kill();
+            await process.WaitForExitAsync(CancellationToken.None);
+            transportFactory.Destroy(transports[context]);
+            processBridge.UnregisterTransport(context);
         }
     }
 }

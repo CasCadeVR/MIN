@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Messaging.Contracts;
+using MIN.Sessions.Core.Messaging.Contracts.Enums;
 using MIN.Sessions.Core.Messaging.Contracts.Models;
 using MIN.Sessions.Core.Transport.Contracts.Enums;
 
@@ -21,4 +22,9 @@ public sealed class SessionSpecificMessage : BaseSessionMessage
     /// Роль приложения отправителя сообщения
     /// </summary>
     public SessionProcessRole SessionProcessRole { get; set; }
+
+    /// <summary>
+    /// Направление сообщения сессии
+    /// </summary>
+    public SessionMessageRoute Route { get; set; }
 }

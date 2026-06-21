@@ -17,6 +17,7 @@ public sealed class IpcJsonSerializer : IIpcSerializer
         [IpcMessageType.ParticipantConnected] = typeof(ParticipantConnectedMessage),
         [IpcMessageType.ParticipantDisconnected] = typeof(ParticipantDisconnectedMessage),
         [IpcMessageType.ServerShutdown] = typeof(ServerShutdownMessage),
+        [IpcMessageType.Close] = typeof(CloseMessage),
     };
 
     byte[] IIpcSerializer.Serialize(IpcMessage message)
