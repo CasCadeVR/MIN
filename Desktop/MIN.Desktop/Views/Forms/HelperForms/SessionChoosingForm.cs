@@ -11,6 +11,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms;
 /// </summary>
 public partial class SessionChoosingForm : StyledForm
 {
+    private readonly IEnumerable<Session> downloadedSessions;
     private Session? SelectedSession { get; set; }
 
     /// <summary>
@@ -24,13 +25,19 @@ public partial class SessionChoosingForm : StyledForm
     public SessionChoosingForm(ISessionFeatureCollection sessionFeatureCollection)
     {
         InitializeComponent();
-        InitializeImplementedSessions(sessionFeatureCollection);
+        downloadedSessions = sessionFeatureCollection.SessionScanner.DownloadedSessions.Values;
+
+        if (!downloadedSessions.Any())
+        {
+            MessageBox.Show("У вас не установлена ни одна сессия!", "Выбор активностей", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        InitializeImplementedSessions();
     }
 
-    private void InitializeImplementedSessions(ISessionFeatureCollection sessionFeatureCollection)
+    private void InitializeImplementedSessions()
     {
-        var downloadedSessions = sessionFeatureCollection.SessionScanner.DownloadedSessions.Values;
-
         foreach (var session in downloadedSessions)
         {
             var card = new SessionCard(session);
@@ -49,10 +56,31 @@ public partial class SessionChoosingForm : StyledForm
             flowPanel.Controls.Add(card);
         }
 
-        foreach (SessionCard card in flowPanel.Controls.OfType<SessionCard>())
+        var exampleCard = flowPanel.Controls.OfType<SessionCard>().First();
+        exampleCard.SelectAsDefault();
+
+        var cardEffectiveWidth = exampleCard.Width + exampleCard.Margin.Horizontal;
+        var cardEffectiveHeight = exampleCard.Height + exampleCard.Margin.Vertical;
+
+        var downloadedSessionsCount = downloadedSessions.Count();
+
+        var cols = Math.Min(downloadedSessionsCount, 3);
+        var rows = Math.Min((int)Math.Ceiling(downloadedSessionsCount / 3.0), 2);
+
+        var panelWidth = cols * cardEffectiveWidth + flowPanel.Padding.Horizontal;
+        var panelHeight = rows * cardEffectiveHeight + flowPanel.Padding.Vertical;
+
+        ClientSize = new Size(
+            panelWidth + (Width - flowPanel.Width),
+            panelHeight + (Height - flowPanel.Height)
+        );
+
+        MinimumSize = ClientSize;
+        MaximumSize = ClientSize;
+
+        if (downloadedSessionsCount > 6)
         {
-            var wantedWidth = card.Width + flowPanel.Padding.Horizontal * 3;
-            Width = wantedWidth;
+            flowPanel.AutoScroll = true;
         }
     }
 

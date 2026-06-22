@@ -215,7 +215,8 @@ public partial class ChatPanelView
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
         var minutesPassed = CalculateTimePadding(msg.Timestamp);
 
-        var card = new ChatSessionMessageCard(featureCollection.Core.EventBus, roomId,
+        var card = new ChatSessionMessageCard(featureCollection.Sessions,
+            featureCollection.Core.EventBus, roomId,
             msg, localParticipant, isHost, removeHeaders)
         {
             Anchor = isSelf ? AnchorStyles.Right : AnchorStyles.Left,

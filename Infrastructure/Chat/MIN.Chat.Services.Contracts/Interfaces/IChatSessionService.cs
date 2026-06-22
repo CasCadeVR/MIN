@@ -17,4 +17,9 @@ public interface IChatSessionService
     /// Запросить вход в сессию
     /// </summary>
     Task SendSessionJoinRequest(Guid roomId, SessionReadyMessage sessionReadyMessage, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Просканировать загруженные сессии
+    /// </summary>
+    Task ScanDownloadedSessions(CancellationToken cancellationToken = default);
 }

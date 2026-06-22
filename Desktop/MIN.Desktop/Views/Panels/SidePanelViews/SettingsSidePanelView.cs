@@ -15,6 +15,7 @@ public partial class SettingsSidePanelView : StyledPanelView
 {
     private readonly IMinFeatureCollection featureCollection;
     private readonly INavigationService navigationService;
+    private readonly ICtsProvider ctsProvider;
 
     /// <summary>
     /// Текущие настройки
@@ -28,12 +29,14 @@ public partial class SettingsSidePanelView : StyledPanelView
     /// Инициализирует новый экземпляр <see cref="MainSidePanelView"/>
     /// </summary>
     public SettingsSidePanelView(IMinFeatureCollection featureCollection,
-        INavigationService navigationService)
+        INavigationService navigationService,
+        ICtsProvider ctsProvider)
     {
         InitializeComponent();
 
         this.featureCollection = featureCollection;
         this.navigationService = navigationService;
+        this.ctsProvider = ctsProvider;
         featureCollection.Helper.SettingsProvider.OnSettingsSaved += FillControls;
 
         FillControls();
@@ -76,5 +79,10 @@ public partial class SettingsSidePanelView : StyledPanelView
     {
         featureCollection.Helper.AppDataProvider.ClearFolder("cryptography");
         featureCollection.Helper.AppDataProvider.ClearFolder("network");
+    }
+
+    private async void scanSessionsButton_Click(object sender, EventArgs e)
+    {
+        await featureCollection.Chat.ChatSessionService.ScanDownloadedSessions(ctsProvider.AppCts.Token);
     }
 }

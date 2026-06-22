@@ -84,7 +84,7 @@
             sessionImage.Name = "sessionImage";
             tableLayoutPanelLabels.SetRowSpan(sessionImage, 2);
             sessionImage.Size = new Size(122, 122);
-            sessionImage.SizeMode = PictureBoxSizeMode.Zoom;
+            sessionImage.SizeMode = PictureBoxSizeMode.StretchImage;
             sessionImage.TabIndex = 6;
             sessionImage.TabStop = false;
             // 

@@ -69,6 +69,29 @@ internal sealed class SessionJoinHandler : IMessageHandler
                     return HandlerResult.Success();
                 }
 
+                var session = sessionScanner.GetSessionById(sessionJoinRequestMessage.SessionId);
+
+                if (session == null)
+                {
+                    await networkErrorHandler.SendErrorAsync("У хоста не установлена программа сервера этой сессии", message.SenderId, context.RoomContext.RoomId);
+                    return HandlerResult.Success();
+                }
+
+                if (session.Version != sessionJoinRequestMessage.SessionVersion)
+                {
+                    var clientOnOlderVersion = session.Version > sessionJoinRequestMessage.SessionVersion ? "Вы" : "Хост";
+                    await networkErrorHandler.SendErrorAsync($"{clientOnOlderVersion} на устаревшей версии сессии: " +
+                        $"\nВаша версия сессии - {sessionJoinRequestMessage.SessionVersion}" +
+                        $"\nВерсия сессии хоста комнаты - {session.Version}", message.SenderId, context.RoomContext.RoomId);
+                    return HandlerResult.Success();
+                }
+
+                if (session.MaximumParticipants.HasValue && subRoomInfo.Participants.Count >= session.MaximumParticipants)
+                {
+                    await networkErrorHandler.SendErrorAsync($"Сессия {session.Name} уже заполнена", message.SenderId, context.RoomContext.RoomId);
+                    return HandlerResult.Success();
+                }
+
                 var senderParicipantInfo = sender!.ToParticipantInfo();
 
                 var joinResult = subRoomManager.TryJoinSubRoom(roomId, sessionJoinRequestMessage.SubRoomId, senderParicipantInfo);
@@ -107,9 +130,9 @@ internal sealed class SessionJoinHandler : IMessageHandler
                 });
 
             case SessionJoinResponseMessage sessionJoinResponseMessage:
-                var session = sessionScanner.GetSessionById(sessionJoinResponseMessage.SessionId);
+                var responseSession = sessionScanner.GetSessionById(sessionJoinResponseMessage.SessionId);
 
-                if (session == null)
+                if (responseSession == null)
                 {
                     return HandlerResult.Failure($"У вас не установлена сессия с id {sessionJoinResponseMessage.SessionId}");
                 }
@@ -118,7 +141,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
                 {
                     RoomId = context.RoomContext.RoomId,
                     SubRoomId = sessionJoinResponseMessage.SubRoomId,
-                    Session = session,
+                    Session = responseSession,
                 });
 
                 if (!sessionJoinResponseMessage.NeedToAnnounce)

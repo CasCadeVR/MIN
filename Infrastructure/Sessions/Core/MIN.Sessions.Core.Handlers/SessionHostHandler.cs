@@ -104,7 +104,7 @@ internal sealed class SessionHostHandler : IMessageHandler
         if (session.Version != sessionHostRequestMessage.SessionVersion)
         {
             var clientOnOlderVersion = session.Version > sessionHostRequestMessage.SessionVersion ? "Вы" : "Хост";
-            await networkErrorHandler.SendErrorAsync($"{clientOnOlderVersion} на устаревшей версии: " +
+            await networkErrorHandler.SendErrorAsync($"{clientOnOlderVersion} на устаревшей версии сессии: " +
                 $"\nВаша версия сессии - {sessionHostRequestMessage.SessionVersion}" +
                 $"\nВерсия сессии хоста комнаты - {session.Version}", message.SenderId, context.RoomContext.RoomId);
             return HandlerResult.Success();

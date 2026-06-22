@@ -42,6 +42,15 @@ public partial class SessionCard : UserControl
         UpdateStylesOutOfSelected();
     }
 
+    /// <summary>
+    /// Выбрать как по умолчанию
+    /// </summary>
+    public void SelectAsDefault()
+    {
+        SelectCard();
+        OnClicked?.Invoke(selected);
+    }
+
     private void SelectCard()
     {
         selected = true;
@@ -66,9 +75,17 @@ public partial class SessionCard : UserControl
         sessionName.Text = Session.Name;
         sessionDescription.Text = Session.Description;
 
-        sessionImage.Image = Session.ThumbnailFileName == null
-            ? Resources.rocket
-            : Image.FromFile(Session.GeThumbnailPath());
+        if (Session.ThumbnailFileName == null)
+        {
+            sessionImage.Image = Resources.rocket;
+        }
+        else
+        {
+            var bytes = File.ReadAllBytes(Session.GeThumbnailPath());
+            using var ms = new MemoryStream(bytes);
+            using var tempImage = Image.FromStream(ms);
+            sessionImage.Image = new Bitmap(tempImage);
+        }
     }
 
     private void card_Click(object sender, EventArgs e)

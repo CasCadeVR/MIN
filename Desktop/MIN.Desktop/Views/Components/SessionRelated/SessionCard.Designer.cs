@@ -90,7 +90,7 @@
             sessionImage.Location = new Point(3, 3);
             sessionImage.Name = "sessionImage";
             sessionImage.Size = new Size(209, 199);
-            sessionImage.SizeMode = PictureBoxSizeMode.Zoom;
+            sessionImage.SizeMode = PictureBoxSizeMode.StretchImage;
             sessionImage.TabIndex = 2;
             sessionImage.TabStop = false;
             sessionImage.Click += card_Click;
@@ -100,7 +100,6 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(tableLayoutPanelLabels);
-            Margin = new Padding(0);
             Name = "SessionCard";
             Padding = new Padding(5);
             Size = new Size(225, 323);

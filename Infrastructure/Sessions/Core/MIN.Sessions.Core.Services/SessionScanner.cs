@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
+using MIN.Core.Events.Contracts;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
@@ -11,6 +13,7 @@ public class SessionScanner : ISessionScanner
     private const string DownloadedSessionsFolderName = "Скаченные сессии";
 
     private readonly string sessionsDirectory;
+    private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
     private readonly static JsonSerializerOptions jsonOptions = new()
@@ -24,8 +27,9 @@ public class SessionScanner : ISessionScanner
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="SessionScanner"/>
     /// </summary>
-    public SessionScanner(ILoggerProvider logger)
+    public SessionScanner(IEventBus eventBus, ILoggerProvider logger)
     {
+        this.eventBus = eventBus;
         this.logger = logger;
         sessionsDirectory = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory, DownloadedSessionsFolderName);
@@ -78,6 +82,10 @@ public class SessionScanner : ISessionScanner
         }
 
         downloadedSessions = scanned;
+        await eventBus.PublishAsync(new SessionRescanCompletedEvent()
+        {
+            DownloadedSessions = downloadedSessions
+        }, cancellationToken);
     }
 
     byte[]? ISessionScanner.LoadThumbnail(string sessionId)

@@ -98,8 +98,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             flowPanel.Dock = DockStyle.Fill;
             flowPanel.Location = new Point(0, 0);
+            flowPanel.Margin = new Padding(0);
             flowPanel.Name = "flowPanel";
-            flowPanel.Padding = new Padding(5);
             flowPanel.Size = new Size(552, 331);
             flowPanel.TabIndex = 3;
             // 

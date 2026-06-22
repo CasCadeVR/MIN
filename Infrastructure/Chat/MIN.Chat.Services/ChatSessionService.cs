@@ -43,11 +43,11 @@ public sealed class ChatSessionService : IChatSessionService
 
     async Task IChatSessionService.SendSessionJoinRequest(Guid roomId, SessionReadyMessage sessionReadyMessage, CancellationToken cancellationToken)
     {
-        var session = sessionReadyMessage.Session;
+        var session = sessionScanner.GetSessionById(sessionReadyMessage.Session.SessionId);
 
-        if (!sessionScanner.IsSessionInstalled(session.SessionId))
+        if (session == null)
         {
-            throw new DirectoryNotFoundException($"У вас не установлена программа для {session.Name}");
+            throw new DirectoryNotFoundException($"У вас не установлена программа для {sessionReadyMessage.Session.Name}");
         }
 
         await SendAsync(new SessionJoinRequestMessage()
@@ -56,6 +56,11 @@ public sealed class ChatSessionService : IChatSessionService
             SessionVersion = session.Version,
             SubRoomId = sessionReadyMessage.SubRoomId,
         }, roomId, cancellationToken);
+    }
+
+    async Task IChatSessionService.ScanDownloadedSessions(CancellationToken cancellationToken)
+    {
+        await sessionScanner.ScanAsync(cancellationToken);
     }
 
     private async Task SendAsync(IMessage? message, Guid roomId, CancellationToken cancellationToken)

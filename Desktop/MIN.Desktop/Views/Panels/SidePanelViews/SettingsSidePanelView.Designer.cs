@@ -43,6 +43,8 @@
             logButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             logDescriptionLabel = new MIN.Desktop.Components.Labels.CaptionLabel();
             labelVersion = new MIN.Desktop.Components.Labels.CaptionLabel();
+            captionLabel4 = new MIN.Desktop.Components.Labels.CaptionLabel();
+            scanSessionsButton = new MIN.Desktop.Components.Controls.Buttons.InvertedButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -116,27 +118,30 @@
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(scanSessionsButton, 0, 5);
             tableLayoutPanel1.Controls.Add(captionLabel3, 0, 2);
             tableLayoutPanel1.Controls.Add(captionLabel2, 0, 1);
             tableLayoutPanel1.Controls.Add(captionLabel1, 0, 0);
-            tableLayoutPanel1.Controls.Add(clearCacheLabel, 1, 4);
-            tableLayoutPanel1.Controls.Add(clearCacheButton, 0, 4);
             tableLayoutPanel1.Controls.Add(discoveryPort, 1, 2);
             tableLayoutPanel1.Controls.Add(roomSearchTime, 1, 1);
             tableLayoutPanel1.Controls.Add(defaultName, 1, 0);
             tableLayoutPanel1.Controls.Add(logButton, 0, 3);
             tableLayoutPanel1.Controls.Add(logDescriptionLabel, 1, 3);
-            tableLayoutPanel1.Controls.Add(labelVersion, 0, 6);
+            tableLayoutPanel1.Controls.Add(labelVersion, 0, 7);
+            tableLayoutPanel1.Controls.Add(clearCacheButton, 0, 4);
+            tableLayoutPanel1.Controls.Add(clearCacheLabel, 1, 4);
+            tableLayoutPanel1.Controls.Add(captionLabel4, 1, 5);
             tableLayoutPanel1.Dock = DockStyle.Top;
             tableLayoutPanel1.Location = new Point(0, 0);
             tableLayoutPanel1.Margin = new Padding(0);
             tableLayoutPanel1.MaximumSize = new Size(0, 571);
             tableLayoutPanel1.MinimumSize = new Size(0, 571);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 7;
+            tableLayoutPanel1.RowCount = 8;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 72F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
@@ -302,6 +307,37 @@
             labelVersion.TabIndex = 13;
             labelVersion.Text = "Версия:";
             // 
+            // captionLabel4
+            // 
+            captionLabel4.Anchor = AnchorStyles.Left;
+            captionLabel4.AutoSize = true;
+            captionLabel4.Enabled = false;
+            captionLabel4.Font = new Font("Segoe UI", 8.25F);
+            captionLabel4.ForeColor = Color.Black;
+            captionLabel4.Location = new Point(128, 291);
+            captionLabel4.Name = "captionLabel4";
+            captionLabel4.Size = new Size(118, 26);
+            captionLabel4.TabIndex = 23;
+            captionLabel4.Text = "Когда вы установили новую сессию";
+            // 
+            // scanSessionsButton
+            // 
+            scanSessionsButton.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            scanSessionsButton.BackColor = Color.FromArgb(248, 249, 255);
+            scanSessionsButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
+            scanSessionsButton.FlatAppearance.BorderSize = 2;
+            scanSessionsButton.FlatStyle = FlatStyle.Flat;
+            scanSessionsButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            scanSessionsButton.ForeColor = Color.FromArgb(167, 157, 255);
+            scanSessionsButton.Location = new Point(3, 277);
+            scanSessionsButton.Margin = new Padding(3, 0, 0, 0);
+            scanSessionsButton.Name = "scanSessionsButton";
+            scanSessionsButton.Size = new Size(122, 53);
+            scanSessionsButton.TabIndex = 24;
+            scanSessionsButton.Text = "Обновить список сессий";
+            scanSessionsButton.UseVisualStyleBackColor = false;
+            scanSessionsButton.Click += scanSessionsButton_Click;
+            // 
             // SettingsSidePanelView
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -341,5 +377,7 @@
         private Desktop.Components.Labels.CaptionLabel captionLabel1;
         private Desktop.Components.Labels.CaptionLabel captionLabel3;
         private Desktop.Components.Labels.CaptionLabel captionLabel2;
+        private Desktop.Components.Controls.Buttons.InvertedButton scanSessionsButton;
+        private Desktop.Components.Labels.CaptionLabel captionLabel4;
     }
 }

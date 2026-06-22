@@ -1,8 +1,10 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using System.Diagnostics;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Properties;
 using MIN.Desktop.Views.Components.ChatMessages;
+using MIN.Sessions.Core.DI.FeatureCollection;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
@@ -18,6 +20,7 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
     private readonly SessionReadyMessage sessionReadyMessage = null!;
     private readonly SynchronizationContext uiContext = null!;
     private HashSet<IDisposable> eventTokens = null!;
+    private bool asDownloaded;
     private int currentAmount;
 
     /// <summary>
@@ -36,7 +39,8 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatFileMessageCard"/>
     /// </summary>
-    public ChatSessionMessageCard(IEventBus eventBus,
+    public ChatSessionMessageCard(ISessionFeatureCollection sessionFeatureCollection,
+        IEventBus eventBus,
         Guid roomId,
         SessionReadyMessage sessionReadyMessage,
         ParticipantInfo localParticipant,
@@ -55,6 +59,7 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
         this.sessionReadyMessage = sessionReadyMessage;
 
         currentAmount = sessionReadyMessage.CurrentParticipantAmount;
+        asDownloaded = sessionFeatureCollection.SessionScanner.DownloadedSessions.ContainsKey(sessionReadyMessage.Session.SessionId);
 
         uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("Must be created on UI thread");
@@ -69,9 +74,21 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
     {
         eventTokens =
         [
+            eventBus.Subscribe<SessionRescanCompletedEvent>(OnSessionRescanCompletedEvent),
             eventBus.Subscribe<SessionParticipantJoinedEvent>(OnSessionParticipantJoined),
             eventBus.Subscribe<SessionParticipantLeftEvent>(OnSessionParticipantLeft)
         ];
+    }
+
+    private async Task OnSessionRescanCompletedEvent(SessionRescanCompletedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        asDownloaded = eventMessage.DownloadedSessions.ContainsKey(sessionReadyMessage.Session.SessionId);
+
+        uiContext.Post(_ =>
+        {
+            UpdateStats();
+        }, null);
+        await Task.CompletedTask;
     }
 
     private async Task OnSessionParticipantJoined(SessionParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
@@ -125,8 +142,6 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
 
     private void FillLabels()
     {
-        sessionName.Text = sessionReadyMessage.Session.Name;
-
         if (sessionReadyMessage.ThumbnailData != null)
         {
             using var ms = new MemoryStream(sessionReadyMessage.ThumbnailData);
@@ -141,8 +156,22 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
 
     private void UpdateStats()
     {
-        joinButton.Text = $"Присоединиться (Учавствуют: {currentAmount})";
-        if (currentAmount <= 0)
+        sessionName.Text = $"{sessionReadyMessage.Session.Name} (v. {sessionReadyMessage.Session.Version})";
+
+        var maximumParticipants = sessionReadyMessage.Session.MaximumParticipants;
+
+        var participantsRatio = $"{currentAmount}"
+            + (maximumParticipants.HasValue ? $"/{maximumParticipants.Value}" : string.Empty);
+
+        var isFull = maximumParticipants.HasValue && currentAmount >= maximumParticipants.Value;
+
+        joinButton.Text = !asDownloaded
+            ? "Скачать сессию"
+            : (isFull ? "Заполнено" : "Присоединиться") + $" (Учавствуют: {participantsRatio})";
+
+        joinButton.Enabled = !maximumParticipants.HasValue || !isFull;
+
+        if (currentAmount <= 0 || isFull)
         {
             sessionName.ForeColor = ColorScheme.TextOnAccent;
             tableLayoutPanelLabels.BackColor = ColorScheme.ConnectionDisabled;
@@ -158,7 +187,22 @@ public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
 
     private void joinButton_Click(object sender, EventArgs e)
     {
-        OnJoinRequested?.Invoke();
+        if (asDownloaded)
+        {
+            OnJoinRequested?.Invoke();
+            return;
+        }
+
+        if (MessageBox.Show($"Хотите скачать сессию {sessionReadyMessage.Session.Name}?\n" +
+            $"Вы будете перенесены по ссылке {sessionReadyMessage.Session.DownloadLink}",
+            "Скачивание сессии", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = sessionReadyMessage.Session.DownloadLink,
+                UseShellExecute = true
+            });
+        }
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
