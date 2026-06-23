@@ -276,7 +276,7 @@
             logButton.Name = "logButton";
             logButton.Size = new Size(122, 33);
             logButton.TabIndex = 12;
-            logButton.Text = "Открыть окно логов";
+            logButton.Text = "Открыть логи";
             logButton.UseVisualStyleBackColor = false;
             logButton.Click += logButton_Click;
             // 

@@ -32,7 +32,7 @@ public class ChatActionContextMenuStrip : ContextMenuStrip
 
         var startSessionToolStripMenuItem = new BaseToolStripMenuItem()
         {
-            Text = "Использовать активность",
+            Text = "Использовать сессию",
             Image = Resources.rocket,
         };
         startSessionToolStripMenuItem.Click += StartSessionContextMenuStrip_Click;

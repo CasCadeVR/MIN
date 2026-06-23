@@ -1,7 +1,6 @@
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Sessions.Core.DI.FeatureCollection;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Desktop.Views.Forms.HelperForms;
@@ -22,17 +21,10 @@ public partial class SessionChoosingForm : StyledForm
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="SessionChoosingForm"/>
     /// </summary>
-    public SessionChoosingForm(ISessionFeatureCollection sessionFeatureCollection)
+    public SessionChoosingForm(IEnumerable<Session> downloadedSessions)
     {
         InitializeComponent();
-        downloadedSessions = sessionFeatureCollection.SessionScanner.DownloadedSessions.Values;
-
-        if (!downloadedSessions.Any())
-        {
-            MessageBox.Show("У вас не установлена ни одна сессия!", "Выбор активностей", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return;
-        }
-
+        this.downloadedSessions = downloadedSessions;
         InitializeImplementedSessions();
     }
 

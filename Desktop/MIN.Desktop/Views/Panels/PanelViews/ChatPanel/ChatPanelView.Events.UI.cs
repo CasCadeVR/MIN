@@ -134,7 +134,14 @@ public partial class ChatPanelView
 
         chatActionContextMenuStrip.StartSessionClick += () =>
         {
-            var choosingForm = new SessionChoosingForm(featureCollection.Sessions);
+            var downloadedSessions = featureCollection.Sessions.SessionScanner.DownloadedSessions.Values;
+            if (!downloadedSessions.Any())
+            {
+                MessageBox.Show("У вас не установлена ни одна сессия!", "Выбор активностей", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var choosingForm = new SessionChoosingForm(downloadedSessions);
             choosingForm.OnSelected += (session) =>
             {
                 choosingForm.Close();

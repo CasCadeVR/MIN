@@ -74,6 +74,10 @@ public partial class SessionCard : UserControl
     {
         sessionName.Text = Session.Name;
         sessionDescription.Text = Session.Description;
+        sessionVersion.Text = Session.Version.ToString();
+        sessionMaximumParticipants.Text += Session.MaximumParticipants.HasValue
+            ? Session.MaximumParticipants.Value
+            : "Неограничено";
 
         if (Session.ThumbnailFileName == null)
         {
@@ -99,5 +103,15 @@ public partial class SessionCard : UserControl
             SelectCard();
         }
         OnClicked?.Invoke(selected);
+    }
+
+    private void downloadLinkLabel_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            Clipboard.SetText(Session.DownloadLink);
+            downloadLinkLabel.Text = "Скопировано!";
+        }
+        catch { }
     }
 }
