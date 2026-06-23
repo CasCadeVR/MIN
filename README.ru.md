@@ -1,12 +1,12 @@
 # MIN - Local Messenger
 
-![Logo](https://raw.githubusercontent.com/CasCadeVR/MIN/main/Desktop/MIN.Desktop/Resources/logo.png)
+![Logo](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Resources/logo.png)
 
 > **Безопасный локальный мессенджер с end-to-end шифрованием для локальной сети**
 
-[![Stars](https://img.shields.io/github/stars/CasCadeVR/MIN?style=flat-square&logo=github)](https://github.com/CasCadeVR/MIN/stargazers)
-[![Forks](https://img.shields.io/github/forks/CasCadeVR/MIN?style=flat-square&logo=github)](https://github.com/CasCadeVR/MIN/network/members)
-[![License](https://img.shields.io/github/license/CasCadeVR/MIN?style=flat-square)](https://github.com/CasCadeVR/MIN/blob/main/LICENSE)
+[![Stars](https://img.shields.io/github/stars/MIN-Corp/MIN?style=flat-square&logo=github)](https://github.com/MIN-Corp/MIN/stargazers)
+[![Forks](https://img.shields.io/github/forks/MIN-Corp/MIN?style=flat-square&logo=github)](https://github.com/MIN-Corp/MIN/network/members)
+[![License](https://img.shields.io/github/license/MIN-Corp/MIN?style=flat-square)](https://github.com/MIN-Corp/MIN/blob/main/LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-Latest-blue?style=flat-square&logo=csharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 
@@ -22,6 +22,10 @@
 - [Установка и запуск](#-установка-и-запуск)
 - [Структура проекта](#-структура-проекта)
 - [Безопасность](#-безопасность)
+- [Протокол подключения](#-протокол-подключения)
+- [Мультиплеерные сессии](#-мультиплеерные-сессии)
+- [Проброс портов](#-проброс-портов)
+- [Прямое подключение](#-прямое-подключение)
 - [Интерфейс](#-интерфейс)
 - [Авторы](#-авторы)
 
@@ -33,9 +37,13 @@
 |-------------|----------|
 | **End-to-End шифрование** | Все сообщения шифруются с использованием криптографии |
 | **Передача файлов** | Отправка и получение фотографий и файлов |
-| **Локальное обнаружение** | Автоматическое обнаружение комнат через Named Pipes |
+| **Локальное обнаружение** | Автоматическое обнаружение комнат через UDP Broadcast |
+| **Прямое подключение** | Подключение к комнате напрямую по IP:Port |
+| **Проброс портов** | UPnP проброс портов для подключений не из LAN |
+| **Протокол подключения** | Защищённый handshake протокол перед входом в комнату |
 | **Текстовые сообщения** | Отправка и получение сообщений в реальном времени |
 | **Комнаты** | Создание и присоединение к чат-комнатам |
+| **Мультиплеерные сессии** | Скачивание и запуск игровых сессий из других ресурсов |
 | **Desktop UI** | Интуитивный интерфейс на WinForms |
 
 > [!IMPORTANT]
@@ -63,22 +71,27 @@ flowchart TB
     subgraph INF["Infrastructure Layer"]
         direction TB
         C["Chat Services<br>Сообщения и статусы"]
-        D["Discovery Services<br>Named Pipes Discovery"]
+        D["Discovery Services<br>UDP Broadcast Discovery"]
         E["FileTransfer Services<br>Потоковая передача"]
+        F["Session Services<br>Мультиплеерные сессии"]
     end
     
     subgraph CORE["Core Layer"]
         direction TB
-        F["Cryptography<br>E2E шифрование"]
-        G["Messaging<br>Система сообщений"]
-        H["Events<br>Event Bus"]
-        I["Handlers<br>Диспетчер"]
-        J["Transport<br>Named Pipes"]
-        K["Serialization<br>JSON"]
+        G["Cryptography<br>E2E шифрование"]
+        H["Messaging<br>Система сообщений"]
+        I["Events<br>Event Bus"]
+        J["Handlers<br>Диспетчер"]
+        K["Transport<br>TCP / UDP / Named Pipes"]
+        L["Serialization<br>JSON"]
+        M["Protocol<br>Handshake подключения"]
+        N["SubRooms<br>Под-комнаты сессий"]
+        O["Services<br>Хостинг, маршрутизация"]
+        P["Headers<br>Заголовки сообщений"]
     end
     
     class A highlight;
-    class B,C,D,E,F,G,H,I,J,K component
+    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P component
     class UI uiLayer;
     class INF infraLayer;
     class CORE coreLayer
@@ -96,7 +109,11 @@ flowchart TB
 | `MIN.Core.Messaging` | Система сообщений |
 | `MIN.Core.Events` | Event Bus |
 | `MIN.Core.Handlers` | Обработчики с dispatcher |
-| `MIN.Core.Transport` | Транспорт Named Pipes |
+| `MIN.Core.Transport` | Транспорт TCP / UDP / Named Pipes |
+| `MIN.Core.Protocol` | Протокол подключения MIN (handshake) |
+| `MIN.Core.SubRooms` | Управление под-комнатами для сессий |
+| `MIN.Core.Services` | Хостинг комнат, подключение, маршрутизация |
+| `MIN.Core.Headers` | Заголовки сообщений |
 | `MIN.Core.Serialization` | JSON сериализация |
 | `MIN.Core.Entities` | Модели данных |
 | `MIN.Core.Stores` | Хранилища |
@@ -106,13 +123,21 @@ flowchart TB
 | Модуль | Назначение |
 |--------|------------|
 | `MIN.Chat` | Чаты и сообщения |
-| `MIN.Discovery` | Обнаружение комнат |
+| `MIN.Discovery` | Обнаружение комнат через UDP Broadcast |
 | `MIN.FileTransfer` | Передача файлов |
+| `MIN.Sessions` | Управление мультиплеерными сессиями |
 
 #### Desktop (UI)
 | Модуль | Назначение |
 |--------|------------|
 | `MIN.Desktop` | WinForms приложение |
+
+#### Cross-Cutting (Сквозные)
+| Модуль | Назначение |
+|--------|------------|
+| `MIN.Common` | Общие интерфейсы, MVC модульная система |
+| `MIN.Helpers` | Логирование, настройки, идентификация, версионирование, обновления |
+| `MIN.DI` | Корневая композиция зависимостей |
 
 ---
 
@@ -125,7 +150,9 @@ flowchart TB
 | UI | WinForms | Настольный интерфейс Windows |
 | DI | Microsoft.Extensions.DependencyInjection | Внедрение зависимостей |
 | Защита | System.Security.Cryptography.ProtectedData | Windows DPAPI |
-| Транспорт | Named Pipes | Межпроцессное взаимодействие |
+| Транспорт | TCP / UDP / Named Pipes | Сетевое взаимодействие |
+| UPnP | Open.Nat | Проброс портов для внешних подключений |
+| Модульность | MIN.Common.Mvc | Система модулей/плагинов |
 | Стиль | .editorconfig | Единый код-стайл |
 
 ---
@@ -145,7 +172,7 @@ flowchart TB
 
 ```bash
 # 1. Клонирование репозитория
-git clone https://github.com/CasCadeVR/MIN.git
+git clone https://github.com/MIN-Corp/MIN.git
 cd MIN
 
 # 2. Восстановление зависимостей
@@ -177,28 +204,35 @@ flowchart TB
             H["Messaging/"]
             I["Events/"]
             J["Handlers/"]
-            K["Transport/"]
+            K["Transport/<br>TCP/ UDP/ NamedPipes"]
             L["Serialization/"]
+            M["Protocol/"]
+            N["SubRooms/"]
+            O["Services/"]
+            P["Headers/"]
+            DI["DI/"]
         end
         subgraph INF["Infrastructure/"]
-            M["Chat/"]
-            N["Discovery/"]
-            O["FileTransfer/"]
+            Q["Chat/"]
+            R["Discovery/"]
+            S["FileTransfer/"]
+            T["Sessions/"]
         end
         subgraph DESK["Desktop/"]
-            P["MIN.Desktop/"]
-            Q["Views/"]
-            R["Components/"]
-            S["Resources/"]
+            U["MIN.Desktop/"]
+            V["Views/"]
+            W["Components/"]
+            X["Resources/"]
         end
-        T["Helpers/"]
-        U["Common/"]
+        Y["Common/"]
+        Z["Helpers/"]
+        AA["DI/"]
     end
     
     class CORE coreFolder
     class INF infraFolder
     class DESK deskFolder
-    class G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U file
+    class G,H,I,J,K,L,M,N,O,P,DI,Q,R,S,T,U,V,W,X,Y,Z,AA file
 ```
 
 > [!NOTE]
@@ -237,6 +271,144 @@ flowchart LR
 
 ---
 
+## Протокол подключения
+
+> [!IMPORTANT]
+> Перед входом в комнату каждый клиент должен пройти handshake протокола MIN — это гарантирует, что только совместимые клиенты могут подключаться.
+
+```mermaid
+sequenceDiagram
+    participant Клиент
+    participant Сервер
+    
+    Клиент->>Сервер: "MIN" (запрос на подключение)
+    Сервер->>Сервер: Валидация протокола
+    Сервер->>Клиент: "MIN" + RoomInfo (JSON)
+    Клиент->>Клиент: Валидация RoomInfo
+    Note over Клиент,Сервер: Если валидация не пройдена → соединение разрывается
+```
+
+Протокол работает следующим образом:
+1. **Клиент** подключается по TCP и отправляет строку `"MIN"`
+2. **Сервер** получает запрос, проверяет его соответствие ожидаемому протоколу
+3. **Сервер** отвечает `"MIN"` + сериализованный `RoomInfo` JSON с метаданными комнаты
+4. **Клиент** проверяет ответ — если он не начинается с `"MIN"` или информация о комнате некорректна, соединение разрывается
+5. Обе стороны используют настраиваемые таймауты для предотвращения зависших соединений
+
+Это обеспечивает:
+- **Совместимость** — только валидные MIN клиенты могут подключаться к комнатам
+- **Безопасность** — некорректные или неожиданные подключения отклоняются на раннем этапе
+- **Обмен метаданными** — клиенты сразу получают информацию о комнате при подключении
+
+---
+
+## Мультиплеерные сессии
+
+MIN поддерживает скачиваемые игровые сессии, которые запускаются как отдельные процессы вместе с мессенджером. Эти сессии позволяют играть в мультиплеерные игры внутри чат-комнат.
+
+### Как работают сессии
+
+```mermaid
+flowchart LR
+    A["Скачать сессию"] --> B["Поместить в<br>Скаченные сессии/"]
+    B --> C["MIN сканирует presenter.json"]
+    C --> D["Запуск из чата"]
+    D --> E["Серверный процесс +<br>Клиентский процесс"]
+    E --> F["IPC через Named Pipes<br>или TCP Loopback"]
+```
+
+### Инструкция по установке сессии
+
+1. Скачайте архив сессии по ссылке
+2. Распакуйте его в папку `Скаченные сессии/`, расположенную рядом с `MIN.exe`:
+
+```
+MIN/
+├── MIN.exe
+├── Скаченные сессии/
+│   └── MySession/
+│       ├── presenter.json
+│       ├── server.exe
+│       ├── client.exe
+│       └── thumbnail.png
+```
+
+3. Убедитесь, что в корне папки находится валидный файл `presenter.json`
+4. Перезапустите MIN или нажмите "Пересканировать" — сессии появятся в чат-комнате
+
+### Формат presenter.json
+
+```json
+{
+  "sessionId": "your_session_id",
+  "name": "SessionName",
+  "description": "SessionDescription",
+  "version": "1.0.0",
+  "serverExecutableFileName": "Name_of_server_exe_file.exe",
+  "clientExecutableFileName": "Name_of_client_exe_file.exe",
+  "maximumParticipants": 5,
+  "thumbnailFileName": "thumbnail.png",
+  "downloadLink": "https://github.com/...",
+  "preferredTransport": null
+}
+```
+
+| Поле | Описание |
+|------|----------|
+| `sessionId` | Уникальный идентификатор сессии (должен быть уникальным среди всех сессий) |
+| `name` | Название сессии для отображения в интерфейсе |
+| `description` | Описание сессии для отображения в интерфейсе |
+| `version` | Версия сессии (применяется и к клиенту, и к серверу) |
+| `serverExecutableFileName` | Имя исполняемого файла сервера |
+| `clientExecutableFileName` | Имя исполняемого файла клиента |
+| `maximumParticipants` | Максимальное количество участников (`null` = без лимита) |
+| `thumbnailFileName` | Имя файла обложки (`null` = без обложки) |
+| `downloadLink` | Ссылка, по которой можно скачать эту сессию |
+| `preferredTransport` | Предпочитаемый транспорт: `"tcp"`, `"namedPipe"` или `null` (MIN определяет автоматически на основе ОС) |
+
+### Архитектура сессий
+
+- **Серверный процесс** запускается хостом комнаты (сессия общается через IPC)
+- **Клиентские процессы** подключаются через маршрутизацию сообщений MIN
+- Связь между MIN и процессами сессии использует **IPC транспорты** (Named Pipes или TCP Loopback)
+- Сессии работают в рамках **SubRooms** — изолированных под-контекстов внутри чат-комнаты
+- Версионная совместимость проверяется перед присоединением к сессии
+
+---
+
+## Проброс портов
+
+> [!TIP]
+> Включайте проброс портов, когда хотите, чтобы участники из-за пределов вашей локальной сети могли подключаться к вашей комнате.
+
+MIN поддерживает UPnP (Universal Plug and Play) проброс портов для автоматической настройки роутера:
+
+- **Библиотека**: [Open.Nat](https://github.com/lontivero/Open.Nat)
+- **Протокол**: UPnP
+- **При создании комнаты** отметьте чекбокс **"Проброска порта"**, чтобы включить функцию
+- Приложение попытается обнаружить UPnP-роутер и автоматически создать проброс порта
+- Если UPnP недоступен на роутере, операция завершится ошибкой с поясняющим сообщением
+- Публичный IP определяется автоматически через [api.ipify.org](https://api.ipify.org)
+- Проброс порта удаляется при закрытии комнаты
+
+---
+
+## Прямое подключение
+
+Вы можете подключиться к комнате напрямую по IP-адресу и порту, минуя локальное обнаружение. Это полезно для:
+
+- Подключения к комнатам за пределами локальной сети
+- Тестирования и отладки
+- Предварительно настроенных подключений
+
+Чтобы воспользоваться прямым подключением:
+
+1. Нажмите кнопку **"Прямое подключение"** на панели обнаружения
+2. Введите IP-адрес и порт в формате `IP:Port` (например, `192.168.1.100:56784`)
+3. Нажмите **Подключиться** — клиент автоматически выполнит handshake протокола MIN
+
+---
+
 ## Интерфейс
 
 MIN предоставляет современный интерфейс для:
@@ -269,9 +441,9 @@ MIN предоставляет современный интерфейс для:
 
 ---
 
-[![Stars](https://img.shields.io/github/stars/CasCadeVR/MIN?style=social)](https://github.com/CasCadeVR/MIN)
-[![Forks](https://img.shields.io/github/forks/CasCadeVR/MIN?style=social)](https://github.com/CasCadeVR/MIN)
+[![Stars](https://img.shields.io/github/stars/MIN-Corp/MIN?style=social)](https://github.com/MIN-Corp/MIN)
+[![Forks](https://img.shields.io/github/forks/MIN-Corp/MIN?style=social)](https://github.com/MIN-Corp/MIN)
 
-[Исходный код](https://github.com/CasCadeVR/MIN) • 
-[Сообщить об ошибке](https://github.com/CasCadeVR/MIN/issues) • 
+[Исходный код](https://github.com/MIN-Corp/MIN) • 
+[Сообщить об ошибке](https://github.com/MIN-Corp/MIN/issues) • 
 [Лицензия MIT](LICENSE)

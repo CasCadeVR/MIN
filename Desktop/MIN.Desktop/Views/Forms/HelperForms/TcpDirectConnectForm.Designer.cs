@@ -117,8 +117,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             // connectButton
             // 
+            connectButton.Anchor = AnchorStyles.Right;
             connectButton.BackColor = Color.FromArgb(192, 192, 255);
-            connectButton.Dock = DockStyle.Fill;
             connectButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             connectButton.FlatStyle = FlatStyle.Flat;
             connectButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
