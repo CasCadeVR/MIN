@@ -55,13 +55,13 @@
             tableLayoutPanelLabels.Margin = new Padding(0);
             tableLayoutPanelLabels.Name = "tableLayoutPanelLabels";
             tableLayoutPanelLabels.RowCount = 6;
-            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 205F));
+            tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 238F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
             tableLayoutPanelLabels.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
-            tableLayoutPanelLabels.Size = new Size(240, 370);
+            tableLayoutPanelLabels.Size = new Size(240, 402);
             tableLayoutPanelLabels.TabIndex = 2;
             tableLayoutPanelLabels.Click += card_Click;
             // 
@@ -71,11 +71,11 @@
             sessionVersion.AutoSize = true;
             sessionVersion.Font = new Font("Segoe UI", 9.75F);
             sessionVersion.ForeColor = Color.FromArgb(45, 43, 58);
-            sessionVersion.Location = new Point(95, 349);
+            sessionVersion.Location = new Point(91, 381);
             sessionVersion.Name = "sessionVersion";
-            sessionVersion.Size = new Size(50, 17);
+            sessionVersion.Size = new Size(57, 17);
             sessionVersion.TabIndex = 5;
-            sessionVersion.Text = "Версия";
+            sessionVersion.Text = "Версия: ";
             sessionVersion.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // downloadLinkLabel
@@ -85,7 +85,7 @@
             downloadLinkLabel.Cursor = Cursors.Hand;
             downloadLinkLabel.Font = new Font("Segoe UI", 9.75F);
             downloadLinkLabel.ForeColor = Color.Blue;
-            downloadLinkLabel.Location = new Point(15, 325);
+            downloadLinkLabel.Location = new Point(15, 357);
             downloadLinkLabel.Name = "downloadLinkLabel";
             downloadLinkLabel.Size = new Size(210, 17);
             downloadLinkLabel.TabIndex = 4;
@@ -99,7 +99,7 @@
             sessionMaximumParticipants.AutoSize = true;
             sessionMaximumParticipants.Font = new Font("Segoe UI", 9.75F);
             sessionMaximumParticipants.ForeColor = Color.FromArgb(45, 43, 58);
-            sessionMaximumParticipants.Location = new Point(46, 301);
+            sessionMaximumParticipants.Location = new Point(46, 333);
             sessionMaximumParticipants.Name = "sessionMaximumParticipants";
             sessionMaximumParticipants.Size = new Size(147, 17);
             sessionMaximumParticipants.TabIndex = 3;
@@ -112,7 +112,7 @@
             sessionName.AutoSize = true;
             sessionName.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             sessionName.ForeColor = Color.FromArgb(45, 43, 58);
-            sessionName.Location = new Point(77, 210);
+            sessionName.Location = new Point(77, 243);
             sessionName.Name = "sessionName";
             sessionName.Size = new Size(86, 21);
             sessionName.TabIndex = 0;
@@ -125,7 +125,7 @@
             sessionDescription.AutoSize = true;
             sessionDescription.Font = new Font("Segoe UI", 9.75F);
             sessionDescription.ForeColor = Color.FromArgb(45, 43, 58);
-            sessionDescription.Location = new Point(87, 259);
+            sessionDescription.Location = new Point(87, 291);
             sessionDescription.Name = "sessionDescription";
             sessionDescription.Size = new Size(66, 17);
             sessionDescription.TabIndex = 1;
@@ -139,7 +139,7 @@
             sessionImage.Dock = DockStyle.Fill;
             sessionImage.Location = new Point(3, 3);
             sessionImage.Name = "sessionImage";
-            sessionImage.Size = new Size(234, 199);
+            sessionImage.Size = new Size(234, 232);
             sessionImage.SizeMode = PictureBoxSizeMode.StretchImage;
             sessionImage.TabIndex = 2;
             sessionImage.TabStop = false;
@@ -152,7 +152,7 @@
             Controls.Add(tableLayoutPanelLabels);
             Name = "SessionCard";
             Padding = new Padding(5);
-            Size = new Size(250, 380);
+            Size = new Size(250, 412);
             tableLayoutPanelLabels.ResumeLayout(false);
             tableLayoutPanelLabels.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)sessionImage).EndInit();

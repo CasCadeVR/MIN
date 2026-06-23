@@ -74,7 +74,7 @@ public partial class SessionCard : UserControl
     {
         sessionName.Text = Session.Name;
         sessionDescription.Text = Session.Description;
-        sessionVersion.Text = Session.Version.ToString();
+        sessionVersion.Text += Session.Version.ToString();
         sessionMaximumParticipants.Text += Session.MaximumParticipants.HasValue
             ? Session.MaximumParticipants.Value
             : "Неограничено";
