@@ -7,6 +7,8 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Registries.Models;
+using MIN.Core.SubRooms.Contracts.Interfaces;
+using MIN.Core.SubRooms.Contracts.Interfaces.Messages;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 
@@ -17,9 +19,10 @@ public sealed class MessageDispatcher : IMessageDispatcher
 {
     private readonly IEnumerable<IMessageHandler> handlers;
     private readonly IMessageSender messageSender;
-    private readonly IIdentityService identityService;
     private readonly IRoomHoster roomHoster;
     private readonly IEventBus eventBus;
+    private readonly ISubRoomManager subRoomManager;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -27,22 +30,26 @@ public sealed class MessageDispatcher : IMessageDispatcher
     /// </summary>
     public MessageDispatcher(IEnumerable<IMessageHandler> handlers,
         IMessageSender messageSender,
-        IIdentityService identityService,
         IRoomHoster roomHoster,
         IEventBus eventBus,
+        ISubRoomManager subRoomManager,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.handlers = handlers;
         this.messageSender = messageSender;
-        this.identityService = identityService;
         this.roomHoster = roomHoster;
         this.eventBus = eventBus;
+        this.subRoomManager = subRoomManager;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task DispatchAsync(IMessage message, MessageContext context)
+    public async Task DispatchAsync(IMessage message, MessageContext context, IEnumerable<Guid>? broadcastExcludeIds)
     {
+        var selfId = identityService.SelfParticipant.Id;
+
         var applicableHandlers = handlers
             .Where(h => h.HandledTypes.Contains(message.TypeTag))
             .OrderBy(h => h.Priority)
@@ -57,6 +64,12 @@ public sealed class MessageDispatcher : IMessageDispatcher
         {
             try
             {
+                if (broadcastExcludeIds?.Contains(selfId) == true)
+                {
+                    await HandleServerMessageRouting(message, context, broadcastExcludeIds);
+                    continue;
+                }
+
                 var result = await handler.HandleAsync(message, context);
 
                 if (!result.IsSuccess)
@@ -66,15 +79,15 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     {
                         await PublishErrorEvent(result.ErrorMessage!, result.CriticalError, context);
                     }
-                    break;
+                    continue;
                 }
 
                 if (result.Response != null)
                 {
-                    result.Response.SenderId = identityService.SelfParticipant.Id;
+                    result.Response.SenderId = selfId;
                     if (context.ConnectionId == CoreRegistryConstants.LocalConnectionId)
                     {
-                        await DispatchAsync(message, context);
+                        await DispatchAsync(result.Response, context, broadcastExcludeIds);
                     }
                     else
                     {
@@ -89,7 +102,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
                 if (roomHoster.IsHosting(context.RoomContext.RoomId))
                 {
-                    await HandleServerMessageRouting(message, context);
+                    await HandleServerMessageRouting(message, context, broadcastExcludeIds);
                 }
             }
             catch (Exception ex)
@@ -100,12 +113,26 @@ public sealed class MessageDispatcher : IMessageDispatcher
         }
     }
 
-    private async Task HandleServerMessageRouting(IMessage message, MessageContext context)
+    private async Task HandleServerMessageRouting(IMessage message, MessageContext context, IEnumerable<Guid>? broadcastExcludeIds)
     {
         if (message.IsPublic)
         {
+            var roomParticipantsIds = context.RoomContext.Participants.GetParticipants().Select(x => x.Id);
             var senderConnectionId = context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId);
-            await messageSender.BroadcastAsync(message, context.RoomContext.RoomId, [senderConnectionId], context.CancellationToken);
+
+            var excludeConnectionIds = new List<Guid>
+            {
+                senderConnectionId
+            }.Concat(broadcastExcludeIds?.Where(roomParticipantsIds.Contains).Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId) ?? []).ToList();
+
+            if (message is IWithinSubRoom withinSubRoomMessage)
+            {
+                var subRoomParticipants = subRoomManager.GetParticipantIds(context.RoomContext.RoomId, withinSubRoomMessage.SubRoomId);
+                excludeConnectionIds.AddRange(roomParticipantsIds.Except(subRoomParticipants)
+                    .Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId));
+            }
+
+            await messageSender.BroadcastAsync(message, context.RoomContext.RoomId, excludeConnectionIds, context.CancellationToken);
         }
         else if (message.RecipientId != null)
         {

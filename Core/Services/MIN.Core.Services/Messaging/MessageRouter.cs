@@ -32,7 +32,7 @@ public sealed class MessageRouter : IMessageRouter
         this.roomFactory = roomFactory;
     }
 
-    async Task IMessageRouter.RouteAsync(IMessage message, Guid roomId, Guid senderId, CancellationToken cancellationToken)
+    async Task IMessageRouter.RouteAsync(IMessage message, Guid roomId, Guid senderId, CancellationToken cancellationToken, IEnumerable<Guid>? broadcastExcludeIds)
     {
         message.SenderId = senderId;
 
@@ -44,7 +44,7 @@ public sealed class MessageRouter : IMessageRouter
             // Regardless of recipient - they had to put recipientId and public = false if they wanted it to be private
             // So basically dispatcher will handle all of it
 
-            await PublishLocally(message, roomId, cancellationToken);
+            await PublishLocally(message, roomId, broadcastExcludeIds, cancellationToken);
         }
         else
         {
@@ -52,7 +52,7 @@ public sealed class MessageRouter : IMessageRouter
 
             if (message.RequiresLocalDuplication)
             {
-                await PublishLocally(message, roomId, cancellationToken);
+                await PublishLocally(message, roomId, null, cancellationToken); // клиенту broadcast не нужен
             }
 
             var hostId = roomStore.GetRoomHostParticipantId(roomId);
@@ -61,9 +61,8 @@ public sealed class MessageRouter : IMessageRouter
         }
     }
 
-    /// <inheritdoc />
-    public async Task PublishLocally(IMessage message, Guid roomId, CancellationToken cancellationToken)
-        => await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId), cancellationToken);
+    private async Task PublishLocally(IMessage message, Guid roomId, IEnumerable<Guid>? broadcastExcludeIds, CancellationToken cancellationToken)
+        => await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId, broadcastExcludeIds), cancellationToken);
 
     private Guid GetHostConnectionId(Guid roomId, Guid hostId)
     {

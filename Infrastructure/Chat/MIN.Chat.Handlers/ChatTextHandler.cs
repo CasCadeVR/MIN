@@ -1,16 +1,16 @@
-﻿using MIN.Core.Handlers.Contracts;
-using MIN.Core.Handlers.Contracts.Models;
+﻿using MIN.Chat.Events;
 using MIN.Chat.Messaging;
-using MIN.Chat.Events;
-using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Messaging.Contracts;
 using MIN.Core.Events.Contracts;
-using MIN.Helpers.Contracts.Interfaces;
+using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Messaging.Contracts;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Handlers;
 
-internal sealed class ChatTextHandler : IMessageHandler, IChatHandlerAnchor
+internal sealed class ChatTextHandler : IMessageHandler
 {
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;

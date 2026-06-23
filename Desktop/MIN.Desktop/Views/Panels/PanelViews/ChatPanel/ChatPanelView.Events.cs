@@ -8,6 +8,7 @@ using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Panels.SidePanelViews;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
+using MIN.Sessions.Core.Events;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -21,6 +22,7 @@ public partial class ChatPanelView
         eventTokens =
         [
             eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived),
+            eventBus.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived),
             eventBus.Subscribe<FileMetaDataMessageReceivedEvent>(OnFileMetaDataMessageReceived),
             eventBus.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted),
             eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted),
@@ -51,7 +53,25 @@ public partial class ChatPanelView
             });
             NotifyIfNeeded(eventMessage.Message);
         }, null);
-        await Task.CompletedTask;
+    }
+
+    private async Task OnSessionReadyMessageReceived(SessionReadyMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != roomId)
+        {
+            return;
+        }
+
+        uiContext.Post(_ =>
+        {
+            AddMessageToChatFlow(eventMessage.Message);
+            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
+            {
+                RoomId = roomId,
+                DescribableMessage = eventMessage.Message
+            });
+            NotifyIfNeeded(eventMessage.Message);
+        }, null);
     }
 
     #region File related
@@ -131,7 +151,7 @@ public partial class ChatPanelView
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != roomId)
+        if (eventMessage.RoomId != roomId)
         {
             return;
         }
@@ -154,7 +174,7 @@ public partial class ChatPanelView
 
     private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != roomId)
+        if (eventMessage.RoomId != roomId)
         {
             return;
         }

@@ -1,4 +1,3 @@
-using System.Net;
 using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
@@ -47,34 +46,11 @@ public partial class TcpDirectConnectForm : StyledForm
         Title.ForeColor = ColorScheme.TextOnAccent;
     }
 
-    private void ValidateIP()
-    {
-        if (!IPAddress.TryParse(ipAddress.Text, out _))
-        {
-            try
-            {
-                var iPHostEntry = Dns.GetHostEntry(ipAddress.Text);
-                if (iPHostEntry.AddressList.Length == 0)
-                {
-                    throw new InvalidOperationException("IP Адрес задан в неккоретном формате");
-                }
-                else
-                {
-                    ipAddress.Text = iPHostEntry.AddressList.First().ToString();
-                }
-            }
-            catch (Exception)
-            {
-                throw new InvalidOperationException("DNS не смог распознать IP адрес");
-            }
-        }
-    }
-
     private void connectButton_Click(object sender, EventArgs e)
     {
         try
         {
-            ValidateIP();
+            ipAddress.Text = IpAddressParser.ValidateIP(ipAddress.Text);
         }
         catch (Exception ex) when (ex is InvalidOperationException)
         {

@@ -74,7 +74,7 @@ namespace MIN.Desktop.Components
             // 
             splitContainer.Panel2.Controls.Add(connectButton);
             splitContainer.Panel2.Controls.Add(tableLayoutPanelLabels);
-            splitContainer.Size = new Size(251, 261);
+            splitContainer.Size = new Size(251, 257);
             splitContainer.SplitterDistance = 55;
             splitContainer.TabIndex = 1;
             // 
@@ -113,7 +113,7 @@ namespace MIN.Desktop.Components
             connectButton.FlatStyle = FlatStyle.Flat;
             connectButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             connectButton.ForeColor = Color.FromArgb(248, 249, 255);
-            connectButton.Location = new Point(0, 158);
+            connectButton.Location = new Point(0, 154);
             connectButton.Name = "connectButton";
             connectButton.Padding = new Padding(8, 4, 8, 4);
             connectButton.Size = new Size(251, 44);
@@ -333,7 +333,7 @@ namespace MIN.Desktop.Components
             Controls.Add(splitContainer);
             Margin = new Padding(5);
             Name = "RoomDiscoveryCard";
-            Size = new Size(251, 261);
+            Size = new Size(251, 257);
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();

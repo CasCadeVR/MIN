@@ -71,14 +71,13 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
         this.fileMetadataMessage = fileMetadataMessage;
         this.localParticipant = localParticipant;
 
-        cachedFormat = fileInterractButton.Text = fileTransferFeatureCollection.FileHelperService
-            .GetFileType(fileMetadataMessage.FileName)
-            .Substring(1);
+        cachedFormat = fileTransferFeatureCollection.FileHelperService
+            .GetFileType(fileMetadataMessage.FileName);
 
         downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
         uiContext = SynchronizationContext.Current
-            ?? throw new InvalidOperationException("");
+            ?? throw new InvalidOperationException("Must be created on UI thread");
 
         FillLabels();
         ApplyStylings();
@@ -108,7 +107,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 
     private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+        if (eventMessage.FileMetadataId != fileMetadataMessage.Id)
         {
             return;
         }
@@ -117,7 +116,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 
         fileTransferProgressSubsciptionToken = eventBus.Subscribe((FileTransferProgressEvent e, CancellationToken _) =>
         {
-            if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+            if (eventMessage.FileMetadataId != fileMetadataMessage.Id)
             {
                 return Task.CompletedTask;
             }
@@ -145,8 +144,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId
-            || eventMessage.FileMetadataId != fileMetadataMessage.Id
+        if (eventMessage.FileMetadataId != fileMetadataMessage.Id
             || eventMessage.SenderId != localParticipant.Id)
         {
             return;
@@ -168,7 +166,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
 
     private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+        if (eventMessage.FileMetadataId != fileMetadataMessage.Id)
         {
             return;
         }
@@ -213,9 +211,7 @@ public partial class ChatFileMessageCard : BaseChatMessageCard, IDisposable
         fileName.Text = fileMetadataMessage.FileName;
         fileSize.Text = fileTransferFeatureCollection.FileHelperService
             .FormatFileSize(fileMetadataMessage.FileSize);
-        fileInterractButton.Text = fileTransferFeatureCollection.FileHelperService
-            .GetFileType(fileMetadataMessage.FileName)
-            .Substring(1);
+        fileInterractButton.Text = cachedFormat;
     }
 
     private void fileInterractButton_MouseEnter(object sender, EventArgs e)

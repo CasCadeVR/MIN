@@ -59,14 +59,18 @@ public sealed class FileHelperService : IFileHelperService
         return !string.IsNullOrEmpty(extension) && imageExtensions.Contains(extension);
     }
 
-    string IFileHelperService.GetMimeType(string fileName)
+    /// <inheritdoc />
+    public string GetMimeType(string fileName)
     {
         var extension = Path.GetExtension(fileName);
         return mimeTypes.TryGetValue(extension, out var mime) ? mime : "application/octet-stream";
     }
 
     string IFileHelperService.GetFileType(string fileName)
-        => Path.GetExtension(fileName);
+    {
+        var extension = Path.GetExtension(fileName);
+        return extension == string.Empty ? GetMimeType(fileName) : extension.Substring(1);
+    }
 
     long IFileHelperService.GetFileSize(string filePath)
     {

@@ -2,7 +2,6 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
-using MIN.Core.Messaging.Stateless.RoomRelated.History;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Components;
 using MIN.Desktop.Components.Labels;
@@ -11,6 +10,7 @@ using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Views.Components;
 using MIN.FileTransfer.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -47,6 +47,9 @@ public partial class ChatPanelView
             {
                 case ChatTextMessage m:
                     rowControl = CreateTextMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                    break;
+                case SessionReadyMessage m:
+                    rowControl = CreateSessionMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
                     break;
                 case FileMetadataMessage m:
                     rowControl = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
@@ -138,26 +141,14 @@ public partial class ChatPanelView
         loadMoreLabel = null;
     }
 
-    async void OnLoadMoreClicked(object? sender, EventArgs e)
+    private async void OnLoadMoreClicked(object? sender, EventArgs e)
     {
         var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
         var memoryCount = context.Messages.GetMessageCount();
 
-        var messageRouter = featureCollection.Core.MessageRouter;
-
         if (memoryCount < room.TotalMessageCount)
         {
-            var request = new ChatHistoryRequestMessage
-            {
-                RoomId = roomId,
-                Page = loadedPage + 1,
-                PageSize = StoreConstants.MessagesPageSize,
-            };
-
-            await messageRouter.RouteAsync(request,
-                roomId,
-                localParticipant.Id,
-                formCts.Token);
+            await featureCollection.Chat.ChatRoomService.SendChatHistoryRequest(roomId, loadedPage + 1, formCts.Token);
         }
         else
         {
@@ -214,6 +205,31 @@ public partial class ChatPanelView
             InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
         }
         ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
+        lastChatMessage = msg;
+        return card;
+    }
+
+    private ChatSessionMessageCard CreateSessionMessageCard(SessionReadyMessage msg, ChatMessageRow row,
+           bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
+    {
+        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
+        var minutesPassed = CalculateTimePadding(msg.Timestamp);
+
+        var card = new ChatSessionMessageCard(featureCollection.Sessions,
+            featureCollection.Core.EventBus, roomId,
+            msg, localParticipant, isHost, removeHeaders)
+        {
+            Anchor = isSelf ? AnchorStyles.Right : AnchorStyles.Left,
+            Margin = new Padding(20, 0, 20, 0),
+        };
+        card.OnJoinRequested += () => OnSessionJoinRequested(msg);
+
+        if (!withAppendOnTop)
+        {
+            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+        }
+        ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
+        row.Height = card.Height;
         lastChatMessage = msg;
         return card;
     }

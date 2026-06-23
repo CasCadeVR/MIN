@@ -18,9 +18,9 @@ public class BaseContextMenuStrip : ContextMenuStrip
     /// <inheritdoc cref="BaseContextMenuStrip.ApplyBaseStyles"/>
     protected virtual void ApplyBaseStyles()
     {
-        Size = new Size(181, 48);
+        Size = new Size(200, 48);
         Font = FontScheme.Default;
         ForeColor = ColorScheme.TextPrimary;
-        BackColor = ColorScheme.ChatAreaBackground;
+        BackColor = ColorScheme.PrimaryAccent;
     }
 }

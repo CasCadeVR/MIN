@@ -36,6 +36,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
             Name = "StyledForm";
+            StartPosition = FormStartPosition.CenterParent;
             Text = "StyledForm";
             ResumeLayout(false);
         }

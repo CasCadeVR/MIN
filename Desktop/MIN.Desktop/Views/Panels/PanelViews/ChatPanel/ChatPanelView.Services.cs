@@ -2,6 +2,8 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.FileTransfer.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
+using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -36,6 +38,21 @@ public partial class ChatPanelView
         );
     }
 
+    private async Task OnSessionJoinRequested(SessionReadyMessage sessionReadyMessage)
+    {
+        try
+        {
+            await featureCollection.Chat.ChatSessionService.SendSessionJoinRequest(roomId,
+                sessionReadyMessage,
+                formCts.Token
+            );
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            MessageBox.Show(e.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
     private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
     {
         await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
@@ -60,6 +77,9 @@ public partial class ChatPanelView
 
     private async Task SendSelfStatusChangedMessage(OnlineStatus newStatus)
     {
+#if DEBUG
+        return;
+#else
         try
         {
             await featureCollection.Chat.ChatStatusService.SendSelfOnlineStatusChangedAsync(roomId,
@@ -68,6 +88,19 @@ public partial class ChatPanelView
             );
         }
         catch { }
+#endif
+    }
+
+    private async void SendSessionStartMessage(Session session)
+    {
+        try
+        {
+            await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, formCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            MessageBox.Show(e.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private async Task SendMessage()

@@ -3,6 +3,7 @@ using MIN.Core.DI.FeatureCollection;
 using MIN.Discovery.DI.FeatureCollection;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.Helpers.DI.FeatureCollection;
+using MIN.Sessions.Core.DI.FeatureCollection;
 
 namespace MIN.DI.FeatureCollection;
 
@@ -25,4 +26,7 @@ public interface IMinFeatureCollection
 
     /// <inheritdoc cref="IHelperFeatureCollection"/>
     IHelperFeatureCollection Helper { get; }
+
+    /// <inheritdoc cref="ISessionFeatureCollection"/>
+    ISessionFeatureCollection Sessions { get; }
 }

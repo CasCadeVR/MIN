@@ -19,11 +19,6 @@ public class ChatHistoryResponseMessage : BaseMessage
     public override bool RequireStreamAcks => true;
 
     /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Полученые сообщения
     /// </summary>
     public List<IMessage> Messages { get; set; } = [];

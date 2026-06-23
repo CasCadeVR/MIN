@@ -81,7 +81,7 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
         downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
         uiContext = SynchronizationContext.Current
-            ?? throw new InvalidOperationException("");
+            ?? throw new InvalidOperationException("Must be created on UI thread");
 
         FillLabels();
         ApplyStylings();
@@ -111,7 +111,7 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
 
     private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+        if (eventMessage.FileMetadataId != fileMetadataMessage.Id)
         {
             return;
         }
@@ -120,7 +120,7 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
 
         fileTransferProgressSubsciptionToken = eventBus.Subscribe((FileTransferProgressEvent e, CancellationToken _) =>
         {
-            if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+            if (eventMessage.FileMetadataId != fileMetadataMessage.Id)
             {
                 return Task.CompletedTask;
             }
@@ -150,8 +150,7 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
 
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId
-            || eventMessage.FileMetadataId != fileMetadataMessage.Id
+        if (eventMessage.FileMetadataId != fileMetadataMessage.Id
             || eventMessage.SenderId != localParticipant.Id)
         {
             return;
@@ -173,7 +172,7 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
 
     private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != fileMetadataMessage.RoomId || eventMessage.FileMetadataId != fileMetadataMessage.Id)
+        if (eventMessage.FileMetadataId != fileMetadataMessage.Id)
         {
             return;
         }

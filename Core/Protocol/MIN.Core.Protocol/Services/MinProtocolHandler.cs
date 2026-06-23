@@ -13,6 +13,8 @@ namespace MIN.Core.Protocol.Services;
 public sealed class MinProtocolHandler : IProtocolHandler
 {
     private const string ResponseStarter = "MIN";
+    private const int ClientSideTimuout = 5;
+    private const int ServerSideTimuout = 10;
     private readonly ITransport transport;
     private readonly ILoggerProvider logger;
 
@@ -70,7 +72,7 @@ public sealed class MinProtocolHandler : IProtocolHandler
 
             transport.ConnectionStateChanged -= ConnectionStateChangedHandler;
 
-            if (!e.IsConnected)
+            if (!e.IsConnected && !tcs.Task.IsCompleted)
             {
                 logger.Log("Protocol client: сервер разорвал соединения");
                 tcs.TrySetResult(new PreambleResult { IsSuccess = false, ErrorMessage = "Конечное подключение не соответсвует MIN протоколу (Сервер разорвал соединение)" });
@@ -82,11 +84,12 @@ public sealed class MinProtocolHandler : IProtocolHandler
 
         var request = Encoding.UTF8.GetBytes(ResponseStarter);
         logger.Log($"Protocol client: отправляю запрос на соединение {connectionId}");
+        await Task.Delay(10, cancellationToken); // даём серверу время осознать
         await transport.SendAsync(request, connectionId, null, cancellationToken);
 
         try
         {
-            var timeout = TimeSpan.FromSeconds(5);
+            var timeout = TimeSpan.FromSeconds(ClientSideTimuout);
             var result = await tcs.Task.WaitAsync(timeout, cancellationToken);
             return result;
         }
@@ -96,6 +99,11 @@ public sealed class MinProtocolHandler : IProtocolHandler
             transport.ConnectionStateChanged -= ConnectionStateChangedHandler;
             logger.Log($"Protocol client: таймаут ожидания ответа от {connectionId}");
             return new PreambleResult { IsSuccess = false, ErrorMessage = "Время ожидания ответа вышло" };
+        }
+        finally
+        {
+            transport.RawMessageReceived -= RawMessageReceivedHandler;
+            transport.ConnectionStateChanged -= ConnectionStateChangedHandler;
         }
     }
 
@@ -138,7 +146,7 @@ public sealed class MinProtocolHandler : IProtocolHandler
 
         try
         {
-            return await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+            return await tcs.Task.WaitAsync(TimeSpan.FromSeconds(ServerSideTimuout), cancellationToken);
         }
         catch (TimeoutException)
         {

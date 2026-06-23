@@ -11,10 +11,10 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class HandshakeHandler : IMessageHandler
 {
     private readonly IMessageEncryptor encryptor;
-    private readonly IGracefulDisconnector gracefulDisconnector;
+    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
     private readonly IVersionProvider versionProvider;
@@ -23,13 +23,13 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
     /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
     /// </summary>
     public HandshakeHandler(IMessageEncryptor encryptor,
-        IGracefulDisconnector gracefulDisconnector,
+        INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
         IVersionProvider versionProvider,
         ILoggerProvider logger)
     {
         this.encryptor = encryptor;
-        this.gracefulDisconnector = gracefulDisconnector;
+        this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
         this.versionProvider = versionProvider;
         this.logger = logger;
@@ -51,9 +51,11 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
             if (!versionProvider.IsVersionCompatible(handshakeMessage.Version))
             {
                 var clientOnOlderVersion = selfVersion > handshakeMessage.Version ? "Вы" : "Хост";
-                await gracefulDisconnector.DisconnectWithReasonAsync(context.ConnectionId,
+                await networkErrorHandler.SendErrorAsync(
+                    $"{clientOnOlderVersion} на устаревшей версии: \nВаша версия - {handshakeMessage.Version}\nВерсия хоста комнаты - {selfVersion}",
+                    handshakeMessage.Participant.Id,
                     context.RoomContext.RoomId,
-                   $"{clientOnOlderVersion} на устаревшей версии: \nВаша версия - {handshakeMessage.Version}\nВерсия хоста комнаты - {selfVersion}");
+                    critical: true);
                 return HandlerResult.Success();
             }
 
@@ -73,10 +75,7 @@ internal sealed class HandshakeHandler : IMessageHandler, ICoreHandlerAnchor
 
             logger.Log($"Сессия с получателем {handshakeAckMessage.Participant.Name} инициализирована");
 
-            return HandlerResult.WithResponse(new RoomJoinRequestMessage()
-            {
-                RoomId = context.RoomContext.RoomId
-            });
+            return HandlerResult.WithResponse(new RoomJoinRequestMessage());
         }
 
         return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(HandshakeHandler)} - {message.GetType()}");

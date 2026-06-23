@@ -15,6 +15,7 @@
     <ProjectReference Include="..\..\Protocol\MIN.Core.Protocol.Contracts\MIN.Core.Protocol.Contracts.csproj" />
     <ProjectReference Include="..\..\Serialization\MIN.Core.Serialization.Contracts\MIN.Core.Serialization.Contracts.csproj" />
     <ProjectReference Include="..\..\Streaming\MIN.Core.Streaming.Contracts\MIN.Core.Streaming.Contracts.csproj" />
+    <ProjectReference Include="..\..\SubRooms\MIN.Core.SubRooms.Contracts\MIN.Core.SubRooms.Contracts.csproj" />
     <ProjectReference Include="..\MIN.Core.Services.Contracts\MIN.Core.Services.Contracts.csproj" />
   </ItemGroup>
 

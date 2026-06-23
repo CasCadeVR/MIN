@@ -8,9 +8,9 @@ namespace MIN.Core.Events.Events;
 public sealed class DisconnectAckReceived : BaseEvent
 {
     /// <summary>
-    /// Идентификатор соединения
+    /// Идентификатор участника
     /// </summary>
-    public Guid ConnectionId { get; init; }
+    public Guid ParticipantId { get; init; }
 
     /// <summary>
     /// Идентификатор соединения

@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Components.Controls.ContextMenuStrips;
+﻿using MIN.Desktop.Components.Controls.ContextMenuStrips.ToolStripMenuItems;
+
+namespace MIN.Desktop.Components.Controls.ContextMenuStrips;
 
 /// <summary>
 /// <see cref="ContextMenuStrip"/> для <see cref="ChatFileMessageCard"/>
@@ -15,10 +17,7 @@ public class FileMessageContextMenuStrip : ContextMenuStrip
     /// </summary>
     public FileMessageContextMenuStrip()
     {
-        var showPictureToolStripMenuItem = new ToolStripMenuItem()
-        {
-            Size = new Size(180, 22)
-        };
+        var showPictureToolStripMenuItem = new BaseToolStripMenuItem();
         showPictureToolStripMenuItem.Click += PictureBoxContextMenuStrip_Click;
         Items.AddRange(new ToolStripItem[] { showPictureToolStripMenuItem });
     }

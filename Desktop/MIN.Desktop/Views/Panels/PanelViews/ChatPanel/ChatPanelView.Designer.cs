@@ -31,7 +31,7 @@
             splitContainerSideBar = new SplitContainer();
             chatFlow = new MIN.Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView();
             tableLayoutPanelButtons = new TableLayoutPanel();
-            fileButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            actionButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             sendButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
             messageTextBox = new MIN.Desktop.Components.Controls.TextBoxes.MessageTextBox();
             multiFileAttachmentUploader = new MIN.Desktop.Components.ComplexControls.MultiFileAttachmentUploader();
@@ -61,6 +61,7 @@
             tableLayoutPanelHeader = new TableLayoutPanel();
             Title = new MIN.Desktop.Components.Labels.Heading1Label();
             openFileDialog = new OpenFileDialog();
+            chatActionContextMenuStrip = new MIN.Desktop.Components.Controls.ContextMenuStrips.ChatActionContextMenuStrip();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
@@ -107,7 +108,7 @@
             splitContainerSideBar.Panel2.Controls.Add(tableLayoutPanelStats);
             splitContainerSideBar.Panel2MinSize = 100;
             splitContainerSideBar.Size = new Size(821, 643);
-            splitContainerSideBar.SplitterDistance = 624;
+            splitContainerSideBar.SplitterDistance = 633;
             splitContainerSideBar.SplitterWidth = 1;
             splitContainerSideBar.TabIndex = 1;
             // 
@@ -120,7 +121,7 @@
             chatFlow.FlowDirection = FlowDirection.BottomUp;
             chatFlow.Location = new Point(0, 0);
             chatFlow.Name = "chatFlow";
-            chatFlow.Size = new Size(624, 468);
+            chatFlow.Size = new Size(633, 468);
             chatFlow.TabIndex = 6;
             chatFlow.WrapContents = false;
             chatFlow.DragDrop += chatFlow_DragDrop;
@@ -135,7 +136,7 @@
             tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 45F));
             tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
-            tableLayoutPanelButtons.Controls.Add(fileButton, 0, 2);
+            tableLayoutPanelButtons.Controls.Add(actionButton, 0, 2);
             tableLayoutPanelButtons.Controls.Add(sendButton, 2, 2);
             tableLayoutPanelButtons.Controls.Add(messageTextBox, 1, 2);
             tableLayoutPanelButtons.Controls.Add(multiFileAttachmentUploader, 0, 1);
@@ -149,26 +150,26 @@
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 16F));
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 115F));
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Absolute, 8F));
-            tableLayoutPanelButtons.Size = new Size(624, 175);
+            tableLayoutPanelButtons.Size = new Size(633, 175);
             tableLayoutPanelButtons.TabIndex = 5;
             // 
-            // fileButton
+            // actionButton
             // 
-            fileButton.BackColor = Color.FromArgb(192, 192, 255);
-            fileButton.BackgroundImage = Properties.Resources.paperclip;
-            fileButton.BackgroundImageLayout = ImageLayout.Zoom;
-            fileButton.Dock = DockStyle.Top;
-            fileButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
-            fileButton.FlatStyle = FlatStyle.Flat;
-            fileButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            fileButton.ForeColor = Color.FromArgb(248, 249, 255);
-            fileButton.Location = new Point(3, 134);
-            fileButton.Name = "fileButton";
-            fileButton.Padding = new Padding(8, 4, 8, 4);
-            fileButton.Size = new Size(39, 38);
-            fileButton.TabIndex = 3;
-            fileButton.UseVisualStyleBackColor = false;
-            fileButton.Click += fileButton_Click;
+            actionButton.BackColor = Color.FromArgb(192, 192, 255);
+            actionButton.BackgroundImage = Properties.Resources.plus;
+            actionButton.BackgroundImageLayout = ImageLayout.Zoom;
+            actionButton.Dock = DockStyle.Top;
+            actionButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            actionButton.FlatStyle = FlatStyle.Flat;
+            actionButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            actionButton.ForeColor = Color.FromArgb(248, 249, 255);
+            actionButton.Location = new Point(3, 134);
+            actionButton.Name = "actionButton";
+            actionButton.Padding = new Padding(8, 4, 8, 4);
+            actionButton.Size = new Size(39, 38);
+            actionButton.TabIndex = 3;
+            actionButton.UseVisualStyleBackColor = false;
+            actionButton.Click += actionButton_Click;
             // 
             // sendButton
             // 
@@ -180,7 +181,7 @@
             sendButton.FlatStyle = FlatStyle.Flat;
             sendButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             sendButton.ForeColor = Color.FromArgb(248, 249, 255);
-            sendButton.Location = new Point(579, 134);
+            sendButton.Location = new Point(588, 134);
             sendButton.Name = "sendButton";
             sendButton.Padding = new Padding(8, 4, 8, 4);
             sendButton.Size = new Size(42, 38);
@@ -203,7 +204,7 @@
             messageTextBox.Name = "messageTextBox";
             messageTextBox.PlaceholderText = "Сообщение";
             messageTextBox.ScrollBars = ScrollBars.Vertical;
-            messageTextBox.Size = new Size(525, 35);
+            messageTextBox.Size = new Size(534, 35);
             messageTextBox.TabIndex = 4;
             messageTextBox.TextChanged += messageTextBox_TextChanged;
             messageTextBox.KeyDown += messageTextBox_KeyDown;
@@ -220,7 +221,7 @@
             multiFileAttachmentUploader.Name = "multiFileAttachmentUploader";
             multiFileAttachmentUploader.OnLastFileRemoved = null;
             multiFileAttachmentUploader.Padding = new Padding(5);
-            multiFileAttachmentUploader.Size = new Size(624, 115);
+            multiFileAttachmentUploader.Size = new Size(633, 115);
             multiFileAttachmentUploader.TabIndex = 5;
             // 
             // statusLabel
@@ -233,7 +234,7 @@
             statusLabel.ForeColor = Color.Black;
             statusLabel.Location = new Point(3, 0);
             statusLabel.Name = "statusLabel";
-            statusLabel.Size = new Size(618, 16);
+            statusLabel.Size = new Size(627, 16);
             statusLabel.TabIndex = 6;
             statusLabel.Text = "statusLabel";
             statusLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -246,7 +247,7 @@
             participantsFlow.FlowDirection = FlowDirection.TopDown;
             participantsFlow.Location = new Point(0, 270);
             participantsFlow.Name = "participantsFlow";
-            participantsFlow.Size = new Size(196, 373);
+            participantsFlow.Size = new Size(187, 373);
             participantsFlow.TabIndex = 5;
             participantsFlow.WrapContents = false;
             participantsFlow.Resize += participantsFlow_Resize;
@@ -289,7 +290,7 @@
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 11.9688425F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 11.9649839F));
             tableLayoutPanelStats.RowStyles.Add(new RowStyle(SizeType.Percent, 4.30526543F));
-            tableLayoutPanelStats.Size = new Size(196, 270);
+            tableLayoutPanelStats.Size = new Size(187, 270);
             tableLayoutPanelStats.TabIndex = 4;
             // 
             // connectionPort
@@ -299,10 +300,10 @@
             connectionPort.BorderStyle = BorderStyle.None;
             connectionPort.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             connectionPort.ForeColor = Color.Black;
-            connectionPort.Location = new Point(101, 203);
+            connectionPort.Location = new Point(96, 203);
             connectionPort.Name = "connectionPort";
             connectionPort.ReadOnly = true;
-            connectionPort.Size = new Size(92, 18);
+            connectionPort.Size = new Size(88, 18);
             connectionPort.TabIndex = 30;
             connectionPort.Text = "Загрузка...";
             // 
@@ -312,7 +313,7 @@
             connectionPortLabel.AutoSize = true;
             connectionPortLabel.Font = new Font("Segoe UI", 8.25F);
             connectionPortLabel.ForeColor = Color.Black;
-            connectionPortLabel.Location = new Point(58, 206);
+            connectionPortLabel.Location = new Point(53, 206);
             connectionPortLabel.Name = "connectionPortLabel";
             connectionPortLabel.Size = new Size(37, 13);
             connectionPortLabel.TabIndex = 27;
@@ -324,7 +325,7 @@
             connectionAddressLabel.AutoSize = true;
             connectionAddressLabel.Font = new Font("Segoe UI", 8.25F);
             connectionAddressLabel.ForeColor = Color.Black;
-            connectionAddressLabel.Location = new Point(54, 179);
+            connectionAddressLabel.Location = new Point(49, 179);
             connectionAddressLabel.Name = "connectionAddressLabel";
             connectionAddressLabel.Size = new Size(41, 13);
             connectionAddressLabel.TabIndex = 25;
@@ -336,7 +337,7 @@
             createdAt.AutoSize = true;
             createdAt.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             createdAt.ForeColor = Color.FromArgb(0, 0, 0);
-            createdAt.Location = new Point(101, 96);
+            createdAt.Location = new Point(96, 96);
             createdAt.Name = "createdAt";
             createdAt.Size = new Size(74, 17);
             createdAt.TabIndex = 24;
@@ -348,7 +349,7 @@
             createdAtLabel.AutoSize = true;
             createdAtLabel.Font = new Font("Segoe UI", 8.25F);
             createdAtLabel.ForeColor = Color.Black;
-            createdAtLabel.Location = new Point(41, 98);
+            createdAtLabel.Location = new Point(36, 98);
             createdAtLabel.Name = "createdAtLabel";
             createdAtLabel.Size = new Size(54, 13);
             createdAtLabel.TabIndex = 23;
@@ -382,7 +383,7 @@
             editButton.FlatStyle = FlatStyle.Flat;
             editButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             editButton.ForeColor = Color.FromArgb(248, 249, 255);
-            editButton.Location = new Point(162, 3);
+            editButton.Location = new Point(153, 3);
             editButton.Name = "editButton";
             editButton.Size = new Size(31, 31);
             editButton.TabIndex = 17;
@@ -396,7 +397,7 @@
             hostNameLabel.AutoSize = true;
             hostNameLabel.Font = new Font("Segoe UI", 8.25F);
             hostNameLabel.ForeColor = Color.Black;
-            hostNameLabel.Location = new Point(62, 71);
+            hostNameLabel.Location = new Point(57, 71);
             hostNameLabel.Name = "hostNameLabel";
             hostNameLabel.Size = new Size(33, 13);
             hostNameLabel.TabIndex = 18;
@@ -408,7 +409,7 @@
             hostName.AutoSize = true;
             hostName.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             hostName.ForeColor = Color.FromArgb(0, 0, 0);
-            hostName.Location = new Point(101, 69);
+            hostName.Location = new Point(96, 69);
             hostName.Name = "hostName";
             hostName.Size = new Size(74, 17);
             hostName.TabIndex = 9;
@@ -420,7 +421,7 @@
             notificationComboBox.AutoSize = true;
             notificationComboBox.BackColor = Color.White;
             tableLayoutPanelStats.SetColumnSpan(notificationComboBox, 2);
-            notificationComboBox.Location = new Point(48, 41);
+            notificationComboBox.Location = new Point(43, 41);
             notificationComboBox.Name = "notificationComboBox";
             notificationComboBox.Size = new Size(100, 19);
             notificationComboBox.TabIndex = 22;
@@ -434,7 +435,7 @@
             tableLayoutPanelStats.SetColumnSpan(participantsLabel, 2);
             participantsLabel.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsLabel.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsLabel.Location = new Point(59, 253);
+            participantsLabel.Location = new Point(54, 253);
             participantsLabel.Name = "participantsLabel";
             participantsLabel.Size = new Size(78, 17);
             participantsLabel.TabIndex = 16;
@@ -446,7 +447,7 @@
             computerLabel.AutoSize = true;
             computerLabel.Font = new Font("Segoe UI", 8.25F);
             computerLabel.ForeColor = Color.Black;
-            computerLabel.Location = new Point(36, 152);
+            computerLabel.Location = new Point(31, 152);
             computerLabel.Name = "computerLabel";
             computerLabel.Size = new Size(59, 13);
             computerLabel.TabIndex = 20;
@@ -458,7 +459,7 @@
             computer.AutoSize = true;
             computer.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             computer.ForeColor = Color.FromArgb(0, 0, 0);
-            computer.Location = new Point(101, 150);
+            computer.Location = new Point(96, 150);
             computer.Name = "computer";
             computer.Size = new Size(74, 17);
             computer.TabIndex = 13;
@@ -470,7 +471,7 @@
             classroomLabel.AutoSize = true;
             classroomLabel.Font = new Font("Segoe UI", 8.25F);
             classroomLabel.ForeColor = Color.Black;
-            classroomLabel.Location = new Point(41, 125);
+            classroomLabel.Location = new Point(36, 125);
             classroomLabel.Name = "classroomLabel";
             classroomLabel.Size = new Size(54, 13);
             classroomLabel.TabIndex = 19;
@@ -482,7 +483,7 @@
             classroom.AutoSize = true;
             classroom.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             classroom.ForeColor = Color.FromArgb(0, 0, 0);
-            classroom.Location = new Point(101, 123);
+            classroom.Location = new Point(96, 123);
             classroom.Name = "classroom";
             classroom.Size = new Size(74, 17);
             classroom.TabIndex = 12;
@@ -494,7 +495,7 @@
             onlineLabel.AutoSize = true;
             onlineLabel.Font = new Font("Segoe UI", 8.25F);
             onlineLabel.ForeColor = Color.Black;
-            onlineLabel.Location = new Point(53, 233);
+            onlineLabel.Location = new Point(48, 233);
             onlineLabel.Name = "onlineLabel";
             onlineLabel.Size = new Size(42, 13);
             onlineLabel.TabIndex = 21;
@@ -506,7 +507,7 @@
             participantsInfo.AutoSize = true;
             participantsInfo.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold);
             participantsInfo.ForeColor = Color.FromArgb(0, 0, 0);
-            participantsInfo.Location = new Point(101, 231);
+            participantsInfo.Location = new Point(96, 231);
             participantsInfo.Name = "participantsInfo";
             participantsInfo.Size = new Size(74, 17);
             participantsInfo.TabIndex = 15;
@@ -519,10 +520,10 @@
             connectionAddress.BorderStyle = BorderStyle.None;
             connectionAddress.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
             connectionAddress.ForeColor = Color.Black;
-            connectionAddress.Location = new Point(101, 176);
+            connectionAddress.Location = new Point(96, 176);
             connectionAddress.Name = "connectionAddress";
             connectionAddress.ReadOnly = true;
-            connectionAddress.Size = new Size(92, 18);
+            connectionAddress.Size = new Size(88, 18);
             connectionAddress.TabIndex = 29;
             connectionAddress.Text = "Загрузка...";
             // 
@@ -596,6 +597,13 @@
             openFileDialog.Multiselect = true;
             openFileDialog.ShowPreview = true;
             // 
+            // chatActionContextMenuStrip
+            // 
+            chatActionContextMenuStrip.Name = "chatActionContextMenuStrip";
+            chatActionContextMenuStrip.Size = new Size(216, 48);
+            chatActionContextMenuStrip.StartSessionClick = null;
+            chatActionContextMenuStrip.UploadFileClick = null;
+            // 
             // ChatPanelView
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -645,7 +653,7 @@
         private Desktop.Components.Controls.Buttons.InvertedButton disconnectButton;
         private Desktop.Components.Controls.Buttons.CommonButton aboutButton;
         private TableLayoutPanel tableLayoutPanelButtons;
-        private Desktop.Components.Controls.Buttons.CommonButton fileButton;
+        private Desktop.Components.Controls.Buttons.CommonButton actionButton;
         private Desktop.Components.Controls.Buttons.CommonButton sendButton;
         private Desktop.Components.Controls.TextBoxes.MessageTextBox messageTextBox;
         private OpenFileDialog openFileDialog;
@@ -655,5 +663,6 @@
         private Desktop.Components.Labels.CaptionLabel connectionPortLabel;
         private Desktop.Components.Textboxes.ReadonlyTextbox connectionAddress;
         private Desktop.Components.Textboxes.ReadonlyTextbox connectionPort;
+        private Desktop.Components.Controls.ContextMenuStrips.ChatActionContextMenuStrip chatActionContextMenuStrip;
     }
 }

@@ -4,7 +4,6 @@ using MIN.Core.Messaging.RoomRelated;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Views.PanelViews;
 using MIN.Desktop.Contracts.Views.PanelViews.Interfaces;
-using MIN.Desktop.Infrastructure.Events;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Extensions;
 
@@ -44,6 +43,7 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
         InitializeNotifications();
         InitializeResizeTimer();
         InitializeTypingTimer();
+        InitializeContextMenuStrips();
         InitializeParentFormWindowStateEvents();
         HideMultiFileAttachmentUploader();
         HideStatusRow();
@@ -94,17 +94,13 @@ public partial class ChatPanelView : StyledPanelView, IPanelInitializeDepended<(
     {
         if (isHost)
         {
-            await featureCollection.Core.RoomHoster.StopHostingAsync(roomId);
             await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
+            await featureCollection.Core.RoomHoster.StopHostingAsync(roomId);
         }
         else
         {
             await featureCollection.Core.RoomConnector.DisconnectAsync(roomId, connectionId);
         }
-
-        await featureCollection.Core.EventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
-        featureCollection.Core.RoomFactory.DestroyContext(roomId);
-        featureCollection.Core.RoomStore.Remove(roomId);
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>

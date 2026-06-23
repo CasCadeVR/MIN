@@ -11,10 +11,11 @@ using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class DisconnectHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class DisconnectHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -22,10 +23,12 @@ internal sealed class DisconnectHandler : IMessageHandler, ICoreHandlerAnchor
     /// </summary>
     public DisconnectHandler(IEventBus eventBus,
         IMessageSender messageSender,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
         this.messageSender = messageSender;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
@@ -44,13 +47,16 @@ internal sealed class DisconnectHandler : IMessageHandler, ICoreHandlerAnchor
                 await messageSender.SendAsync(new DisconnectAckMessage()
                 {
                     Reason = reason,
+                    SenderId = identityService.SelfParticipant.Id,
                 }, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
-                return HandlerResult.Failure(reason, stopPropagation: true, critical: true);
+
+                var uiToShow = "Хост кикнул тебя" + (reason != string.Empty ? $": {reason}" : string.Empty);
+                return HandlerResult.Failure(uiToShow, stopPropagation: true, critical: true);
 
             case DisconnectAckMessage disconnectAckMessage:
                 await eventBus.PublishAsync(new DisconnectAckReceived()
                 {
-                    ConnectionId = context.ConnectionId,
+                    ParticipantId = message.SenderId,
                     RoomId = context.RoomContext.RoomId,
                 }, context.CancellationToken);
                 return HandlerResult.Success();

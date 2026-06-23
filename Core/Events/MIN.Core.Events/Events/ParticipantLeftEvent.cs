@@ -9,6 +9,11 @@ namespace MIN.Core.Events.Events;
 public sealed class ParticipantLeftEvent : BaseEvent
 {
     /// <summary>
+    /// Идентификатор комнаты
+    /// </summary>
+    public Guid RoomId { get; set; }
+
+    /// <summary>
     /// Сообщение о вышедшем участнике
     /// </summary>
     public ParticipantLeftMessage Message { get; init; } = null!;

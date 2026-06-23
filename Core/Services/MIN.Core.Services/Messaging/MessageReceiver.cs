@@ -4,7 +4,6 @@ using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Headers.Contracts.Interfaces;
-using MIN.Core.Messaging.Stateless;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -78,7 +77,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         await dispatcher.DispatchAsync(e.Message,
             new MessageContext(context,
             CoreRegistryConstants.LocalConnectionId,
-            cancellationToken));
+            cancellationToken), e.BroadcastExcludeIds);
     }
 
     private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
@@ -155,11 +154,6 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 
             try
             {
-                if (message is HandshakeAckMessage ackMessage)
-                {
-                    participantInfo = ackMessage.Participant;
-                }
-
                 await dispatcher.DispatchAsync(message, new MessageContext(context, e.ConnectionId, cts.Token));
             }
             catch (Exception ex)

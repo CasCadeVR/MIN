@@ -3,6 +3,7 @@ using MIN.Core.DI.FeatureCollection;
 using MIN.Discovery.DI.FeatureCollection;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.Helpers.DI.FeatureCollection;
+using MIN.Sessions.Core.DI.FeatureCollection;
 
 namespace MIN.DI.FeatureCollection;
 
@@ -24,6 +25,9 @@ public class MinFeatureCollection : IMinFeatureCollection
     /// <inheritdoc />
     public IDiscoveryFeatureCollection Discovery { get; }
 
+    /// <inheritdoc />
+    public ISessionFeatureCollection Sessions { get; }
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MinFeatureCollection"/>
     /// </summary>
@@ -31,12 +35,14 @@ public class MinFeatureCollection : IMinFeatureCollection
         ICoreFeatureCollection core,
         IChatFeatureCollection chat,
         IFileTransferFeatureCollection fileTransfer,
-        IDiscoveryFeatureCollection discovery)
+        IDiscoveryFeatureCollection discovery,
+        ISessionFeatureCollection sessions)
     {
         Helper = helper;
         Core = core;
         Chat = chat;
         FileTransfer = fileTransfer;
         Discovery = discovery;
+        Sessions = sessions;
     }
 }

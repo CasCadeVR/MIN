@@ -9,6 +9,7 @@ using MIN.FileTransfer.DI;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.DI;
 using MIN.Helpers.Services;
+using MIN.Sessions.Core.DI;
 
 namespace MIN.DI;
 
@@ -28,6 +29,7 @@ public class MinModule : Common.Mvc.Module
         services.RegisterModule<ChatModule>();
         services.RegisterModule<FileTransferModule>();
         services.RegisterModule<DiscoveryModule>();
+        services.RegisterModule<SessionModule>();
 
         services.RegisterAsImplementedInterfaces<MinFeatureCollection>(ServiceLifetime.Singleton);
     }

@@ -26,7 +26,6 @@ public sealed class ChatStatusService : IChatStatusService
     {
         var message = new OnlineStatusChangedMessage
         {
-            RoomId = roomId,
             Status = newStatus,
         };
 

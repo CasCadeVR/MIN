@@ -1,4 +1,5 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
@@ -6,6 +7,7 @@ using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Rooms;
@@ -21,6 +23,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     private readonly IMessageRouter messageRouter;
     private readonly IRoomStore roomStore;
     private readonly IRoomFactory roomFactory;
+    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly ILoggerProvider logger;
 
     private CancellationTokenSource cts = null!;
@@ -34,6 +37,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         IMessageRouter messageRouter,
         IRoomStore roomStore,
         IRoomFactory roomFactory,
+        INetworkErrorHandler networkErrorHandler,
         ILoggerProvider logger)
     {
         this.roomConnector = roomConnector;
@@ -42,6 +46,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         this.messageRouter = messageRouter;
         this.roomStore = roomStore;
         this.roomFactory = roomFactory;
+        this.networkErrorHandler = networkErrorHandler;
         this.logger = logger;
     }
 
@@ -55,9 +60,11 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
 
     private async void OnConnectionStateChanged(object? sender, RoomConnectionStateChangedEventArgs e)
     {
+        var roomId = e.RoomId;
+
         try
         {
-            if (!roomStore.RoomExists(e.RoomId))
+            if (!roomStore.RoomExists(roomId))
             {
                 return;
             }
@@ -67,13 +74,13 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
 
             if (!e.IsConnected)
             {
-                var context = roomFactory.GetOrCreateContext(e.RoomId);
+                var context = roomFactory.GetOrCreateContext(roomId);
                 if (!context.Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant))
                 {
                     return;
                 }
 
-                var hostParticipantId = roomStore.GetRoomHostParticipantId(e.RoomId);
+                var hostParticipantId = roomStore.GetRoomHostParticipantId(roomId);
                 var isHostLeaving = hostParticipantId == leavingParticipant.Id;
 
                 needToDisconnect = isHostLeaving;
@@ -81,23 +88,19 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
                 if (isHostLeaving)
                 {
                     leavingMessage = !string.IsNullOrEmpty(e.LeavingMessage) ? leavingMessage : "Хост остановил комнату";
+                    roomStore.Remove(roomId);
+                    roomFactory.DestroyContext(roomId);
+                    await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
                 }
                 else if (context.Participants.TryGetParticipantById(leavingParticipant.Id, out _))
                 {
-                    context.Connections.Unregister(e.ConnectionId);
-                    var participantLeftMessage = new ParticipantLeftMessage()
-                    {
-                        Participant = leavingParticipant,
-                        RoomId = e.RoomId,
-                    };
-
-                    await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, cts.Token);
+                    await HandleConnectionLoss(context, e, hostParticipantId, leavingParticipant);
                 }
             }
 
             await eventBus.PublishAsync(new ConnectionStatusChangedEvent
             {
-                RoomId = e.RoomId,
+                RoomId = roomId,
                 ConnectionId = e.ConnectionId,
                 LeavingMessage = leavingMessage,
                 NeedToDisconnect = needToDisconnect,
@@ -108,6 +111,19 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         {
             logger.Log($"Произошла ошибка во время обработки изменения состояния подключения: {ex.Message}");
         }
+    }
+
+    private async Task HandleConnectionLoss(RoomContext context, RoomConnectionStateChangedEventArgs e,
+        Guid hostParticipantId, ParticipantInfo leavingParticipant)
+    {
+        context.Connections.Unregister(e.ConnectionId);
+        var participantLeftMessage = new ParticipantLeftMessage()
+        {
+            Participant = leavingParticipant,
+            WasKicked = networkErrorHandler.GetDisconnectDetailsFor(leavingParticipant.Id, e.RoomId) != null
+        };
+
+        await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, cts.Token);
     }
 
     /// <inheritdoc />

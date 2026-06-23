@@ -1,13 +1,12 @@
 ﻿using System.Drawing.Imaging;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
 using MIN.Desktop.Components;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Views.Components;
 using MIN.Desktop.Views.Forms.HelperForms;
 using MIN.Desktop.Views.Panels.SidePanelViews;
-using MIN.Core.Entities.Contracts.Enums;
 
 namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 
@@ -118,6 +117,42 @@ public partial class ChatPanelView
 
     #endregion
 
+    #region Context menu strips events
+
+    private void InitializeContextMenuStrips()
+    {
+        chatActionContextMenuStrip.UploadFileClick += () =>
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                foreach (var filePath in openFileDialog.FileNames)
+                {
+                    UploadFile(filePath);
+                }
+            }
+        };
+
+        chatActionContextMenuStrip.StartSessionClick += () =>
+        {
+            var downloadedSessions = featureCollection.Sessions.SessionScanner.DownloadedSessions.Values;
+            if (!downloadedSessions.Any())
+            {
+                MessageBox.Show("У вас не установлена ни одна сессия!", "Выбор активностей", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var choosingForm = new SessionChoosingForm(downloadedSessions);
+            choosingForm.OnSelected += (session) =>
+            {
+                choosingForm.Close();
+                SendSessionStartMessage(session);
+            };
+            choosingForm.ShowDialog();
+        };
+    }
+
+    #endregion
+
     #region Button event attachment
 
     private async void sendButton_Click(object sender, EventArgs e) => await SendMessage();
@@ -141,25 +176,23 @@ public partial class ChatPanelView
             && (editForm.Room.Name != room.Name
             || editForm.Room.MaximumParticipants != room.MaximumParticipants))
         {
-            await featureCollection.Core.MessageRouter.RouteAsync(new RoomInfoUpdatedMessage
+            try
             {
-                Room = editForm.Room
-            }, roomId, localParticipant.Id, formCts.Token);
+                await featureCollection.Chat.ChatRoomService.SendUpdatedRoomInfoAsync(editForm.Room, formCts.Token);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 
-    private void fileButton_Click(object sender, EventArgs e)
+
+    private void actionButton_Click(object sender, EventArgs e)
     {
-        uiContext.Post(_ =>
-        {
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                foreach (var filePath in openFileDialog.FileNames)
-                {
-                    UploadFile(filePath);
-                }
-            }
-        }, this);
+        var location = actionButton.Location;
+        location.Y -= Convert.ToInt32(actionButton.Height * 1.5);
+        chatActionContextMenuStrip.Show(actionButton, location);
     }
 
     private async void disconnectButton_Click(object sender, EventArgs e)

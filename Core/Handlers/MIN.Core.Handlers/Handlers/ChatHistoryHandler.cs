@@ -10,7 +10,7 @@ using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class ChatHistoryHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class ChatHistoryHandler : IMessageHandler
 {
     private readonly IRoomStore roomStore;
     private readonly IRoomHoster roomHoster;
@@ -32,9 +32,11 @@ internal sealed class ChatHistoryHandler : IMessageHandler, ICoreHandlerAnchor
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
+        var roomId = context.RoomContext.RoomId;
+
         if (message is ChatHistoryRequestMessage request)
         {
-            var totalCount = roomStore.GetRoomChatHistoryCountFor(request.SenderId, request.RoomId);
+            var totalCount = roomStore.GetRoomChatHistoryCountFor(request.SenderId, roomId);
             var pageMessages = context.RoomContext
                 .Messages
                 .GetRecentHistory(request.Page, request.PageSize)
@@ -42,7 +44,6 @@ internal sealed class ChatHistoryHandler : IMessageHandler, ICoreHandlerAnchor
 
             return HandlerResult.WithResponse(new ChatHistoryResponseMessage
             {
-                RoomId = request.RoomId,
                 Messages = pageMessages,
                 TotalCount = totalCount,
                 Page = request.Page,
@@ -50,7 +51,6 @@ internal sealed class ChatHistoryHandler : IMessageHandler, ICoreHandlerAnchor
         }
         else if (message is ChatHistoryResponseMessage response)
         {
-            var roomId = context.RoomContext.RoomId;
 
             if (roomStore.GetRoomHostParticipantId(roomId) == response.SenderId
                 && !roomHoster.IsHosting(roomId))
@@ -63,7 +63,7 @@ internal sealed class ChatHistoryHandler : IMessageHandler, ICoreHandlerAnchor
 
             await eventBus.PublishAsync(new ChatHistoryUpdatedEvent()
             {
-                RoomId = context.RoomContext.RoomId,
+                RoomId = roomId,
                 Message = response,
             }, context.CancellationToken);
 

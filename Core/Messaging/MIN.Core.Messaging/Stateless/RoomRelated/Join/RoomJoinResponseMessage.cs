@@ -13,9 +13,4 @@ public sealed class RoomJoinResponseMessage : BaseMessage
 
     /// <inheritdoc />
     public override bool IsPublic => false;
-
-    /// <summary>
-    /// Идентификтор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
 }

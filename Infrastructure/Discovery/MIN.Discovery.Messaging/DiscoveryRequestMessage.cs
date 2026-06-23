@@ -17,7 +17,7 @@ public sealed class DiscoveryRequestMessage : BaseMessage
     public override bool RequiresEncryption => false;
 
     /// <summary>
-    /// Версия протокола, которую поддерживает клиент
+    /// Версия протокола локального обнаружения, которую поддерживает клиент
     /// </summary>
-    public int ProtocolVersion { get; set; } = 1;
+    public int DiscoveryProtocolVersion { get; set; } = 1;
 }

@@ -10,9 +10,4 @@ public sealed class ParticipantAcceptedMessage : BaseMessage
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.ParticipantAccepted;
-
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
 }

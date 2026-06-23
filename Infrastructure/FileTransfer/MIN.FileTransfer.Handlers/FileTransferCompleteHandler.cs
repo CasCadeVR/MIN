@@ -8,7 +8,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
-internal sealed class FileTransferCompleteHandler : IMessageHandler, IFileTransferHandlerAnchor
+internal sealed class FileTransferCompleteHandler : IMessageHandler
 {
     private readonly IFileTransferService fileTransferService;
     private readonly ILoggerProvider logger;

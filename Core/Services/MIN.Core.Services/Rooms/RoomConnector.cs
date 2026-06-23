@@ -1,5 +1,7 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities;
+using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Events;
@@ -24,6 +26,7 @@ public sealed class RoomConnector : IRoomConnector
     private readonly IRoomStore roomStore;
     private readonly IRoomFactory roomFactory;
     private readonly IMessageSender messageSender;
+    private readonly IEventBus eventBus;
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
     private readonly IVersionProvider versionProvider;
@@ -45,6 +48,7 @@ public sealed class RoomConnector : IRoomConnector
         IRoomStore roomStore,
         IRoomFactory roomFactory,
         IMessageSender messageSender,
+        IEventBus eventBus,
         IIdentityService identityService,
         IMessageEncryptor encryptor,
         IVersionProvider versionProvider,
@@ -55,6 +59,7 @@ public sealed class RoomConnector : IRoomConnector
         this.roomStore = roomStore;
         this.roomFactory = roomFactory;
         this.messageSender = messageSender;
+        this.eventBus = eventBus;
         this.identityService = identityService;
         this.encryptor = encryptor;
         this.versionProvider = versionProvider;
@@ -69,7 +74,7 @@ public sealed class RoomConnector : IRoomConnector
         transport.ConnectionStateChanged += Transport_ConnectionStateChanged;
     }
 
-    private void Transport_ConnectionStateChanged(object? sender, Transport.Contracts.Events.ConnectionStateChangedEventArgs e)
+    private async void Transport_ConnectionStateChanged(object? sender, Transport.Contracts.Events.ConnectionStateChangedEventArgs e)
     {
         if (!activeConnections.TryGetValue(e.ConnectionId, out var roomId))
         {
@@ -174,9 +179,15 @@ public sealed class RoomConnector : IRoomConnector
         }
 
         logger.Log($"Я сам иницирую отключение от комнаты с id {roomId} с соединением {connectionId}");
-        await transport.DisconnectAsync(connectionId);
+
         activeRooms.Remove(roomId);
         activeConnections.Remove(connectionId);
+
+        await transport.DisconnectAsync(connectionId);
+
+        roomStore.Remove(roomId);
+        roomFactory.DestroyContext(roomId);
+        await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
     }
 
     bool IRoomConnector.IsConnected(Guid roomId) => activeRooms.ContainsKey(roomId);

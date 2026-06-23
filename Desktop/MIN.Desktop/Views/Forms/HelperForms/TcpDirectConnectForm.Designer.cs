@@ -117,8 +117,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             // connectButton
             // 
+            connectButton.Anchor = AnchorStyles.Right;
             connectButton.BackColor = Color.FromArgb(192, 192, 255);
-            connectButton.Dock = DockStyle.Fill;
             connectButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             connectButton.FlatStyle = FlatStyle.Flat;
             connectButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
@@ -232,7 +232,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             Controls.Add(splitContainer);
             MinimumSize = new Size(379, 241);
             Name = "TcpDirectConnectForm";
-            StartPosition = FormStartPosition.CenterParent;
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "MIN - Подключение напрямую";
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);

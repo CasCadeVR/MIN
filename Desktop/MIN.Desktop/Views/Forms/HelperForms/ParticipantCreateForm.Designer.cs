@@ -113,6 +113,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             // connectButton
             // 
+            connectButton.Anchor = AnchorStyles.Right;
             connectButton.BackColor = Color.FromArgb(192, 192, 255);
             connectButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             connectButton.FlatStyle = FlatStyle.Flat;
@@ -196,7 +197,6 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             Controls.Add(splitContainer);
             MinimumSize = new Size(432, 193);
             Name = "ParticipantCreateForm";
-            StartPosition = FormStartPosition.CenterParent;
             Text = "MIN - Подключение к комнате";
             Load += ParticipantCreateForm_Load;
             splitContainer.Panel1.ResumeLayout(false);

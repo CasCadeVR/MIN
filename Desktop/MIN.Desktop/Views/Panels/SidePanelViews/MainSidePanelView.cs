@@ -5,7 +5,6 @@ using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.PanelViews;
-using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 using MIN.DI.FeatureCollection;

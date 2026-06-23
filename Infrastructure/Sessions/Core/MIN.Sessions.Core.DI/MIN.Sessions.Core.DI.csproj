@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Common\MIN.Common.Mvc\MIN.Common.Mvc.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Events\MIN.Sessions.Core.Events.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Handlers\MIN.Sessions.Core.Handlers.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Messaging\MIN.Sessions.Core.Messaging.csproj" />
+    <ProjectReference Include="..\MIN.Sessions.Core.Services\MIN.Sessions.Core.Services.csproj" />
+    <ProjectReference Include="..\Serialization\MIN.Sessions.Core.Serialization.Json\MIN.Sessions.Core.Serialization.Json.csproj" />
+    <ProjectReference Include="..\Transport\MIN.Sessions.Core.Transport\MIN.Sessions.Core.Transport.csproj" />
+  </ItemGroup>
+
+</Project>

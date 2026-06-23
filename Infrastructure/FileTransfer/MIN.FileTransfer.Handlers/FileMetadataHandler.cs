@@ -14,7 +14,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
-internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandlerAnchor
+internal sealed class FileMetadataHandler : IMessageHandler
 {
     private readonly IFileTransferService fileTransferService;
     private readonly IEventBus eventBus;
@@ -67,7 +67,9 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             context.RoomContext.Messages.AddMessage(storageCopy);
         }
 
-        var isHosting = roomHoster.IsHosting(context.RoomContext.RoomId);
+        var roomId = context.RoomContext.RoomId;
+
+        var isHosting = roomHoster.IsHosting(roomId);
         var selfId = identityService.SelfParticipant.Id;
         var isSelf = message.SenderId == selfId;
 
@@ -82,7 +84,7 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
         {
             await eventBus.PublishAsync(new FileMetaDataMessageReceivedEvent()
             {
-                RoomId = context.RoomContext.RoomId,
+                RoomId = roomId,
                 Message = copy,
             });
 
@@ -92,7 +94,7 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
             }
         }
 
-        fileTransferService.RegisterFileMetadata(message.Id, context.RoomContext.RoomId, metadata.FileName, !metadata.AsDownloaded
+        fileTransferService.RegisterFileMetadata(message.Id, roomId, metadata.FileName, !metadata.AsDownloaded
             ? copy.FilePath
             : null);
 
@@ -119,15 +121,15 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 
             metadata.AsDownloaded = true;
             metadata.FilePath = e.FilePath;
-            fileTransferService.RegisterFileMetadata(message.Id, context.RoomContext.RoomId, metadata.FileName);
-            await messageRouter.RouteAsync(metadata, context.RoomContext.RoomId, metadata.SenderId, context.CancellationToken);
+            fileTransferService.RegisterFileMetadata(message.Id, roomId, metadata.FileName);
+            await messageRouter.RouteAsync(metadata, roomId, metadata.SenderId, context.CancellationToken);
         });
 
         var info = new TransferInfo
         {
             TransferId = metadata.TransferId,
             FileMetadataId = metadata.Id,
-            RoomId = metadata.RoomId,
+            RoomId = roomId,
             SenderId = selfId,
             Direction = FileTransferDirection.Upload,
             FileName = metadata.FileName,
@@ -137,7 +139,6 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 
         var requestMessage = new FileTransferRequestMessage
         {
-            RoomId = metadata.RoomId,
             TransferId = metadata.TransferId,
             RecipientId = metadata.SenderId,
             FileMetadataId = message.Id,
@@ -148,7 +149,7 @@ internal sealed class FileMetadataHandler : IMessageHandler, IFileTransferHandle
 
         await eventBus.PublishAsync(new FileTransferStartedEvent
         {
-            RoomId = metadata.RoomId,
+            RoomId = roomId,
             TransferId = metadata.TransferId,
             FileMetadataId = metadata.Id,
             FileName = metadata.FileName,

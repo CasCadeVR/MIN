@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\FileTransfer\MIN.FileTransfer.DI\MIN.FileTransfer.DI.csproj" />
+    <ProjectReference Include="..\..\Sessions\Core\MIN.Sessions.Core.DI\MIN.Sessions.Core.DI.csproj" />
   </ItemGroup>
 
 </Project>

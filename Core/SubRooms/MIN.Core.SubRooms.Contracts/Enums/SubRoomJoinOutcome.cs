@@ -1,0 +1,32 @@
+﻿namespace MIN.Core.SubRooms.Contracts.Enums;
+
+/// <summary>
+/// Результат входа в подкомнату
+/// </summary>
+public enum SubRoomJoinOutcome
+{
+    /// <summary>
+    /// Комната не нашлась
+    /// </summary>
+    RoomNotFound,
+
+    /// <summary>
+    /// Подкомната не нашлась
+    /// </summary>
+    SubRoomNotFound,
+
+    /// <summary>
+    /// Участник уже зашёл
+    /// </summary>
+    AlreadyJoined,
+
+    /// <summary>
+    /// Подкомната не активна
+    /// </summary>
+    SubRoomNotActive,
+
+    /// <summary>
+    /// Успешно вошёл
+    /// </summary>
+    Success
+}

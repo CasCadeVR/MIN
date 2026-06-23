@@ -119,8 +119,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             // createButton
             // 
+            createButton.Anchor = AnchorStyles.Right;
             createButton.BackColor = Color.FromArgb(192, 192, 255);
-            createButton.Dock = DockStyle.Fill;
             createButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             createButton.FlatStyle = FlatStyle.Flat;
             createButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 204);
@@ -136,9 +136,9 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // 
             // cancelButton
             // 
+            cancelButton.Anchor = AnchorStyles.Left;
             cancelButton.BackColor = Color.FromArgb(248, 249, 255);
             cancelButton.DialogResult = DialogResult.Cancel;
-            cancelButton.Dock = DockStyle.Fill;
             cancelButton.FlatAppearance.BorderColor = Color.FromArgb(167, 157, 255);
             cancelButton.FlatAppearance.BorderSize = 2;
             cancelButton.FlatStyle = FlatStyle.Flat;
@@ -261,9 +261,8 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             CancelButton = cancelButton;
             ClientSize = new Size(416, 229);
             Controls.Add(splitContainer);
-            MinimumSize = new Size(432, 241);
+            MinimumSize = new Size(432, 268);
             Name = "RoomCreateForm";
-            StartPosition = FormStartPosition.CenterParent;
             Text = "MIN - Создание комнаты";
             splitContainer.Panel1.ResumeLayout(false);
             splitContainer.Panel2.ResumeLayout(false);

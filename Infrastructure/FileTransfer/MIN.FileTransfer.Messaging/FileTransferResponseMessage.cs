@@ -15,11 +15,6 @@ public class FileTransferResponseMessage : BaseMessage
     public override bool IsPublic => false;
 
     /// <summary>
-    /// Идентификатор комнаты, в которую отправлено сообщение
-    /// </summary>
-    public Guid RoomId { get; set; }
-
-    /// <summary>
     /// Идентификатор потока, по которому придёт файл
     /// </summary>
     public Guid TransferId { get; set; }

@@ -19,11 +19,17 @@ public sealed class LocalMessageRecievedEvent : BaseEvent
     public Guid RoomId { get; }
 
     /// <summary>
+    /// Список исключённых из Broadcast для сервера
+    /// </summary>
+    public IEnumerable<Guid>? BroadcastExcludeIds { get; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="LocalMessageRecievedEvent"/>
     /// </summary>
-    public LocalMessageRecievedEvent(IMessage message, Guid roomId)
+    public LocalMessageRecievedEvent(IMessage message, Guid roomId, IEnumerable<Guid>? broadcastExcludeIds = null)
     {
         Message = message;
         RoomId = roomId;
+        BroadcastExcludeIds = broadcastExcludeIds;
     }
 }

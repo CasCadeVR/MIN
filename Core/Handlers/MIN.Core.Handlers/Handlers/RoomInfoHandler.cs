@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
@@ -10,7 +11,7 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
+internal sealed class RoomInfoHandler : IMessageHandler
 {
     private readonly IRoomStore roomStore;
     private readonly IEventBus eventBus;
@@ -35,12 +36,14 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
 
     async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
     {
+        var roomId = context.RoomContext.RoomId;
+
         if (message is RoomInfoRequestMessage roomInfoRequest)
         {
-            logger.Log($"Отправляю информацию о комнате с id {roomInfoRequest.RoomId}");
+            logger.Log($"Отправляю информацию о комнате с id {roomId}");
             return HandlerResult.WithResponse(new RoomInfoResponseMessage()
             {
-                Room = roomStore.GetRoomFor(message.SenderId, roomInfoRequest.RoomId),
+                Room = roomStore.GetRoomFor(message.SenderId, roomId),
             });
         }
         else if (message is RoomInfoResponseMessage roomInfoResponse)
@@ -65,11 +68,17 @@ internal sealed class RoomInfoHandler : IMessageHandler, ICoreHandlerAnchor
                 Room = roomInfoResponse.Room,
             }, context.CancellationToken);
 
+            await eventBus.PublishAsync(new RoomJoinedEvent()
+            {
+                RoomId = roomInfoResponse.Room.Id,
+                RoomInfo = new RoomInfo(roomInfoResponse.Room),
+            });
+
             return HandlerResult.Success();
         }
         else if (message is RoomInfoUpdatedMessage roomInfoUpdated)
         {
-            var existingRoom = roomStore.GetRoom(context.RoomContext.RoomId);
+            var existingRoom = roomStore.GetRoom(roomId);
             existingRoom.Name = roomInfoUpdated.Room.Name;
             existingRoom.MaximumParticipants = roomInfoUpdated.Room.MaximumParticipants;
 

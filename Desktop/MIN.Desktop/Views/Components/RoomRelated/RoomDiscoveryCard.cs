@@ -3,7 +3,6 @@ using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Schemes;
-using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 
 namespace MIN.Desktop.Components;
@@ -81,7 +80,7 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != room.Id)
+        if (eventMessage.RoomId != room.Id)
         {
             return;
         }
@@ -97,7 +96,7 @@ public partial class RoomDiscoveryCard : UserControl, IDisposable
 
     private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Message.RoomId != room.Id)
+        if (eventMessage.RoomId != room.Id)
         {
             return;
         }
