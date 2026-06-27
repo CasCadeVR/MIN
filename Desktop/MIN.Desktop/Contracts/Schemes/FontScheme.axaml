@@ -1,0 +1,42 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+
+    <system:Double x:Key="FontSizeCaption">8</system:Double>
+    <system:Double x:Key="FontSizeSmall">11</system:Double>
+    <system:Double x:Key="FontSizeBody">14</system:Double>
+    <system:Double x:Key="FontSizeH1">24</system:Double>
+    <system:Double x:Key="FontSizeH2">20</system:Double>
+    <system:Double x:Key="FontSizeH3">18</system:Double>
+
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <StackPanel Spacing="16" Width="300">
+                <TextBlock Text="Header 1"
+                    FontSize="{DynamicResource FontSizeH1}"
+                    Foreground="{DynamicResource TextPrimary}"/>
+
+                 <TextBlock Text="Header 2"
+                    FontSize="{DynamicResource FontSizeH2}"
+                    Foreground="{DynamicResource TextPrimary}"/>
+
+                <TextBlock Text="Header 3"
+                    FontSize="{DynamicResource FontSizeH3}"
+                    Foreground="{DynamicResource TextPrimary}"/>
+
+                <TextBlock Text="Normal text for bodies. Use in buttons"
+                    FontSize="{DynamicResource FontSizeBody}"
+                    Foreground="{DynamicResource TextPrimary}"/>
+
+                <TextBlock Text="A quick brown fox jumps over a lazy dog"
+                    FontSize="{DynamicResource FontSizeSmall}"
+                    Foreground="{DynamicResource TextPrimary}"/>
+
+                <TextBlock Text="A quick brown fox jumps over a lazy dog"
+                    FontSize="{DynamicResource FontSizeCaption}"
+                    Foreground="{DynamicResource TextPrimary}"/>
+            </StackPanel>
+        </Border>
+    </Design.PreviewWith>
+
+</ResourceDictionary>

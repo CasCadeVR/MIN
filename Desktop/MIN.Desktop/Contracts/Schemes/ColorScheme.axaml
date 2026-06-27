@@ -1,0 +1,101 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+     <!-- *************** -->
+    <!-- BRAND / ACCENT  -->
+    <!-- *************** -->
+    <Color x:Key="Primary">#6366F1</Color>          <!-- Main accent (buttons, links, active) -->
+    <Color x:Key="PrimaryHover">#818CF8</Color>      <!-- Hover state -->
+    <Color x:Key="PrimaryPressed">#4F46E5</Color>    <!-- Pressed state -->
+
+    <Color x:Key="SecondaryColor">#EC4899</Color>         <!-- Secondary accent (badges, highlights) -->
+    <Color x:Key="SecondaryColorHover">#F472B6</Color>
+    <Color x:Key="SecondaryColorPressed">#DB2777</Color>
+
+    <!-- *************** -->
+    <!-- SURFACE / BG    -->
+    <!-- *************** -->
+    <Color x:Key="SurfaceBackground">#1C1C1E</Color>     <!-- Window / page background -->
+    <Color x:Key="SurfaceCard">#2C2C2E</Color>            <!-- Card, panel, raised surface -->
+    <Color x:Key="SurfaceElevated">#3A3A3C</Color>        <!-- Modal, dropdown, tooltip -->
+    <Color x:Key="SurfaceInput">#000000</Color>            <!-- TextBox / input background -->
+
+    <!-- SIDEBAR -->
+    <Color x:Key="SidebarBackground">#151517</Color>      <!-- Navigation sidebar -->
+    <Color x:Key="SidebarItemHover">#2C2C2E</Color>
+    <Color x:Key="SidebarItemActive">#6366F120</Color>    <!-- Selected item (accent with alpha) -->
+
+    <!-- *************** -->
+    <!-- TEXT            -->
+    <!-- *************** -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+            <Color x:Key="TextPrimary">#FFFFFF</Color>            <!-- Headers, body text -->
+            <Color x:Key="TextSecondary">#A1A1AA</Color>          <!-- Labels, captions, muted -->
+            <Color x:Key="TextDisabled">#52525B</Color>           <!-- Disabled / placeholder -->
+            <Color x:Key="TextAccent">#6366F1</Color>             <!-- Accent-colored text (links, badges) -->
+            <Color x:Key="TextOnPrimary">#FFFFFF</Color>          <!-- Text ON an accent button -->
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <Color x:Key="TextPrimary">#2C2C2E</Color>            <!-- Headers, body text -->
+            <Color x:Key="TextSecondary">#A1A1AA</Color>          <!-- Labels, captions, muted -->
+            <Color x:Key="TextDisabled">#52525B</Color>           <!-- Disabled / placeholder -->
+            <Color x:Key="TextAccent">#6366F1</Color>             <!-- Accent-colored text (links, badges) -->
+            <Color x:Key="TextOnPrimary">#FFFFFF</Color>          <!-- Text ON an accent button -->
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- *************** -->
+    <!-- BORDER          -->
+    <!-- *************** -->
+    <Color x:Key="Border">#3F3F46</Color>            <!-- Default border -->
+    <Color x:Key="BorderFocused">#6366F1</Color>     <!-- Focused input border -->
+    <Color x:Key="BorderError">#EF4444</Color>       <!-- Error / validation -->
+
+    <!-- *************** -->
+    <!-- STATUS / ALERT  -->
+    <!-- *************** -->
+    <Color x:Key="StatusSuccess">#22C55E</Color>          <!-- Online, success -->
+    <Color x:Key="StatusWarning">#F59E0B</Color>          <!-- Away, warning -->
+    <Color x:Key="StatusError">#EF4444</Color>            <!-- Offline, error, critical -->
+    <Color x:Key="StatusInfo">#3B82F6</Color>             <!-- Info / notification -->
+
+    <!-- *************** -->
+    <!-- CHAT MESSAGES   -->
+    <!-- *************** -->
+    <Color x:Key="ChatBubbleMine">#6366F1</Color>         <!-- My message background -->
+    <Color x:Key="ChatBubbleTheir">#2C2C2E</Color>        <!-- Their message background -->
+    <Color x:Key="ChatTimestamp">#71717A</Color>           <!-- Time label -->
+
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <StackPanel Spacing="16" Width="300">
+                <TextBlock Text="Preview" FontSize="{DynamicResource FontSizeH1}"
+                           Foreground="{DynamicResource TextPrimary}"/>
+
+                <Button Classes="primary" Content="Primary Button"/>
+                <Button Classes="secondary" Content="Secondary Button"/>
+
+                <Border Background="{DynamicResource Surface}" CornerRadius="8"
+                        BorderBrush="{DynamicResource Primary}" BorderThickness="1"
+                        Padding="12">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Card Title" FontSize="16" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Description text" FontSize="12" Opacity="0.6"
+                                   Foreground="{DynamicResource TextPrimary}"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBox BorderBrush="{DynamicResource Primary}"
+                         BorderThickness="1"
+                         WatermarkForeground="{DynamicResource TextPrimary}"
+                         PlaceholderText="Input field" Watermark="Type here..."/>
+                <CheckBox Content="Checkbox option"/>
+                <ProgressBar Value="60" Height="8" CornerRadius="4"
+                             Foreground="{DynamicResource Primary}"/>
+            </StackPanel>
+        </Border>
+    </Design.PreviewWith>
+
+</ResourceDictionary>

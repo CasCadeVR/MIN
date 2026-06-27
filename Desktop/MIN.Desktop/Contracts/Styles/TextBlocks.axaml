@@ -1,0 +1,58 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+        <StackPanel>
+            <StackPanel.Styles>
+                <Style Selector="TextBlock">
+                    <Setter Property="Margin" Value="5"></Setter>
+                </Style>
+            </StackPanel.Styles>
+
+            <TextBlock Classes="header1">MiN</TextBlock>
+            <TextBlock Classes="inverted header1" Background="{DynamicResource TextPrimary}">MiN</TextBlock>
+            <TextBlock Classes="header2">Заголовок 2</TextBlock>
+            <TextBlock Classes="header3">Заголовок 3</TextBlock>
+            <TextBlock>Обычный текст</TextBlock>
+            <TextBlock Classes="small">подзаголовок</TextBlock>
+            <TextBlock Classes="caption">подзаголовок</TextBlock>
+        </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+    <Style Selector="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
+    </Style>
+
+    <Style Selector="TextBlock.header1">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH1}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock.inverted">
+        <Setter Property="Foreground" Value="{DynamicResource TextAccent}"/>
+    </Style>
+
+    <Style Selector="TextBlock.header2">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH2}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+        
+    <Style Selector="TextBlock.header3">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH3}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock.small">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
+        <Setter Property="Opacity" Value="0.6"/>
+    </Style>
+
+    <Style Selector="TextBlock.caption">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCaption}"/>
+        <Setter Property="Opacity" Value="0.6"/>
+    </Style>
+</Styles>
