@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Views.Panels.SidePanelViews
+﻿using MIN.Desktop.Winforms.Properties;
+
+namespace MIN.Desktop.Views.Panels.SidePanelViews
 {
     partial class MainSidePanelView
     {
@@ -72,7 +74,7 @@
             // searchButton
             // 
             searchButton.BackColor = Color.FromArgb(167, 157, 255);
-            searchButton.BackgroundImage = Properties.Resources.search;
+            searchButton.BackgroundImage = Resources.search;
             searchButton.BackgroundImageLayout = ImageLayout.Zoom;
             searchButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             searchButton.FlatStyle = FlatStyle.Flat;
@@ -88,7 +90,7 @@
             // discoveryButton
             // 
             discoveryButton.BackColor = Color.FromArgb(167, 157, 255);
-            discoveryButton.BackgroundImage = Properties.Resources.compass;
+            discoveryButton.BackgroundImage = Resources.compass;
             discoveryButton.BackgroundImageLayout = ImageLayout.Zoom;
             discoveryButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             discoveryButton.FlatStyle = FlatStyle.Flat;
@@ -104,7 +106,7 @@
             // settingsButton
             // 
             settingsButton.BackColor = Color.FromArgb(167, 157, 255);
-            settingsButton.BackgroundImage = Properties.Resources.settings;
+            settingsButton.BackgroundImage = Resources.settings;
             settingsButton.BackgroundImageLayout = ImageLayout.Zoom;
             settingsButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
             settingsButton.FlatStyle = FlatStyle.Flat;

@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Views.Panels.SidePanelViews
+﻿using MIN.Desktop.Winforms.Properties;
+
+namespace MIN.Desktop.Views.Panels.SidePanelViews
 {
     partial class DiscoveryPanelView
     {
@@ -104,7 +106,7 @@
             // createRoom
             // 
             createRoom.BackColor = Color.FromArgb(192, 192, 255);
-            createRoom.BackgroundImage = Properties.Resources.plus;
+            createRoom.BackgroundImage = Resources.plus;
             createRoom.BackgroundImageLayout = ImageLayout.Zoom;
             createRoom.Dock = DockStyle.Fill;
             createRoom.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);

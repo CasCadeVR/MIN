@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel
+﻿using MIN.Desktop.Winforms.Properties;
+
+namespace MIN.Desktop.Views.Panels.PanelViews.ChatPanel
 {
     partial class ChatPanelView
     {
@@ -156,7 +158,7 @@
             // actionButton
             // 
             actionButton.BackColor = Color.FromArgb(192, 192, 255);
-            actionButton.BackgroundImage = Properties.Resources.plus;
+            actionButton.BackgroundImage = Resources.plus;
             actionButton.BackgroundImageLayout = ImageLayout.Zoom;
             actionButton.Dock = DockStyle.Top;
             actionButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
@@ -174,7 +176,7 @@
             // sendButton
             // 
             sendButton.BackColor = Color.FromArgb(192, 192, 255);
-            sendButton.BackgroundImage = Properties.Resources.send;
+            sendButton.BackgroundImage = Resources.send;
             sendButton.BackgroundImageLayout = ImageLayout.Zoom;
             sendButton.Dock = DockStyle.Top;
             sendButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
@@ -376,7 +378,7 @@
             // editButton
             // 
             editButton.BackColor = Color.FromArgb(167, 157, 255);
-            editButton.BackgroundImage = Properties.Resources.pencil;
+            editButton.BackgroundImage = Resources.pencil;
             editButton.BackgroundImageLayout = ImageLayout.Zoom;
             editButton.Dock = DockStyle.Right;
             editButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);

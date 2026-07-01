@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="720"
+             x:DataType="vm:DiscoveryViewModel"
+             Padding="{DynamicResource PaddingPage}"
+             x:Class="MIN.Desktop.Views.Pages.DiscoveryPage">
+
+    <Design.DataContext>
+        <vm:DiscoveryViewModel/>
+    </Design.DataContext>
+
+    <Border>
+        <DockPanel VerticalSpacing="10" >
+            <Border DockPanel.Dock="Top"
+                    Background="{DynamicResource SidebarBackground}"
+                    Padding="{DynamicResource PaddingTopBar}"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}">
+                <DockPanel HorizontalSpacing="8" >
+                    <Button DockPanel.Dock="Left" Classes="icon">
+                        <Svg Path="/Assets/Icons/plus.svg" />
+                    </Button>
+
+                    <Button DockPanel.Dock="Right">
+                       Найти комнаты
+                    </Button>
+
+                    <Button DockPanel.Dock="Right">
+                       Подключиться напрямую
+                    </Button>
+
+                    <Rectangle />
+                </DockPanel>
+            </Border>
+
+             <Border DockPanel.Dock="Bottom"
+                    Background="{DynamicResource SidebarBackground}"
+                    Padding="{DynamicResource PaddingTopBar}"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}">
+                <DockPanel HorizontalSpacing="8" >
+                    <TextBlock Margin="6,0,0,0" DockPanel.Dock="Right">
+                        Всего нашлось комнат: 0
+                    </TextBlock>
+                </DockPanel>
+            </Border>
+
+            <!-- room cards goes here -->
+            <Border Background="Transparent"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}"/>
+        </DockPanel>
+    </Border>
+</UserControl>

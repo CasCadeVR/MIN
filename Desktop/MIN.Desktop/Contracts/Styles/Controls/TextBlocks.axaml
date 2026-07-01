@@ -21,6 +21,7 @@
   </Design.PreviewWith>
 
     <Style Selector="TextBlock">
+        <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
     </Style>
 

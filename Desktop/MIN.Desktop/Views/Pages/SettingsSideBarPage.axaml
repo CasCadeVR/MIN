@@ -1,0 +1,101 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="720"
+             x:DataType="vm:SettingsSideBarViewModel"
+             Padding="{DynamicResource PaddingPage}"
+             x:Class="MIN.Desktop.Views.Pages.SettingsSideBarPage">
+
+    <Design.DataContext>
+        <vm:SettingsSideBarViewModel/>
+    </Design.DataContext>
+
+    <Border Background="{DynamicResource SidebarSecondaryBackground}"
+            Padding="{DynamicResource PaddingPage}"
+            CornerRadius="{DynamicResource CornerRadiusLarge}">
+        <DockPanel VerticalSpacing="10" >
+            <DockPanel HorizontalSpacing="16" DockPanel.Dock="Top" >
+                <Button DockPanel.Dock="Left" Classes="icon">
+                    <Svg Path="/Assets/Icons/arrow-left.svg" />
+                </Button>
+             
+                <TextBlock Classes="header2" VerticalAlignment="Center">
+                    Настройки
+                </TextBlock>
+            </DockPanel>
+
+            <!-- room cards goes here -->
+            <Grid ColumnSpacing="8" ColumnDefinitions="*, *"
+                  RowSpacing="8" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *, Auto">
+
+                <!-- Default Name -->
+
+                <TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center">
+                    Имя по умолчанию
+                </TextBlock>
+
+                <TextBox PlaceholderText="Введите имя..." Grid.Column="1" Grid.Row="0" >
+                    
+                </TextBox>
+
+                <!-- Room discovery time -->
+
+                <TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center">
+                    Время поиска комнат (в мс.)
+                </TextBlock>
+
+                <TextBox Grid.Column="1" Grid.Row="1" >
+
+                </TextBox>
+
+                <!-- Udp port -->
+
+                <TextBlock Grid.Column="0" Grid.Row="2" VerticalAlignment="Center">
+                    UDP Порт комнат (Лучше не менять, по умолчанию 42069)
+                </TextBlock>
+
+                <TextBox Grid.Column="1" Grid.Row="2" >
+                    42069
+                </TextBox>
+                
+                <!-- Logs -->
+
+                <Button Grid.Column="0" Grid.Row="3" VerticalAlignment="Center">
+                    Открыть логи
+                </Button>
+
+                <TextBlock Grid.Column="1" Grid.Row="3" VerticalAlignment="Center">
+                    Чисто для разраба, но можете и сами понаблюдать по приколу
+                </TextBlock>
+
+                <!-- Cache cleanup -->
+
+                <Button Grid.Column="0" Grid.Row="4" VerticalAlignment="Center">
+                    Очистить кэш
+                </Button>
+
+                <TextBlock Grid.Column="1" Grid.Row="4" VerticalAlignment="Center">
+                    Обычно нужен при неправильных настройках в кэше
+                </TextBlock>
+
+                <!-- Cache cleanup -->
+
+                <Button Grid.Column="0" Grid.Row="5" VerticalAlignment="Center">
+                    <TextBlock TextAlignment="Center">
+                        Обновить список сессий
+                    </TextBlock>
+                </Button>
+
+                <TextBlock Grid.Column="1" Grid.Row="5" VerticalAlignment="Center">
+                    Когда вы установили новую сессию
+                </TextBlock>
+
+                <TextBlock Classes="small" Grid.ColumnSpan="2" Grid.Row="7" HorizontalAlignment="Center">
+                    Версия
+                </TextBlock>
+            </Grid>
+        </DockPanel>
+    </Border>
+</UserControl>

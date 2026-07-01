@@ -1,5 +1,6 @@
 ﻿using MIN.Desktop.Components.Controls.ListBoxes;
 using MIN.Desktop.Components.Labels;
+using MIN.Desktop.Winforms.Properties;
 
 namespace MIN.Desktop.Views.Forms.HelperForms
 {
@@ -96,7 +97,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // loadMoreButton
             // 
             loadMoreButton.BackColor = Color.FromArgb(167, 157, 255);
-            loadMoreButton.BackgroundImage = Properties.Resources.download;
+            loadMoreButton.BackgroundImage = Resources.download;
             loadMoreButton.BackgroundImageLayout = ImageLayout.Zoom;
             loadMoreButton.Dock = DockStyle.Fill;
             loadMoreButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
@@ -113,7 +114,7 @@ namespace MIN.Desktop.Views.Forms.HelperForms
             // scrollUpButton
             // 
             scrollUpButton.BackColor = Color.FromArgb(167, 157, 255);
-            scrollUpButton.BackgroundImage = Properties.Resources.up;
+            scrollUpButton.BackgroundImage = Resources.up;
             scrollUpButton.BackgroundImageLayout = ImageLayout.Zoom;
             scrollUpButton.Dock = DockStyle.Fill;
             scrollUpButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);

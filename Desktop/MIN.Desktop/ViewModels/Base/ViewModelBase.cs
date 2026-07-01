@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace MIN.Desktop.ViewModels
+namespace MIN.Desktop.ViewModels.Base
 {
     /// <summary>
     /// Базовая view модель

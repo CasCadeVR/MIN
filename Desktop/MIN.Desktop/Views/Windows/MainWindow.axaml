@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MIN.Desktop.ViewModels.Windows"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:pages="using:MIN.Desktop.Views.Pages"
+        mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="500"
+        Width="1024" Height="450"
+        MinWidth="800" MinHeight="450"
+        x:Class="MIN.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowModel"
+        Icon="/Assets/Icons/avalonia-logo.ico"
+        Title="MIN.Desktop">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowModel/>
+    </Design.DataContext>
+
+    <Panel>
+        <!-- doesnt show tho -->
+        <controls:CustomTitleBar Opacity="0.6"/>
+
+        <Grid RowDefinitions="18,*" >
+             <Border Grid.Row="1" >
+                <DockPanel>
+                    <pages:MainSideBarPage MinWidth="300" MaxWidth="300" DockPanel.Dock="Left">
+                
+                    </pages:MainSideBarPage>
+
+                    <pages:SettingsSideBarPage MinWidth="300" MaxWidth="300" DockPanel.Dock="Right">
+                
+                    </pages:SettingsSideBarPage>
+
+                    <pages:DiscoveryPage>
+                
+                    </pages:DiscoveryPage>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+    </Panel>
+   
+</Window>

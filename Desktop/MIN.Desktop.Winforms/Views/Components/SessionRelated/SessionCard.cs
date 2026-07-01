@@ -1,5 +1,5 @@
 ﻿using MIN.Desktop.Contracts.Schemes;
-using MIN.Desktop.Properties;
+using MIN.Desktop.Winforms.Properties;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Desktop.Components;

@@ -1,5 +1,5 @@
 ﻿using MIN.Desktop.Components.Controls.ContextMenuStrips.ToolStripMenuItems;
-using MIN.Desktop.Properties;
+using MIN.Desktop.Winforms.Properties;
 
 namespace MIN.Desktop.Components.Controls.ContextMenuStrips;
 

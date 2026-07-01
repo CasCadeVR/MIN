@@ -1,6 +1,6 @@
 ﻿using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;
-using MIN.Desktop.Properties;
+using MIN.Desktop.Winforms.Properties;
 
 namespace MIN.Desktop.Contracts.Views.Forms;
 

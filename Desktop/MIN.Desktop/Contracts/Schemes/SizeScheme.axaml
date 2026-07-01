@@ -1,17 +1,25 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
  
     <!-- *************** -->
     <!-- SIZES           -->
     <!-- *************** -->
 
-    <CornerRadius x:Key="CornerRadiusSmall">4</CornerRadius>
-    <CornerRadius x:Key="CornerRadiusDefault">6</CornerRadius>
-    <CornerRadius x:Key="CornerRadiusLarge">12</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusSmall">6</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusDefault">8</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusLarge">16</CornerRadius>
 
+    <Thickness x:Key="PaddingSmall">4</Thickness>
+    <Thickness x:Key="PaddingMedium">6</Thickness>
     <Thickness x:Key="PaddingButton">16,8</Thickness>
     <Thickness x:Key="PaddingCard">12</Thickness>
-    <Thickness x:Key="PaddingPage">24</Thickness>
+    <Thickness x:Key="PaddingTopBar">8</Thickness>
+    <Thickness x:Key="PaddingInput">12</Thickness>
+    <Thickness x:Key="PaddingPage">16</Thickness>
+
+    <system:Double x:Key="IconAverage">24</system:Double>
+    <system:Double x:Key="IconButton">24</system:Double>
 
      <Design.PreviewWith>
         <Border Padding="{DynamicResource PaddingPage}">

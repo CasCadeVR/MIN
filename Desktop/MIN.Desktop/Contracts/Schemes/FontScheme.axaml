@@ -4,7 +4,7 @@
 
     <system:Double x:Key="FontSizeCaption">8</system:Double>
     <system:Double x:Key="FontSizeSmall">11</system:Double>
-    <system:Double x:Key="FontSizeBody">14</system:Double>
+    <system:Double x:Key="FontSizeBody">12</system:Double>
     <system:Double x:Key="FontSizeH1">24</system:Double>
     <system:Double x:Key="FontSizeH2">20</system:Double>
     <system:Double x:Key="FontSizeH3">18</system:Double>

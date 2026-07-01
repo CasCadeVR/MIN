@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Views.Forms.HelperForms
+﻿using MIN.Desktop.Winforms.Properties;
+
+namespace MIN.Desktop.Views.Forms.HelperForms
 {
     partial class NotificationForm
     {
@@ -106,7 +108,7 @@
             // logo
             // 
             logo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            logo.BackgroundImage = Properties.Resources.logoImage;
+            logo.BackgroundImage = Resources.logoImage;
             logo.BackgroundImageLayout = ImageLayout.Zoom;
             logo.Location = new Point(236, 33);
             logo.Name = "logo";

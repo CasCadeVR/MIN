@@ -1,6 +1,6 @@
 ﻿using MIN.Desktop.Components.Controls.Buttons;
 using MIN.Desktop.Contracts.Models;
-using MIN.Desktop.Properties;
+using MIN.Desktop.Winforms.Properties;
 
 namespace MIN.Desktop.Components.ComplexControls;
 

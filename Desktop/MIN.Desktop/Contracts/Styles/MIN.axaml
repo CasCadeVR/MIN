@@ -1,0 +1,104 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls">
+    <Design.PreviewWith>
+            <Border Classes="sidebar">
+                <StackPanel Spacing="16" Width="300">
+                    <TextBlock Text="Preview" FontSize="{DynamicResource FontSizeH1}"
+                               Foreground="{DynamicResource TextPrimary}"/>
+
+                    <Button Classes="primary" Content="Primary Button"/>
+                    <Button Classes="secondary" Content="Secondary Button"/>
+
+                    <Border Background="{DynamicResource Surface}" CornerRadius="8"
+                            BorderBrush="{DynamicResource Primary}" BorderThickness="1"
+                            Padding="12">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Card Title" FontSize="16" FontWeight="Bold"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Description text" FontSize="12" Opacity="0.6"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBox PlaceholderText="Type here..."/>
+                    <CheckBox Content="Checkbox option"/>
+                    <ProgressBar Value="60" Height="8" CornerRadius="4"
+                                 Foreground="{DynamicResource Primary}"/>
+                </StackPanel>
+            </Border>
+    </Design.PreviewWith>
+
+    <Style Selector="Window">
+        <Setter Property="Icon" Value="/Assets/Images/logo.ico" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="WindowStartupLocation" Value="CenterOwner" />
+        <!--  Disables window border but allow resizing  -->
+        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+        <Setter Property="WindowDecorations">
+            <Setter.Value>
+                <OnPlatform>
+                    <OnPlatform.Default>
+                        <WindowDecorations>None</WindowDecorations>
+                    </OnPlatform.Default>
+                    <On Options="Windows">
+                        <WindowDecorations>BorderOnly</WindowDecorations>
+                    </On>
+                </OnPlatform>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
+    </Style>
+
+    <Style Selector="controls|CustomTitleBar" >
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <Style Selector="Border">
+
+         <Style Selector="^.card">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingCard}" />
+        </Style>
+
+        <Style Selector="^.sidebar">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingPage}" />
+        </Style>
+
+        <Style Selector="^.topbar">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingTopBar}" />
+        </Style>
+
+        <Style Selector="^.secondary">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Background" Value="{DynamicResource SidebarSecondaryBackground}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingPage}" />
+        </Style>
+    </Style>
+
+    <Style Selector="Svg">
+        <Setter Property="Width" Value="{DynamicResource IconAverage}"/>
+        <Setter Property="Height" Value="{DynamicResource IconAverage}"/>
+        <Setter Property="Css" Value="{DynamicResource SvgDefaultStyle}"/>
+
+        <Style Selector="^.accent">
+            <Setter Property="Css" Value="{DynamicResource SvgAccentStyle}"/>
+        </Style>
+
+        <Style Selector="^.text">
+            <Setter Property="Css" Value="{DynamicResource SvgTextStyle}"/>
+        </Style>
+    </Style>
+
+    <StyleInclude Source="/Contracts/Styles/Controls/Buttons.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/CheckBoxes.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/RadioBoxes.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/TextBoxes.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/TextBlocks.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/TextBlocks.axaml"/>
+</Styles>

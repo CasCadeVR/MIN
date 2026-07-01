@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using MIN.Desktop.ViewModels;
+using MIN.Desktop.ViewModels.Windows;
 using MIN.Desktop.Views;
 
 namespace MIN.Desktop;
@@ -24,7 +24,7 @@ public partial class App : Application
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(),
+                DataContext = new MainWindowModel(),
             };
         }
 

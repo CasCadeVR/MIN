@@ -30,7 +30,7 @@
     </Style>
 
     <Style Selector="CheckBox:checked /template/ Path">
-        <Setter Property="Fill" Value="{DynamicResource TextAccent}"/>
+        <Setter Property="Fill" Value="{DynamicResource TextOnPrimary}"/>
     </Style>
 
     <Style Selector="CheckBox:checked /template/ Border#border">

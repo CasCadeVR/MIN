@@ -2,8 +2,8 @@
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Desktop.Contracts.Schemes;
-using MIN.Desktop.Properties;
 using MIN.Desktop.Views.Components.ChatMessages;
+using MIN.Desktop.Winforms.Properties;
 using MIN.Sessions.Core.DI.FeatureCollection;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
