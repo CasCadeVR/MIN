@@ -1,11 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using MIN.Desktop.Infrastructure.Interfaces;
 
-namespace MIN.Desktop.ViewModels.Base
+namespace MIN.Desktop.ViewModels.Base;
+
+/// <summary>
+/// Базовая view модель
+/// </summary>
+public abstract class ViewModelBase : ObservableObject, IReferenceCommandReceiver
 {
     /// <summary>
-    /// Базовая view модель
+    /// Освободить ресурсы
     /// </summary>
-    public abstract class ViewModelBase : ObservableObject
-    {
-    }
+    public virtual void Dispose() => WeakReferenceMessenger.Default.UnregisterAll(this);
 }

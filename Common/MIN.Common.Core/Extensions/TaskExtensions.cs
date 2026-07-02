@@ -1,4 +1,4 @@
-﻿namespace MIN.Common.Core;
+﻿namespace MIN.Common.Core.Extensions;
 
 /// <summary>
 /// Методы расширения для тасков

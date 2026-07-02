@@ -13,7 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Contracts\Constants\" />
     <AvaloniaResource Include="Assets\**" />
     <Folder Include="ViewModels\Modals\" />
     <Folder Include="Views\Modals\" />
@@ -27,6 +26,11 @@
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Svg.Controls.Skia.Avalonia" />
+    <PackageReference Include="Xaml.Behaviors.Interactivity" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DI\MIN.DI\MIN.DI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

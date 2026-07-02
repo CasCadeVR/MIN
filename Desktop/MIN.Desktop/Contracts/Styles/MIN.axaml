@@ -55,7 +55,6 @@
     </Style>
 
     <Style Selector="Border">
-
          <Style Selector="^.card">
             <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
             <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
@@ -98,6 +97,7 @@
     <StyleInclude Source="/Contracts/Styles/Controls/Buttons.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/CheckBoxes.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/RadioBoxes.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/ScrollViewers.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/TextBoxes.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/TextBlocks.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/TextBlocks.axaml"/>

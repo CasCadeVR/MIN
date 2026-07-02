@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MIN.Common.Core.Contracts\MIN.Common.Core.Contracts.csproj" />
+    <ProjectReference Include="..\MIN.Common.Core\MIN.Common.Core.csproj" />
   </ItemGroup>
 
 </Project>

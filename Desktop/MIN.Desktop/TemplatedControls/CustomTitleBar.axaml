@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:design="using:MIN.Desktop.Contracts.Constants"
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters">
 
     <Design.PreviewWith>
@@ -77,6 +78,7 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="ShowTitle" Value="False" />
+        <Setter Property="IsVisible" Value="{Binding $parent[Window].(design:DesignAttachments.UseCustomTitleBar)}" />
 
         <Style Selector="^ /template/ StackPanel">
             <Setter Property="Orientation" Value="Horizontal" />
