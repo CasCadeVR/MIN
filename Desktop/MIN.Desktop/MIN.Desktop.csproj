@@ -7,7 +7,7 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
-    <ApplicationIcon>logo.ico</ApplicationIcon>
+    <ApplicationIcon>Assets/Icons/logo.ico</ApplicationIcon>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
@@ -33,7 +33,7 @@
     <ProjectReference Include="..\..\DI\MIN.DI\MIN.DI.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+    <ItemGroup>
     <Compile Update="Views\Pages\DiscoveryPage.axaml.cs">
       <DependentUpon>DiscoveryPage.axaml</DependentUpon>
     </Compile>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
-using MIN.Desktop.Infrastructure.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
 
 namespace MIN.Desktop.Infrastructure.Extensions;
 

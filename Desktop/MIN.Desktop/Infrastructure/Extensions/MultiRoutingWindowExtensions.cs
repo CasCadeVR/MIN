@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MIN.Common.Core.Extensions;
 using MIN.Desktop.Contracts.Enums;
-using MIN.Desktop.Infrastructure.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.Infrastructure.Extensions;
@@ -47,33 +47,50 @@ public static class MultiRoutingWindowExtensions
             priorViewModel = null!;
         }
 
-        //try
-        //{
-        //    ctsToken.ThrowIfCancellationRequested();
-        //    var sw = Stopwatch.StartNew();
-        //    Task contentLoadTask = routableViewModel.ViewContentLoadAsync(ctsToken);
-        //    if (screen.ActiveViewModel != null)
-        //    {
-        //        // Only show loading screen if page isn't loading super quickly.
-        //        await Task.Delay(50, ctsToken);
-        //        if (!contentLoadTask.IsCompleted)
-        //        {
-        //            ctsToken.ThrowIfCancellationRequested();
-        //            screen.ActiveViewModel = AssetHelper.GetFullAssetPath("/Assets/Icons/loading.svg");
-        //            await Task.Delay((int)Math.Max(0, 500 - sw.Elapsed.TotalMilliseconds), ctsToken);
-        //        }
-        //    }
-        //    await contentLoadTask;
-        //    ctsToken.ThrowIfCancellationRequested();
-        //    screen.ActiveViewModel = routableViewModel;
-        //}
-        //catch (OperationCanceledException)
-        //{
-        //    if (priorViewModel != null && navigationStack.Count > 0)
-        //    {
-        //        navigationStack[priorViewModel.LayoutType].Remove(navigationStack[priorViewModel.LayoutType][^1]);
-        //    }
-        //}
+        try
+        {
+            //    ctsToken.ThrowIfCancellationRequested();
+            //    var sw = Stopwatch.StartNew();
+            //    Task contentLoadTask = routableViewModel.ViewContentLoadAsync(ctsToken);
+            //    if (screen.ActiveViewModel != null)
+            //    {
+            //        // Only show loading screen if page isn't loading super quickly.
+            //        await Task.Delay(50, ctsToken);
+            //        if (!contentLoadTask.IsCompleted)
+            //        {
+            //            ctsToken.ThrowIfCancellationRequested();
+            //            screen.ActiveViewModel = AssetHelper.GetFullAssetPath("/Assets/Icons/loading.svg");
+            //            await Task.Delay((int)Math.Max(0, 500 - sw.Elapsed.TotalMilliseconds), ctsToken);
+            //        }
+            //    }
+            //    await contentLoadTask;
+            //    ctsToken.ThrowIfCancellationRequested();
+            switch (routableViewModel.LayoutType)
+            {
+                case ViewLayoutType.LeftSideBar:
+                    screen.LeftSideBarViewModel = routableViewModel;
+                    break;
+
+                case ViewLayoutType.Central:
+                    screen.ActiveViewModel = routableViewModel;
+                    break;
+
+                case ViewLayoutType.RightSideBar:
+                    screen.RightSideBarViewModel = routableViewModel;
+                    break;
+
+                default:
+                    screen.ActiveViewModel = routableViewModel;
+                    break;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            if (priorViewModel != null && navigationStack.Count > 0)
+            {
+                navigationStack[priorViewModel.LayoutType].Remove(navigationStack[priorViewModel.LayoutType][^1]);
+            }
+        }
     }
 
     /// <summary>

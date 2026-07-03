@@ -1,25 +1,33 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:design="using:MIN.Desktop.Contracts.Designer"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              d:DesignWidth="320" d:DesignHeight="720"
              x:DataType="vm:MainSideBarViewModel"
              Padding="{DynamicResource PaddingPage}"
+             DockPanel.Dock="Left"
+             MinWidth="320"
+             MaxWidth="320"
              x:Class="MIN.Desktop.Views.Pages.MainSideBarPage">
 
     <Design.DataContext>
-        <vm:MainSideBarViewModel/>
+        <design:DesignerMainSideBarViewModel/>
     </Design.DataContext>
 
     <Border Background="{DynamicResource SidebarBackground}" CornerRadius="16"
             Padding="{DynamicResource PaddingCard}">
         <DockPanel VerticalSpacing="10" >
             <DockPanel DockPanel.Dock="Top" >
-                <Button DockPanel.Dock="Left" Classes="icon">
+                <Button Command="{Binding OpenSettingsViewAsyncCommand}"
+                        DockPanel.Dock="Left"
+                        Classes="icon">
                     <Svg Path="/Assets/Icons/gear.svg" />
                 </Button>
 
-                <Button DockPanel.Dock="Right" Classes="icon">
+                <Button Command="{Binding OpenDiscoveryViewAsyncCommand}"
+                        DockPanel.Dock="Right"
+                        Classes="icon">
                     <Svg Path="/Assets/Icons/compass.svg" />
                 </Button>
 

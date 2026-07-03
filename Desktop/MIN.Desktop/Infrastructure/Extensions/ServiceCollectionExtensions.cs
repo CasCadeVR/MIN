@@ -2,19 +2,24 @@ using System;
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using MIN.Common.Mvc.Extensions;
-using MIN.Desktop.Infrastructure.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Windows;
 using MIN.Desktop.Views;
 using MIN.Desktop.Views.Base;
+using MIN.DI;
 
 namespace MIN.Desktop.Infrastructure.Extensions;
 
 /// <summary>
-/// 
+/// Расширения для <see cref="IServiceCollection"/> для приложения
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Добавить все сервисы для приложения
+    /// </summary>
     public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
         var resultServices = services
@@ -23,6 +28,7 @@ public static class ServiceCollectionExtensions
             // Services
             //.AddSingleton<DialogService>()
             // UI
+            .AddServices()
             .AddSingleton<Window, MainWindow>()
             .AddSingleton<MainWindowViewModel>()
             .AddSingleton<Func<IMultiRoutingWindow>>(provider => provider.GetRequiredService<MainWindowViewModel>)
@@ -33,9 +39,16 @@ public static class ServiceCollectionExtensions
                 return window;
             });
         //.AddDialogs()
-        resultServices.RegisterAssemblyInterfacesAssignableTo<RoutableViewBase<>>(ServiceLifetime.Singleton);
-        resultServices.RegisterAssemblyInterfacesAssignableTo<ViewModelBase>(ServiceLifetime.Singleton);
+        resultServices.RegisterAssemblyInterfacesAssignableTo(typeof(RoutableViewBase<>), ServiceLifetime.Singleton, typeof(MainWindow));
+        resultServices.RegisterAssemblyInterfacesAssignableTo<ViewModelBase>(ServiceLifetime.Singleton, typeof(MainWindowViewModel));
         return resultServices;
+    }
+
+    private static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.RegisterAsImplementedInterfaces<CtsProvider>(ServiceLifetime.Singleton);
+        services.RegisterModule<MinModule>();
+        return services;
     }
 
     //[GenerateServiceRegistrations(AttributeFilter = typeof(ModalForViewModelAttribute), CustomHandler = nameof(AddDialog))]

@@ -1,22 +1,24 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:MIN.Desktop.ViewModels.Windows"
+        xmlns:pagesVm="using:MIN.Desktop.ViewModels.Pages"
+        xmlns:pages="using:MIN.Desktop.Views.Pages"
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:pages="using:MIN.Desktop.Views.Pages"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="500"
         Width="1024" Height="450"
         MinWidth="800" MinHeight="450"
         x:Class="MIN.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/Icons/avalonia-logo.ico"
-        Title="MIN.Desktop">
+        Title="MIN">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
+        <designer:DesignerMainWindowViewModel/>
     </Design.DataContext>
 
     <Panel>
@@ -24,22 +26,185 @@
 
         <Grid Margin="0,16,0,0" RowDefinitions="18,*" >
              <Border Grid.Row="1" >
-                <DockPanel>
-                    <pages:MainSideBarPage MinWidth="300" MaxWidth="300" DockPanel.Dock="Left">
-                
-                    </pages:MainSideBarPage>
+                <Grid ColumnDefinitions="320, *, 320">
+                    <!--  Navigated content (left side)  -->
+                    <ContentControl
+                        Classes="content"
+                        Content="{Binding LeftSideBarViewModel, TargetNullValue='No view set. You should not see this message.'}"
+                        Grid.Column="0">
+                        <ContentControl.ContentTemplate>
+                            <designer:MultiDataTemplate UseCache="False">
+                                <!--  Null view (which will be a string, see TargetNullValue)  -->
+                                <DataTemplate x:DataType="system:String">
+                                    <TextBox
+                                        Focusable="False"
+                                        FontSize="24"
+                                        FontWeight="Bold"
+                                        HorizontalAlignment="Center"
+                                        IsHitTestVisible="False"
+                                        IsReadOnly="True"
+                                        Text="{Binding}"
+                                        TextWrapping="Wrap"
+                                        VerticalAlignment="Center" />
+                                </DataTemplate>
+                                <!-- Loading view -->
+                                <DataTemplate x:DataType="system:Uri">
+                                    <Svg Path="{Binding AbsolutePath}" Classes="theme" Height="50"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Svg.RenderTransform>
+                                            <TransformGroup>
+                                                <RotateTransform />
+                                            </TransformGroup>
+                                        </Svg.RenderTransform>
+                                        <Svg.Styles>
+                                            <Style Selector="Svg">
+                                                <Style.Animations>
+                                                    <Animation Duration="0:0:.5" IterationCount="INFINITE">
+                                                        <KeyFrame Cue="0%">
+                                                            <Setter Property="RotateTransform.Angle" Value="0" />
+                                                        </KeyFrame>
+                                                        <KeyFrame Cue="100%">
+                                                            <Setter Property="RotateTransform.Angle" Value="360" />
+                                                        </KeyFrame>
+                                                    </Animation>
+                                                </Style.Animations>
+                                            </Style>
+                                        </Svg.Styles>
+                                    </Svg>
+                                </DataTemplate>
+                                <DataTemplate x:DataType="designer:DesignerMainSideBarViewModel">
+                                    <pages:MainSideBarPage />
+                                </DataTemplate>
+                                <DataTemplate x:DataType="pagesVm:SettingsSideBarViewModel">
+                                    <pages:SettingsSideBarPage />
+                                </DataTemplate>
+                                <!--  Fallback view. This DataTemplate must be kept at the bottom.  -->
+                                <DataTemplate x:DataType="system:Object">
+                                    <TextBlock>
+                                        <Run Text="No view for" />
+                                        <Run Text="{Binding}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </designer:MultiDataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
 
-                    <pages:SettingsSideBarPage MinWidth="300" MaxWidth="300" DockPanel.Dock="Right">
-                
-                    </pages:SettingsSideBarPage>
+                    <!--  Center content  -->
+                    <ContentControl
+                        Classes="content"
+                        Content="{Binding ActiveViewModel, TargetNullValue='No view set. You should not see this message.'}"
+                        Grid.Column="1">
+                        <ContentControl.ContentTemplate>
+                            <designer:MultiDataTemplate UseCache="False">
+                                <!--  Null view (which will be a string, see TargetNullValue)  -->
+                                <DataTemplate x:DataType="system:String">
+                                    <TextBox
+                                        Focusable="False"
+                                        FontSize="24"
+                                        FontWeight="Bold"
+                                        HorizontalAlignment="Center"
+                                        IsHitTestVisible="False"
+                                        IsReadOnly="True"
+                                        Text="{Binding}"
+                                        TextWrapping="Wrap"
+                                        VerticalAlignment="Center" />
+                                </DataTemplate>
+                                <!-- Loading view -->
+                                <DataTemplate x:DataType="system:Uri">
+                                    <Svg Path="{Binding AbsolutePath}" Classes="theme" Height="50"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Svg.RenderTransform>
+                                            <TransformGroup>
+                                                <RotateTransform />
+                                            </TransformGroup>
+                                        </Svg.RenderTransform>
+                                        <Svg.Styles>
+                                            <Style Selector="Svg">
+                                                <Style.Animations>
+                                                    <Animation Duration="0:0:.5" IterationCount="INFINITE">
+                                                        <KeyFrame Cue="0%">
+                                                            <Setter Property="RotateTransform.Angle" Value="0" />
+                                                        </KeyFrame>
+                                                        <KeyFrame Cue="100%">
+                                                            <Setter Property="RotateTransform.Angle" Value="360" />
+                                                        </KeyFrame>
+                                                    </Animation>
+                                                </Style.Animations>
+                                            </Style>
+                                        </Svg.Styles>
+                                    </Svg>
+                                </DataTemplate>
+                                <DataTemplate x:DataType="pagesVm:DiscoveryViewModel">
+                                    <pages:DiscoveryPage />
+                                </DataTemplate>
+                                <!--  Fallback view. This DataTemplate must be kept at the bottom.  -->
+                                <DataTemplate x:DataType="system:Object">
+                                    <TextBlock>
+                                        <Run Text="No view for" />
+                                        <Run Text="{Binding}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </designer:MultiDataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
 
-                    <pages:DiscoveryPage>
-                
-                    </pages:DiscoveryPage>
-                </DockPanel>
+                     <!--  Center content  -->
+                    <ContentControl
+                        Classes="content"
+                        Content="{Binding RightSideBarViewModel}"
+                        Grid.Column="2">
+                        <ContentControl.ContentTemplate>
+                            <designer:MultiDataTemplate UseCache="False">
+                                <!--  Null view (which will be a string, see TargetNullValue)  -->
+                                <DataTemplate x:DataType="system:String">
+                                    <TextBox
+                                        Focusable="False"
+                                        FontSize="24"
+                                        FontWeight="Bold"
+                                        HorizontalAlignment="Center"
+                                        IsHitTestVisible="False"
+                                        IsReadOnly="True"
+                                        Text="{Binding}"
+                                        TextWrapping="Wrap"
+                                        VerticalAlignment="Center" />
+                                </DataTemplate>
+                                <!-- Loading view -->
+                                <DataTemplate x:DataType="system:Uri">
+                                    <Svg Path="{Binding AbsolutePath}" Classes="theme" Height="50"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Svg.RenderTransform>
+                                            <TransformGroup>
+                                                <RotateTransform />
+                                            </TransformGroup>
+                                        </Svg.RenderTransform>
+                                        <Svg.Styles>
+                                            <Style Selector="Svg">
+                                                <Style.Animations>
+                                                    <Animation Duration="0:0:.5" IterationCount="INFINITE">
+                                                        <KeyFrame Cue="0%">
+                                                            <Setter Property="RotateTransform.Angle" Value="0" />
+                                                        </KeyFrame>
+                                                        <KeyFrame Cue="100%">
+                                                            <Setter Property="RotateTransform.Angle" Value="360" />
+                                                        </KeyFrame>
+                                                    </Animation>
+                                                </Style.Animations>
+                                            </Style>
+                                        </Svg.Styles>
+                                    </Svg>
+                                </DataTemplate>
+                                <!--  Fallback view. This DataTemplate must be kept at the bottom.  -->
+                                <DataTemplate x:DataType="system:Object">
+                                    <TextBlock>
+                                        <Run Text="No view for" />
+                                        <Run Text="{Binding}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </designer:MultiDataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+                </Grid>
             </Border>
         </Grid>
-
     </Panel>
-   
 </Window>

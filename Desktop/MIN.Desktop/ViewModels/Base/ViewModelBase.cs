@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using MIN.Desktop.Infrastructure.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
 
 namespace MIN.Desktop.ViewModels.Base;
 

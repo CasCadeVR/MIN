@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
         services.TryAdd(new ServiceDescriptor(typeof(TService), typeof(TService), lifetime));
         var interfaces = typeof(TService).GetTypeInfo()
             .ImplementedInterfaces
-            .Where(i => i != typeof(IDisposable) && i != typeof(IAsyncDisposable) && (i.IsPublic));
+            .Where(i => i != typeof(IDisposable) && i != typeof(IAsyncDisposable) && i.IsPublic);
 
         foreach (Type interfaceType in interfaces)
         {
@@ -34,8 +34,9 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
     /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
+    /// <param name="exclude">Тип, который нужно исключить</param>
     /// <typeparam name="TInterface">Тип, для которого осуществляется регистрация</typeparam>
-    public static void RegisterAssemblyInterfacesAssignableTo<TInterface>(this IServiceCollection services, ServiceLifetime lifetime)
+    public static void RegisterAssemblyInterfacesAssignableTo<TInterface>(this IServiceCollection services, ServiceLifetime lifetime, Type? exclude = null)
     {
         var serviceType = typeof(TInterface);
         var types = serviceType.Assembly.GetTypes()
@@ -44,6 +45,47 @@ public static class ServiceCollectionExtensions
                           p.IsInterface));
         foreach (var type in types)
         {
+            if (exclude != null && exclude == type)
+            {
+                continue;
+            }
+
+            services.TryAdd(new ServiceDescriptor(type, type, lifetime));
+            var interfaces = type.GetTypeInfo()
+                .ImplementedInterfaces
+                .Where(i => i != typeof(IDisposable) &&
+                            i.IsPublic &&
+                            i != serviceType);
+
+            foreach (Type interfaceType in interfaces)
+            {
+                services.TryAdd(new ServiceDescriptor(interfaceType,
+                    provider => provider.GetRequiredService(type),
+                    lifetime));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Регистрирует все интерфейсы инстансов в указанной сборке для указанного маркерного интерфейса
+    /// </summary>
+    /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
+    /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
+    /// <param name="exclude">Тип, который нужно исключить</param>
+    /// <param name="serviceType">Тип, для которого осуществляется регистрация</param>
+    public static void RegisterAssemblyInterfacesAssignableTo(this IServiceCollection services, Type serviceType, ServiceLifetime lifetime, Type? exclude = null)
+    {
+        var types = serviceType.Assembly.GetTypes()
+            .Where(p => serviceType.IsAssignableFrom(p) &&
+                        !(p.IsAbstract ||
+                          p.IsInterface));
+        foreach (var type in types)
+        {
+            if (exclude != null && exclude == type)
+            {
+                continue;
+            }
+
             services.TryAdd(new ServiceDescriptor(type, type, lifetime));
             var interfaces = type.GetTypeInfo()
                 .ImplementedInterfaces

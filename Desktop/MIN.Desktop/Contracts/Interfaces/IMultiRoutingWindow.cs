@@ -1,4 +1,4 @@
-﻿namespace MIN.Desktop.Infrastructure.Interfaces;
+﻿namespace MIN.Desktop.Contracts.Interfaces;
 
 /// <summary>
 /// Окно, предаставляющее маршрутизацию по страницам

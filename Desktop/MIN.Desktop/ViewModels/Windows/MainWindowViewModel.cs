@@ -1,11 +1,13 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models.ReferenceCommands;
 using MIN.Desktop.Infrastructure.Extensions;
-using MIN.Desktop.Infrastructure.Interfaces;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Pages;
 
 namespace MIN.Desktop.ViewModels.Windows;
 
@@ -15,23 +17,27 @@ namespace MIN.Desktop.ViewModels.Windows;
 public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
 {
     /// <inheritdoc />
-    public object? LeftSideBarViewModel { get; set; }
+    [ObservableProperty]
+    public partial object? LeftSideBarViewModel { get; set; }
 
     /// <inheritdoc />
-    public object? ActiveViewModel { get; set; }
+    [ObservableProperty]
+    public partial object? ActiveViewModel { get; set; }
 
     /// <inheritdoc />
-    public object? RightSideBarViewModel { get; set; }
+    [ObservableProperty]
+    public partial object? RightSideBarViewModel { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MainWindowViewModel"/>
     /// </summary>
-    public MainWindowViewModel()
+    public MainWindowViewModel(MainSideBarViewModel mainSideBarViewModel, DiscoveryViewModel discoveryViewModel)
     {
         this.RegisterMessageListener<ShowViewReferenceCommand, MainWindowViewModel>(static (message, vm)
             => vm.ShowAsync(message.ViewModel));
         this.RegisterMessageListener<ShowPreviousViewReferenceCommand, MainWindowViewModel>(static (message, vm)
             => vm.BackToAsync(message.RoutableViewModelType, message.LayoutType));
+
         //this.RegisterMessageListener<NotificationAddMessage, MainWindowViewModel>(static async (message, vm) =>
         //{
         //    Dispatcher.UIThread.Invoke(() =>
@@ -53,6 +59,9 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
         //        });
         //    }
         //});
+
+        _ = this.ShowAsync(mainSideBarViewModel);
+        _ = this.ShowAsync(discoveryViewModel);
     }
 
     [RelayCommand]

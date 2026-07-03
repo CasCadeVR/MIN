@@ -6,6 +6,9 @@
              mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="720"
              x:DataType="vm:SettingsSideBarViewModel"
              Padding="{DynamicResource PaddingPage}"
+             DockPanel.Dock="Left"
+             MinWidth="320"
+             MaxWidth="320"
              x:Class="MIN.Desktop.Views.Pages.SettingsSideBarPage">
 
     <Design.DataContext>
