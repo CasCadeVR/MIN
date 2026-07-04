@@ -31,12 +31,11 @@ public partial class App : Application
     {
         StartupWindowFactory = () =>
         {
-            var services = new ServiceCollection();
-            services.AddAppServices();
+            var serviceProvider = new ServiceCollection()
+                .AddAppServices()
+                .BuildServiceProvider();
 
-            var serviceProvider = services.BuildServiceProvider();
             var appLifeTimeCts = serviceProvider.GetRequiredService<ICtsProvider>().AppCts;
-
             var hostedServices = serviceProvider.GetServices<IHostedService>();
 
             foreach (var hostedService in hostedServices)

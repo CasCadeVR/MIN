@@ -14,7 +14,7 @@ public interface IMultiRoutingWindow
     /// <summary>
     /// Центральная страница
     /// </summary>
-    object? ActiveViewModel { get; set; }
+    object? CentralViewModel { get; set; }
 
     /// <summary>
     /// Правая страница

@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:MIN.Desktop.TemplatedControls">
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:converters="using:MIN.Desktop.Infrastructure.Converters">
     <Design.PreviewWith>
             <Border Classes="sidebar">
                 <StackPanel Spacing="16" Width="300">
@@ -52,6 +53,59 @@
 
     <Style Selector="controls|CustomTitleBar" >
         <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <Style Selector=":is(Control)">
+        <Setter Property="Opacity" Value="1" />
+
+        <Style Selector="^ /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="{TemplateBinding Opacity}" />
+        </Style>
+
+        <Setter Property="FocusAdorner">
+            <Setter.Value>
+                <FocusAdornerTemplate>
+                    <Border
+                        Name="FocusBorder"
+                        BorderBrush="{DynamicResource Primary}"
+                        BorderThickness="2" />
+                </FocusAdornerTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value=".85" />
+        </Style>
+    </Style>
+
+      <Style Selector=".form">
+        <Style Selector="^ >  :is(Layoutable):not(:nth-last-child(1))">
+            <Setter Property="Margin" Value="0 0 0 26" />
+        </Style>
+        <Style Selector="^ StackPanel.form >  TextBlock:nth-child(1)">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="700" />
+            <Setter Property="Margin" Value="0 0 0 11" />
+        </Style>
+        <Style Selector="^ StackPanel.form >  TextBlock:nth-child(2)">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="500" />
+            <Setter Property="Margin" Value="0 -11 0 11" />
+            <Setter Property="IsVisible" Value="{Binding !$self.Text, Converter={converters:EqualityConverter}}" />
+        </Style>
+    </Style>
+
+    <Style Selector="Image.header">
+        <Setter Property="Width" Value="108" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+    </Style>
+
+    <Style Selector=":is(ContentControl).content">
+        <Setter Property="Background" Value="{DynamicResource BrandWhite}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
     </Style>
 
     <Style Selector="Border">

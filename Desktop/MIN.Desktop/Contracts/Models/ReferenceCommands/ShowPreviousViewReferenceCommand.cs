@@ -9,12 +9,12 @@ namespace MIN.Desktop.Contracts.Models.ReferenceCommands;
 public class ShowPreviousViewReferenceCommand
 {
     /// <summary>
-    /// ViewModel, которую должны показать
-    /// </summary>
-    public Type? RoutableViewModelType { get; init; } = null!;
-
-    /// <summary>
     /// Тип страницы, куда нужно показать view
     /// </summary>
     public ViewLayoutType LayoutType { get; init; }
+
+    /// <summary>
+    /// ViewModel, которую должны показать
+    /// </summary>
+    public Type? RoutableViewModelType { get; init; } = null!;
 }

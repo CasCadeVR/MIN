@@ -28,7 +28,10 @@ public abstract class RoutableViewModelBase : ViewModelBase
     /// </summary>
     protected void ChangeViewToPrevious()
     {
-        WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand());
+        WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand()
+        {
+            LayoutType = LayoutType
+        });
     }
 
     /// <summary>
@@ -39,7 +42,8 @@ public abstract class RoutableViewModelBase : ViewModelBase
     {
         WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand()
         {
-            RoutableViewModelType = typeof(T)
+            RoutableViewModelType = typeof(T),
+            LayoutType = LayoutType
         });
     }
 }

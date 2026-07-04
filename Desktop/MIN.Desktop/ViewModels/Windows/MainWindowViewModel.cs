@@ -22,7 +22,7 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
 
     /// <inheritdoc />
     [ObservableProperty]
-    public partial object? ActiveViewModel { get; set; }
+    public partial object? CentralViewModel { get; set; }
 
     /// <inheritdoc />
     [ObservableProperty]
@@ -35,8 +35,18 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     {
         this.RegisterMessageListener<ShowViewReferenceCommand, MainWindowViewModel>(static (message, vm)
             => vm.ShowAsync(message.ViewModel));
-        this.RegisterMessageListener<ShowPreviousViewReferenceCommand, MainWindowViewModel>(static (message, vm)
-            => vm.BackToAsync(message.RoutableViewModelType, message.LayoutType));
+        this.RegisterMessageListener<ShowPreviousViewReferenceCommand, MainWindowViewModel>(async (message, vm)
+            =>
+        {
+            if (message.RoutableViewModelType != null)
+            {
+                await vm.BackToAsync(message.RoutableViewModelType, message.LayoutType);
+            }
+            else
+            {
+                await vm.BackAsync(message.LayoutType);
+            }
+        });
 
         //this.RegisterMessageListener<NotificationAddMessage, MainWindowViewModel>(static async (message, vm) =>
         //{

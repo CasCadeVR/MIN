@@ -8,6 +8,8 @@
     <system:Double x:Key="FontSizeH1">24</system:Double>
     <system:Double x:Key="FontSizeH2">20</system:Double>
     <system:Double x:Key="FontSizeH3">18</system:Double>
+    <system:Double x:Key="FontSizeH4">16</system:Double>
+    <system:Double x:Key="FontSizeH5">14</system:Double>
 
     <Design.PreviewWith>
         <Border Padding="20">
@@ -22,6 +24,14 @@
 
                 <TextBlock Text="Header 3"
                     FontSize="{DynamicResource FontSizeH3}"
+                    Foreground="{DynamicResource TextPrimary}"/>
+                
+                <TextBlock Text="Header 4"
+                    FontSize="{DynamicResource FontSizeH4}"
+                    Foreground="{DynamicResource TextPrimary}"/>
+
+                   <TextBlock Text="Header 5"
+                    FontSize="{DynamicResource FontSizeH5}"
                     Foreground="{DynamicResource TextPrimary}"/>
 
                 <TextBlock Text="Normal text for bodies. Use in buttons"

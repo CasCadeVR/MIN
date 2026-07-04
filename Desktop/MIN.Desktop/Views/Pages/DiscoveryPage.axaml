@@ -19,7 +19,10 @@
                     Padding="{DynamicResource PaddingTopBar}"
                     CornerRadius="{DynamicResource CornerRadiusLarge}">
                 <DockPanel HorizontalSpacing="8" >
-                    <Button DockPanel.Dock="Left" Classes="icon">
+                    <Button
+                        Command="{Binding CreateRoomCommand}"
+                        DockPanel.Dock="Left"
+                        Classes="icon">
                         <Svg Path="/Assets/Icons/plus.svg" />
                     </Button>
 

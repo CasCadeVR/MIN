@@ -2,6 +2,7 @@
 using Avalonia.Styling;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.ViewModels.Base;
 
@@ -25,4 +26,10 @@ public partial class SettingsSideBarViewModel : RoutableViewModelBase
     {
         Dispatcher.UIThread.Invoke(() => Application.Current!.RequestedThemeVariant = value ? ThemeVariant.Light : ThemeVariant.Dark);
     }
+
+    /// <summary>
+    /// Вернуться назад
+    /// </summary>
+    [RelayCommand]
+    public void BackAsync() => ChangeViewToPrevious();
 }

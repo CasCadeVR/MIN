@@ -14,8 +14,6 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
-    <Folder Include="ViewModels\Modals\" />
-    <Folder Include="Views\Modals\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +23,10 @@
     <PackageReference Include="Avalonia.Themes.Simple" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="ServiceScan.SourceGenerator">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Svg.Controls.Skia.Avalonia" />
     <PackageReference Include="Xaml.Behaviors.Interactivity" />
   </ItemGroup>
@@ -34,6 +36,12 @@
   </ItemGroup>
 
     <ItemGroup>
+    <Compile Update="Views\Modals\DialogBoxViewModel.axaml.cs">
+      <DependentUpon>DialogBoxViewModel.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Modals\CreateRoomModal.axaml.cs">
+      <DependentUpon>CreateRoomModal.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Pages\DiscoveryPage.axaml.cs">
       <DependentUpon>DiscoveryPage.axaml</DependentUpon>
     </Compile>

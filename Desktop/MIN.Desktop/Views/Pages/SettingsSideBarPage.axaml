@@ -20,7 +20,9 @@
             CornerRadius="{DynamicResource CornerRadiusLarge}">
         <DockPanel VerticalSpacing="10" >
             <DockPanel HorizontalSpacing="16" DockPanel.Dock="Top" >
-                <Button DockPanel.Dock="Left" Classes="icon">
+                <Button Command="{Binding BackAsyncCommand}"
+                    DockPanel.Dock="Left"
+                    Classes="icon">
                     <Svg Path="/Assets/Icons/arrow-left.svg" />
                 </Button>
              

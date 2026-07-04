@@ -5,7 +5,7 @@
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters">
 
     <Design.PreviewWith>
-        <StackPanel Width="200">
+        <StackPanel Width="250">
             <controls:CustomTitleBar
                 Background="IndianRed"
                 CanMaximize="False"
@@ -24,13 +24,18 @@
             <ControlTemplate>
                 <Panel Background="Transparent">
                     <Border
-                        Padding="5,2"
+                        Margin="8,4,0,0"
+                        Padding="10, 0"
                         HorizontalAlignment="Left"
                         IsVisible="{TemplateBinding ShowTitle}">
-                        <TextBlock
-                            VerticalAlignment="Stretch"
-                            Text="{Binding $parent[Window].Title}"
-                            TextAlignment="Center" />
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="/Assets/Images/logoImage.png" />
+                            <TextBlock
+                                Classes="header4"
+                                VerticalAlignment="Center"
+                                Text="{Binding $parent[Window].Title}"
+                                TextAlignment="Center" />
+                        </StackPanel>
                     </Border>
                     <StackPanel>
                         <Button
@@ -72,12 +77,13 @@
 
         <!--  Default template values  -->
         <Setter Property="Background" Value="Black" />
+        <Setter Property="DockPanel.Dock" Value="Top" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="ZIndex" Value="100" />
         <Setter Property="Height" Value="28" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="ShowTitle" Value="False" />
+        <Setter Property="ShowTitle" Value="True" />
         <Setter Property="IsVisible" Value="{Binding $parent[Window].(design:DesignAttachments.UseCustomTitleBar)}" />
 
         <Style Selector="^ /template/ StackPanel">

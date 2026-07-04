@@ -43,7 +43,7 @@
             </DockPanel>
 
             <!-- room cards goes here -->
-            <Rectangle Fill="{DynamicResource Primary}" />
+            <Rectangle />
         </DockPanel>
     </Border>
 

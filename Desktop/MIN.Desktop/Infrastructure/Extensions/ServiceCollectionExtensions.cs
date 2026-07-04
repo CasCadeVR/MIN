@@ -1,32 +1,32 @@
 using System;
+using System.Reflection;
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MIN.Common.Mvc.Extensions;
+using MIN.Desktop.Contracts.Attributes;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Windows;
 using MIN.Desktop.Views;
 using MIN.Desktop.Views.Base;
 using MIN.DI;
+using ServiceScan.SourceGenerator;
 
 namespace MIN.Desktop.Infrastructure.Extensions;
 
 /// <summary>
 /// Расширения для <see cref="IServiceCollection"/> для приложения
 /// </summary>
-public static class ServiceCollectionExtensions
+public static partial class ServiceCollectionExtensions
 {
     /// <summary>
     /// Добавить все сервисы для приложения
     /// </summary>
     public static IServiceCollection AddAppServices(this IServiceCollection services)
-    {
-        var resultServices = services
-            // Domain APIs
-            //.AddSingleton(_ => KeyValueStore.Instance)
-            // Services
-            //.AddSingleton<DialogService>()
+        => services
             // UI
             .AddServices()
             .AddSingleton<Window, MainWindow>()
@@ -37,39 +37,39 @@ public static class ServiceCollectionExtensions
                 Window window = provider.GetRequiredService<Window>();
                 window.DataContext = provider.GetRequiredService<MainWindowViewModel>();
                 return window;
-            });
-        //.AddDialogs()
-        resultServices.RegisterAssemblyInterfacesAssignableTo(typeof(RoutableViewBase<>), ServiceLifetime.Singleton, typeof(MainWindow));
-        resultServices.RegisterAssemblyInterfacesAssignableTo<ViewModelBase>(ServiceLifetime.Singleton, typeof(MainWindowViewModel));
-        return resultServices;
-    }
+            })
+            .AddDialogs()
+            .AddViews()
+            .AddViewModels();
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.RegisterAsImplementedInterfaces<CtsProvider>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<DialogService>(ServiceLifetime.Singleton);
         services.RegisterModule<MinModule>();
         return services;
     }
 
-    //[GenerateServiceRegistrations(AttributeFilter = typeof(ModalForViewModelAttribute), CustomHandler = nameof(AddDialog))]
-    //private static partial IServiceCollection AddDialogs(this IServiceCollection services);
+    [ScanForTypes(AttributeFilter = typeof(ModalForViewModelAttribute), Handler = nameof(AddDialog))]
+    private static partial IServiceCollection AddDialogs(this IServiceCollection services);
 
-    //[GenerateServiceRegistrations(AssignableTo = typeof(RoutableViewBase<>), ExcludeAssignableTo = typeof(MainWindow), AsSelf = true)]
-    //private static IServiceCollection AddViews(this IServiceCollection services);
+    [GenerateServiceRegistrations(AssignableTo = typeof(RoutableViewBase<>), ExcludeAssignableTo = typeof(MainWindow), AsSelf = true)]
+    private static partial IServiceCollection AddViews(this IServiceCollection services);
 
-    //[GenerateServiceRegistrations(AssignableTo = typeof(ViewModelBase), ExcludeAssignableTo = typeof(MainWindowViewModel), AsSelf = true, Lifetime = ServiceLifetime.Singleton)]
-    //private static IServiceCollection AddViewModels(this IServiceCollection services);
+    [GenerateServiceRegistrations(AssignableTo = typeof(ViewModelBase), ExcludeAssignableTo = typeof(MainWindowViewModel), AsSelf = true, Lifetime = ServiceLifetime.Singleton)]
+    private static partial IServiceCollection AddViewModels(this IServiceCollection services);
 
-    //private static void AddDialog<TDialog>(this IServiceCollection services) where TDialog : ModalBase
-    //{
-    //    services.AddTransient<TDialog>();
-    //    services.TryAddTransient(GetViewModelType());
-    //    services.AddSingleton(provider => new DialogService.Mapping(GetViewModelType(), viewModel =>
-    //    {
-    //        TDialog dialog = provider.GetRequiredService<TDialog>();
-    //        dialog.DataContext = provider.GetRequiredService(viewModel);
-    //        return dialog;
-    //    }));
-    //    static Type GetViewModelType() => typeof(TDialog).GetCustomAttribute<ModalForViewModelAttribute>()?.ViewModelType ?? throw new Exception($"No ViewModel assigned to {typeof(TDialog).Name}");
-    //}
+    private static void AddDialog<TDialog>(this IServiceCollection services) where TDialog : ModalViewBase
+    {
+        services.AddTransient<TDialog>();
+        services.TryAddTransient(GetViewModelType());
+        services.AddSingleton(provider => new ModalMapping(GetViewModelType(), viewModel =>
+        {
+            TDialog dialog = provider.GetRequiredService<TDialog>();
+            dialog.DataContext = provider.GetRequiredService(viewModel);
+            return dialog;
+        }));
+        static Type GetViewModelType() => typeof(TDialog).GetCustomAttribute<ModalForViewModelAttribute>()?.ViewModelType
+            ?? throw new Exception($"No ViewModel assigned to {typeof(TDialog).Name}");
+    }
 }

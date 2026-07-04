@@ -13,6 +13,8 @@
             <TextBlock Classes="inverted header1" Background="{DynamicResource TextPrimary}">MiN</TextBlock>
             <TextBlock Classes="header2">Заголовок 2</TextBlock>
             <TextBlock Classes="header3">Заголовок 3</TextBlock>
+            <TextBlock Classes="header4">Заголовок 4</TextBlock>
+            <TextBlock Classes="header5">Заголовок 5</TextBlock>
             <TextBlock>Обычный текст</TextBlock>
             <TextBlock Classes="small">подзаголовок</TextBlock>
             <TextBlock Classes="caption">подзаголовок</TextBlock>
@@ -43,6 +45,18 @@
         
     <Style Selector="TextBlock.header3">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeH3}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock.header4">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH4}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock.header5">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH5}"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
