@@ -1,0 +1,36 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+        <StackPanel>
+            <StackPanel.Styles>
+                <Style Selector="ToggleSwitch">
+                    <Setter Property="Margin" Value="5"></Setter>
+                </Style>
+            </StackPanel.Styles>
+
+            <ToggleSwitch>Поставь пжпж</ToggleSwitch>
+            <ToggleSwitch Classes="secondary">Поставь пжпж</ToggleSwitch>
+        </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+    <Style Selector="ToggleSwitch">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="ToggleSwitch:pointerover /template/ Border#SwitchKnobBounds">
+        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHover}"/>
+    </Style>
+
+    <Style Selector="ToggleSwitch:checked /template/ Border#SwitchKnobBounds">
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+    </Style>
+</Styles>

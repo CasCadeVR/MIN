@@ -1,33 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters">
     <Design.PreviewWith>
-            <Border Classes="sidebar">
-                <StackPanel Spacing="16" Width="300">
-                    <TextBlock Text="Preview" FontSize="{DynamicResource FontSizeH1}"
-                               Foreground="{DynamicResource TextPrimary}"/>
-
-                    <Button Classes="primary" Content="Primary Button"/>
-                    <Button Classes="secondary" Content="Secondary Button"/>
-
-                    <Border Background="{DynamicResource Surface}" CornerRadius="8"
-                            BorderBrush="{DynamicResource Primary}" BorderThickness="1"
-                            Padding="12">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Card Title" FontSize="16" FontWeight="Bold"
-                                       Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="Description text" FontSize="12" Opacity="0.6"
-                                       Foreground="{DynamicResource TextPrimary}"/>
-                        </StackPanel>
-                    </Border>
-
-                    <TextBox PlaceholderText="Type here..."/>
-                    <CheckBox Content="Checkbox option"/>
-                    <ProgressBar Value="60" Height="8" CornerRadius="4"
-                                 Foreground="{DynamicResource Primary}"/>
-                </StackPanel>
-            </Border>
+        <designer:DesignerControlsTemplates />
     </Design.PreviewWith>
 
     <Style Selector="Window">
@@ -78,17 +55,19 @@
         </Style>
     </Style>
 
-      <Style Selector=".form">
+    <Style Selector=".form">
         <Style Selector="^ >  :is(Layoutable):not(:nth-last-child(1))">
             <Setter Property="Margin" Value="0 0 0 26" />
         </Style>
+
         <Style Selector="^ StackPanel.form >  TextBlock:nth-child(1)">
-            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="700" />
             <Setter Property="Margin" Value="0 0 0 11" />
         </Style>
+
         <Style Selector="^ StackPanel.form >  TextBlock:nth-child(2)">
-            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="500" />
             <Setter Property="Margin" Value="0 -11 0 11" />
             <Setter Property="IsVisible" Value="{Binding !$self.Text, Converter={converters:EqualityConverter}}" />
@@ -132,6 +111,13 @@
             <Setter Property="Background" Value="{DynamicResource SidebarSecondaryBackground}" />
             <Setter Property="Padding" Value="{DynamicResource PaddingPage}" />
         </Style>
+
+        <Style Selector="^.footer">
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
+            <Setter Property="Padding" Value="24 20" />
+            <Setter Property="BorderThickness" Value="0 2 0 0" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BrandWhite}" />
+        </Style>
     </Style>
 
     <Style Selector="Svg">
@@ -154,5 +140,5 @@
     <StyleInclude Source="/Contracts/Styles/Controls/ScrollViewers.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/TextBoxes.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/TextBlocks.axaml"/>
-    <StyleInclude Source="/Contracts/Styles/Controls/TextBlocks.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/ToggleSwitches.axaml"/>
 </Styles>

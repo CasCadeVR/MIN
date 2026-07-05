@@ -1,17 +1,17 @@
 using MIN.Desktop.ViewModels.Pages;
 using MIN.Desktop.Views.Base;
 
-namespace MIN.Desktop.Views.Pages;
+namespace MIN.Desktop.Views.Central;
 
 /// <summary>
 /// Страница обнаружения комнат
 /// </summary>
-public partial class DiscoveryPage : RoutableViewBase<DiscoveryViewModel>
+public partial class DiscoveryView : RoutableViewBase<DiscoveryViewModel>
 {
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="DiscoveryPage"/>
+    /// Инициализирует новый экземпляр <see cref="DiscoveryView"/>
     /// </summary>
-    public DiscoveryPage()
+    public DiscoveryView()
     {
         InitializeComponent();
     }

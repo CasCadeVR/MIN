@@ -8,18 +8,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        d:DesignWidth="300"
-        MinWidth="300"
+        d:DesignWidth="330"
+        MinWidth="330"
         CanResize="False"
         SizeToContent="WidthAndHeight"
-        x:Class="MIN.Desktop.Views.Modals.CreateRoomModal"
-        x:DataType="vm:CreateRoomViewModel"
-        Title="MIN - Новая комната">
+        x:Class="MIN.Desktop.Views.Modals.DirectConnectModal"
+        x:DataType="vm:DirectConnectViewModel"
+        Title="MIN - Подключиться напрямую">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <designer:DesignerCreateRoomViewModel/>
+        <vm:DirectConnectViewModel/>
     </Design.DataContext>
 
     <DockPanel>
@@ -29,12 +29,12 @@
             <StackPanel Classes="form" Margin="24">
                 <Border Classes="card">
                       <StackPanel Classes="form">
-                        <TextBlock Text="Имя комнаты" />
+                        <TextBlock Text="IP адрес" />
                         <TextBox
                             MaxLength="120"
                             MaxWidth="400"
-                            Text="{Binding Name, Converter={converters:TrimConverter}}"
-                            PlaceholderText="Введите имя...">
+                            Text="{Binding IpAddress, Converter={converters:TrimConverter}}"
+                            PlaceholderText="Введите IP адрес...">
                             <Interaction.Behaviors>
                                 <behaviors:FocusOnViewShowBehavior />
                             </Interaction.Behaviors>
@@ -44,28 +44,13 @@
 
                 <Border Classes="card">
                      <StackPanel Classes="form">
-                        <TextBlock Text="Количество участников" />
+                        <TextBlock Text="Порт" />
                         <TextBox
                             MaxLength="120"
                             MaxWidth="400"
-                            Text="{Binding RoomMaxPlayers}"
-                            PlaceholderText="Введите количество участников...">
+                            Text="{Binding Port}"
+                            PlaceholderText="Введите порт...">
                         </TextBox>
-                    </StackPanel>
-                </Border>
-
-                <Border Classes="card">
-                    <StackPanel Classes="form">
-                        <TextBlock Text="Проброска порта" />
-                        <ToggleSwitch
-                            OnContent="Включить"
-                            OffContent="Выключить"
-                            IsChecked="{Binding RoomAutoPortForward}">
-                        </ToggleSwitch>
-
-                        <TextBlock MaxWidth="300.0" Classes="small">
-                            Попытается автоматически пробросить порт, если у вашего маршрутизатора включен UPnP
-                        </TextBlock>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -80,8 +65,8 @@
                         HotKey="Escape" />
                     <Button
                         Classes="primary"
-                        Command="{Binding CreateCommand}"
-                        Content="Создать"
+                        Command="{Binding ConnectCommand}"
+                        Content="Подключиться"
                         HorizontalAlignment="Right"
                         HotKey="Enter" />
                 </Panel>

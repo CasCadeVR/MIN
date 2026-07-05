@@ -16,6 +16,12 @@ public interface IDialogService
         where TViewModel : ModalViewModelBase;
 
     /// <summary>
+    /// Показать модальное окно в виде диалога
+    /// </summary>
+    Task<TViewModel?> ShowDialogAsync<TViewModel>(Action<TViewModel>? viewModelSetup = null)
+        where TViewModel : ModalViewModelBase;
+
+    /// <summary>
     /// Показать ошибку в виде модального окна
     /// </summary>
     Task ShowErrorAsync(Exception exception, string? title = null, string? description = null);

@@ -1,6 +1,11 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime"
+                    xmlns:designer="using:MIN.Desktop.Contracts.Designer">
+
+    <Design.PreviewWith>
+        <designer:DesignerControlsTemplates />
+    </Design.PreviewWith>
  
     <!-- *************** -->
     <!-- SIZES           -->
@@ -22,36 +27,5 @@
     <system:Double x:Key="IconButton">24</system:Double>
 
     <system:Double x:Key="ScrollBarSize">8</system:Double>
-
-     <Design.PreviewWith>
-        <Border Padding="{DynamicResource PaddingPage}">
-            <StackPanel Spacing="16" Width="300">
-                <TextBlock Text="Preview" FontSize="{DynamicResource FontSizeH1}"
-                           Foreground="{DynamicResource TextPrimary}"/>
-
-                <Button Classes="primary" Content="Primary Button"/>
-                <Button Classes="secondary" Content="Secondary Button"/>
-
-                <Border Background="{DynamicResource Surface}" CornerRadius="8"
-                        BorderBrush="{DynamicResource Primary}" BorderThickness="1"
-                        Padding="{DynamicResource PaddingCard}">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Card Title" FontSize="16" FontWeight="Bold"
-                                   Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Description text" FontSize="12" Opacity="0.6"
-                                   Foreground="{DynamicResource TextPrimary}"/>
-                    </StackPanel>
-                </Border>
-
-                <TextBox BorderBrush="{DynamicResource Primary}"
-                         BorderThickness="1"
-                         WatermarkForeground="{DynamicResource TextPrimary}"
-                         PlaceholderText="Input field" Watermark="Type here..."/>
-                <CheckBox Content="Checkbox option"/>
-                <ProgressBar Value="60" Height="8" CornerRadius="4"
-                             Foreground="{DynamicResource Primary}"/>
-            </StackPanel>
-        </Border>
-    </Design.PreviewWith>
 
 </ResourceDictionary>

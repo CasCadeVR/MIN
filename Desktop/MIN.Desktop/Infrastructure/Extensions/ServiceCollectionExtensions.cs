@@ -45,6 +45,8 @@ public static partial class ServiceCollectionExtensions
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.RegisterAsImplementedInterfaces<CtsProvider>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<SettingsProvider>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<NotificationService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<DialogService>(ServiceLifetime.Singleton);
         services.RegisterModule<MinModule>();
         return services;

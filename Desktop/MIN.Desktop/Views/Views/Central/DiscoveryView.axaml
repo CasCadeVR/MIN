@@ -1,15 +1,16 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:designer="using:MIN.Desktop.Contracts.Designer"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="720"
              x:DataType="vm:DiscoveryViewModel"
              Padding="{DynamicResource PaddingPage}"
-             x:Class="MIN.Desktop.Views.Pages.DiscoveryPage">
+             x:Class="MIN.Desktop.Views.Central.DiscoveryView">
 
     <Design.DataContext>
-        <vm:DiscoveryViewModel/>
+        <designer:DesignerDiscoveryViewModel/>
     </Design.DataContext>
 
     <Border>
@@ -30,7 +31,9 @@
                        Найти комнаты
                     </Button>
 
-                    <Button DockPanel.Dock="Right">
+                    <Button
+                        Command="{Binding ConnectDirectlyCommand}"
+                        DockPanel.Dock="Right">
                        Подключиться напрямую
                     </Button>
 
@@ -42,11 +45,11 @@
                     Background="{DynamicResource SidebarBackground}"
                     Padding="{DynamicResource PaddingTopBar}"
                     CornerRadius="{DynamicResource CornerRadiusLarge}">
-                <DockPanel HorizontalSpacing="8" >
+                <StackPanel Spacing="8" >
                     <TextBlock Margin="6,0,0,0" DockPanel.Dock="Right">
                         Всего нашлось комнат: 0
                     </TextBlock>
-                </DockPanel>
+                </StackPanel>
             </Border>
 
             <!-- room cards goes here -->

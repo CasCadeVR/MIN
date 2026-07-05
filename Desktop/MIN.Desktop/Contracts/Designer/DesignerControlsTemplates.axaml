@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Padding="20"
+             x:Class="MIN.Desktop.Contracts.Designer.DesignerControlsTemplates">
+    <Border Classes="sidebar">
+        <StackPanel Spacing="16" Width="300">
+            <TextBlock Text="Preview" FontSize="{DynamicResource FontSizeH1}"
+                        Foreground="{DynamicResource TextPrimary}"/>
+
+            <Button Classes="primary" Content="Primary Button"/>
+            <Button Classes="secondary" Content="Secondary Button"/>
+
+            <Border Background="{DynamicResource Surface}" CornerRadius="8"
+                    BorderBrush="{DynamicResource Primary}" BorderThickness="1"
+                    Padding="12">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Card Title" FontSize="16" FontWeight="Bold"
+                                Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Description text" FontSize="12" Opacity="0.6"
+                                Foreground="{DynamicResource TextPrimary}"/>
+                </StackPanel>
+            </Border>
+
+            <TextBox PlaceholderText="Type here..."/>
+            <CheckBox Content="Checkbox option"/>
+            <ProgressBar Value="60" Height="8" CornerRadius="4"
+                            Foreground="{DynamicResource Primary}"/>
+        </StackPanel>
+    </Border>
+</UserControl>

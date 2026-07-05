@@ -36,6 +36,37 @@ public sealed class DialogService : IDialogService
 
     /// <inheritdoc />
     public async Task<TViewModel?> ShowAsync<TViewModel>(Action<TViewModel>? viewModelSetup = null)
+       where TViewModel : ModalViewModelBase
+    {
+        try
+        {
+            ModalMapping? mapping;
+            lock (viewModelToWindowMapLocker)
+            {
+                if (!viewModelToWindowMap.TryGetValue(typeof(TViewModel), out mapping))
+                {
+                    throw new Exception($"No dialog known for {typeof(TViewModel).Name}");
+                }
+            }
+            return await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Window dialog = mapping.WindowFactory(typeof(TViewModel));
+                var viewModel = (TViewModel)dialog.DataContext!;
+                viewModelSetup?.Invoke(viewModel);
+                dialog.Show(dialogOwnerProvider());
+                return viewModel;
+            });
+        }
+        catch
+        {
+            logger.Log($"Failed to show dialog for ViewModel {typeof(TViewModel).FullName}", LogLevel.Error);
+            //LauncherNotifier.Error(ex.Message);
+            return null;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<TViewModel?> ShowDialogAsync<TViewModel>(Action<TViewModel>? viewModelSetup = null)
         where TViewModel : ModalViewModelBase
     {
         try
@@ -64,7 +95,7 @@ public sealed class DialogService : IDialogService
     }
 
     Task IDialogService.ShowErrorAsync(Exception exception, string? title, string? description) =>
-        ShowAsync<DialogBoxViewModel>(model =>
+        ShowDialogAsync<DialogBoxViewModel>(model =>
         {
             model.Title = title ?? "Error";
             model.Description = string.IsNullOrWhiteSpace(description) ? exception.ToString() : $"[b][i]{description}[/b][/i]{Environment.NewLine}{Environment.NewLine}[#f94239]{exception}";

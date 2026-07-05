@@ -14,7 +14,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
     /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
     /// <typeparam name="TService">Тип, для которого осуществляется регистрация</typeparam>
-    public static void RegisterAsImplementedInterfaces<TService>(this IServiceCollection services, ServiceLifetime lifetime)
+    public static IServiceCollection RegisterAsImplementedInterfaces<TService>(this IServiceCollection services, ServiceLifetime lifetime)
     {
         services.TryAdd(new ServiceDescriptor(typeof(TService), typeof(TService), lifetime));
         var interfaces = typeof(TService).GetTypeInfo()
@@ -27,6 +27,8 @@ public static class ServiceCollectionExtensions
                 provider => provider.GetRequiredService(typeof(TService)),
                 lifetime));
         }
+
+        return services;
     }
 
     /// <summary>

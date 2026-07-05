@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="720"
+             x:DataType="vm:ChatViewModel"
+             Padding="{DynamicResource PaddingPage}"
+             x:Class="MIN.Desktop.Views.Central.ChatView">
+
+    <Design.DataContext>
+        <designer:DesignerChatViewModel/>
+    </Design.DataContext>
+
+    <Border>
+        <DockPanel VerticalSpacing="10" >
+            <Border DockPanel.Dock="Top"
+                    Background="{DynamicResource SidebarBackground}"
+                    Padding="{DynamicResource PaddingTopBar}"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}">
+                <DockPanel
+                    HorizontalSpacing="8">
+
+                    <Button>
+                        Выйти
+                    </Button>
+
+                     <Button
+                        Command="{Binding ToggleSideBarCommand}"
+                        Classes="icon"
+                        DockPanel.Dock="Right">
+                            <Svg Path="/Assets/Icons/about.svg" />
+                     </Button>
+
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Margin="6,0,0,0"
+                        Classes="header3">
+                        Название комнаты
+                    </TextBlock>
+                </DockPanel>
+            </Border>
+
+             <Border DockPanel.Dock="Bottom"
+                    Background="{DynamicResource SidebarBackground}"
+                    Padding="{DynamicResource PaddingTopBar}"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}">
+    
+                    <DockPanel HorizontalSpacing="8" >
+                        <Button
+                            DockPanel.Dock="Left"
+                            Classes="icon">
+                            <Svg Path="/Assets/Icons/plus.svg" />
+                        </Button>
+
+                        <Button
+                            Classes="icon"
+                            DockPanel.Dock="Right">
+                            <Svg Path="/Assets/Icons/rocket.svg" />
+                        </Button>
+
+                        <TextBox PlaceholderText="Сообщение" />
+                    </DockPanel>
+             </Border>
+
+            <!-- room cards goes here -->
+            <Border Background="Transparent"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}"/>
+        </DockPanel>
+    </Border>
+</UserControl>

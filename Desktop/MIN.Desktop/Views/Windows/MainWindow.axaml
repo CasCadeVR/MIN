@@ -2,7 +2,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:MIN.Desktop.ViewModels.Windows"
         xmlns:pagesVm="using:MIN.Desktop.ViewModels.Pages"
-        xmlns:pages="using:MIN.Desktop.Views.Pages"
+        xmlns:pagesCentral="using:MIN.Desktop.Views.Central"
+        xmlns:pagesLeft="using:MIN.Desktop.Views.Left"
+        xmlns:pagesRight="using:MIN.Desktop.Views.Right"
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -73,10 +75,10 @@
                                     </Svg>
                                 </DataTemplate>
                                 <DataTemplate x:DataType="designer:DesignerMainSideBarViewModel">
-                                    <pages:MainSideBarPage />
+                                    <pagesLeft:MainSideBarView />
                                 </DataTemplate>
                                 <DataTemplate x:DataType="pagesVm:SettingsSideBarViewModel">
-                                    <pages:SettingsSideBarPage />
+                                    <pagesLeft:SettingsSideBarView />
                                 </DataTemplate>
                                 <!--  Fallback view. This DataTemplate must be kept at the bottom.  -->
                                 <DataTemplate x:DataType="system:Object">
@@ -134,6 +136,9 @@
                                         </Svg.Styles>
                                     </Svg>
                                 </DataTemplate>
+                                 <DataTemplate x:DataType="pagesVm:ChatSideBarViewModel">
+                                    <pagesRight:ChatSideBarView />
+                                </DataTemplate>
                                 <!--  Fallback view. This DataTemplate must be kept at the bottom.  -->
                                 <DataTemplate x:DataType="system:Object">
                                     <TextBlock>
@@ -190,7 +195,10 @@
                                     </Svg>
                                 </DataTemplate>
                                 <DataTemplate x:DataType="pagesVm:DiscoveryViewModel">
-                                    <pages:DiscoveryPage />
+                                    <pagesCentral:DiscoveryView />
+                                </DataTemplate>
+                                <DataTemplate x:DataType="pagesVm:ChatViewModel">
+                                    <pagesCentral:ChatView />
                                 </DataTemplate>
                                 <!--  Fallback view. This DataTemplate must be kept at the bottom.  -->
                                 <DataTemplate x:DataType="system:Object">

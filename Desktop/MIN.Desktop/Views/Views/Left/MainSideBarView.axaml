@@ -9,7 +9,7 @@
              DockPanel.Dock="Left"
              MinWidth="320"
              MaxWidth="320"
-             x:Class="MIN.Desktop.Views.Pages.MainSideBarPage">
+             x:Class="MIN.Desktop.Views.Left.MainSideBarView">
 
     <Design.DataContext>
         <design:DesignerMainSideBarViewModel/>

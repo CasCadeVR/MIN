@@ -1,5 +1,10 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:designer="using:MIN.Desktop.Contracts.Designer">
+
+    <Design.PreviewWith>
+        <designer:DesignerControlsTemplates />
+    </Design.PreviewWith>
 
     <ResourceDictionary.ThemeDictionaries>
         <!-- DARK THEME -->
@@ -155,35 +160,5 @@
             <x:String x:Key="SvgTextStyle">* { fill: #2C2C2E; stroke: #2C2C2E; }</x:String>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
-    <Design.PreviewWith>
-        <Border Padding="20">
-            <Border Background="{DynamicResource SidebarSecondaryBackground}" Padding="20" CornerRadius="16">
-                <StackPanel Spacing="16" Width="300">
-                    <TextBlock Text="Preview" FontSize="{DynamicResource FontSizeH1}"
-                               Foreground="{DynamicResource TextPrimary}"/>
-
-                    <Button Classes="primary" Content="Primary Button"/>
-                    <Button Classes="secondary" Content="Secondary Button"/>
-
-                    <Border Background="{DynamicResource Surface}" CornerRadius="8"
-                            BorderBrush="{DynamicResource Primary}" BorderThickness="1"
-                            Padding="12">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Card Title" FontSize="16" FontWeight="Bold"
-                                       Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="Description text" FontSize="12" Opacity="0.6"
-                                       Foreground="{DynamicResource TextPrimary}"/>
-                        </StackPanel>
-                    </Border>
-
-                    <TextBox PlaceholderText="Type here..."/>
-                    <CheckBox Content="Checkbox option"/>
-                    <ProgressBar Value="60" Height="8" CornerRadius="4"
-                                 Foreground="{DynamicResource Primary}"/>
-                </StackPanel>
-            </Border>
-        </Border>
-    </Design.PreviewWith>
 
 </ResourceDictionary>

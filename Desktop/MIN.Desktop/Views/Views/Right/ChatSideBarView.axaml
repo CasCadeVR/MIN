@@ -4,15 +4,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="720"
-             x:DataType="vm:SettingsSideBarViewModel"
+             x:DataType="vm:ChatSideBarViewModel"
              Padding="{DynamicResource PaddingPage}"
              DockPanel.Dock="Left"
              MinWidth="320"
              MaxWidth="320"
-             x:Class="MIN.Desktop.Views.Pages.SettingsSideBarPage">
+             x:Class="MIN.Desktop.Views.Right.ChatSideBarView">
 
     <Design.DataContext>
-        <vm:SettingsSideBarViewModel/>
+        <vm:ChatSideBarViewModel/>
     </Design.DataContext>
 
     <Border Background="{DynamicResource SidebarSecondaryBackground}"
@@ -20,7 +20,7 @@
             CornerRadius="{DynamicResource CornerRadiusLarge}">
         <DockPanel VerticalSpacing="10" >
             <DockPanel HorizontalSpacing="16" DockPanel.Dock="Top" >
-                <Button Command="{Binding BackAsyncCommand}"
+                <Button Command="{Binding CloseAsyncCommand}"
                     DockPanel.Dock="Left"
                     Classes="icon">
                     <Svg Path="/Assets/Icons/arrow-left.svg" />
@@ -73,9 +73,7 @@
                             Тема
                          </TextBlock>
 
-                        <ToggleSwitch IsChecked="{Binding IsLightModeEnabled}"
-                            OffContent="Тёмная"
-                            OnContent="Светлая"/>
+   
                      </DockPanel>
 
                     <!-- Logs -->
