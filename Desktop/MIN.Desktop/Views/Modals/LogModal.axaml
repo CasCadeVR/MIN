@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MIN.Desktop.ViewModels.Modals"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="700"
+        d:DesignHeight="330"
+        Width="700"
+        Height="330"
+        x:Class="MIN.Desktop.Views.Modals.LogModal"
+        x:DataType="vm:LogViewModel"
+        Title="MIN - Логи">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:LogViewModel/>
+    </Design.DataContext>
+
+    <DockPanel>
+        <controls:CustomTitleBar />
+
+        <Border Padding="{DynamicResource PaddingCard}">
+            <StackPanel>
+                <!-- Helper buttons -->
+                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right">
+                     <Button Classes="icon">
+                         <Svg Path="/Assets/Icons/arrow-up.svg"/>
+                     </Button>
+                       <Button Classes="icon">
+                         <Svg Path="/Assets/Icons/arrow-down.svg"/>
+                     </Button>
+                </StackPanel>
+
+                <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="8" Margin="0,8,0,0">
+                        <Rectangle Height="20" Fill="#FFF"/>
+                        <Rectangle Height="20" Fill="#FFF"/>
+                        <!-- Logs goes here -->
+                    </StackPanel>
+                </ScrollViewer>
+            </StackPanel>
+        </Border>
+    </DockPanel>
+</Window>

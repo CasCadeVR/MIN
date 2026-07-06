@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using MIN.Common.Core.Extensions;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
-using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Base.Interfaces;
 
 namespace MIN.Desktop.Infrastructure.Extensions;
 
@@ -13,22 +13,21 @@ namespace MIN.Desktop.Infrastructure.Extensions;
 /// </summary>
 public static class MultiRoutingWindowExtensions
 {
-    private readonly static Dictionary<ViewLayoutType, List<RoutableViewModelBase>> navigationStack = new()
+    private readonly static Dictionary<ViewLayoutType, List<IRoutableViewModel>> navigationStack = new()
     {
         { ViewLayoutType.LeftSideBar, [] },
         { ViewLayoutType.Central, [] },
         { ViewLayoutType.RightSideBar, [] },
     };
-
     //private static CancellationTokenSource? viewChangeBusyCts;
 
     /// <summary>
-    ///     Navigates to a view assigned to the given ViewModel.
+    /// Переходит к представлению, назначенному данной ViewModel
     /// </summary>
-    /// <param name="screen">The screen used to display the view.</param>
-    /// <param name="routableViewModel">ViewModel that should be shown.</param>
-    /// <typeparam name="TViewModel">Type of the ViewModel to show.</typeparam>
-    public static async Task ShowAsync<TViewModel>(this IMultiRoutingWindow? screen, TViewModel routableViewModel) where TViewModel : RoutableViewModelBase
+    /// <param name="screen">Экран, используемый для отображения изображения.</param>
+    /// <param name="routableViewModel">ViewModel, которую следует отобразить</param>
+    /// <typeparam name="TViewModel">Тип модели представления для отображения</typeparam>
+    public static async Task ShowAsync<TViewModel>(this IMultiRoutingWindow? screen, TViewModel routableViewModel) where TViewModel : IRoutableViewModel
     {
         if (screen == null)
         {
@@ -44,19 +43,25 @@ public static class MultiRoutingWindowExtensions
         //ctsToken = viewChangeBusyCts.Token;
 
         if (routableViewModel.LayoutType == ViewLayoutType.LeftSideBar
-            && screen.LeftSideBarViewModel is RoutableViewModelBase leftPriorViewModel)
+            && screen.LeftSideBarViewModel is IRoutableViewModel leftPriorViewModel)
         {
             navigationStack[routableViewModel.LayoutType].RemoveByPredicate(screen.LeftSideBarViewModel, (item, param) => item.GetType() == param.GetType());
             navigationStack[routableViewModel.LayoutType].Add(leftPriorViewModel);
         }
         else if (routableViewModel.LayoutType == ViewLayoutType.Central
-            && screen.CentralViewModel is RoutableViewModelBase centralPriorViewModel)
+            && screen.CentralViewModel is IRoutableViewModel centralPriorViewModel)
         {
             navigationStack[routableViewModel.LayoutType].RemoveByPredicate(screen.CentralViewModel, (item, param) => item.GetType() == param.GetType());
             navigationStack[routableViewModel.LayoutType].Add(centralPriorViewModel);
+
+            if (screen.RightSideBarViewModel is IRoutableViewModel rightPriorViewModel
+                && rightPriorViewModel.RelatedToCentral)
+            {
+                screen.RightSideBarViewModel = null;
+            }
         }
         else if (routableViewModel.LayoutType == ViewLayoutType.RightSideBar
-            && screen.RightSideBarViewModel is RoutableViewModelBase rightPriorViewModel)
+            && screen.RightSideBarViewModel is IRoutableViewModel rightPriorViewModel)
         {
             navigationStack[routableViewModel.LayoutType].RemoveByPredicate(screen.RightSideBarViewModel, (item, param) => item.GetType() == param.GetType());
             navigationStack[routableViewModel.LayoutType].Add(rightPriorViewModel);
@@ -130,7 +135,7 @@ public static class MultiRoutingWindowExtensions
     /// </summary>
     public static async Task<bool> BackAsync(this IMultiRoutingWindow screen, ViewLayoutType viewLayoutType)
     {
-        RoutableViewModelBase? backViewModel = null;
+        IRoutableViewModel? backViewModel = null;
         while (navigationStack.Count > 0 && (backViewModel == null
             || backViewModel == screen.LeftSideBarViewModel
             || backViewModel == screen.CentralViewModel
@@ -147,11 +152,11 @@ public static class MultiRoutingWindowExtensions
     }
 
     /// <summary>
-    ///     Tries to go back to the view assigned to the given ViewModel.
+    /// Пытается вернуться к представлению, назначенному данной ViewModel
     /// </summary>
     /// <returns>
-    ///     True if ViewModel was found in the routing navigation stack. False when the ViewModel wasn't found and routing
-    ///     failed.
+    /// Значение True, если ViewModel был найден в стеке навигации маршрутизации. Значение False, если ViewModel не был найден и маршрутизация
+    /// завершилась неудачей.
     /// </returns>
     public static async Task<bool> BackToAsync(this IMultiRoutingWindow screen, Type? type, ViewLayoutType layoutType)
     {
@@ -162,11 +167,11 @@ public static class MultiRoutingWindowExtensions
 
         for (var i = navigationStack.Count - 1; i >= 0; i--)
         {
-            RoutableViewModelBase target = navigationStack[layoutType][i];
+            var target = navigationStack[layoutType][i];
             if (type.IsAssignableFrom(target.GetType()))
             {
                 // Cleanup the stack up and including the back-target.
-                for (int j = i; j < navigationStack.Count; j++)
+                for (var j = i; j < navigationStack.Count; j++)
                 {
                     navigationStack[target.LayoutType].RemoveAt(j);
                 }
@@ -175,5 +180,36 @@ public static class MultiRoutingWindowExtensions
             }
         }
         return false;
+    }
+
+    /// <summary>
+    /// Закрыть окно
+    /// </summary>
+    public static async Task CloseAsync(this IMultiRoutingWindow screen, ViewLayoutType viewLayoutType)
+    {
+        switch (viewLayoutType)
+        {
+            case ViewLayoutType.LeftSideBar:
+                screen.LeftSideBarViewModel = null;
+                break;
+
+            case ViewLayoutType.Central:
+                screen.CentralViewModel = null;
+                ResetRelated(screen);
+                break;
+
+            case ViewLayoutType.RightSideBar:
+                screen.RightSideBarViewModel = null;
+                break;
+        }
+    }
+
+    private static void ResetRelated(IMultiRoutingWindow screen)
+    {
+        if (screen.RightSideBarViewModel is IRoutableViewModel rightPriorViewModel
+            && rightPriorViewModel.RelatedToCentral)
+        {
+            screen.RightSideBarViewModel = null;
+        }
     }
 }

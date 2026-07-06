@@ -10,8 +10,16 @@
             <TextBlock Text="Preview" FontSize="{DynamicResource FontSizeH1}"
                         Foreground="{DynamicResource TextPrimary}"/>
 
-            <Button Classes="primary" Content="Primary Button"/>
+            <Button Content="Primary Button"/>
             <Button Classes="secondary" Content="Secondary Button"/>
+            <StackPanel Orientation="Horizontal">
+                 <Button Classes="icon">
+                    <Svg Path="/Assets/Icons/gear.svg" />
+                </Button>
+                    <Button Classes="icon primary">
+                    <Svg Path="/Assets/Icons/send.svg" />
+                </Button>
+            </StackPanel>
 
             <Border Background="{DynamicResource Surface}" CornerRadius="8"
                     BorderBrush="{DynamicResource Primary}" BorderThickness="1"

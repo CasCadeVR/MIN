@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:designer="using:MIN.Desktop.Contracts.Designer"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -12,7 +13,7 @@
              x:Class="MIN.Desktop.Views.Left.SettingsSideBarView">
 
     <Design.DataContext>
-        <vm:SettingsSideBarViewModel/>
+        <designer:DesignerSettingsViewModel/>
     </Design.DataContext>
 
     <Border Background="{DynamicResource SidebarSecondaryBackground}"
@@ -20,7 +21,7 @@
             CornerRadius="{DynamicResource CornerRadiusLarge}">
         <DockPanel VerticalSpacing="10" >
             <DockPanel HorizontalSpacing="16" DockPanel.Dock="Top" >
-                <Button Command="{Binding BackAsyncCommand}"
+                <Button Command="{Binding BackCommand}"
                     DockPanel.Dock="Left"
                     Classes="icon">
                     <Svg Path="/Assets/Icons/arrow-left.svg" />
@@ -45,7 +46,8 @@
                             Имя по умолчанию
                         </TextBlock>
 
-                        <TextBox PlaceholderText="Введите имя..." />
+                        <TextBox Text="{Binding DefaultParticipantName}"
+                            PlaceholderText="Введите имя..." />
                     </DockPanel>
 
                     <!-- Room discovery time -->
@@ -54,7 +56,8 @@
                             Время поиска комнат (в мс.)
                         </TextBlock>
 
-                        <TextBox Grid.Column="1" Text="1000"/>
+                        <TextBox Text="{Binding DiscoveryTimeout}"
+                            Grid.Column="1"/>
                     </Grid>
 
                     <!-- Udp port -->
@@ -63,7 +66,8 @@
                             UDP Порт комнат (Лучше не менять, по умолчанию 42069)
                         </TextBlock>
 
-                        <TextBox Grid.Column="1" Text="42069"/>
+                        <TextBox Text="{Binding DiscoveryPort}"
+                            Grid.Column="1"/>
                     </Grid>
 
                     <!-- App theme -->
@@ -73,40 +77,42 @@
                             Тема
                          </TextBlock>
 
-                        <ToggleSwitch IsChecked="{Binding IsLightModeEnabled}"
+                        <ToggleSwitch IsChecked="{Binding LightThemeEnabled}"
                             OffContent="Тёмная"
                             OnContent="Светлая"/>
                      </DockPanel>
 
                     <!-- Logs -->
 
-                    <Button Grid.Column="0" Grid.Row="4" VerticalAlignment="Center">
+                    <Button
+                        Command="{Binding OpenLogsCommand}"
+                        VerticalAlignment="Center">
                         Открыть логи
                     </Button>
 
-                    <TextBlock Grid.Column="1" Grid.Row="4" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center">
                         Чисто для разраба, но можете и сами понаблюдать по приколу
                     </TextBlock>
 
                     <!-- Cache cleanup -->
 
-                    <Button Grid.Column="0" Grid.Row="5" VerticalAlignment="Center">
+                    <Button VerticalAlignment="Center">
                         Очистить кэш
                     </Button>
 
-                    <TextBlock Grid.Column="1" Grid.Row="5" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center">
                         Обычно нужен при неправильных настройках в кэше
                     </TextBlock>
 
                     <!-- Cache cleanup -->
 
-                    <Button Grid.Column="0" Grid.Row="6" VerticalAlignment="Center">
+                    <Button VerticalAlignment="Center">
                         <TextBlock TextAlignment="Center">
                             Обновить список сессий
                         </TextBlock>
                     </Button>
 
-                    <TextBlock Grid.Column="1" Grid.Row="6" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center">
                         Когда вы установили новую сессию
                     </TextBlock>
                 </StackPanel>

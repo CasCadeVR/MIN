@@ -1,4 +1,4 @@
-﻿using MIN.Desktop.ViewModels.Base;
+﻿using MIN.Desktop.ViewModels.Base.Interfaces;
 
 namespace MIN.Desktop.Contracts.Models.ReferenceCommands;
 
@@ -10,5 +10,5 @@ public class ShowViewReferenceCommand
     /// <summary>
     /// ViewModel, которую должны показать
     /// </summary>
-    public required RoutableViewModelBase ViewModel { get; init; }
+    public required IRoutableViewModel ViewModel { get; init; }
 }

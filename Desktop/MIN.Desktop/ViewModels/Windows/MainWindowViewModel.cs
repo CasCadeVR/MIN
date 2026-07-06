@@ -35,6 +35,8 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     {
         this.RegisterMessageListener<ShowViewReferenceCommand, MainWindowViewModel>(static (message, vm)
             => vm.ShowAsync(message.ViewModel));
+        this.RegisterMessageListener<CloseViewReferenceCommand, MainWindowViewModel>(static (message, vm)
+            => vm.CloseAsync(message.LayoutType));
         this.RegisterMessageListener<ShowPreviousViewReferenceCommand, MainWindowViewModel>(async (message, vm)
             =>
         {

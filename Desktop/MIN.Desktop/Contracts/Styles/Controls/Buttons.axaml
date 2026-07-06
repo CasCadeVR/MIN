@@ -13,9 +13,11 @@
 
                     <Button>Просто кнопка</Button>
                     <Button Classes="secondary">Вторичное действие</Button>
-                    <Button Classes="busy">Вторичное действие</Button>
                     <Button Classes="icon">
                         <Svg Path="/Assets/Icons/gear.svg" />
+                    </Button>
+                      <Button Classes="icon primary">
+                        <Svg Path="/Assets/Icons/send.svg" />
                     </Button>
                 </StackPanel>
             </Border>
@@ -109,6 +111,21 @@
         <Style Selector="^.secondary:pointerover /template/ ContentPresenter">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Background" Value="{DynamicResource Primary}"/>
+        </Style>
+
+        <Style Selector="^.primary">
+            <Setter Property="Foreground" Value="{DynamicResource Primary}"/>
+
+            <Style Selector="^ Svg">
+                <Setter Property="Css" Value="{DynamicResource SvgAccentStyle}" />
+            </Style>
+        </Style>
+        <Style Selector="^.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource PrimaryHover}"/>
+
+             <Style Selector="^ Svg">
+                <Setter Property="Css" Value="{DynamicResource SvgTextStyle}" />
+            </Style>
         </Style>
     </Style>
 

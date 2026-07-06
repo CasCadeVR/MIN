@@ -1,5 +1,5 @@
 ﻿using Avalonia.Controls;
-using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Base.Interfaces;
 
 namespace MIN.Desktop.Views.Base;
 
@@ -7,4 +7,4 @@ namespace MIN.Desktop.Views.Base;
 /// Базовая view для модальных окон
 /// </summary>
 public class RoutableViewBase<TViewModel> : UserControl
-    where TViewModel : RoutableViewModelBase;
+    where TViewModel : IRoutableViewModel;

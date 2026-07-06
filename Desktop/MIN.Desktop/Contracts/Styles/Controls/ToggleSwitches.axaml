@@ -16,6 +16,8 @@
   </Design.PreviewWith>
 
     <Style Selector="ToggleSwitch">
+        <Setter Property="OnContent" Value="Включить" />
+        <Setter Property="OffContent" Value="Выключить" />
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
         <Setter Property="CornerRadius" Value="4"/>

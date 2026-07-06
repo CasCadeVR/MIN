@@ -4,7 +4,6 @@
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
         xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
-        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
@@ -12,14 +11,14 @@
         MinWidth="300"
         CanResize="False"
         SizeToContent="WidthAndHeight"
-        x:Class="MIN.Desktop.Views.Modals.CreateRoomModal"
-        x:DataType="vm:CreateRoomViewModel"
-        Title="MIN - Новая комната">
+        x:Class="MIN.Desktop.Views.Modals.CreateParticipantModal"
+        x:DataType="vm:CreateParticipantViewModel"
+        Title="MIN - Подключение">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <designer:DesignerCreateRoomViewModel/>
+        <vm:CreateParticipantViewModel/>
     </Design.DataContext>
 
     <DockPanel>
@@ -29,7 +28,7 @@
             <StackPanel Classes="form" Margin="24">
                 <Border Classes="card">
                       <StackPanel Classes="form">
-                        <TextBlock Text="Имя комнаты" />
+                        <TextBlock Text="Введите своё имя:" />
                         <TextBox
                             MaxLength="120"
                             MaxWidth="400"
@@ -39,31 +38,6 @@
                                 <behaviors:FocusOnViewShowBehavior />
                             </Interaction.Behaviors>
                         </TextBox>
-                    </StackPanel>
-                </Border>
-
-                <Border Classes="card">
-                     <StackPanel Classes="form">
-                        <TextBlock Text="Количество участников" />
-                        <TextBox
-                            MaxLength="120"
-                            MaxWidth="400"
-                            Text="{Binding RoomMaxPlayers}"
-                            PlaceholderText="Введите количество участников...">
-                        </TextBox>
-                    </StackPanel>
-                </Border>
-
-                <Border Classes="card">
-                    <StackPanel Classes="form">
-                        <TextBlock Text="Проброска порта" />
-                        <ToggleSwitch
-                            IsChecked="{Binding RoomAutoPortForward}">
-                        </ToggleSwitch>
-
-                        <TextBlock MaxWidth="300.0" Classes="small">
-                            Попытается автоматически пробросить порт, если у вашего маршрутизатора включен UPnP
-                        </TextBlock>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -77,8 +51,8 @@
                         HorizontalAlignment="Left"
                         HotKey="Escape" />
                     <Button
-                        Command="{Binding CreateCommand}"
-                        Content="Создать"
+                        Command="{Binding ConnectCommand}"
+                        Content="Подключиться"
                         HorizontalAlignment="Right"
                         HotKey="Enter" />
                 </Panel>

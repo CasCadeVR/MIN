@@ -55,9 +55,10 @@
                         </Button>
 
                         <Button
-                            Classes="icon"
-                            DockPanel.Dock="Right">
-                            <Svg Path="/Assets/Icons/rocket.svg" />
+                            Classes="icon primary"
+                            DockPanel.Dock="Right"
+                            HotKey="Enter">
+                            <Svg Path="/Assets/Icons/send.svg" />
                         </Button>
 
                         <TextBox PlaceholderText="Сообщение" />

@@ -18,99 +18,130 @@
     <Border Background="{DynamicResource SidebarSecondaryBackground}"
             Padding="{DynamicResource PaddingPage}"
             CornerRadius="{DynamicResource CornerRadiusLarge}">
-        <DockPanel VerticalSpacing="10" >
+        <StackPanel Spacing="10" >
             <DockPanel HorizontalSpacing="16" DockPanel.Dock="Top" >
                 <Button Command="{Binding CloseAsyncCommand}"
                     DockPanel.Dock="Left"
                     Classes="icon">
-                    <Svg Path="/Assets/Icons/arrow-left.svg" />
+                    <Svg Path="/Assets/Icons/close.svg" />
                 </Button>
              
-                <TextBlock Classes="header2" VerticalAlignment="Center">
-                    Настройки
-                </TextBlock>
+                <Rectangle />
             </DockPanel>
 
-            <TextBlock DockPanel.Dock="Bottom" Classes="small" HorizontalAlignment="Center">
-                Версия
-            </TextBlock>
+            <StackPanel Spacing="6">
 
-            <ScrollViewer Classes="main">
-                <StackPanel Spacing="6">
+                <!-- Room Notifications -->
 
-                    <!-- Default Name -->
-
-                    <DockPanel HorizontalSpacing="12">
-                        <TextBlock VerticalAlignment="Center">
-                            Имя по умолчанию
-                        </TextBlock>
-
-                        <TextBox PlaceholderText="Введите имя..." />
-                    </DockPanel>
-
-                    <!-- Room discovery time -->
-                    <Grid ColumnDefinitions="*, Auto">
-                        <TextBlock Grid.Column="0" VerticalAlignment="Center">
-                            Время поиска комнат (в мс.)
-                        </TextBlock>
-
-                        <TextBox Grid.Column="1" Text="1000"/>
-                    </Grid>
-
-                    <!-- Udp port -->
-                    <Grid ColumnDefinitions="*, Auto">
-                        <TextBlock Grid.Column="0" VerticalAlignment="Center">
-                            UDP Порт комнат (Лучше не менять, по умолчанию 42069)
-                        </TextBlock>
-
-                        <TextBox Grid.Column="1" Text="42069"/>
-                    </Grid>
-
-                    <!-- App theme -->
-
-                    <DockPanel HorizontalSpacing="12">
-                         <TextBlock VerticalAlignment="Center">
-                            Тема
-                         </TextBlock>
-
-   
-                     </DockPanel>
-
-                    <!-- Logs -->
-
-                    <Button Grid.Column="0" Grid.Row="4" VerticalAlignment="Center">
-                        Открыть логи
-                    </Button>
-
-                    <TextBlock Grid.Column="1" Grid.Row="4" VerticalAlignment="Center">
-                        Чисто для разраба, но можете и сами понаблюдать по приколу
+                <StackPanel Margin="0,8" HorizontalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center">
+                        Уведомления
                     </TextBlock>
 
-                    <!-- Cache cleanup -->
+                    <ToggleSwitch  />
+                </StackPanel>
 
-                    <Button Grid.Column="0" Grid.Row="5" VerticalAlignment="Center">
-                        Очистить кэш
-                    </Button>
+                <!-- Host -->
 
-                    <TextBlock Grid.Column="1" Grid.Row="5" VerticalAlignment="Center">
-                        Обычно нужен при неправильных настройках в кэше
+                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock>
+                        Хост: 
                     </TextBlock>
 
-                    <!-- Cache cleanup -->
-
-                    <Button Grid.Column="0" Grid.Row="6" VerticalAlignment="Center">
-                        <TextBlock TextAlignment="Center">
-                            Обновить список сессий
-                        </TextBlock>
-                    </Button>
-
-                    <TextBlock Grid.Column="1" Grid.Row="6" VerticalAlignment="Center">
-                        Когда вы установили новую сессию
+                    <TextBlock>
+                        Имя хоста
                     </TextBlock>
                 </StackPanel>
+
+                <!-- Room create time -->
+
+                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock>
+                        Создана: 
+                    </TextBlock>
+
+                    <TextBlock>
+                        Время создания комнаты
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Cabinet -->
+
+                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock>
+                        Кабинет: 
+                    </TextBlock>
+
+                    <TextBlock>
+                        Кабинет
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Computer -->
+
+                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock>
+                        № Компьютера: 
+                    </TextBlock>
+
+                    <TextBlock>
+                        13
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- IP Address -->
+
+                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock>
+                        Адрес: 
+                    </TextBlock>
+
+                    <TextBlock>
+                        192.168.1.1
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Port -->
+
+                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock>
+                        Порт: 
+                    </TextBlock>
+
+                    <TextBlock>
+                        58900
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Online -->
+
+                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock>
+                        В сети: 
+                    </TextBlock>
+
+                    <TextBlock>
+                        1/8
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+
+            <TextBlock Classes="header5" HorizontalAlignment="Center">
+                Участники:
+            </TextBlock>
+
+             <ScrollViewer Classes="main">
+                <StackPanel Spacing="6">
+                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
+                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
+                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
+                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
+                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
+                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
+                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
+                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
+                </StackPanel>
             </ScrollViewer>
-
-
-        </DockPanel>
+        </StackPanel>
     </Border>
 </UserControl>

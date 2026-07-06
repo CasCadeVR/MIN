@@ -1,35 +1,149 @@
-﻿using Avalonia;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Enums;
+using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Infrastructure.Validators;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Modals;
+using MIN.DI.FeatureCollection;
+using MIN.Helpers.Contracts.Models;
 
 namespace MIN.Desktop.ViewModels.Pages;
 
 /// <summary>
 /// Модель боковой панели настроек
 /// </summary>
-public partial class SettingsSideBarViewModel : RoutableViewModelBase
+public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
 {
+    private readonly IMinFeatureCollection featureCollection;
+    private readonly IDialogService dialogService;
+    private readonly CancellationTokenSource appCts = null!;
+
+    /// <summary>
+    /// Текущие настройки
+    /// </summary>
+    public Settings Settings { get; set; } = null!;
+
     /// <inheritdoc />
     public override ViewLayoutType LayoutType => ViewLayoutType.LeftSideBar;
+
+    /// <summary>
+    /// Версия приложения
+    /// </summary>
+    [ObservableProperty]
+    public partial string Version { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Имя своего участника по умолчанию
+    /// </summary>
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [ParticipantName]
+    [NotEndsWith(".")]
+    public partial string DefaultParticipantName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Время ожидания поиска комнаты
+    /// </summary>
+    [ObservableProperty]
+    [Range(1, DesktopConstants.RoomConnectionTimeoutMs)]
+    [NotifyDataErrorInfo]
+    public partial int DiscoveryTimeout { get; set; }
+
+    /// <summary>
+    /// Порт для обнаружения в сети
+    /// </summary>
+    [ObservableProperty]
+    [Range(1, 65536)]
+    [NotifyDataErrorInfo]
+    public partial int DiscoveryPort { get; set; }
 
     /// <summary>
     /// Включена ли светлая тема
     /// </summary>
     [ObservableProperty]
-    public partial bool IsLightModeEnabled { get; set; }
+    public partial bool LightThemeEnabled { get; set; }
 
-    partial void OnIsLightModeEnabledChanged(bool value)
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="SettingsSideBarViewModel"/>
+    /// </summary>
+    public SettingsSideBarViewModel(IMinFeatureCollection featureCollection,
+        IDialogService dialogService,
+        ICtsProvider ctsProvider)
+    {
+        this.featureCollection = featureCollection;
+        this.dialogService = dialogService;
+
+        if (!Design.IsDesignMode)
+        {
+            appCts = ctsProvider.AppCts;
+
+            featureCollection.Helper.SettingsProvider.OnSettingsSaved += FillControls;
+
+            FillControls();
+        }
+    }
+
+    partial void OnLightThemeEnabledChanged(bool value)
     {
         Dispatcher.UIThread.Invoke(() => Application.Current!.RequestedThemeVariant = value ? ThemeVariant.Light : ThemeVariant.Dark);
+    }
+
+    private void FillControls()
+    {
+        Settings = featureCollection.Helper.SettingsProvider.GetSettings();
+        Version = $"Версия: {featureCollection.Helper.VersionProvider.Version.ToString()}";
+        DefaultParticipantName = Settings.DefaultParticipantName;
+        DiscoveryTimeout = Settings.DiscoveryTimeout;
+        DiscoveryPort = Settings.DiscoveryPort;
     }
 
     /// <summary>
     /// Вернуться назад
     /// </summary>
     [RelayCommand]
-    public void BackAsync() => ChangeViewToPrevious();
+    public void Back()
+    {
+        Settings.DefaultParticipantName = DefaultParticipantName;
+        Settings.DiscoveryPort = DiscoveryPort;
+        Settings.LightThemeEnabled = LightThemeEnabled;
+        Settings.DiscoveryTimeout = DiscoveryTimeout;
+        featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
+
+        ChangeViewToPrevious();
+    }
+
+    /// <summary>
+    /// Открыть окно логов
+    /// </summary>
+    [RelayCommand]
+    public async Task OpenLogsAsync()
+    {
+        await dialogService.ShowAsync<LogViewModel>();
+        ChangeViewToPrevious();
+    }
+
+    /// <summary>
+    /// Очистить кэш
+    /// </summary>
+    [RelayCommand]
+    public void ClearCacheAsync()
+    {
+        featureCollection.Helper.AppDataProvider.ClearFolder("cryptography");
+        featureCollection.Helper.AppDataProvider.ClearFolder("network");
+    }
+
+    /// <summary>
+    /// Отсканировать папку с сессиями
+    /// </summary>
+    [RelayCommand]
+    public async Task ScanSessionsAsync() => await featureCollection.Chat.ChatSessionService.ScanDownloadedSessions(appCts.Token);
 }

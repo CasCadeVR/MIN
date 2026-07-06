@@ -37,6 +37,7 @@ public partial class SettingsSidePanelView : StyledPanelView
         this.featureCollection = featureCollection;
         this.navigationService = navigationService;
         this.ctsProvider = ctsProvider;
+
         featureCollection.Helper.SettingsProvider.OnSettingsSaved += FillControls;
 
         FillControls();

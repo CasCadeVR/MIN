@@ -43,7 +43,38 @@
             </DockPanel>
 
             <!-- room cards goes here -->
-            <Rectangle />
+            <ScrollViewer Grid.Row="2" Margin="0,40,0,13" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding RecentRooms}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Margin="0,-13" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Classes="card" Margin="0,13">
+                                <StackPanel>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right"
+                                            Text="{Binding ParticipantsInfo}" />
+                                        <TextBlock DockPanel.Dock="Right"
+                                            Text="{Binding LastMessageReceivedAt.TimeOfDay}" />
+
+                                        <TextBlock Text="{Binding RoomName}" />
+                                    </DockPanel>
+
+                                    <DockPanel>
+                                          <TextBlock DockPanel.Dock="Right"
+                                            Text="{Binding MissedMessagesCount}" />
+
+                                        <TextBlock Text="{Binding LastMessageContent}" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </DockPanel>
     </Border>
 

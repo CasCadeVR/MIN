@@ -1,13 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.ViewModels.Base.Interfaces;
 
 namespace MIN.Desktop.ViewModels.Base;
 
 /// <summary>
 /// Базовая view модель
 /// </summary>
-public abstract class ViewModelBase : ObservableObject, IReferenceCommandReceiver
+public abstract class ViewModelBase : ObservableObject, IViewModel
 {
     /// <summary>
     /// Освободить ресурсы

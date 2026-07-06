@@ -4,7 +4,6 @@
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
         xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
-        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
@@ -64,7 +63,6 @@
                         HorizontalAlignment="Left"
                         HotKey="Escape" />
                     <Button
-                        Classes="primary"
                         Command="{Binding ConnectCommand}"
                         Content="Подключиться"
                         HorizontalAlignment="Right"

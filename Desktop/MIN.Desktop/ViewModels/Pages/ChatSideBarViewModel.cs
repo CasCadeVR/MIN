@@ -12,9 +12,12 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     /// <inheritdoc />
     public override ViewLayoutType LayoutType => ViewLayoutType.RightSideBar;
 
+    /// <inheritdoc />
+    public override bool RelatedToCentral => true;
+
     /// <summary>
     /// Вернуться назад
     /// </summary>
     [RelayCommand]
-    public void CloseAsync() => ChangeViewToPrevious();
+    public void CloseAsync() => CloseView();
 }

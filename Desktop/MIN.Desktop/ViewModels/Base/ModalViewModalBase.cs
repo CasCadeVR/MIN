@@ -3,9 +3,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using MIN.Desktop.Contracts.Enums;
-using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Infrastructure.Extensions;
 
 namespace MIN.Desktop.ViewModels.Base;
@@ -13,7 +11,7 @@ namespace MIN.Desktop.ViewModels.Base;
 /// <summary>
 /// Базовая view модель для модальных окон
 /// </summary>
-public abstract partial class ModalViewModelBase : ObservableValidator, IReferenceCommandReceiver
+public abstract partial class ModalViewModelBase : ValidatingViewModelBase
 {
     [ObservableProperty]
     public partial ButtonOptions? SelectedOption { get; set; }
@@ -21,11 +19,7 @@ public abstract partial class ModalViewModelBase : ObservableValidator, IReferen
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ModalViewModelBase"/>
     /// </summary>
-    protected ModalViewModelBase()
-    {
-        // Всегда сначала запускайте проверку, чтобы установить значение параметра HasErrors (т.е. активировать логику CanExecute).
-        ValidateAllProperties();
-    }
+    protected ModalViewModelBase() : base() { }
 
     /// <summary>
     /// Переопределение преобразования в тип bool
@@ -48,9 +42,4 @@ public abstract partial class ModalViewModelBase : ObservableValidator, IReferen
         }
         ((IClassicDesktopStyleApplicationLifetime)Application.Current?.ApplicationLifetime!).Windows.FirstOrDefault(w => w.DataContext == this)?.CloseByUser(this);
     }
-
-    /// <summary>
-    /// Освободить ресурсы
-    /// </summary>
-    public virtual void Dispose() => WeakReferenceMessenger.Default.UnregisterAll(this);
 }

@@ -36,6 +36,12 @@
   </ItemGroup>
 
     <ItemGroup>
+    <Compile Update="Views\Modals\CreateParticipantModal.axaml.cs">
+      <DependentUpon>CreateParticipantModal.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Modals\LogModal.axaml.cs">
+      <DependentUpon>LogModal.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Modals\DirectConnectModal.axaml.cs">
       <DependentUpon>DirectConnectModal.axaml</DependentUpon>
     </Compile>

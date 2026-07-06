@@ -6,9 +6,9 @@ using MIN.Desktop.ViewModels.Base.Interfaces;
 namespace MIN.Desktop.ViewModels.Base;
 
 /// <summary>
-/// Базовая view модель для страниц
+/// Валидирующая view модель для страниц
 /// </summary>
-public abstract class RoutableViewModelBase : ViewModelBase, IRoutableViewModel
+public abstract class ValidatingRoutableViewModelBase : ValidatingViewModelBase, IRoutableViewModel, IViewModel
 {
     /// <inheritdoc cref="ViewLayoutType"/>
     public abstract ViewLayoutType LayoutType { get; }
@@ -17,6 +17,11 @@ public abstract class RoutableViewModelBase : ViewModelBase, IRoutableViewModel
     /// Свящана ли эта панель с центральной, и должна ли она убраться во время перехода с неё
     /// </summary>
     public virtual bool RelatedToCentral { get; }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="ValidatingRoutableViewModelBase"/>
+    /// </summary>
+    protected ValidatingRoutableViewModelBase() : base() { }
 
     /// <inheritdoc />
     public void ChangeView<TViewModel>(TViewModel viewModel) where TViewModel : IRoutableViewModel
