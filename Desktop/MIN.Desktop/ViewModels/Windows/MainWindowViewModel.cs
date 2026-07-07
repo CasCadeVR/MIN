@@ -1,9 +1,14 @@
-﻿using Avalonia;
+﻿using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Models.ReferenceCommands;
 using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.ViewModels.Base;
@@ -29,6 +34,11 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     public partial object? RightSideBarViewModel { get; set; }
 
     /// <summary>
+    /// Текущие уведомления внутри приложения
+    /// </summary>
+    public AvaloniaList<NotificationItem> Notifications { get; init; } = [];
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="MainWindowViewModel"/>
     /// </summary>
     public MainWindowViewModel(MainSideBarViewModel mainSideBarViewModel, DiscoveryViewModel discoveryViewModel)
@@ -50,27 +60,29 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
             }
         });
 
-        //this.RegisterMessageListener<NotificationAddMessage, MainWindowViewModel>(static async (message, vm) =>
-        //{
-        //    Dispatcher.UIThread.Invoke(() =>
-        //    {
-        //        vm.Notifications.Add(message.Item);
-        //    });
-        //    await Task.Delay(7000);
-        //    WeakReferenceMessenger.Default.Send(new NotificationCloseMessage(message.Item));
-        //});
-        //this.RegisterMessageListener<NotificationCloseMessage, MainWindowViewModel>(static async (message, vm) =>
-        //{
-        //    message.Item.IsDismissed = true;
-        //    await Task.Delay(1000); // Wait for animations
-        //    if (!IsDesignMode) // Prevent design preview crashes
-        //    {
-        //        Dispatcher.UIThread.Invoke(() =>
-        //        {
-        //            vm.Notifications.Remove(message.Item);
-        //        });
-        //    }
-        //});
+        this.RegisterMessageListener<NotificationAddReferenceCommand, MainWindowViewModel>(static async (message, vm) =>
+        {
+            Dispatcher.UIThread.Invoke(() =>
+            {
+                vm.Notifications.Add(message.NotificationItem);
+            });
+            await Task.Delay(7000);
+            WeakReferenceMessenger.Default.Send(new NotificationCloseReferenceCommand(message.NotificationItem));
+        });
+        this.RegisterMessageListener<NotificationCloseReferenceCommand, MainWindowViewModel>(static async (message, vm) =>
+        {
+            message.NotificationItem.IsDismissed = true;
+
+            await Task.Delay(1000); // Wait for animations
+
+            if (!Design.IsDesignMode) // Prevent design preview crashes
+            {
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    vm.Notifications.Remove(message.NotificationItem);
+                });
+            }
+        });
 
         _ = this.ShowAsync(mainSideBarViewModel);
         _ = this.ShowAsync(discoveryViewModel);

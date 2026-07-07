@@ -96,7 +96,9 @@
 
                     <!-- Cache cleanup -->
 
-                    <Button VerticalAlignment="Center">
+                    <Button
+                        Command="{Binding ClearCacheAsyncCommand}"
+                        VerticalAlignment="Center">
                         Очистить кэш
                     </Button>
 
@@ -104,12 +106,12 @@
                         Обычно нужен при неправильных настройках в кэше
                     </TextBlock>
 
-                    <!-- Cache cleanup -->
+                    <!-- Scan sessions -->
 
-                    <Button VerticalAlignment="Center">
-                        <TextBlock TextAlignment="Center">
-                            Обновить список сессий
-                        </TextBlock>
+                    <Button
+                        Command="{Binding ScanSessionsCommand}"
+                        VerticalAlignment="Center">
+                        Обновить список сессий
                     </Button>
 
                     <TextBlock VerticalAlignment="Center">
@@ -117,8 +119,6 @@
                     </TextBlock>
                 </StackPanel>
             </ScrollViewer>
-
-
         </DockPanel>
     </Border>
 </UserControl>

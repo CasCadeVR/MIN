@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
              xmlns:design="using:MIN.Desktop.Contracts.Designer"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters.RecentRoom"
+             xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              d:DesignWidth="320" d:DesignHeight="720"
@@ -42,8 +44,9 @@
               
             </DockPanel>
 
-            <!-- room cards goes here -->
-            <ScrollViewer Grid.Row="2" Margin="0,40,0,13" HorizontalScrollBarVisibility="Disabled">
+            <!-- Room cards -->
+
+            <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
                 <ItemsControl ItemsSource="{Binding RecentRooms}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -52,22 +55,45 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Classes="card" Margin="0,13">
-                                <StackPanel>
-                                    <DockPanel>
-                                        <TextBlock DockPanel.Dock="Right"
+                            <Border Classes="card"
+                                    Background="{Binding IsSelected,
+                                    Converter={converters:BoolToBrushConverter}}"
+                                    Margin="0,13">
+                                 <Interaction.Behaviors>
+                                    <behaviors:FocusOnViewShowBehavior />
+                                    <EventTriggerBehavior EventName="PointerPressed">
+                                        <InvokeCommandAction Command="{Binding SelectItemCommand}" />
+                                    </EventTriggerBehavior>
+                                </Interaction.Behaviors>
+                                <StackPanel Spacing="8">
+                                    <DockPanel HorizontalSpacing="8">
+                                        <TextBlock  DockPanel.Dock="Right"
                                             Text="{Binding ParticipantsInfo}" />
-                                        <TextBlock DockPanel.Dock="Right"
-                                            Text="{Binding LastMessageReceivedAt.TimeOfDay}" />
 
-                                        <TextBlock Text="{Binding RoomName}" />
+                                        <TextBlock DockPanel.Dock="Right"
+                                            Text="{Binding LastMessageReceivedAt, Converter={converters:DateToShortDateConverter}}" />
+
+                                        <TextBlock
+                                            Classes="header4"
+                                            Text="{Binding RoomName}" />
                                     </DockPanel>
 
                                     <DockPanel>
-                                          <TextBlock DockPanel.Dock="Right"
-                                            Text="{Binding MissedMessagesCount}" />
+                                        <Border
+                                            DockPanel.Dock="Right"
+                                            IsVisible="{Binding MissedMessagesCount,
+                                            Converter={converters:GreaterThanZeroConverter}}"
+                                            Padding="{DynamicResource PaddingSmall}"
+                                            CornerRadius="{DynamicResource CornerRadiusLarge}"
+                                            Background="{DynamicResource Primary}">
+                                             <TextBlock
+                                                Classes="header4"
+                                                Text="{Binding MissedMessagesCount}" />
+                                        </Border>
 
-                                        <TextBlock Text="{Binding LastMessageContent}" />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{Binding LastMessageContent}" />
                                     </DockPanel>
                                 </StackPanel>
                             </Border>

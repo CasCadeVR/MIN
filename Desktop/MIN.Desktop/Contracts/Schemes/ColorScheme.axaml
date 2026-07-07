@@ -102,7 +102,7 @@
             <!-- *************** -->
 
             <Color x:Key="SurfaceBackground">#818CF8</Color>     <!-- Window / page background -->
-            <Color x:Key="SurfaceCard">#d3d3d1</Color>            <!-- Card, panel, raised surface -->
+            <Color x:Key="SurfaceCard">#FFFFFF</Color>            <!-- Card, panel, raised surface -->
             <Color x:Key="SurfaceElevated">#c5c5c3</Color>        <!-- Modal, dropdown, tooltip -->
             <Color x:Key="SurfaceInput">#e9e9e9</Color>            <!-- TextBox / input background -->
             <Color x:Key="SurfaceTaskBar">#d3d3d1</Color>            <!-- Taskbar background -->

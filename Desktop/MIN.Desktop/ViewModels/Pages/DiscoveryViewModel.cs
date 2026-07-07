@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -6,6 +7,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models.ReferenceCommands;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Modals;
 using MIN.DI.FeatureCollection;
@@ -57,7 +59,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         else
         {
             var participantCreatingResult = await dialogService.ShowDialogAsync<CreateParticipantViewModel>();
-            if (participantCreatingResult == null)
+            if (participantCreatingResult != null && participantCreatingResult == false)
             {
                 return false;
             }
@@ -89,6 +91,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         var roomId = roomInfo.Id;
 
         ChangeView(chatViewModel);
+        await chatViewModel.LoadRoomDataAndRefresh();
 
         try
         {
@@ -96,20 +99,18 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
             await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
 
             RegisterRoom(roomInfo);
+
+            InAppNotifier.Success($"Комната успешно создана!");
         }
-        catch
+        catch (Exception ex)
         {
-            //LauncherNotifier.Error($"Server create failed: {ex.Message}");
+            InAppNotifier.Error($"Не удалось создать комнату: {ex.Message}");
         }
     }
 
     private void RegisterRoom(RoomInfo roomInfo)
     {
-        WeakReferenceMessenger.Default.Send(new RegisterRoomReferenceCommand()
-        {
-            Room = roomInfo,
-            View = chatViewModel
-        });
+        WeakReferenceMessenger.Default.Send(new RegisterRoomReferenceCommand(roomInfo, chatViewModel));
     }
 
     /// <summary>

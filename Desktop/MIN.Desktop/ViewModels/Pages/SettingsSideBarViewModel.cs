@@ -112,11 +112,14 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     [RelayCommand]
     public void Back()
     {
-        Settings.DefaultParticipantName = DefaultParticipantName;
-        Settings.DiscoveryPort = DiscoveryPort;
-        Settings.LightThemeEnabled = LightThemeEnabled;
-        Settings.DiscoveryTimeout = DiscoveryTimeout;
-        featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
+        if (CanSave())
+        {
+            Settings.DefaultParticipantName = DefaultParticipantName;
+            Settings.DiscoveryPort = DiscoveryPort;
+            Settings.LightThemeEnabled = LightThemeEnabled;
+            Settings.DiscoveryTimeout = DiscoveryTimeout;
+            featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
+        }
 
         ChangeViewToPrevious();
     }
@@ -146,4 +149,6 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     /// </summary>
     [RelayCommand]
     public async Task ScanSessionsAsync() => await featureCollection.Chat.ChatSessionService.ScanDownloadedSessions(appCts.Token);
+
+    private bool CanSave() => !HasErrors;
 }

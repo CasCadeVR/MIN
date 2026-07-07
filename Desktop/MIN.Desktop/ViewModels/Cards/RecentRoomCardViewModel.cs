@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
@@ -59,7 +60,13 @@ public partial class RecentRoomCardViewModel : CardViewModelBase, IDisposable
     /// <summary>
     /// Выбрана ли карточка
     /// </summary>
-    public bool IsSelected { get; set; }
+    [ObservableProperty]
+    public partial bool IsSelected { get; set; }
+
+    /// <summary>
+    /// Событие по нажатию на саму карточку
+    /// </summary>
+    public Action? Clicked { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RecentRoomCardViewModel"/>
@@ -98,6 +105,15 @@ public partial class RecentRoomCardViewModel : CardViewModelBase, IDisposable
     {
         IsSelected = true;
         MissedMessagesCount = 0;
+    }
+
+    /// <summary>
+    /// Выбрать карточку
+    /// </summary>
+    [RelayCommand]
+    public void SelectItem()
+    {
+        Clicked?.Invoke();
     }
 
     private void SubscribeToEvents()

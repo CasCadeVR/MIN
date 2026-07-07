@@ -18,7 +18,7 @@
     <Border Background="{DynamicResource SidebarSecondaryBackground}"
             Padding="{DynamicResource PaddingPage}"
             CornerRadius="{DynamicResource CornerRadiusLarge}">
-        <StackPanel Spacing="10" >
+        <DockPanel VerticalSpacing="10" >
             <DockPanel HorizontalSpacing="16" DockPanel.Dock="Top" >
                 <Button Command="{Binding CloseAsyncCommand}"
                     DockPanel.Dock="Left"
@@ -29,7 +29,7 @@
                 <Rectangle />
             </DockPanel>
 
-            <StackPanel Spacing="6">
+            <StackPanel DockPanel.Dock="Top" Spacing="6">
 
                 <!-- Room Notifications -->
 
@@ -126,7 +126,7 @@
                 </StackPanel>
             </StackPanel>
 
-            <TextBlock Classes="header5" HorizontalAlignment="Center">
+            <TextBlock DockPanel.Dock="Top" Classes="header5" HorizontalAlignment="Center">
                 Участники:
             </TextBlock>
 
@@ -142,6 +142,6 @@
                     <Rectangle Fill="{DynamicResource Primary}" Height="48" />
                 </StackPanel>
             </ScrollViewer>
-        </StackPanel>
+        </DockPanel>
     </Border>
 </UserControl>

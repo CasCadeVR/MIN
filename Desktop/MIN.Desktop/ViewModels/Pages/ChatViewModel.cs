@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Base;
@@ -23,6 +24,14 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         this.chatSideBarViewModel = chatSideBarViewModel;
         this.dialogService = dialogService;
+    }
+
+    /// <summary>
+    /// Подгрузить данные о комнате и перезагрузить страницу
+    /// </summary>
+    public async Task LoadRoomDataAndRefresh()
+    {
+        ToggleSideBar();
     }
 
     /// <summary>

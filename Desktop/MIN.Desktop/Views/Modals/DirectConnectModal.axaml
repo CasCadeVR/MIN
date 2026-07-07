@@ -36,6 +36,12 @@
                             PlaceholderText="Введите IP адрес...">
                             <Interaction.Behaviors>
                                 <behaviors:FocusOnViewShowBehavior />
+                                <EventTriggerBehavior EventName="LosingFocus">
+                                    <InvokeCommandAction Command="{Binding TryParsePortAndValidateCommand}" />
+                                </EventTriggerBehavior>
+                                <EventTriggerBehavior EventName="GettingFocus">
+                                    <InvokeCommandAction Command="{Binding StartEditingCommand}" />
+                                </EventTriggerBehavior>
                             </Interaction.Behaviors>
                         </TextBox>
                     </StackPanel>
@@ -54,7 +60,7 @@
                 </Border>
             </StackPanel>
             <Border Classes="footer">
-                <Panel >
+                <Panel>
                     <Button
                         Command="{Binding CloseCommand}"
                         Content="Отмена"

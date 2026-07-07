@@ -21,37 +21,24 @@ public abstract class RoutableViewModelBase : ViewModelBase, IRoutableViewModel
     /// <inheritdoc />
     public void ChangeView<TViewModel>(TViewModel viewModel) where TViewModel : IRoutableViewModel
     {
-        WeakReferenceMessenger.Default.Send(new ShowViewReferenceCommand
-        {
-            ViewModel = viewModel
-        });
+        WeakReferenceMessenger.Default.Send(new ShowViewReferenceCommand(viewModel));
     }
 
     /// <inheritdoc />
     public void CloseView()
     {
-        WeakReferenceMessenger.Default.Send(new CloseViewReferenceCommand
-        {
-            LayoutType = LayoutType
-        });
+        WeakReferenceMessenger.Default.Send(new CloseViewReferenceCommand(LayoutType));
     }
 
     /// <inheritdoc />
     public void ChangeViewToPrevious()
     {
-        WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand()
-        {
-            LayoutType = LayoutType
-        });
+        WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand(LayoutType, null));
     }
 
     /// <inheritdoc />
     public void ChangeViewToPrevious<T>() where T : IRoutableViewModel
     {
-        WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand()
-        {
-            RoutableViewModelType = typeof(T),
-            LayoutType = LayoutType
-        });
+        WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand(LayoutType, typeof(T)));
     }
 }

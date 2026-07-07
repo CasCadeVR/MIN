@@ -25,9 +25,7 @@ public abstract partial class ModalViewModelBase : ValidatingViewModelBase
     /// Переопределение преобразования в тип bool
     /// </summary>
     public static implicit operator bool(ModalViewModelBase self)
-    {
-        return self is { HasErrors: false } and not { SelectedOption: null or ButtonOptions.No };
-    }
+        => self is { HasErrors: false } and not { SelectedOption: null or ButtonOptions.No };
 
     /// <summary>
     /// Закрывает диалоговое окно. По умолчанию результат диалога — «cancelled»

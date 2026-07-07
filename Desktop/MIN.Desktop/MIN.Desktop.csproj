@@ -28,6 +28,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Svg.Controls.Skia.Avalonia" />
+    <PackageReference Include="Xaml.Behaviors.Interactions" />
     <PackageReference Include="Xaml.Behaviors.Interactivity" />
   </ItemGroup>
 

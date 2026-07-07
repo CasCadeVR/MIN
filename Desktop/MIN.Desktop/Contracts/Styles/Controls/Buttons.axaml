@@ -75,6 +75,16 @@
             </Style.Animations>-->
         </Style>
 
+        <Style Selector="^.anycontent">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            
+            <Style Selector="^:pressed /template/ ContentPresenter">
+                <Setter Property="Background" Value="Transparent" />
+            </Style>
+        </Style>
+
         <Style Selector="^.icon">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="{DynamicResource PaddingMedium}" />

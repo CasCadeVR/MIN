@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Desktop.Infrastructure.Services;
-using MIN.Desktop.Infrastructure.Validators;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.ViewModels.Modals;
@@ -14,11 +13,12 @@ namespace MIN.Desktop.ViewModels.Modals;
 /// </summary>
 public partial class DirectConnectViewModel : ModalViewModelBase
 {
+    private bool isEditing;
+
     [ObservableProperty]
     [NotifyDataErrorInfo]
     [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
     [Required]
-    [IpAddressText]
     public partial string IpAddress { get; set; } = "";
 
     [ObservableProperty]
@@ -50,6 +50,12 @@ public partial class DirectConnectViewModel : ModalViewModelBase
         IsConnecting = false;
     }
 
+    [RelayCommand]
+    private void StartEditing()
+    {
+        isEditing = true;
+    }
+
     [RelayCommand(CanExecute = nameof(CanConnect))]
     private void Connect()
     {
@@ -60,14 +66,25 @@ public partial class DirectConnectViewModel : ModalViewModelBase
         OnConnect?.Invoke();
     }
 
-    private void TryParsePort()
+    [RelayCommand]
+    private void TryParsePortAndValidate()
     {
         if (IpAddressParser.TryParseIpAddress(IpAddress, out var gottenIpAddress, out var port))
         {
             Port = port;
             IpAddress = gottenIpAddress;
         }
+
+        try
+        {
+            IpAddress = IpAddressParser.ValidateIP(IpAddress);
+            isEditing = false;
+        }
+        catch
+        {
+            isEditing = true;
+        }
     }
 
-    private bool CanConnect() => !HasErrors && !IsConnecting;
+    private bool CanConnect() => !HasErrors && !IsConnecting && !isEditing;
 }

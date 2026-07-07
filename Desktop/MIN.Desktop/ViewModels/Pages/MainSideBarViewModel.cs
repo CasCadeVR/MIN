@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
@@ -22,7 +23,8 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     private readonly SettingsSideBarViewModel settingsSideBarViewModel;
     private readonly DiscoveryViewModel discoveryViewModel;
     private readonly Dictionary<Guid, ChatViewModel> activeChatViews = [];
-    private readonly ParticipantInfo localParticipant;
+    private readonly ParticipantInfo localParticipant = null!;
+    private RecentRoomCardViewModel? selectedRecentRoomCardViewModel;
 
     /// <summary>
     /// Последние комнаты
@@ -44,17 +46,24 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
         this.settingsSideBarViewModel = settingsSideBarViewModel;
         this.discoveryViewModel = discoveryViewModel;
 
-        localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+        if (!Design.IsDesignMode)
+        {
+            localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
 
-        this.RegisterMessageListener<RegisterRoomReferenceCommand, MainSideBarViewModel>(static (message, vm)
-           => vm.RegisterChat(message.Room, message.View));
+            this.RegisterMessageListener<RegisterRoomReferenceCommand, MainSideBarViewModel>(static (message, vm)
+               => vm.RegisterChat(message.Room, message.View));
+        }
     }
 
     /// <summary>
     /// Открыть настройки
     /// </summary>
     [RelayCommand]
-    public void OpenDiscoveryViewAsync() => ChangeView(discoveryViewModel);
+    public void OpenDiscoveryViewAsync()
+    {
+        UnselectRecentRoomCard();
+        ChangeView(discoveryViewModel);
+    }
 
     /// <summary>
     /// Открыть настройки
@@ -62,38 +71,47 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     [RelayCommand]
     public void OpenSettingsViewAsync() => ChangeView(settingsSideBarViewModel);
 
+    private void UnselectRecentRoomCard()
+    {
+        if (selectedRecentRoomCardViewModel != null)
+        {
+            selectedRecentRoomCardViewModel.IsSelected = false;
+        }
+
+        selectedRecentRoomCardViewModel = null;
+    }
+
+    private void SelectChatCard(RecentRoomCardViewModel card)
+    {
+        UnselectRecentRoomCard();
+        selectedRecentRoomCardViewModel = card;
+        card.SelectCard();
+    }
+
     /// <summary>
     /// Зарегистрировать чат
     /// </summary>
-    public void RegisterChat(RoomInfo roomInfo, ChatViewModel panel)
+    public void RegisterChat(RoomInfo roomInfo, ChatViewModel viewModel)
     {
         var roomId = roomInfo.Id;
         var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
 
-        activeChatViews[roomId] = panel;
+        activeChatViews[roomId] = viewModel;
 
-        RecentRooms.Add(new RecentRoomCardViewModel(featureCollection.Core.EventBus,
-            context, roomInfo, localParticipant.Id == roomInfo.HostParticipant.Id));
+        var card = new RecentRoomCardViewModel(featureCollection.Core.EventBus,
+            context, roomInfo, localParticipant.Id == roomInfo.HostParticipant.Id);
 
-        //var card = new RecentRoomCard(featureCollection.Core.EventBus,
-        //    context,
-        //    roomInfo,
-        //    AsCreator: roomInfo.HostParticipant.Id == localParticipant.Id)
-        //{
-        //    Width = flowLayoutPanelRooms.Width - flowLayoutPanelRooms.Margin.Horizontal * 2,
-        //};
+        card.Clicked += () =>
+        {
+            if (selectedRecentRoomCardViewModel != card)
+            {
+                SelectChatCard(card);
+                ChangeView(viewModel);
+            }
+        };
 
-        //card.Clicked += () =>
-        //{
-        //    if (selectedRecentRoomCard != card)
-        //    {
-        //        SelectChatCard(card);
-        //        navigationService.NavigateToExisting(panel);
-        //    }
-        //};
-        //flowLayoutPanelRooms.Controls.Add(card);
-        //activeRecentRoomCards[roomId] = card;
-        //SelectChatCard(card);
+        RecentRooms.Add(card);
+        SelectChatCard(card);
     }
 
     /// <summary>
