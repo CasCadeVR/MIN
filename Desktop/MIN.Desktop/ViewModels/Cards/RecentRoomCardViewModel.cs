@@ -28,6 +28,11 @@ public partial class RecentRoomCardViewModel : CardViewModelBase, IDisposable
     private int maximumAmount;
 
     /// <summary>
+    /// Идентификатор комнаты
+    /// </summary>
+    public Guid RoomId { get; set; }
+
+    /// <summary>
     /// Имя комнаты
     /// </summary>
     [ObservableProperty]
@@ -80,6 +85,7 @@ public partial class RecentRoomCardViewModel : CardViewModelBase, IDisposable
         this.roomContext = roomContext;
         this.roomInfo = roomInfo;
 
+        RoomId = roomInfo.Id;
         RoomName = roomInfo.Name;
         currentAmount = roomInfo.ParticipantCount + (AsCreator ? 1 : 0);
         maximumAmount = roomInfo.MaximumParticipants;

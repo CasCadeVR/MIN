@@ -6,9 +6,11 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Models.ReferenceCommands;
 using MIN.Desktop.Infrastructure.Extensions;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Extensions;
@@ -53,7 +55,16 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
 
             this.RegisterMessageListener<RegisterRoomReferenceCommand, MainSideBarViewModel>(static (message, vm)
                => vm.RegisterChat(message.Room, message.View));
+
+            SubscribeToEvents();
         }
+    }
+
+    private void SubscribeToEvents()
+    {
+        featureCollection.Core.EventBus.Subscribe<ErrorOccurredEvent>(async (e, _) => InAppNotifier.Error(e.ErrorMessage));
+        featureCollection.Core.EventBus.Subscribe<RoomClosedEvent>(async (e, _) =>
+        UnregisterChat(e.RoomId));
     }
 
     /// <summary>
@@ -121,7 +132,13 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     public void UnregisterChat(Guid roomId)
     {
         activeChatViews.Remove(roomId);
-        RecentRooms.FirstOrDefault()?.Dispose();
+        var room = RecentRooms.FirstOrDefault(x => x.RoomId == roomId);
+
+        if (room != null)
+        {
+            RecentRooms.Remove(room);
+            room.Dispose();
+        }
     }
 
     /// <summary>

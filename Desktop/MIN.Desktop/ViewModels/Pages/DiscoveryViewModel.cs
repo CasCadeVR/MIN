@@ -190,6 +190,8 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
                 localParticipant.Id == discoveryInfo.Room.HostParticipant.Id);
 
             card.Clicked += async () => await OnRoomJoin(discoveryInfo.Endpoint, discoveryInfo.Room, card);
+
+            DiscoveredRooms.Add(card);
         }
     }
 

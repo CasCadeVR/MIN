@@ -22,9 +22,9 @@
                 <DockPanel
                     HorizontalSpacing="8">
 
-                    <Button>
-                        Выйти
-                    </Button>
+                    <Button
+                        Command="{Binding DisconnectCommand}"
+                        Content="Выйти" />
 
                      <Button
                         Command="{Binding ToggleSideBarCommand}"

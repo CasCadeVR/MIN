@@ -20,6 +20,7 @@ namespace MIN.Desktop.ViewModels.Pages;
 public partial class ChatViewModel : RoutableViewModelBase
 {
     private readonly ChatSideBarViewModel chatSideBarViewModel;
+    private readonly DiscoveryViewModel discoveryViewModel;
     private readonly IDialogService dialogService;
 
     private readonly IMinFeatureCollection featureCollection;
@@ -43,10 +44,12 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// Инициализирует новый экземпляр <see cref="ChatViewModel"/>
     /// </summary>
     public ChatViewModel(ChatSideBarViewModel chatSideBarViewModel,
+        DiscoveryViewModel discoveryViewModel,
         IMinFeatureCollection featureCollection,
         IDialogService dialogService)
     {
         this.featureCollection = featureCollection;
+        this.discoveryViewModel = discoveryViewModel;
         this.chatSideBarViewModel = chatSideBarViewModel;
         this.dialogService = dialogService;
 
@@ -73,4 +76,43 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// </summary>
     [RelayCommand]
     public void ToggleSideBar() => ChangeView(chatSideBarViewModel);
+
+    private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)
+    {
+        if (isHost)
+        {
+            await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
+            await featureCollection.Core.RoomHoster.StopHostingAsync(roomId);
+        }
+        else
+        {
+            await featureCollection.Core.RoomConnector.DisconnectAsync(roomId, connectionId);
+        }
+    }
+
+    /// <summary>
+    /// Выйти из комнаты
+    /// </summary>
+    [RelayCommand]
+    public async Task Disconnect()
+    {
+        await DisposeAsync();
+        ChangeView(discoveryViewModel);
+    }
+
+
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
+    public async ValueTask DisposeAsync()
+    {
+        //ClearParentFormEvents();
+        //foreach (var token in eventTokens)
+        //{
+        //    token.Dispose();
+        //}
+        //resizeTimer.Dispose();
+        //typingTimer.Dispose();
+        formCts.Cancel();
+        formCts.Dispose();
+        await CleanUpAsync(roomId, connectionId, isHost: localParticipant.Id == room.HostParticipant.Id);
+    }
 }

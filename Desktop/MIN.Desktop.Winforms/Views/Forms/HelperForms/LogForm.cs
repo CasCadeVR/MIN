@@ -1,6 +1,7 @@
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models;
 
 namespace MIN.Desktop.Views.Forms.HelperForms;
 
@@ -27,9 +28,9 @@ public partial class LogForm : StyledForm
         loggerProvider.OnLogReceived += OnLogReceived;
     }
 
-    private void OnLogReceived(object? sender, string e)
+    private void OnLogReceived(object? sender, LogItem e)
     {
-        AddLogMessage(e);
+        AddLogMessage(e.Message);
     }
 
     private void AddLogMessage(string message)

@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:MIN.Desktop.ViewModels.Modals"
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
@@ -13,9 +14,16 @@
         x:DataType="vm:LogViewModel"
         Title="MIN - Логи">
 
+    <Interaction.Behaviors>
+        <EventTriggerBehavior EventName="Closing">
+            <InvokeCommandAction Command="{Binding UnsubscribeCommand}" />
+        </EventTriggerBehavior>
+        <EventTriggerBehavior EventName="Loaded">
+            <InvokeCommandAction Command="{Binding LoadLogsCommand}" />
+        </EventTriggerBehavior>
+    </Interaction.Behaviors>
+
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:LogViewModel/>
     </Design.DataContext>
 
@@ -35,10 +43,33 @@
                 </StackPanel>
 
                 <ScrollViewer HorizontalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="8" Margin="0,8,0,0">
-                        <Rectangle Height="20" Fill="#FFF"/>
-                        <Rectangle Height="20" Fill="#FFF"/>
-                        <!-- Logs goes here -->
+                    <StackPanel Spacing="4" Margin="0,8,0,0">
+
+                        <ItemsControl ItemsSource="{Binding LogItems}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="log"
+                                            Margin="0,0,0,8"
+                                            Background="{Binding LogItem.LogLevel,
+                                            Converter={converters:LogLevelToBrushConverter}}">
+                                         <Interaction.Behaviors>
+                                            <EventTriggerBehavior EventName="PointerPressed">
+                                                <InvokeCommandAction Command="{Binding CopyToClipboardCommand}" />
+                                            </EventTriggerBehavior>
+                                        </Interaction.Behaviors>
+                                        <TextBlock
+                                            Margin="4,0,0,0"
+                                            Text="{Binding LogItem.Message}" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
                     </StackPanel>
                 </ScrollViewer>
             </StackPanel>

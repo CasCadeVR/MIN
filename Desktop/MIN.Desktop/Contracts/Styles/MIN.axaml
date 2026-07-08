@@ -100,6 +100,11 @@
             <Setter Property="Padding" Value="{DynamicResource PaddingPage}" />
         </Style>
 
+         <Style Selector="^.log">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
+        </Style>
+
         <Style Selector="^.topbar">
             <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
             <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />

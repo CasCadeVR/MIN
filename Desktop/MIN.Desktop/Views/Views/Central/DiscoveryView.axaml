@@ -163,6 +163,7 @@
                                     </StackPanel>
 
                                     <Button
+                                        Command="{Binding JoinRoomCommand}"
                                         IsEnabled="{Binding IsAccessible}"
                                         Content="{Binding ConnectionStatus}" />
                                 </StackPanel>
