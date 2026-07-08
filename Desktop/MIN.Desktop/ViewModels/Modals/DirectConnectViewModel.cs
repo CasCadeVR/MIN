@@ -13,7 +13,9 @@ namespace MIN.Desktop.ViewModels.Modals;
 /// </summary>
 public partial class DirectConnectViewModel : ModalViewModelBase
 {
-    private bool isEditing;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
+    public partial bool IsEditing { get; set; }
 
     [ObservableProperty]
     [NotifyDataErrorInfo]
@@ -53,7 +55,7 @@ public partial class DirectConnectViewModel : ModalViewModelBase
     [RelayCommand]
     private void StartEditing()
     {
-        isEditing = true;
+        IsEditing = true;
     }
 
     [RelayCommand(CanExecute = nameof(CanConnect))]
@@ -74,17 +76,19 @@ public partial class DirectConnectViewModel : ModalViewModelBase
             Port = port;
             IpAddress = gottenIpAddress;
         }
-
-        try
+        else
         {
-            IpAddress = IpAddressParser.ValidateIP(IpAddress);
-            isEditing = false;
-        }
-        catch
-        {
-            isEditing = true;
+            try
+            {
+                IpAddress = IpAddressParser.ValidateIP(IpAddress);
+                IsEditing = false;
+            }
+            catch
+            {
+                IsEditing = true;
+            }
         }
     }
 
-    private bool CanConnect() => !HasErrors && !IsConnecting && !isEditing;
+    private bool CanConnect() => !HasErrors && !IsConnecting && !IsEditing;
 }

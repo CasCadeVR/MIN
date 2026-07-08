@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -120,11 +121,7 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     public void UnregisterChat(Guid roomId)
     {
         activeChatViews.Remove(roomId);
-
-        //if (activeRecentRoomCards.Remove(roomId, out var card))
-        //{
-        //    card.Dispose();
-        //}
+        RecentRooms.FirstOrDefault()?.Dispose();
     }
 
     /// <summary>

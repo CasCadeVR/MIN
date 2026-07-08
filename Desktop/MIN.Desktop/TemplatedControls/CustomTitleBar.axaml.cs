@@ -40,9 +40,19 @@ public partial class CustomTitleBar : TemplatedControl
             o => o.CanMinimize,
             (o, v) => o.CanMinimize = v, true);
 
+    /// <summary>
+    /// Может закрыться
+    /// </summary>
+    public readonly static DirectProperty<CustomTitleBar, bool> CanCloseProperty =
+        AvaloniaProperty.RegisterDirect<CustomTitleBar, bool>(
+            nameof(CanClose),
+            o => o.CanClose,
+            (o, v) => o.CanClose = v, true);
+
     private bool showTitle = true;
     private bool canMaximize = true;
     private bool canMinimize = true;
+    private bool canClose = true;
 
     /// <summary>
     /// Показать свойство
@@ -69,6 +79,15 @@ public partial class CustomTitleBar : TemplatedControl
     {
         get => canMinimize;
         set => SetAndRaise(CanMinimizeProperty, ref canMinimize, value);
+    }
+
+    /// <summary>
+    /// Может закрыться
+    /// </summary>
+    public bool CanClose
+    {
+        get => canClose;
+        set => SetAndRaise(CanCloseProperty, ref canClose, value);
     }
 
     /// <summary>

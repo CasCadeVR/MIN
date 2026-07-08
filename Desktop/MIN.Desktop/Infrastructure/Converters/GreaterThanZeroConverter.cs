@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace MIN.Desktop.Infrastructure.Converters.RecentRoom;
+namespace MIN.Desktop.Infrastructure.Converters;
 
 /// <summary>
 /// Конвертор для скрытия счётчика, если он равен 0

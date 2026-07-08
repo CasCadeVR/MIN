@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:designer="using:MIN.Desktop.Contracts.Designer"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -27,8 +28,25 @@
                         <Svg Path="/Assets/Icons/plus.svg" />
                     </Button>
 
-                    <Button DockPanel.Dock="Right">
-                       Найти комнаты
+                    <Button
+                        DockPanel.Dock="Right"
+                        Command="{Binding DiscoverRoomsCommand}">
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="{Binding isDiscovering,
+                                Converter={converters:BoolToDiscoveryButtonTextConverter}}" />
+
+                            <Svg
+                                DockPanel.Dock="Right"
+                                Height="18"
+                                Margin="16,0,0,0"
+                                Path="/Assets/Icons/loading.svg"
+                                Classes="rotating"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding isDiscovering}"/>
+                        </StackPanel>
                     </Button>
 
                     <Button
@@ -45,16 +63,114 @@
                     Background="{DynamicResource SidebarBackground}"
                     Padding="{DynamicResource PaddingTopBar}"
                     CornerRadius="{DynamicResource CornerRadiusLarge}">
-                <StackPanel Spacing="8" >
-                    <TextBlock Margin="6,0,0,0" DockPanel.Dock="Right">
-                        Всего нашлось комнат: 0
-                    </TextBlock>
+                <StackPanel Orientation="Horizontal" Spacing="8" >
+                    <TextBlock
+                        Text="{Binding isDiscovering,
+                        Converter={converters:BoolToDiscoveryCounterConverter}}"
+                        Margin="6,0,0,0"
+                        DockPanel.Dock="Right" />
+
+                    <TextBlock
+                        IsVisible="{Binding !isDiscovering}"
+                        Text="{Binding DiscoveredRooms.Count}"
+                        DockPanel.Dock="Right" />
                 </StackPanel>
             </Border>
 
-            <!-- room cards goes here -->
-            <Border Background="Transparent"
-                    CornerRadius="{DynamicResource CornerRadiusLarge}"/>
+            <!-- Discovered rooms -->
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding DiscoveredRooms}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Margin="0,-13" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Classes="card"
+                                    Margin="0,13">
+                                <StackPanel Spacing="8">
+                                    <TextBlock HorizontalAlignment="Center"
+                                               Text="Комната " />
+
+                                    <TextBlock HorizontalAlignment="Center"
+                                               Classes="header4"
+                                               Text="{Binding Room.Name}" />
+
+                                    <StackPanel Spacing="8"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="Создатель: " />
+                                        <TextBlock Text="{Binding Room.HostParticipant.Name}" />
+                                    </StackPanel>
+
+                                    <!-- Room create time -->
+
+                                    <StackPanel Spacing="8"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="Создана: " />
+                                        <TextBlock Text="{Binding Room.CreatedAt,
+                                        Converter={converters:DateToRelativeDateConverter}}" />
+                                    </StackPanel>
+
+                                    <!-- Cabinet -->
+
+                                    <StackPanel Spacing="8"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="Кабинет: " />
+                                        <TextBlock Text="{Binding Cabinet}" />
+                                    </StackPanel>
+
+                                    <!-- Computer -->
+
+                                     <StackPanel Spacing="8"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="№ Компьютера: " />
+                                        <TextBlock Text="{Binding Room.PcNumber}" />
+                                    </StackPanel>
+
+                                    <!-- IP Address -->
+
+                                    <StackPanel Spacing="8"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="Адрес: " />
+                                        <TextBlock Text="{Binding IpAddress}" />
+                                    </StackPanel>
+
+
+                                    <!-- Port -->
+
+                                    <StackPanel Spacing="8"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="Порт: " />
+                                        <TextBlock Text="{Binding Port}" />
+                                    </StackPanel>
+
+                                    <!-- Online -->
+
+                                    <StackPanel Spacing="8"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="Подключено: " />
+                                        <TextBlock Text="{Binding Room.ParticipantCount}" />
+                                        <TextBlock Text="/" />
+                                        <TextBlock Text="{Binding Room.MaximumParticipants}" />
+                                    </StackPanel>
+
+                                    <Button
+                                        IsEnabled="{Binding IsAccessible}"
+                                        Content="{Binding ConnectionStatus}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </DockPanel>
     </Border>
 </UserControl>

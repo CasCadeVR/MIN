@@ -132,6 +132,24 @@
         <Style Selector="^.text">
             <Setter Property="Css" Value="{DynamicResource SvgTextStyle}"/>
         </Style>
+
+        <Style Selector="^.rotating">
+            <Setter Property="RenderTransform">
+                 <TransformGroup>
+                    <RotateTransform />
+                </TransformGroup>
+            </Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:.5" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="RotateTransform.Angle" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="RotateTransform.Angle" Value="360" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
     </Style>
 
     <StyleInclude Source="/Contracts/Styles/Controls/Buttons.axaml"/>
@@ -141,4 +159,5 @@
     <StyleInclude Source="/Contracts/Styles/Controls/TextBoxes.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/TextBlocks.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/ToggleSwitches.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/ProgressBars.axaml"/>
 </Styles>

@@ -125,9 +125,6 @@ public partial class MainSidePanelView : StyledPanelView, IChatPanelManager
         }
     }
 
-    ChatPanelView? IChatPanelManager.GetChatPanel(Guid roomId)
-        => activeChatPanels.TryGetValue(roomId, out var chatPanelView) ? chatPanelView : null;
-
     /// <inheritdoc />
     protected override void ApplyStylings()
     {

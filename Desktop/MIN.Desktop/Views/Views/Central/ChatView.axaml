@@ -36,9 +36,8 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Margin="6,0,0,0"
-                        Classes="header3">
-                        Название комнаты
-                    </TextBlock>
+                        Classes="header3"
+                        Text="{Binding RoomName}" />
                 </DockPanel>
             </Border>
 

@@ -17,9 +17,4 @@ public interface IChatPanelManager
     /// Удалить связь панели чата
     /// </summary>
     void UnregisterChat(Guid roomId);
-
-    /// <summary>
-    /// Получить панель чата
-    /// </summary>
-    ChatPanelView? GetChatPanel(Guid roomId);
 }

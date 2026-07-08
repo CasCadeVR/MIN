@@ -37,6 +37,9 @@
   </ItemGroup>
 
     <ItemGroup>
+    <Compile Update="Views\Modals\LoadingModal.axaml.cs">
+      <DependentUpon>LoadingModal.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Modals\CreateParticipantModal.axaml.cs">
       <DependentUpon>CreateParticipantModal.axaml</DependentUpon>
     </Compile>

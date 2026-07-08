@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace MIN.Desktop.Infrastructure.Converters.RecentRoom;
+namespace MIN.Desktop.Infrastructure.Converters;
 
 /// <summary>
 /// Форматирует связанное значение в виде сокращённой даты, полученной из значения типа DateTime.

@@ -4,12 +4,12 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 
-namespace MIN.Desktop.Infrastructure.Converters.RecentRoom;
+namespace MIN.Desktop.Infrastructure.Converters;
 
 /// <summary>
 /// Конвертор для выделения карточки
 /// </summary>
-public class BoolToBrushConverter : Converter<BoolToBrushConverter>
+public class CardBoolToBrushConverter : Converter<CardBoolToBrushConverter>
 {
     ///<inheritdoc />
     public override object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -19,7 +19,8 @@ public class BoolToBrushConverter : Converter<BoolToBrushConverter>
             return Brushes.Transparent;
         }
 
-        var key = isSelected ? "Primary" : "SurfaceCard";
+        var trueKey = parameter as string ?? "Primary";
+        var key = isSelected ? trueKey : "SurfaceCard";
         var app = Application.Current;
         var theme = app?.ActualThemeVariant;
         if (theme != null && app?.TryFindResource(key, theme, out var res) == true)

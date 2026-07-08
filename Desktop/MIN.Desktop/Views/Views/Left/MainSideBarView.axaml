@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
              xmlns:design="using:MIN.Desktop.Contracts.Designer"
-             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters.RecentRoom"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -57,7 +57,7 @@
                         <DataTemplate>
                             <Border Classes="card"
                                     Background="{Binding IsSelected,
-                                    Converter={converters:BoolToBrushConverter}}"
+                                    Converter={converters:CardBoolToBrushConverter}}"
                                     Margin="0,13">
                                  <Interaction.Behaviors>
                                     <behaviors:FocusOnViewShowBehavior />

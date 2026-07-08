@@ -40,4 +40,18 @@ public abstract partial class ModalViewModelBase : ValidatingViewModelBase
         }
         ((IClassicDesktopStyleApplicationLifetime)Application.Current?.ApplicationLifetime!).Windows.FirstOrDefault(w => w.DataContext == this)?.CloseByUser(this);
     }
+
+    /// <summary>
+    /// Закрывает диалоговое окно кодом. По умолчанию результат диалога — «cancelled»
+    /// </summary>
+    /// <param name="buttonOptions">Результат диалога, который необходимо установить перед закрытием</param>
+    [RelayCommand]
+    public void CloseByCode(ButtonOptions? buttonOptions = null)
+    {
+        if (buttonOptions != null)
+        {
+            SelectedOption = buttonOptions;
+        }
+        ((IClassicDesktopStyleApplicationLifetime)Application.Current?.ApplicationLifetime!).Windows.FirstOrDefault(w => w.DataContext == this)?.CloseByCode(this);
+    }
 }

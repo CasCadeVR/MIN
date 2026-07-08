@@ -8,6 +8,11 @@
         <StackPanel Width="250">
             <controls:CustomTitleBar
                 Background="IndianRed"
+                CanClose="False"
+                CanMaximize="False"
+                CanMinimize="False" />
+            <controls:CustomTitleBar
+                Background="IndianRed"
                 CanMaximize="False"
                 CanMinimize="False" />
             <controls:CustomTitleBar
@@ -67,8 +72,9 @@
                             Classes="close"
                             Classes.leftOff1="{Binding !#PART_MinimizeButton.IsVisible}"
                             Classes.leftOff2="{Binding !#PART_MaximizeButton.IsVisible}"
+                            IsVisible="{TemplateBinding CanClose}"
                             Command="{Binding CloseCommand, RelativeSource={RelativeSource TemplatedParent}}">
-                            <Svg Classes.text="{x:True}" Path="/Assets/Icons/close.svg" />
+                                <Svg Classes.text="{x:True}" Path="/Assets/Icons/close.svg" />
                         </Button>
                     </StackPanel>
                 </Panel>

@@ -9,6 +9,7 @@ using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base.Interfaces;
+using MIN.Desktop.ViewModels.Pages;
 using MIN.Desktop.ViewModels.Windows;
 using MIN.Desktop.Views;
 using MIN.Desktop.Views.Base;
@@ -40,7 +41,9 @@ public static partial class ServiceCollectionExtensions
             })
             .AddDialogs()
             .AddViews()
-            .AddViewModels();
+            .AddViewModels()
+            .AddTransient<ChatViewModel>() // ← перезаписывает Singleton на Transient
+            .AddTransient<ChatSideBarViewModel>(); // ← перезаписывает Singleton на Transient
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
@@ -48,6 +51,7 @@ public static partial class ServiceCollectionExtensions
         services.RegisterAsImplementedInterfaces<SettingsProvider>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NotificationService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<DialogService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<ChatViewModelFactory>(ServiceLifetime.Singleton);
         services.RegisterModule<MinModule>();
         return services;
     }
