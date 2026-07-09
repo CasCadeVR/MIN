@@ -34,6 +34,12 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// <inheritdoc />
     public override ViewLayoutType LayoutType => ViewLayoutType.Central;
 
+    /// <inheritdoc />
+    public override EventHandler? OnNavigatedTo { get; }
+
+    /// <inheritdoc />
+    public override EventHandler? OnNavigatedFrom { get; }
+
     /// <summary>
     /// Имя комнаты
     /// </summary>
@@ -56,6 +62,14 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (!Design.IsDesignMode)
         {
             localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+
+            OnNavigatedTo = (sender, e) =>
+            {
+                if (this.chatSideBarViewModel.IsOpened)
+                {
+                    ChangeView(this.chatSideBarViewModel);
+                }
+            };
         }
     }
 
@@ -65,6 +79,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     public async Task LoadRoomDataAndRefresh(Room room, Guid connectionId)
     {
         ToggleSideBar();
+        await chatSideBarViewModel.LoadRoomDataAndRefresh(room, localParticipant);
         this.room = room;
         RoomName = room.Name;
         this.connectionId = connectionId;
@@ -75,7 +90,17 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// Открыть боковую панель
     /// </summary>
     [RelayCommand]
-    public void ToggleSideBar() => ChangeView(chatSideBarViewModel);
+    public void ToggleSideBar()
+    {
+        if (!chatSideBarViewModel.IsOpened)
+        {
+            ChangeView(chatSideBarViewModel);
+        }
+        else
+        {
+            chatSideBarViewModel.CloseView(this);
+        }
+    }
 
     private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)
     {

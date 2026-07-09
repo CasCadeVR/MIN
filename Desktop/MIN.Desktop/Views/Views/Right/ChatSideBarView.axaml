@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -34,95 +35,61 @@
                 <!-- Room Notifications -->
 
                 <StackPanel Margin="0,8" HorizontalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center">
-                        Уведомления
-                    </TextBlock>
-
+                    <TextBlock
+                        Text="Уведомления"
+                        VerticalAlignment="Center" />
                     <ToggleSwitch  />
                 </StackPanel>
 
                 <!-- Host -->
 
                 <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock>
-                        Хост: 
-                    </TextBlock>
-
-                    <TextBlock>
-                        Имя хоста
-                    </TextBlock>
+                    <TextBlock Text="Хост: " />
+                    <TextBlock Text="{Binding Room.HostParticipant.Name}" />
                 </StackPanel>
 
                 <!-- Room create time -->
 
                 <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock>
-                        Создана: 
-                    </TextBlock>
-
-                    <TextBlock>
-                        Время создания комнаты
-                    </TextBlock>
+                    <TextBlock Text="Создана: " />
+                    <TextBlock Text="{Binding Room.CreatedAt, Converter={converters:DateToShortDateConverter}}" />
                 </StackPanel>
 
                 <!-- Cabinet -->
 
                 <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock>
-                        Кабинет: 
-                    </TextBlock>
-
-                    <TextBlock>
-                        Кабинет
-                    </TextBlock>
+                    <TextBlock Text="Кабинет: " />
+                    <TextBlock Text="{Binding Classroom}" />
                 </StackPanel>
 
                 <!-- Computer -->
 
                 <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock>
-                        № Компьютера: 
-                    </TextBlock>
-
-                    <TextBlock>
-                        13
-                    </TextBlock>
+                    <TextBlock Text="№ Компьютера: " />
+                    <TextBlock Text="{Binding Room.PcNumber}" />
                 </StackPanel>
 
                 <!-- IP Address -->
 
                 <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock>
-                        Адрес: 
-                    </TextBlock>
-
-                    <TextBlock>
-                        192.168.1.1
-                    </TextBlock>
+                    <TextBlock Text="Адрес: " />
+                    <TextBlock Text="{Binding IpAddress}" />
                 </StackPanel>
 
                 <!-- Port -->
 
                 <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock>
-                        Порт: 
-                    </TextBlock>
-
-                    <TextBlock>
-                        58900
-                    </TextBlock>
+                    <TextBlock Text="Порт: " />
+                    <TextBlock Text="{Binding Port}" />
                 </StackPanel>
 
                 <!-- Online -->
 
-                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock>
-                        В сети: 
-                    </TextBlock>
-
-                    <TextBlock>
-                        1/8
-                    </TextBlock>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Margin="0,0,8,0" Text="В сети: " />
+                    <TextBlock Text="{Binding Room.ParticipantCount}" />
+                    <TextBlock Text="/" />
+                    <TextBlock Text="{Binding Room.MaximumParticipants}" />
                 </StackPanel>
             </StackPanel>
 

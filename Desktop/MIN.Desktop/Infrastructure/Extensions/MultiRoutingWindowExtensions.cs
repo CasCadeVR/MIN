@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MIN.Common.Core.Extensions;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Base.Interfaces;
 
 namespace MIN.Desktop.Infrastructure.Extensions;
@@ -57,7 +58,14 @@ public static class MultiRoutingWindowExtensions
             if (screen.RightSideBarViewModel is IRoutableViewModel rightPriorViewModel
                 && rightPriorViewModel.RelatedToCentral)
             {
-                screen.RightSideBarViewModel = null;
+                if (screen.RightSideBarViewModel is RoutableViewModelBase routableRightSidebar)
+                {
+                    routableRightSidebar.CloseView(routableViewModel);
+                }
+                else
+                {
+                    screen.RightSideBarViewModel = null;
+                }
             }
         }
         else if (routableViewModel.LayoutType == ViewLayoutType.RightSideBar

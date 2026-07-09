@@ -91,15 +91,15 @@
                                     Margin="0,13">
                                 <StackPanel Spacing="8">
                                     <TextBlock HorizontalAlignment="Center"
-                                               Text="Комната " />
+                                       Text="Комната " />
 
                                     <TextBlock HorizontalAlignment="Center"
-                                               Classes="header4"
-                                               Text="{Binding Room.Name}" />
+                                        Classes="header4"
+                                        Text="{Binding Room.Name}" />
 
                                     <StackPanel Spacing="8"
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal">
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
                                         <TextBlock Text="Создатель: " />
                                         <TextBlock Text="{Binding Room.HostParticipant.Name}" />
                                     </StackPanel>
@@ -107,8 +107,8 @@
                                     <!-- Room create time -->
 
                                     <StackPanel Spacing="8"
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal">
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
                                         <TextBlock Text="Создана: " />
                                         <TextBlock Text="{Binding Room.CreatedAt,
                                         Converter={converters:DateToRelativeDateConverter}}" />
@@ -117,8 +117,8 @@
                                     <!-- Cabinet -->
 
                                     <StackPanel Spacing="8"
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal">
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
                                         <TextBlock Text="Кабинет: " />
                                         <TextBlock Text="{Binding Cabinet}" />
                                     </StackPanel>
@@ -126,8 +126,8 @@
                                     <!-- Computer -->
 
                                      <StackPanel Spacing="8"
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal">
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
                                         <TextBlock Text="№ Компьютера: " />
                                         <TextBlock Text="{Binding Room.PcNumber}" />
                                     </StackPanel>
@@ -135,8 +135,8 @@
                                     <!-- IP Address -->
 
                                     <StackPanel Spacing="8"
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal">
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
                                         <TextBlock Text="Адрес: " />
                                         <TextBlock Text="{Binding IpAddress}" />
                                     </StackPanel>
@@ -145,18 +145,18 @@
                                     <!-- Port -->
 
                                     <StackPanel Spacing="8"
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal">
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
                                         <TextBlock Text="Порт: " />
                                         <TextBlock Text="{Binding Port}" />
                                     </StackPanel>
 
                                     <!-- Online -->
 
-                                    <StackPanel Spacing="8"
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal">
-                                        <TextBlock Text="Подключено: " />
+                                    <StackPanel
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock Margin="0,0,8,0" Text="Подключено: " />
                                         <TextBlock Text="{Binding Room.ParticipantCount}" />
                                         <TextBlock Text="/" />
                                         <TextBlock Text="{Binding Room.MaximumParticipants}" />
