@@ -1,0 +1,56 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:MIN.Desktop.TemplatedControls">
+  <Design.PreviewWith>
+        <Window Background="CornflowerBlue" Title="MIN" />
+    </Design.PreviewWith>
+
+    <ControlTheme x:Key="WindowDrawnDecorationsTheme" TargetType="WindowDrawnDecorations">
+        <Setter Property="DefaultTitleBarHeight" Value="32"/>
+        <Setter Property="DefaultFrameThickness" Value="0,0,0,0"/>
+        <Setter Property="DefaultShadowThickness" Value="16"/>
+        <Setter Property="Template">
+            <WindowDrawnDecorationsTemplate>
+                <WindowDrawnDecorationsContent>
+
+                    <WindowDrawnDecorationsContent.Underlay>
+                        <!-- Full-size: covers shadow area + frame + behind client area -->
+                        <Panel>
+                            <Border Margin="{TemplateBinding ShadowThickness}"
+                                    Background="{DynamicResource SurfaceBackground}"
+                                    BorderThickness="1"
+                                    BorderBrush="{DynamicResource Primary}"
+                                    BoxShadow="0 8 32 0 #40000000"/>
+                        </Panel>
+                    </WindowDrawnDecorationsContent.Underlay>
+
+                    <WindowDrawnDecorationsContent.Overlay>
+                        <!-- Positioned over the titlebar area -->
+                        <DockPanel Height="{TemplateBinding TitleBarHeight}"
+                                   VerticalAlignment="Top"
+                                   WindowDecorationProperties.ElementRole="TitleBar"
+                                   Margin="{TemplateBinding ShadowThickness}">
+                        </DockPanel>
+                    </WindowDrawnDecorationsContent.Overlay>
+
+                    <WindowDrawnDecorationsContent.FullscreenPopover>
+                        <!-- Shown on hover at top edge in fullscreen -->
+                        <DockPanel Height="{TemplateBinding TitleBarHeight}"
+                                   WindowDecorationProperties.ElementRole="TitleBar"
+                                   Background="#E0000000">
+                        </DockPanel>
+                    </WindowDrawnDecorationsContent.FullscreenPopover>
+
+                </WindowDrawnDecorationsContent>
+            </WindowDrawnDecorationsTemplate>
+        </Setter>
+
+        <!-- Pseudoclass styling -->
+        <Style Selector="^:maximized /template/ Border">
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="^:fullscreen /template/ DockPanel">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

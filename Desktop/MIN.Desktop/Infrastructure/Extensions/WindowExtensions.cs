@@ -83,7 +83,7 @@ public static class WindowExtensions
     /// </summary>
     public static bool IsClosingByUser(this Window? closingWindow, WindowClosingEventArgs? closingArgs = null)
     {
-        if (closingWindow is not null && isClosingByUser.TryGetValue(closingWindow, out bool isByUser))
+        if (closingWindow is not null && isClosingByUser.TryGetValue(closingWindow, out var isByUser))
         {
             return isByUser;
         }

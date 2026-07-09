@@ -20,12 +20,13 @@
                         <WindowDecorations>None</WindowDecorations>
                     </OnPlatform.Default>
                     <On Options="Windows">
-                        <WindowDecorations>BorderOnly</WindowDecorations>
+                        <WindowDecorations>Full</WindowDecorations>
                     </On>
                 </OnPlatform>
             </Setter.Value>
         </Setter>
         <Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
+        <Setter Property="WindowDecorationsTheme" Value="{StaticResource WindowDrawnDecorationsTheme}" />
     </Style>
 
     <Style Selector="controls|CustomTitleBar" >

@@ -5,8 +5,8 @@
         xmlns:pagesCentral="using:MIN.Desktop.Views.Central"
         xmlns:pagesLeft="using:MIN.Desktop.Views.Left"
         xmlns:pagesRight="using:MIN.Desktop.Views.Right"
-        xmlns:controls="using:MIN.Desktop.TemplatedControls"
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:designer="using:MIN.Desktop.Contracts.Designer"
@@ -93,7 +93,7 @@
     </Window.Styles>
 
     <DockPanel>
-        <controls:CustomTitleBar />
+         <controls:CustomTitleBar />
 
         <Grid>
             <Border Grid.Row="1" >

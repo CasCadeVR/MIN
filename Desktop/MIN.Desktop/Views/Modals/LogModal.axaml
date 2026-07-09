@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:MIN.Desktop.ViewModels.Modals"
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -24,7 +25,7 @@
     </Interaction.Behaviors>
 
     <Design.DataContext>
-        <vm:LogViewModel/>
+        <designer:DesignerLogViewModel/>
     </Design.DataContext>
 
     <DockPanel>
@@ -63,6 +64,7 @@
                                             </EventTriggerBehavior>
                                         </Interaction.Behaviors>
                                         <TextBlock
+                                            Foreground="{DynamicResource TextOnPrimary}"
                                             Margin="4,0,0,0"
                                             Text="{Binding LogItem.Message}" />
                                     </Border>

@@ -45,6 +45,7 @@
                     <StackPanel>
                         <Button
                             x:Name="PART_MinimizeButton"
+                            WindowDecorationProperties.ElementRole="MinimizeButton"
                             Classes.leftOff1="{x:True}"
                             Classes.leftOff2="{x:True}"
                             Command="{Binding MinimizeCommand, RelativeSource={RelativeSource TemplatedParent}}"
@@ -55,6 +56,7 @@
                             x:Name="PART_MaximizeButton"
                             Classes.leftOff1="{Binding !#PART_MinimizeButton.IsVisible}"
                             Classes.leftOff2="{x:True}"
+                            WindowDecorationProperties.ElementRole="MaximizeButton"
                             Command="{Binding MaximizeCommand, RelativeSource={RelativeSource TemplatedParent}}">
                             <Button.IsVisible>
                                 <MultiBinding Converter="{x:Static BoolConverters.And}">
@@ -72,6 +74,7 @@
                             Classes="close"
                             Classes.leftOff1="{Binding !#PART_MinimizeButton.IsVisible}"
                             Classes.leftOff2="{Binding !#PART_MaximizeButton.IsVisible}"
+                            WindowDecorationProperties.ElementRole="CloseButton"
                             IsVisible="{TemplateBinding CanClose}"
                             Command="{Binding CloseCommand, RelativeSource={RelativeSource TemplatedParent}}">
                                 <Svg Classes.text="{x:True}" Path="/Assets/Icons/close.svg" />
@@ -90,6 +93,7 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="ShowTitle" Value="True" />
+        <Setter Property="WindowDecorationProperties.ElementRole" Value="TitleBar" />
         <Setter Property="IsVisible" Value="{Binding $parent[Window].(design:DesignAttachments.UseCustomTitleBar)}" />
 
         <Style Selector="^ /template/ StackPanel">
@@ -130,6 +134,5 @@
                 <Setter Property="Path" Value="/Assets/Icons/restore.svg" />
             </Style>
         </Style>
-
     </ControlTheme>
 </ResourceDictionary>

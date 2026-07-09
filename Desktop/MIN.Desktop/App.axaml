@@ -7,10 +7,11 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/TemplatedControls/CustomTitleBar.axaml" />
+                <ResourceInclude Source="/Contracts/Styles/Windows/CustomWindows.axaml" />
                 <ResourceInclude Source="/Contracts/Schemes/FontScheme.axaml"/>
                 <ResourceInclude Source="/Contracts/Schemes/ColorScheme.axaml"/>
                 <ResourceInclude Source="/Contracts/Schemes/SizeScheme.axaml"/>
-                <ResourceInclude Source="/TemplatedControls/CustomTitleBar.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
 

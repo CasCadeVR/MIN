@@ -107,7 +107,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
     public async Task CreateRoom()
     {
         var createViewModelResult = await dialogService.ShowDialogAsync<CreateRoomViewModel>();
-        if (createViewModelResult == null)
+        if (createViewModelResult! == false)
         {
             return;
         }
@@ -117,7 +117,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
             return;
         }
 
-        var roomInfo = createViewModelResult.Room;
+        var roomInfo = createViewModelResult!.Room;
         var roomId = roomInfo.Id;
 
         var chatViewModel = chatViewModelFactory.Create();

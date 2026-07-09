@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Collections;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Desktop.ViewModels.Base;
@@ -29,7 +30,11 @@ public partial class LogViewModel : ModalViewModelBase
     public LogViewModel(ILoggerProvider loggerProvider)
     {
         this.loggerProvider = loggerProvider;
-        loggerProvider.OnLogReceived += OnLogReceived;
+
+        if (!Design.IsDesignMode)
+        {
+            loggerProvider.OnLogReceived += OnLogReceived;
+        }
     }
 
     private void OnLogReceived(object? sender, LogItem item)
