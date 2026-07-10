@@ -50,7 +50,7 @@
                 <ItemsControl ItemsSource="{Binding RecentRooms}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Margin="0,-13" />
+                            <VirtualizingStackPanel Margin="0,-6" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -58,9 +58,8 @@
                             <Border Classes="card"
                                     Background="{Binding IsSelected,
                                     Converter={converters:CardBoolToBrushConverter}}"
-                                    Margin="0,13">
+                                    Margin="0,6">
                                  <Interaction.Behaviors>
-                                    <behaviors:FocusOnViewShowBehavior />
                                     <EventTriggerBehavior EventName="PointerPressed">
                                         <InvokeCommandAction Command="{Binding SelectItemCommand}" />
                                     </EventTriggerBehavior>

@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:statuses="using:MIN.Core.Entities.Contracts.Enums"
              xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+             xmlns:designer="using:MIN.Desktop.Contracts.Designer"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,7 +15,7 @@
              x:Class="MIN.Desktop.Views.Right.ChatSideBarView">
 
     <Design.DataContext>
-        <vm:ChatSideBarViewModel/>
+        <designer:DesignerChatSideBarViewModel/>
     </Design.DataContext>
 
     <Border Background="{DynamicResource SidebarSecondaryBackground}"
@@ -45,7 +47,7 @@
 
                 <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="Хост: " />
-                    <TextBlock Text="{Binding Room.HostParticipant.Name}" />
+                    <TextBlock Text="{Binding HostName}" />
                 </StackPanel>
 
                 <!-- Room create time -->
@@ -98,16 +100,50 @@
             </TextBlock>
 
              <ScrollViewer Classes="main">
-                <StackPanel Spacing="6">
-                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
-                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
-                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
-                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
-                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
-                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
-                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
-                    <Rectangle Fill="{DynamicResource Primary}" Height="48" />
-                </StackPanel>
+                <ItemsControl ItemsSource="{Binding RoomParticipants}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Margin="0,-4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Classes="card"
+                                    Background="{Binding IsSelected,
+                                    Converter={converters:CardBoolToBrushConverter}}"
+                                    Margin="0,4">
+                                 <Interaction.Behaviors>
+                                    <EventTriggerBehavior EventName="PointerPressed">
+                                        <InvokeCommandAction Command="{Binding SelectItemCommand}" />
+                                    </EventTriggerBehavior>
+                                </Interaction.Behaviors>
+                                <StackPanel Spacing="6">
+                                    <DockPanel HorizontalSpacing="6">
+                                        <TextBlock  DockPanel.Dock="Right"
+                                            Text="{Binding ParticipantRole}" />
+
+                                        <TextBlock
+                                            Classes="header5"
+                                            Text="{Binding ParticipantName}" />
+                                    </DockPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{Binding ParticipantLastSeenAt,
+                                            Converter={converters:DateToShortDateConverter}}"
+                                            IsVisible="{Binding IsOffline}" />
+
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{Binding ParticipantStatus,
+                                            Converter={converters:OnlineStatusToTextConverter}}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </ScrollViewer>
         </DockPanel>
     </Border>
