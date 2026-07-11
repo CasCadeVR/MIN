@@ -18,9 +18,6 @@ namespace MIN.Desktop.ViewModels.Cards;
 /// </summary>
 public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
 {
-    private const string StartPrivateChatText = "Начать приватное общение";
-    private const string StopPrivateChatText = "Прекратить приватное общение";
-
     private readonly Participant participant;
     private readonly IEventBus eventBus;
     private readonly Guid roomId;
@@ -58,7 +55,7 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
     public partial DateTime ParticipantLastSeenAt { get; set; } = DateTime.Now;
 
     /// <summary>
-    /// Выбрана ли карточка
+    /// Выбрана ли карточка в качестве приватного собеседника
     /// </summary>
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
@@ -70,9 +67,32 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
     public partial bool IsOffline { get; set; }
 
     /// <summary>
-    /// Событие по нажатию на саму карточку
+    /// Может ли кикнуть участника
     /// </summary>
-    public Action? Clicked { get; set; }
+    [ObservableProperty]
+    public partial bool CanKick { get; set; }
+
+    /// <summary>
+    /// Может ли приватно общатся
+    /// </summary>
+    [ObservableProperty]
+    public partial bool CanStartPrivateChat { get; set; }
+
+    /// <summary>
+    /// Может ли вообще что то делать
+    /// </summary>
+    [ObservableProperty]
+    public partial bool CanInterract { get; set; }
+
+    /// <summary>
+    /// Событие по нажатию на кнопку начала приватного общения у участника
+    /// </summary>
+    public Action<bool, Participant>? OnPrivateChatMenuStripClicked { get; set; }
+
+    /// <summary>
+    /// Событие по нажатию на кнопку кика участника
+    /// </summary>
+    public Action<Participant>? OnKickParticipantClicked { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantCardViewModel"/>
@@ -89,6 +109,9 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
         this.roomId = roomId;
         this.isHost = isHost;
         this.isSelf = isSelf;
+        CanKick = asHost && !isSelf;
+        CanStartPrivateChat = !isSelf;
+        CanInterract = CanKick || CanStartPrivateChat;
 
         if (!Design.IsDesignMode)
         {
@@ -129,44 +152,20 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
     public void Unselect()
     {
         IsSelected = false;
-        UpdateStylesOutOfSelected();
     }
 
-    /// <summary>
-    /// Выбрать карточку
-    /// </summary>
-    public void SelectCard()
-    {
-        IsSelected = true;
-    }
-
-    /// <summary>
-    /// Выбрать карточку
-    /// </summary>
     [RelayCommand]
-    public void SelectItem()
+
+    private void TogglePrivateChat()
     {
-        Clicked?.Invoke();
+        IsSelected = !IsSelected;
+        OnPrivateChatMenuStripClicked?.Invoke(IsSelected, participant);
     }
 
-    //private void OnPrivateChatClickMenuStripClicked()
-    //{
-    //    selected = !selected;
-    //    UpdateStylesOutOfSelected();
-    //    OnPrivateChatMenuStripClicked?.Invoke(selected, participant);
-    //}
-
-    //private void OnKickParticipantClickMenuStripClicked()
-    //{
-    //    OnKickParticipantClicked?.Invoke(participant);
-    //}
-
-    private void UpdateStylesOutOfSelected()
+    [RelayCommand]
+    private void KickParticipant()
     {
-        //ContextMenuStrip?.Items[0].Text = IsSelected ? StopPrivateChatText : StartPrivateChatText;
-        //BackColor = IsSelected
-        //    ? ColorScheme.PrivateParticipantCardBackground
-        //    : ColorScheme.DefaultParticipantCardBackground;
+        OnKickParticipantClicked?.Invoke(participant);
     }
 
     private void FillLabels()

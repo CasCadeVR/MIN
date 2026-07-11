@@ -5,7 +5,7 @@ using MIN.Desktop.Views.Base;
 namespace MIN.Desktop.Views.Modals;
 
 /// <summary>
-/// Всплывающее окно создания комнаты
+/// Всплывающее окно "регистрации" участника
 /// </summary>
 [ModalForViewModel(typeof(CreateParticipantViewModel))]
 public partial class CreateParticipantModal : ModalViewBase

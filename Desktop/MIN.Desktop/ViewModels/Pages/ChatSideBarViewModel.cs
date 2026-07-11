@@ -1,15 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Enums;
+using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Cards;
+using MIN.Desktop.ViewModels.Modals;
 using MIN.DI.FeatureCollection;
 
 namespace MIN.Desktop.ViewModels.Pages;
@@ -20,9 +28,14 @@ namespace MIN.Desktop.ViewModels.Pages;
 public partial class ChatSideBarViewModel : RoutableViewModelBase
 {
     private readonly IMinFeatureCollection featureCollection;
+    private readonly IDialogService dialogService;
+    private readonly CancellationTokenSource appCts = null!;
 
+    private HashSet<IDisposable> eventTokens = null!;
     private ParticipantInfo localParticipant = null!;
     private Guid roomId;
+
+    private Guid? privateChatParticipantId;
 
     /// <inheritdoc />
     public override ViewLayoutType LayoutType => ViewLayoutType.RightSideBar;
@@ -73,6 +86,12 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     public partial string Classroom { get; set; } = string.Empty;
 
     /// <summary>
+    /// Информация о кол-ве учатсников
+    /// </summary>
+    [ObservableProperty]
+    public partial string ParticipantsInfo { get; set; } = string.Empty;
+
+    /// <summary>
     /// Являяется локальный пользователь хостом
     /// </summary>
     [ObservableProperty]
@@ -86,19 +105,84 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatSideBarViewModel"/>
     /// </summary>
-    public ChatSideBarViewModel(IMinFeatureCollection featureCollection)
+    public ChatSideBarViewModel(IMinFeatureCollection featureCollection,
+        IDialogService dialogService,
+        ICtsProvider ctsProvider)
     {
         this.featureCollection = featureCollection;
+        this.dialogService = dialogService;
 
-        OnNavigatedTo = (sender, e) => IsOpened = true;
-        OnNavigatedFrom = (sender, e) =>
+        if (!Design.IsDesignMode)
         {
-            if ((sender is ChatViewModel chatVm && chatVm.RoomId == roomId)
-                || (sender is ChatSideBarViewModel chatSideBarVm && chatSideBarVm.roomId == roomId))
+            appCts = ctsProvider.AppCts;
+
+            OnNavigatedTo = (sender, e) => IsOpened = true;
+            OnNavigatedFrom = (sender, e) =>
             {
-                IsOpened = false;
-            }
-        };
+                if ((sender is ChatViewModel chatVm && chatVm.RoomId == roomId)
+                    || (sender is ChatSideBarViewModel chatSideBarVm && chatSideBarVm.roomId == roomId))
+                {
+                    IsOpened = false;
+                }
+            };
+
+            SubscribeToEvents(featureCollection.Core.EventBus);
+        }
+    }
+
+    private void SubscribeToEvents(IEventBus eventBus)
+    {
+        eventTokens =
+        [
+            eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
+            eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
+        ];
+    }
+
+    private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != roomId)
+        {
+            return;
+        }
+
+        Room.AddParticipant(eventMessage.Message.Participant);
+
+        // TODO
+        //AddMessageToChatFlow(eventMessage.Message);
+        await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
+        {
+            RoomId = roomId,
+            DescribableMessage = eventMessage.Message
+        }, cancellationToken);
+        //NotifyIfNeeded(eventMessage.Message);
+
+        UpdateParticipantFlow();
+    }
+
+    private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId != roomId)
+        {
+            return;
+        }
+
+        var leavingParticipantId = eventMessage.Message.Participant.Id;
+        Room.RemoveParticipantById(leavingParticipantId);
+        if (privateChatParticipantId == leavingParticipantId)
+        {
+            privateChatParticipantId = null;
+        }
+
+        //AddMessageToChatFlow(eventMessage.Message);
+        await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
+        {
+            RoomId = roomId,
+            DescribableMessage = eventMessage.Message,
+        }, cancellationToken);
+        //NotifyIfNeeded(eventMessage.Message);
+
+        UpdateParticipantFlow();
     }
 
     /// <summary>
@@ -142,42 +226,41 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
                 isSelf: participant.Id == localParticipant.Id,
                 asHost: localParticipant.Id == Room.HostParticipant.Id);
 
-            //card.OnPrivateChatMenuStripClicked += (selected, particpant) =>
-            //{
-            //    foreach (var participantsFlowControl in participantsFlow.Controls)
-            //    {
-            //        if (participantsFlowControl is ParticipantCard participantCard)
-            //        {
-            //            if (participantCard.ParticipantId != participant.Id)
-            //            {
-            //                participantCard.Unselect();
-            //            }
-            //        }
-            //    }
+            card.OnPrivateChatMenuStripClicked += (selected, particpant) =>
+            {
+                foreach (var participantCard in RoomParticipants)
+                {
+                    if (participantCard.ParticipantId != participant.Id)
+                    {
+                        participantCard.IsSelected = false;
+                    }
+                }
 
-            //    privateChatParticipantId = selected ? participant.Id : null;
-            //};
+                privateChatParticipantId = selected ? participant.Id : null;
+            };
 
-            //card.OnKickParticipantClicked += async (participant) =>
-            //{
-            //    var kickForm = new ParticipantKickForm(participant.Name);
-            //    if (kickForm.ShowDialog() == DialogResult.OK)
-            //    {
-            //        try
-            //        {
-            //            await featureCollection.Chat.ChatRoomService.KickParticipantAsync(roomId,
-            //            participant.Id, kickForm.Reason, formCts.Token);
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //        }
-            //    }
-            //};
+            card.OnKickParticipantClicked += async (participant) =>
+            {
+                var kickVm = await dialogService.ShowDialogAsync<ParticipantKickViewModel>(x => x.ParticipantName = participant.Name);
+
+                if (kickVm! == true)
+                {
+                    try
+                    {
+                        await featureCollection.Chat.ChatRoomService.KickParticipantAsync(roomId,
+                            participant.Id, kickVm!.Reason, appCts.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        InAppNotifier.Error(ex.Message);
+                    }
+                }
+            };
 
             RoomParticipants.Add(card);
         }
-        //participantsInfo.Text = $"{room.ParticipantCount}/{room.MaximumParticipants}";
+
+        ParticipantsInfo = $"{Room.ParticipantCount}/{Room.MaximumParticipants}";
     }
 
     /// <summary>

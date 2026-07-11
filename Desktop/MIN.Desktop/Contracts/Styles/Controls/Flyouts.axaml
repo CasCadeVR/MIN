@@ -5,14 +5,52 @@
         <Border Padding="250">
            <Border Background="{DynamicResource SidebarSecondaryBackground}" Padding="20">
             <StackPanel>
-                <Button Classes="card"
-                        Margin="0,4">
+                <Button Classes="card">
                      <Button.Flyout>
                         <Flyout Placement="Left" FlyoutPresenterClasses="cardDetails">
                             <Border>
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="Имя" Classes="header4" />
-                                    <TextBlock Text="Роль" />
+                                     <DockPanel HorizontalSpacing="6">
+                                        <TextBlock  DockPanel.Dock="Right"
+                                            Text="Роль участника" />
+
+                                        <SelectableTextBlock
+                                            Classes="header5"
+                                            Text="Имя участника" />
+                                    </DockPanel>
+                                    <TextBlock Text="В сети" />
+                                </StackPanel>
+                            </Border>
+                        </Flyout>
+                    </Button.Flyout>
+                        <StackPanel Spacing="6">
+                            <DockPanel HorizontalSpacing="6">
+                                <TextBlock  DockPanel.Dock="Right"
+                                    Text="Роль участника" />
+
+                                <SelectableTextBlock
+                                    Classes="header5"
+                                    Text="Имя участника" />
+                            </DockPanel>
+
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="В сети" />
+                        </StackPanel>
+                    </Button>
+                <Button Classes="card">
+                     <Button.Flyout>
+                        <Flyout Placement="Left">
+                            <Border>
+                                <StackPanel Spacing="8">
+                                     <DockPanel>
+                                        <TextBlock  DockPanel.Dock="Right"
+                                            Text="Роль участника" />
+
+                                        <SelectableTextBlock
+                                            Classes="header5"
+                                            Text="Имя участника" />
+                                    </DockPanel>
                                     <TextBlock Text="В сети" />
                                 </StackPanel>
                             </Border>
@@ -38,27 +76,32 @@
         </Border>
     </Design.PreviewWith>
 
-    <Style Selector="FlyoutPresenter.cardDetails">
-        <Setter Property="Padding" Value="{DynamicResource PaddingCard}" />
+     <Style Selector="FlyoutPresenter">
+        <Setter Property="Padding" Value="0" />
         <Setter Property="Background" Value="{DynamicResource SurfaceElevated}" />
         <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
 
-         <Setter Property="RenderTransformOrigin" Value="0%,0%" />
+        <Setter Property="RenderTransformOrigin" Value="0%,0%" />
         <Setter Property="Opacity" Value="0" />
+
         <Style.Animations>
-        <Animation Duration="0:0:0.2" FillMode="Both">
-            <KeyFrame Cue="0%">
-                <Setter Property="Opacity" Value="0" />
-                <Setter Property="ScaleTransform.ScaleX" Value="0.95" />
-                <Setter Property="ScaleTransform.ScaleY" Value="0.95" />
-            </KeyFrame>
-            <KeyFrame Cue="100%">
-                <Setter Property="Opacity" Value="1" />
-                <Setter Property="ScaleTransform.ScaleX" Value="1" />
-                <Setter Property="ScaleTransform.ScaleY" Value="1" />
-            </KeyFrame>
-        </Animation>
-    </Style.Animations>
+            <Animation Duration="0:0:0.2" FillMode="Both">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="ScaleTransform.ScaleX" Value="0.95" />
+                    <Setter Property="ScaleTransform.ScaleY" Value="0.95" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="ScaleTransform.ScaleX" Value="1" />
+                    <Setter Property="ScaleTransform.ScaleY" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <Style Selector="FlyoutPresenter.cardDetails">
+        <Setter Property="Padding" Value="{DynamicResource PaddingCard}" />
     </Style>
 
     <Style Selector="FlyoutPresenter.cardDetails Border">

@@ -43,7 +43,7 @@ public sealed class RoomStore : IRoomStore
             var context = roomFactory.GetOrCreateContext(roomId);
             room.CurrentParticipants = context.Participants.GetParticipants().ToList();
             room.ChatHistory = context.Messages.GetHistory().ToList();
-            room.TotalMessageCount = room.ChatHistory.Count();
+            room.TotalMessageCount = room.ChatHistory.Count;
             return true;
         }
 
@@ -60,6 +60,7 @@ public sealed class RoomStore : IRoomStore
                 .Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId)
                 .ToList();
             room.TotalMessageCount = GetMessagesCountFor(context, participantId);
+            room.LocalRoomSettings = default;
             return room;
         }
 

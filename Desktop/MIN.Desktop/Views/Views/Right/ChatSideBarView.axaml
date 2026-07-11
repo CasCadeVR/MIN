@@ -39,8 +39,8 @@
                 <StackPanel Margin="0,8" HorizontalAlignment="Center">
                     <TextBlock
                         Text="Уведомления"
-                        VerticalAlignment="Center" />
-                    <ToggleSwitch  />
+                        HorizontalAlignment="Center" />
+                    <ToggleSwitch IsChecked="{Binding Room.LocalRoomSettings.NotificationsEnabled}" />
                 </StackPanel>
 
                 <!-- Host -->
@@ -89,9 +89,7 @@
 
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Margin="0,0,8,0" Text="В сети: " />
-                    <TextBlock Text="{Binding Room.ParticipantCount}" />
-                    <TextBlock Text="/" />
-                    <TextBlock Text="{Binding Room.MaximumParticipants}" />
+                    <TextBlock Text="{Binding ParticipantsInfo}" />
                 </StackPanel>
             </StackPanel>
 
@@ -110,16 +108,53 @@
                         <DataTemplate>
                              <Button Classes="card"
                                     Classes.selected="{Binding IsSelected}"
-                                    Command="{Binding SelectItemCommand}"
                                     Margin="0,4">
                                 <Button.Flyout>
                                     <Flyout Placement="Left" FlyoutPresenterClasses="cardDetails">
                                         <Border>
                                             <StackPanel Spacing="8">
-                                                <TextBlock Text="{Binding ParticipantRole}" Classes="header4" />
-                                                <TextBlock Text="{Binding ParticipantName}" />
-                                                <TextBlock Text="{Binding ParticipantLastSeenAt}" />
-                                                <TextBlock Text="{Binding ParticipantStatus}" />
+                                                <DockPanel>
+                                                    <Button Classes="icon"
+                                                            DockPanel.Dock="Right"
+                                                            IsVisible="{Binding CanInterract}" >
+                                                        <Svg Path="/Assets/Icons/about-card.svg" />
+                                                         <Button.Flyout>
+                                                            <Flyout Placement="Bottom">
+                                                                 <StackPanel>
+                                                                    <Button
+                                                                            Command="{Binding TogglePrivateChatCommand}"
+                                                                            Content="{Binding IsSelected,
+                                                                            Converter={converters:BoolToPrivateChatTextConverter}}"
+                                                                            Background="Transparent"
+                                                                            HorizontalContentAlignment="Stretch"
+                                                                            IsVisible="{Binding CanStartPrivateChat}" />
+                                                                    <Button
+                                                                            Command="{Binding KickParticipantCommand}"
+                                                                            Content="Кикнуть участника"
+                                                                            Background="Transparent"
+                                                                            HorizontalContentAlignment="Stretch"
+                                                                            IsVisible="{Binding CanKick}" />
+                                                                </StackPanel>
+                                                            </Flyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+
+                                                    <TextBlock Text="{Binding ParticipantName}"
+                                                        VerticalAlignment="Center"
+                                                        Classes="header4" />
+                                                </DockPanel>
+                                                <TextBlock Text="{Binding ParticipantRole}"  />
+
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding ParticipantLastSeenAt,
+                                                    Converter={converters:DateToShortDateConverter}}"
+                                                    IsVisible="{Binding IsOffline}" />
+
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding ParticipantStatus,
+                                                    Converter={converters:OnlineStatusToTextConverter}}" />
                                             </StackPanel>
                                         </Border>
                                     </Flyout>
