@@ -19,7 +19,8 @@ namespace MIN.Desktop.ViewModels.Pages;
 /// </summary>
 public partial class ChatSideBarViewModel : RoutableViewModelBase
 {
-    private IMinFeatureCollection featureCollection;
+    private readonly IMinFeatureCollection featureCollection;
+
     private ParticipantInfo localParticipant = null!;
     private Guid roomId;
 
@@ -92,7 +93,8 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
         OnNavigatedTo = (sender, e) => IsOpened = true;
         OnNavigatedFrom = (sender, e) =>
         {
-            if (sender is ChatViewModel || sender is ChatSideBarViewModel)
+            if ((sender is ChatViewModel chatVm && chatVm.RoomId == roomId)
+                || (sender is ChatSideBarViewModel chatSideBarVm && chatSideBarVm.roomId == roomId))
             {
                 IsOpened = false;
             }

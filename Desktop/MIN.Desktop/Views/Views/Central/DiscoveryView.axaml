@@ -17,6 +17,7 @@
     <Border>
         <DockPanel VerticalSpacing="10" >
             <Border DockPanel.Dock="Top"
+                    Margin="0,0,0,16"
                     Background="{DynamicResource SidebarBackground}"
                     Padding="{DynamicResource PaddingTopBar}"
                     CornerRadius="{DynamicResource CornerRadiusLarge}">
@@ -78,22 +79,25 @@
             </Border>
 
             <!-- Discovered rooms -->
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer Classes="main">
                 <ItemsControl ItemsSource="{Binding DiscoveredRooms}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Margin="0,-13" />
+                            <WrapPanel
+                                Orientation="Horizontal"
+                                ItemSpacing="13"
+                                LineSpacing="13" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border Classes="card"
-                                    Margin="0,13">
+                                    Width="300">
                                 <StackPanel Spacing="8">
                                     <TextBlock HorizontalAlignment="Center"
-                                       Text="Комната " />
+                                        Text="Комната " />
 
-                                    <TextBlock HorizontalAlignment="Center"
+                                    <SelectableTextBlock HorizontalAlignment="Center"
                                         Classes="header4"
                                         Text="{Binding Room.Name}" />
 
@@ -125,7 +129,7 @@
 
                                     <!-- Computer -->
 
-                                     <StackPanel Spacing="8"
+                                        <StackPanel Spacing="8"
                                         HorizontalAlignment="Center"
                                         Orientation="Horizontal">
                                         <TextBlock Text="№ Компьютера: " />
@@ -138,7 +142,7 @@
                                         HorizontalAlignment="Center"
                                         Orientation="Horizontal">
                                         <TextBlock Text="Адрес: " />
-                                        <TextBlock Text="{Binding IpAddress}" />
+                                        <SelectableTextBlock Text="{Binding IpAddress}" />
                                     </StackPanel>
 
 
@@ -148,7 +152,7 @@
                                         HorizontalAlignment="Center"
                                         Orientation="Horizontal">
                                         <TextBlock Text="Порт: " />
-                                        <TextBlock Text="{Binding Port}" />
+                                        <SelectableTextBlock Text="{Binding Port}" />
                                     </StackPanel>
 
                                     <!-- Online -->

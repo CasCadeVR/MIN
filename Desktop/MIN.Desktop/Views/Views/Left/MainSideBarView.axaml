@@ -2,7 +2,6 @@
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
              xmlns:design="using:MIN.Desktop.Contracts.Designer"
              xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
-             xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              d:DesignWidth="320" d:DesignHeight="720"
@@ -46,7 +45,7 @@
 
             <!-- Room cards -->
 
-            <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer Classes="main">
                 <ItemsControl ItemsSource="{Binding RecentRooms}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -55,15 +54,10 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Classes="card"
-                                    Background="{Binding IsSelected,
-                                    Converter={converters:CardBoolToBrushConverter}}"
+                            <Button Classes="card"
+                                    Classes.selected="{Binding IsSelected}"
+                                    Command="{Binding SelectItemCommand}"
                                     Margin="0,6">
-                                 <Interaction.Behaviors>
-                                    <EventTriggerBehavior EventName="PointerPressed">
-                                        <InvokeCommandAction Command="{Binding SelectItemCommand}" />
-                                    </EventTriggerBehavior>
-                                </Interaction.Behaviors>
                                 <StackPanel Spacing="8">
                                     <DockPanel HorizontalSpacing="8">
                                         <TextBlock  DockPanel.Dock="Right"
@@ -95,7 +89,7 @@
                                             Text="{Binding LastMessageContent}" />
                                     </DockPanel>
                                 </StackPanel>
-                            </Border>
+                            </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

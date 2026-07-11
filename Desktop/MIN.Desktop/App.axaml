@@ -3,7 +3,7 @@
              x:Class="MIN.Desktop.App"
              RequestedThemeVariant="Dark">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-
+             
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -21,4 +21,5 @@
         <SimpleTheme />
         <StyleInclude Source="/Contracts/Styles/MIN.axaml"/>
     </Application.Styles>
+
 </Application>

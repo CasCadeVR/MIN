@@ -21,9 +21,7 @@
                 </Button>
             </StackPanel>
 
-            <Border Background="{DynamicResource Surface}" CornerRadius="8"
-                    BorderBrush="{DynamicResource Primary}" BorderThickness="1"
-                    Padding="12">
+            <Border Classes="card">
                 <StackPanel Spacing="4">
                     <TextBlock Text="Card Title" FontSize="16" FontWeight="Bold"
                                 Foreground="{DynamicResource TextPrimary}"/>

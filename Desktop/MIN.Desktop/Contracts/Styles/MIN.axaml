@@ -83,7 +83,6 @@
     </Style>
 
     <Style Selector=":is(ContentControl).content">
-        <Setter Property="Background" Value="{DynamicResource BrandWhite}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
     </Style>
@@ -122,7 +121,7 @@
             <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
             <Setter Property="Padding" Value="24 20" />
             <Setter Property="BorderThickness" Value="0 2 0 0" />
-            <Setter Property="BorderBrush" Value="{DynamicResource BrandWhite}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
         </Style>
     </Style>
 
@@ -160,6 +159,7 @@
 
     <StyleInclude Source="/Contracts/Styles/Controls/Buttons.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/CheckBoxes.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/Flyouts.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/RadioBoxes.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/ScrollViewers.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/TextBoxes.axaml"/>

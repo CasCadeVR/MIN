@@ -108,21 +108,28 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Classes="card"
-                                    Background="{Binding IsSelected,
-                                    Converter={converters:CardBoolToBrushConverter}}"
+                             <Button Classes="card"
+                                    Classes.selected="{Binding IsSelected}"
+                                    Command="{Binding SelectItemCommand}"
                                     Margin="0,4">
-                                 <Interaction.Behaviors>
-                                    <EventTriggerBehavior EventName="PointerPressed">
-                                        <InvokeCommandAction Command="{Binding SelectItemCommand}" />
-                                    </EventTriggerBehavior>
-                                </Interaction.Behaviors>
+                                <Button.Flyout>
+                                    <Flyout Placement="Left" FlyoutPresenterClasses="cardDetails">
+                                        <Border>
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="{Binding ParticipantRole}" Classes="header4" />
+                                                <TextBlock Text="{Binding ParticipantName}" />
+                                                <TextBlock Text="{Binding ParticipantLastSeenAt}" />
+                                                <TextBlock Text="{Binding ParticipantStatus}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Flyout>
+                                </Button.Flyout>
                                 <StackPanel Spacing="6">
                                     <DockPanel HorizontalSpacing="6">
                                         <TextBlock  DockPanel.Dock="Right"
                                             Text="{Binding ParticipantRole}" />
 
-                                        <TextBlock
+                                        <SelectableTextBlock
                                             Classes="header5"
                                             Text="{Binding ParticipantName}" />
                                     </DockPanel>
@@ -140,7 +147,7 @@
                                             Converter={converters:OnlineStatusToTextConverter}}" />
                                     </StackPanel>
                                 </StackPanel>
-                            </Border>
+                            </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

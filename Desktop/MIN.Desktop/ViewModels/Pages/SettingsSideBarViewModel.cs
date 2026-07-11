@@ -97,15 +97,6 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
         Dispatcher.UIThread.Invoke(() => Application.Current!.RequestedThemeVariant = value ? ThemeVariant.Light : ThemeVariant.Dark);
     }
 
-    private void FillControls()
-    {
-        Settings = featureCollection.Helper.SettingsProvider.GetSettings();
-        Version = $"Версия: {featureCollection.Helper.VersionProvider.Version.ToString()}";
-        DefaultParticipantName = Settings.DefaultParticipantName;
-        DiscoveryTimeout = Settings.DiscoveryTimeout;
-        DiscoveryPort = Settings.DiscoveryPort;
-    }
-
     /// <summary>
     /// Вернуться назад
     /// </summary>
@@ -149,6 +140,15 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     /// </summary>
     [RelayCommand]
     public async Task ScanSessionsAsync() => await featureCollection.Chat.ChatSessionService.ScanDownloadedSessions(appCts.Token);
+
+    private void FillControls()
+    {
+        Settings = featureCollection.Helper.SettingsProvider.GetSettings();
+        Version = $"Версия: {featureCollection.Helper.VersionProvider.Version.ToString()}";
+        DefaultParticipantName = Settings.DefaultParticipantName;
+        DiscoveryTimeout = Settings.DiscoveryTimeout;
+        DiscoveryPort = Settings.DiscoveryPort;
+    }
 
     private bool CanSave() => !HasErrors;
 }

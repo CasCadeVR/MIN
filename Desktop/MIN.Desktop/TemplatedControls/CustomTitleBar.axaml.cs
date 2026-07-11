@@ -124,15 +124,15 @@ public partial class CustomTitleBar : TemplatedControl
         window.WindowState = window.WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
     }
 
-    ///// <summary>
-    ///// Событие при загрузке
-    ///// </summary>
-    //protected override void OnLoaded(RoutedEventArgs e)
-    //{
-    //    PointerPressed += OnPointerPressed;
-    //    DoubleTapped += OnDoubleTapped;
-    //    base.OnLoaded(e);
-    //}
+    /// <summary>
+    /// Событие при загрузке
+    /// </summary>
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        PointerPressed += OnPointerPressed;
+        DoubleTapped += OnDoubleTapped;
+        base.OnLoaded(e);
+    }
 
     /// <summary>
     /// Событие при закрытии

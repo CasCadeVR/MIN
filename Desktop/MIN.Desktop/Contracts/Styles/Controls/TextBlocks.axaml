@@ -18,56 +18,63 @@
             <TextBlock>Обычный текст</TextBlock>
             <TextBlock Classes="small">подзаголовок</TextBlock>
             <TextBlock Classes="caption">подзаголовок</TextBlock>
+            <SelectableTextBlock>Выделяемое поле</SelectableTextBlock>
+            <SelectableTextBlock Classes="inverted">Выделяемое поле инвертированное</SelectableTextBlock>
         </StackPanel>
     </Border>
   </Design.PreviewWith>
 
-    <Style Selector="TextBlock">
+    <Style Selector="TextBlock, SelectableTextBlock">
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
     </Style>
 
-    <Style Selector="TextBlock.header1">
+    <Style Selector="TextBlock.header1, SelectableTextBlock.header1">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeH1}"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
 
-    <Style Selector="TextBlock.inverted">
+    <Style Selector="TextBlock.inverted, SelectableTextBlock.inverted">
         <Setter Property="Foreground" Value="{DynamicResource TextAccent}"/>
     </Style>
 
-    <Style Selector="TextBlock.header2">
+    <Style Selector="TextBlock.header2, SelectableTextBlock.header2">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeH2}"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
         
-    <Style Selector="TextBlock.header3">
+    <Style Selector="TextBlock.header3, SelectableTextBlock.header3">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeH3}"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
 
-    <Style Selector="TextBlock.header4">
+    <Style Selector="TextBlock.header4, SelectableTextBlock.header4">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeH4}"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
 
-    <Style Selector="TextBlock.header5">
+    <Style Selector="TextBlock.header5, SelectableTextBlock.header5">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeH5}"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
 
-    <Style Selector="TextBlock.small">
+    <Style Selector="TextBlock.small, SelectableTextBlock.small">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
         <Setter Property="Opacity" Value="0.6"/>
     </Style>
 
-    <Style Selector="TextBlock.caption">
+    <Style Selector="TextBlock.caption, SelectableTextBlock.caption">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeCaption}"/>
         <Setter Property="Opacity" Value="0.6"/>
+    </Style>
+
+    <Style Selector="SelectableTextBlock">
+        <Setter Property="SelectionBrush" Value="{DynamicResource Primary}"/>
+        <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextOnPrimary}"/>
     </Style>
 </Styles>

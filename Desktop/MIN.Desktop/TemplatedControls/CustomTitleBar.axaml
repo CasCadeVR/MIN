@@ -27,7 +27,9 @@
     <ControlTheme x:Key="{x:Type controls:CustomTitleBar}" TargetType="controls:CustomTitleBar">
         <Setter Property="Template">
             <ControlTemplate>
-                <Panel Background="Transparent">
+                <Panel
+                    WindowDecorationProperties.ElementRole="TitleBar"
+                    Background="Transparent">
                     <Border
                         Margin="8,4,0,0"
                         Padding="10, 0"
@@ -71,9 +73,9 @@
                         </Button>
                         <Button
                             x:Name="PART_CloseButton"
-                            Classes="close"
                             Classes.leftOff1="{Binding !#PART_MinimizeButton.IsVisible}"
                             Classes.leftOff2="{Binding !#PART_MaximizeButton.IsVisible}"
+                            Classes="close"
                             WindowDecorationProperties.ElementRole="CloseButton"
                             IsVisible="{TemplateBinding CanClose}"
                             Command="{Binding CloseCommand, RelativeSource={RelativeSource TemplatedParent}}">
@@ -93,14 +95,13 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="ShowTitle" Value="True" />
-        <Setter Property="WindowDecorationProperties.ElementRole" Value="TitleBar" />
         <Setter Property="IsVisible" Value="{Binding $parent[Window].(design:DesignAttachments.UseCustomTitleBar)}" />
 
         <Style Selector="^ /template/ StackPanel">
             <Setter Property="Orientation" Value="Horizontal" />
             <Setter Property="HorizontalAlignment" Value="Right" />
 
-            <Style Selector="^ >  Button">
+            <Style Selector="^ > Button">
                 <Setter Property="Width" Value="32" />
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Opacity" Value="1" />
@@ -108,7 +109,7 @@
                 <!--  This selector force overrides button style. TODO: fix ButtonStyle.axaml so this isn't necessary and move setters out of this selector.  -->
                 <Style Selector="^:nth-child(1n)">
                     <Setter Property="CornerRadius" Value="0" />
-                    <Setter Property="Background" Value="{DynamicResource PrimaryHover}" />
+                    <Setter Property="Background" Value="{DynamicResource Primary}" />
                 </Style>
 
                 <!--  Button[IsVisible=True]:nth-child(1) doesn't work to filter only visible buttons. Here, leftOff1 is used to check if previous button is on and leftOff2 is the next one over that.  -->
@@ -120,10 +121,6 @@
                     <Setter Property="Height" Value="11" />
                     <Setter Property="IsHitTestVisible" Value="False" />
                     <Setter Property="Opacity" Value="1" />
-                </Style>
-
-                <Style Selector="^:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="Red" />
                 </Style>
             </Style>
 

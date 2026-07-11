@@ -27,6 +27,8 @@
 
             <Color x:Key="SurfaceBackground">#1C1C1E</Color>     <!-- Window / page background -->
             <Color x:Key="SurfaceCard">#2C2C2E</Color>            <!-- Card, panel, raised surface -->
+            <Color x:Key="SurfaceCardHover">#434343</Color>        <!-- Cards hover -->
+            <Color x:Key="SurfaceCardPressed">#222224</Color>        <!-- Cards pressed -->
             <Color x:Key="SurfaceElevated">#3A3A3C</Color>        <!-- Modal, dropdown, tooltip -->
             <Color x:Key="SurfaceInput">#000000</Color>            <!-- TextBox / input background -->
             <Color x:Key="SurfaceTaskBar">#2C2C2E</Color>            <!-- Taskbar background -->
@@ -103,6 +105,8 @@
 
             <Color x:Key="SurfaceBackground">#818CF8</Color>     <!-- Window / page background -->
             <Color x:Key="SurfaceCard">#FFFFFF</Color>            <!-- Card, panel, raised surface -->
+            <Color x:Key="SurfaceCardHover">#d3d3d1</Color>        <!-- Cards hover -->
+            <Color x:Key="SurfaceCardPressed">#b8b8b8</Color>        <!-- Cards pressed -->
             <Color x:Key="SurfaceElevated">#c5c5c3</Color>        <!-- Modal, dropdown, tooltip -->
             <Color x:Key="SurfaceInput">#e9e9e9</Color>            <!-- TextBox / input background -->
             <Color x:Key="SurfaceTaskBar">#d3d3d1</Color>            <!-- Taskbar background -->

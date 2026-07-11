@@ -47,6 +47,11 @@ public partial class ChatViewModel : RoutableViewModelBase
     public partial string RoomName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Идентификатор комнаты
+    /// </summary>
+    public Guid RoomId => roomId;
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatViewModel"/>
     /// </summary>
     public ChatViewModel(ChatSideBarViewModel chatSideBarViewModel,
