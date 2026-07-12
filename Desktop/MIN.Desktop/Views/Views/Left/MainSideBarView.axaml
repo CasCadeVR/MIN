@@ -86,6 +86,7 @@
 
                                         <TextBlock
                                             VerticalAlignment="Center"
+                                            MaxLines="3"
                                             Text="{Binding LastMessageContent}" />
                                     </DockPanel>
                                 </StackPanel>

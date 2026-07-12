@@ -13,6 +13,7 @@
 
     <CornerRadius x:Key="CornerRadiusSmall">6</CornerRadius>
     <CornerRadius x:Key="CornerRadiusDefault">8</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusMedium">12</CornerRadius>
     <CornerRadius x:Key="CornerRadiusLarge">16</CornerRadius>
 
     <Thickness x:Key="PaddingSmall">4</Thickness>

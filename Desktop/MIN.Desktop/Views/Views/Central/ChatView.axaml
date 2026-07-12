@@ -1,7 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages.ChatViewModels"
+             xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
              xmlns:messages="using:MIN.Desktop.ViewModels.Cards.Messages"
              xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -80,7 +82,8 @@
 
             <!-- Messages -->
 
-            <ScrollViewer Classes="main">
+            <ScrollViewer behaviors:AutoScrollToBottomBehavior.AutoScroll="True"
+                  VerticalScrollBarVisibility="Auto" DockPanel.Dock="Bottom" Classes="main">
                 <ItemsControl ItemsSource="{Binding Messages}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -89,44 +92,55 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <designer:MultiDataTemplate UseCache="False">
-
                             <!-- Системное сообщение -->
 
                             <DataTemplate x:DataType="messages:SystemChatMessageViewModel">
-                               <Border Classes="message"
-                                    Classes.self="{Binding IsLocal}"
+                               <Border Classes="message-row"
                                     Classes.private="{Binding IsPrivate}"
                                     Classes.selected="{Binding IsSelected}">
 
-                                    <TextBlock Text="{Binding Text}" />
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        Text="{Binding Text}" />
                                 </Border>
                             </DataTemplate>
 
                             <!-- Текстовое сообщение -->
 
                             <DataTemplate x:DataType="messages:ChatTextMessageViewModel">
-                                <Border Classes="message"
-                                    Classes.self="{Binding IsLocal}"
+                                <Border Classes="message-row"
                                     Classes.private="{Binding IsPrivate}"
                                     Classes.selected="{Binding IsSelected}">
 
-                                    <StackPanel Spacing="4">
-                                        <DockPanel IsVisible="{Binding !RemoveHeaders}">
-                                            <TextBlock Classes="header5"
-                                                       Text="{Binding SenderName}" />
+                                    <Border Classes="message"
+                                        Padding="{DynamicResource PaddingMedium}"
+                                        Classes.self="{Binding IsLocal}"
+                                        HorizontalAlignment="{Binding IsLocal, Converter={converters:BoolToMessageAlignConverter}}">
+                                        <StackPanel Spacing="8">
+                                            <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
+                                                <TextBlock Classes="small"
+                                                    FontWeight="Bold"
+                                                    Text="{Binding SenderName}" />
 
-                                            <TextBlock Classes="caption"
-                                                       IsVisible="{Binding IsHost}"
-                                                       Text="Хост"
-                                                       DockPanel.Dock="Right" />
-                                        </DockPanel>
+                                                <TextBlock Classes="small"
+                                                    IsVisible="{Binding IsHost}"
+                                                    Text="Хост"
+                                                    DockPanel.Dock="Right" />
+                                            </DockPanel>
 
-                                        <StackPanel Orientation="Horizontal">
-                                             <TextBlock Text="{Binding ChatMessage.Content}" />
+                                            <DockPanel HorizontalSpacing="8">
+                                                <SelectableTextBlock
+                                                    Text="{Binding ChatMessage.Content}" />
 
-                                             <TextBlock Text="{Binding Timestamp}" />
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    Classes="caption"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Bottom"
+                                                    Text="{Binding Timestamp}" />
+                                            </DockPanel>
                                         </StackPanel>
-                                    </StackPanel>
+                                    </Border>
                                 </Border>
                             </DataTemplate>
                         </designer:MultiDataTemplate>

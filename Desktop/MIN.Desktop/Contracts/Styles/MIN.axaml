@@ -124,17 +124,12 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
         </Style>
 
-        <Style Selector="^.message">
-            <Setter Property="Background" Value="{DynamicResource ChatMessageTheir}" />
+        <Style Selector="^.message-row">
+            <Setter Property="Background" Value="Transparent" />
 
             <!-- Ховер сообщения -->
             <Style Selector="^:pointerover">
                 <Setter Property="Background" Value="{DynamicResource ChatMessageTheirHover}" />
-            </Style>
-
-            <!-- Своё сообщение -->
-            <Style Selector="^.self">
-                <Setter Property="Background" Value="{DynamicResource ChatMessageSelf}" />
             </Style>
 
             <!-- Ховер своего сообщения -->
@@ -150,6 +145,16 @@
             <!-- Выделенное -->
             <Style Selector="^.selected">
                 <Setter Property="Background" Value="{DynamicResource Primary}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^.message">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}" />
+            <Setter Property="Background" Value="{DynamicResource ChatMessageTheir}" />
+
+            <!-- Своё сообщение -->
+            <Style Selector="^.self">
+                <Setter Property="Background" Value="{DynamicResource ChatMessageSelf}" />
             </Style>
         </Style>
     </Style>
