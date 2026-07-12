@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
@@ -15,24 +16,24 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private void UpdateChatFlow()
     {
-        //chatFlow.Controls.Clear();
+        Messages.Clear();
 
-        //var messages = room.ChatHistory;
-        //RenderMessages(messages);
+        var messages = room.ChatHistory;
+        RenderMessages(messages);
 
-        //if (room.TotalMessageCount > StoreConstants.MessagesPageSize)
-        //{
-        //    ShowLoadMoreLabel();
-        //}
+        if (room.TotalMessageCount > StoreConstants.MessagesPageSize)
+        {
+            ShowLoadMoreLabel();
+        }
     }
 
     private void RenderMessages(List<IMessage> messages, bool appendOnTop = false)
     {
-        //for (var i = messages.Count - 1; i >= 0; i--)
-        //{
-        //    var index = appendOnTop ? (messages.Count - 1) - i : i;
-        //    AddMessageToChatFlow(messages[index], appendOnTop, scrollToBottom: false);
-        //}
+        for (var i = messages.Count - 1; i >= 0; i--)
+        {
+            var index = appendOnTop ? (messages.Count - 1) - i : i;
+            AddMessageToChatFlow(messages[index], appendOnTop, scrollToBottom: false);
+        }
     }
 
     #endregion

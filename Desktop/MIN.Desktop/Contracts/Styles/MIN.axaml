@@ -123,6 +123,35 @@
             <Setter Property="BorderThickness" Value="0 2 0 0" />
             <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
         </Style>
+
+        <Style Selector="^.message">
+            <Setter Property="Background" Value="{DynamicResource ChatMessageTheir}" />
+
+            <!-- Ховер сообщения -->
+            <Style Selector="^:pointerover">
+                <Setter Property="Background" Value="{DynamicResource ChatMessageTheirHover}" />
+            </Style>
+
+            <!-- Своё сообщение -->
+            <Style Selector="^.self">
+                <Setter Property="Background" Value="{DynamicResource ChatMessageSelf}" />
+            </Style>
+
+            <!-- Ховер своего сообщения -->
+            <Style Selector="^.self:pointerover">
+                <Setter Property="Background" Value="{DynamicResource ChatMessageSelfHover}" />
+            </Style>
+
+            <!-- Приватное -->
+            <Style Selector="^.private">
+                <Setter Property="Background" Value="{DynamicResource ChatPrivate}" />
+            </Style>
+
+            <!-- Выделенное -->
+            <Style Selector="^.selected">
+                <Setter Property="Background" Value="{DynamicResource Primary}" />
+            </Style>
+        </Style>
     </Style>
 
     <Style Selector="Svg">

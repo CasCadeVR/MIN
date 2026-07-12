@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Desktop.Infrastructure.Services;
@@ -27,6 +28,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// Отправляемое сообщение в textBox
     /// </summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SendMessageCommand))]
     public partial string SendingMessage { get; set; } = string.Empty;
 
     private void InitializeNotifications()
@@ -129,13 +131,9 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
+    [RelayCommand(CanExecute = nameof(IsMessageValid))]
     private async Task SendMessage()
     {
-        if (!IsMessageValid())
-        {
-            return;
-        }
-
         try
         {
             if (!string.IsNullOrWhiteSpace(SendingMessage))

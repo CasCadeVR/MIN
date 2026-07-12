@@ -145,8 +145,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         //if (result == DialogResult.Abort)
         //{
-        //    await DisposeAsync();
-        //    ChangeView(discoveryViewModel);
+        //    await Disconnect();
         //}
         //else if (result == DialogResult.OK
         //    && (editForm.Room.Name != room.Name

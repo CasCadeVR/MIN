@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Linq;
+using Avalonia.Collections;
+using MIN.Chat.Messaging;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Cards.Messages;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -13,123 +17,119 @@ namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 /// </summary>
 public partial class ChatViewModel : RoutableViewModelBase
 {
-    //private readonly int messageMinPadding = 4;
+    /// <summary>
+    /// Список сообщений для отображения в UI
+    /// </summary>
+    public AvaloniaList<BaseChatMessageViewModel> Messages { get; } = [];
+
+    private readonly int messageMinPadding = 4;
 
     private Guid? lastPrivateChatParticipantId;
-    //private Guid? privateChatParticipantId;
-    //private IMessage? lastChatMessage;
+    private IMessage? lastChatMessage;
     private int loadedPage = 1;
-    //private PrimaryLabel? loadMoreLabel;
-    //private int renderedMessageCount;
+    private SystemChatMessageViewModel? loadMoreLabel;
+    private int renderedMessageCount;
 
     private void AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool scrollToBottom = true, bool countTowardCap = true)
     {
-        //chatFlow.SuspendLayout();
-        //try
-        //{
-        //    var row = new ChatMessageRow();
-        //    var isSelfMessage = message.SenderId == localParticipant.Id;
-        //    var isHostMessage = room?.HostParticipant?.Id == message.SenderId;
-        //    var isCurrentPrivate = message.RecipientId == localParticipant.Id
-        //        || (message.SenderId == localParticipant.Id && message.RecipientId != null);
+        try
+        {
+            var isSelfMessage = message.SenderId == localParticipant.Id;
+            var isHostMessage = room?.HostParticipant?.Id == message.SenderId;
+            var isCurrentPrivate = message.RecipientId == localParticipant.Id
+                || (message.SenderId == localParticipant.Id && message.RecipientId != null);
 
-        //    Control? rowControl = null;
-        //    switch (message)
-        //    {
-        //        case ChatTextMessage m:
-        //            rowControl = CreateTextMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
-        //            break;
-        //        case SessionReadyMessage m:
-        //            rowControl = CreateSessionMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
-        //            break;
-        //        case FileMetadataMessage m:
-        //            rowControl = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
-        //                ? CreateChatImagePreviewMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop)
-        //                : CreateFileMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
-        //            break;
-        //        case SystemTextMessage m:
-        //            rowControl = CreateSystemMessageLabel(m, row);
-        //            break;
-        //        case IDescribable d:
-        //            rowControl = CreateDescribableLabel(d, row);
-        //            break;
-        //        default:
-        //            return;
-        //    }
+            BaseChatMessageViewModel? messageCard = null;
+            switch (message)
+            {
+                case ChatTextMessage m:
+                    messageCard = CreateTextMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                    break;
 
-        //    row.Width = chatFlow.Width;
-        //    row.container.Controls.Add(rowControl);
+                //case SessionReadyMessage m:
+                //    messageCard = CreateSessionMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                //    break;
 
-        //    if (ShouldTrimExcessMessages())
-        //    {
-        //        ReplaceOldestWithLoadMore();
-        //    }
+                //case FileMetadataMessage m:
+                //    messageCard = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
+                //        ? CreateChatImagePreviewMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop)
+                //        : CreateFileMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                //    break;
 
-        //    chatFlow.Controls.Add(row);
+                case SystemTextMessage m:
+                    messageCard = CreateSystemMessageLabel(m);
+                    break;
 
-        //    if (!appendOnTop)
-        //    {
-        //        chatFlow.Controls.SetChildIndex(chatFlow.Controls[^1], 0);
-        //    }
+                case IDescribable d:
+                    messageCard = CreateDescribableLabel(d);
+                    break;
+                default:
+                    return;
+            }
 
-        //    if (countTowardCap)
-        //    {
-        //        renderedMessageCount++;
-        //    }
+            if (ShouldTrimExcessMessages())
+            {
+                ReplaceOldestWithLoadMore();
+            }
 
-        //    if (rowControl is IResizableComponent resizableComponent)
-        //    {
-        //        row.Height = resizableComponent.ResizeOutOfPrefferedSize() + row.Padding.Top;
-        //        resizableComponent.AskParentForResize += PerformResize;
-        //    }
-        //}
-        //finally
-        //{
-        //    chatFlow.ResumeLayout(true);
-        //    if (scrollToBottom)
-        //    {
-        //        chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
-        //    }
-        //}
+            if (appendOnTop)
+            {
+                Messages.Add(messageCard);
+            }
+            else
+            {
+                Messages.Insert(0, messageCard);
+            }
+
+            if (countTowardCap)
+            {
+                renderedMessageCount++;
+            }
+
+            //if (messageCard is IResizableComponent resizableComponent)
+            //{
+            //    row.Height = resizableComponent.ResizeOutOfPrefferedSize() + row.Padding.Top;
+            //    resizableComponent.AskParentForResize += PerformResize;
+            //}
+        }
+        finally
+        {
+            //if (scrollToBottom)
+            //{
+            //    chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
+            //}
+        }
     }
 
     private void ShowLoadMoreLabel()
     {
-        //if (loadMoreLabel != null)
-        //{
-        //    return;
-        //}
+        if (loadMoreLabel != null)
+        {
+            return;
+        }
 
-        //var row = new ChatMessageRow();
-
-        //loadMoreLabel = new PrimaryLabel
-        //{
-        //    Text = "+ Загрузить ещё",
-        //    Anchor = AnchorStyles.None,
-        //    AutoSize = true,
-        //    Cursor = Cursors.Hand,
-        //};
+        loadMoreLabel = new SystemChatMessageViewModel
+        {
+            Text = "+ Загрузить ещё",
+        };
 
         //loadMoreLabel.Click += OnLoadMoreClicked;
 
-        //row.Height = loadMoreLabel.Height;
-        //row.Width = chatFlow.Width;
-        //row.container.Controls.Add(loadMoreLabel);
-
-        //chatFlow.Controls.Add(row);
+        Messages.Add(loadMoreLabel);
     }
 
     private void RemoveLoadMoreLabel()
     {
-        //if (loadMoreLabel == null)
-        //{
-        //    return;
-        //}
+        if (loadMoreLabel == null)
+        {
+            return;
+        }
 
         //loadMoreLabel.Click -= OnLoadMoreClicked;
-        //chatFlow.Controls.Remove(loadMoreLabel.Parent?.Parent);
-        //loadMoreLabel.Dispose();
-        //loadMoreLabel = null;
+
+        Messages.Remove(loadMoreLabel);
+        loadMoreLabel.Dispose();
+        loadMoreLabel = null;
     }
 
     private async void OnLoadMoreClicked(object? sender, EventArgs e)
@@ -180,26 +180,22 @@ public partial class ChatViewModel : RoutableViewModelBase
         ShowLoadMoreLabel();
     }
 
-    //private ChatTextMessageCard CreateTextMessageCard(ChatTextMessage msg, ChatMessageRow row,
-    //        bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
-    //{
-    //    var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
-    //    var minutesPassed = CalculateTimePadding(msg.Timestamp);
+    private ChatTextMessageViewModel CreateTextMessageCard(ChatTextMessage msg,
+            bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
+    {
+        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
+        var minutesPassed = CalculateTimePadding(msg.Timestamp);
 
-    //    var card = new ChatTextMessageCard(msg, isSelf, isHost, removeHeaders)
-    //    {
-    //        Anchor = isSelf ? AnchorStyles.Right : AnchorStyles.Left,
-    //        Margin = new Padding(20, 0, 20, 0),
-    //    };
+        var card = new ChatTextMessageViewModel(msg, isSelf, isHost, removeHeaders);
 
-    //    if (!withAppendOnTop)
-    //    {
-    //        InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
-    //    }
-    //    ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
-    //    lastChatMessage = msg;
-    //    return card;
-    //}
+        if (!withAppendOnTop)
+        {
+            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+        }
+
+        lastChatMessage = msg;
+        return card;
+    }
 
     //private ChatSessionMessageCard CreateSessionMessageCard(SessionReadyMessage msg, ChatMessageRow row,
     //       bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
@@ -281,51 +277,38 @@ public partial class ChatViewModel : RoutableViewModelBase
     //    return card;
     //}
 
-    //private static PrimaryLabel CreateSystemMessageLabel(SystemTextMessage msg, ChatMessageRow row)
-    //{
-    //    if (msg.RecipientId != null)
-    //    {
-    //        row.BackColor = ColorScheme.PrivateParticipantCardBackground;
-    //    }
+    private static SystemChatMessageViewModel CreateSystemMessageLabel(SystemTextMessage msg)
+    {
+        var card = new SystemChatMessageViewModel()
+        {
+            Text = msg.Content,
+            IsPrivate = msg.RecipientId != null,
+        };
 
-    //    var label = new PrimaryLabel
-    //    {
-    //        Text = msg.Content,
-    //        Anchor = AnchorStyles.None,
-    //        AutoEllipsis = true,
-    //        AutoSize = true,
-    //    };
+        return card;
+    }
 
-    //    row.Height = label.Height;
-    //    return label;
-    //}
+    private static SystemChatMessageViewModel CreateDescribableLabel(IDescribable describable)
+    {
+        var card = new SystemChatMessageViewModel()
+        {
+            Text = describable.GetDescription(),
+        };
 
-    //private static PrimaryLabel CreateDescribableLabel(IDescribable describable, ChatMessageRow row)
-    //{
-    //    var label = new PrimaryLabel
-    //    {
-    //        Text = describable.GetDescription(),
-    //        Anchor = AnchorStyles.None,
-    //        AutoEllipsis = true,
-    //        AutoSize = true,
-    //    };
-
-    //    row.Height = label.Height;
-    //    return label;
-    //}
+        return card;
+    }
 
     #region Helper methods
 
     private int CalculateTimePadding(DateTime messageTimestamp)
     {
-        //if (lastChatMessage == null)
-        //{
-        //    return 0;
-        //}
+        if (lastChatMessage == null)
+        {
+            return 0;
+        }
 
-        //var minutes = (int)(messageTimestamp - lastChatMessage.Timestamp).TotalMinutes;
-        //return minutes > messageMinPadding ? messageMinPadding * 2 : minutes + messageMinPadding;
-        return 0;
+        var minutes = (int)(messageTimestamp - lastChatMessage.Timestamp).TotalMinutes;
+        return minutes > messageMinPadding ? messageMinPadding * 2 : minutes + messageMinPadding;
     }
 
     private void SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false,
@@ -371,19 +354,6 @@ public partial class ChatViewModel : RoutableViewModelBase
             RecipientId = localParticipant.Id,
         });
     }
-
-    //private static void ApplyMessageRowStyling(ChatMessageRow row, bool isCurrentPrivate, int minutesPassed)
-    //{
-    //    if (isCurrentPrivate)
-    //    {
-    //        row.BackColor = ColorScheme.PrivateParticipantCardBackground;
-    //        row.Padding = new Padding(row.Padding.Left, minutesPassed, row.Padding.Right, row.Padding.Bottom);
-    //    }
-    //    else
-    //    {
-    //        row.Margin = new Padding(row.Margin.Left, minutesPassed, row.Margin.Right, row.Margin.Bottom);
-    //    }
-    //}
 
     #endregion
 }

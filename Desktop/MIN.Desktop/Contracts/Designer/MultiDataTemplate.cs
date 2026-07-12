@@ -49,7 +49,7 @@ public class MultiDataTemplate : AvaloniaList<DataTemplate>, IRecyclingDataTempl
     /// <inheritdoc />
     public Control Build(object? data) => GetTemplateForType(data?.GetType())?.Build(data) ?? new TextBlock { Text = "" };
 
-    private IDataTemplate? GetTemplateForType(Type? type)
+    private DataTemplate? GetTemplateForType(Type? type)
     {
         if (type == null)
         {

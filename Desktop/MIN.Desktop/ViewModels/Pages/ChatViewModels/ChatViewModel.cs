@@ -93,10 +93,13 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         ToggleSideBar();
         await chatSideBarViewModel.LoadRoomDataAndRefresh(room, localParticipant);
+
         this.room = room;
         RoomName = room.Name;
         this.connectionId = connectionId;
         roomId = room.Id;
+
+        UpdateChatFlow();
     }
 
     /// <summary>

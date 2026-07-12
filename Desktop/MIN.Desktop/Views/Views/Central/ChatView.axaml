@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages.ChatViewModels"
+             xmlns:messages="using:MIN.Desktop.ViewModels.Cards.Messages"
              xmlns:designer="using:MIN.Desktop.Contracts.Designer"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -60,11 +61,12 @@
                         </Button>
 
                         <Button
+                            Command="{Binding SendMessageCommand}"
                             VerticalAlignment="Bottom"
                             Classes="icon primary"
                             DockPanel.Dock="Right"
                             HotKey="Enter">
-                            <Svg Path="/Assets/Icons/send.svg" />
+                                <Svg Path="/Assets/Icons/send.svg" />
                         </Button>
 
                         <TextBox
@@ -76,9 +78,61 @@
                     </DockPanel>
              </Border>
 
-            <!-- room cards goes here -->
-            <Border Background="Transparent"
-                    CornerRadius="{DynamicResource CornerRadiusLarge}"/>
+            <!-- Messages -->
+
+            <ScrollViewer Classes="main">
+                <ItemsControl ItemsSource="{Binding Messages}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <designer:MultiDataTemplate UseCache="False">
+
+                            <!-- Системное сообщение -->
+
+                            <DataTemplate x:DataType="messages:SystemChatMessageViewModel">
+                               <Border Classes="message"
+                                    Classes.self="{Binding IsLocal}"
+                                    Classes.private="{Binding IsPrivate}"
+                                    Classes.selected="{Binding IsSelected}">
+
+                                    <TextBlock Text="{Binding Text}" />
+                                </Border>
+                            </DataTemplate>
+
+                            <!-- Текстовое сообщение -->
+
+                            <DataTemplate x:DataType="messages:ChatTextMessageViewModel">
+                                <Border Classes="message"
+                                    Classes.self="{Binding IsLocal}"
+                                    Classes.private="{Binding IsPrivate}"
+                                    Classes.selected="{Binding IsSelected}">
+
+                                    <StackPanel Spacing="4">
+                                        <DockPanel IsVisible="{Binding !RemoveHeaders}">
+                                            <TextBlock Classes="header5"
+                                                       Text="{Binding SenderName}" />
+
+                                            <TextBlock Classes="caption"
+                                                       IsVisible="{Binding IsHost}"
+                                                       Text="Хост"
+                                                       DockPanel.Dock="Right" />
+                                        </DockPanel>
+
+                                        <StackPanel Orientation="Horizontal">
+                                             <TextBlock Text="{Binding ChatMessage.Content}" />
+
+                                             <TextBlock Text="{Binding Timestamp}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </designer:MultiDataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </DockPanel>
     </Border>
 </UserControl>

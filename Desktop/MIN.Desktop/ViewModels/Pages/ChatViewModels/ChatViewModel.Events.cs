@@ -227,8 +227,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             {
                 InAppNotifier.Info(eventMessage.LeavingMessage);
             }
-            await DisposeAsync();
-            ChangeView(discoveryViewModel);
+            await Disconnect();
         }
     }
 
@@ -239,8 +238,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (e.NeedToDisconnect)
         {
             ClearParentFormEvents();
-            await DisposeAsync();
-            ChangeView(discoveryViewModel);
+            await Disconnect();
         }
     }
 }
