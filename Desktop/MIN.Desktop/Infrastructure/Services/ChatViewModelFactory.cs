@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using MIN.Desktop.Contracts.Interfaces;
-using MIN.Desktop.ViewModels.Pages;
+using MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
 namespace MIN.Desktop.Infrastructure.Services;
 

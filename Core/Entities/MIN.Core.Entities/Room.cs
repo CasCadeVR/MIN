@@ -46,7 +46,7 @@ public class Room : IRoomData
     /// Для новых участников всегда будет пустым,
     /// Нужен для сохранения комнаты на будующее
     /// </remarks>
-    public LocalRoomSettings LocalRoomSettings { get; set; }
+    public LocalRoomSettings? LocalRoomSettings { get; set; }
 
     /// <summary>
     /// Хост комнаты

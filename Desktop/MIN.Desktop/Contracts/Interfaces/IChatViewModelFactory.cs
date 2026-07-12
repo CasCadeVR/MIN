@@ -1,4 +1,4 @@
-﻿using MIN.Desktop.ViewModels.Pages;
+﻿using MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
 namespace MIN.Desktop.Contracts.Interfaces;
 

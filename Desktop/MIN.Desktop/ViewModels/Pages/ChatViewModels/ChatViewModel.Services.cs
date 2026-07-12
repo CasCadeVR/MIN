@@ -1,0 +1,181 @@
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using CommunityToolkit.Mvvm.ComponentModel;
+using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Enums;
+using MIN.Desktop.Infrastructure.Services;
+using MIN.Desktop.ViewModels.Base;
+using MIN.FileTransfer.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
+using MIN.Sessions.Core.Services.Contracts.Models;
+
+namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
+
+/// <summary>
+/// Методы использования сервисов для чата
+/// </summary>
+public partial class ChatViewModel : RoutableViewModelBase
+{
+    private Window parentWindow = null!;
+
+    /// <summary>
+    /// Отправляемое сообщение в textBox
+    /// </summary>
+    [ObservableProperty]
+    public partial string SendingMessage { get; set; } = string.Empty;
+
+    private void InitializeNotifications()
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+        {
+            parentWindow = lifetime.Windows[0];
+        }
+
+        featureCollection.Helper.NotificationService.OnNotificationClick += () =>
+        {
+            parentWindow.WindowState = WindowState.Normal;
+            parentWindow.Focus();
+        };
+
+        featureCollection.Helper.NotificationService.NotificationTurnOffClicked += ()
+            => room.LocalRoomSettings?.NotificationsEnabled = false;
+    }
+
+    private void NotifyIfNeeded(IDescribable describable)
+    {
+        if (room.LocalRoomSettings?.NotificationsEnabled == true
+            && (parentWindow.WindowState == WindowState.Minimized || !parentWindow.IsFocused))
+        {
+            featureCollection.Helper.NotificationService
+                .Notify(describable, room.Name);
+        }
+    }
+
+    private async Task OnDownloadRequested(FileMetadataMessage fileMetadata)
+    {
+        await featureCollection.Chat.ChatFileService.RequestFileDownloadAsync(roomId,
+            fileMetadata,
+            formCts.Token
+        );
+    }
+
+    private async Task OnSessionJoinRequested(SessionReadyMessage sessionReadyMessage)
+    {
+        try
+        {
+            await featureCollection.Chat.ChatSessionService.SendSessionJoinRequest(roomId,
+                sessionReadyMessage,
+                formCts.Token
+            );
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Error(e.Message);
+        }
+    }
+
+    private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
+    {
+        await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
+            fileMetadata,
+            formCts.Token
+        );
+    }
+
+    private void OnShowFileClicked(string? filePath)
+    {
+        if (!Path.Exists(filePath))
+        {
+            InAppNotifier.Warning("Файл не нашёлся");
+            return;
+        }
+
+        Process.Start("explorer.exe", $"/select,\"{filePath}\"");
+    }
+
+    private bool IsMessageValid() => !string.IsNullOrWhiteSpace(SendingMessage);
+    //|| multiFileAttachmentUploader.AttachedFiles.Any();
+
+    private async Task SendSelfStatusChangedMessage(OnlineStatus newStatus)
+    {
+#if DEBUG
+        return;
+#else
+        try
+        {
+            await featureCollection.Chat.ChatStatusService.SendSelfOnlineStatusChangedAsync(roomId,
+                newStatus,
+                formCts.Token
+            );
+        }
+        catch { }
+#endif
+    }
+
+    private async void SendSessionStartMessage(Session session)
+    {
+        try
+        {
+            await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, formCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Error(e.Message);
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (!IsMessageValid())
+        {
+            return;
+        }
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(SendingMessage))
+            {
+                await featureCollection.Chat.ChatTextService.SendMessageAsync(roomId,
+                    SendingMessage,
+                    chatSideBarViewModel.PrivateChatParticipantId,
+                    formCts.Token
+                );
+            }
+
+            //foreach (var fileAttachement in multiFileAttachmentUploader.AttachedFiles)
+            //{
+            //    if (featureCollection.FileTransfer.FileHelperService.IsFileImage(fileAttachement.FileName))
+            //    {
+            //        try
+            //        {
+            //            using var img = Image.FromFile(fileAttachement.FilePath);
+            //        }
+            //        catch (ArgumentException ex)
+            //        {
+            //            InAppNotifier.Error($"Не удалось загрузить файл {fileAttachement.FileName}: {ex.Message}");
+            //            return;
+            //        }
+            //    }
+
+            //    await featureCollection.Chat.ChatFileService.SendFileAsync(roomId,
+            //       fileAttachement.FileName,
+            //       fileAttachement.FilePath,
+            //       chatSideBarViewModel.PrivateChatParticipantId,
+            //       formCts.Token
+            //   );
+            //}
+
+            //HideMultiFileAttachmentUploader(withClear: true);
+            SendingMessage = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            InAppNotifier.Error($"Не удалось отправить сообщение: {ex.Message}");
+        }
+    }
+}

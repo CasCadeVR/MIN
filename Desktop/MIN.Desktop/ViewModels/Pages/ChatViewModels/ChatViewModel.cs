@@ -12,7 +12,7 @@ using MIN.Desktop.ViewModels.Base;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Extensions;
 
-namespace MIN.Desktop.ViewModels.Pages;
+namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
 /// <summary>
 /// Модель чата
@@ -75,6 +75,14 @@ public partial class ChatViewModel : RoutableViewModelBase
                     ChangeView(this.chatSideBarViewModel);
                 }
             };
+
+            SubscribeToEvents(featureCollection.Core.EventBus);
+            InitializeNotifications();
+            InitializeTypingTimer();
+            InitializeContextMenuStrips();
+            InitializeParentFormWindowStateEvents();
+            //HideMultiFileAttachmentUploader();
+            //HideStatusRow();
         }
     }
 
@@ -130,17 +138,15 @@ public partial class ChatViewModel : RoutableViewModelBase
         ChangeView(discoveryViewModel);
     }
 
-
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
     public async ValueTask DisposeAsync()
     {
-        //ClearParentFormEvents();
-        //foreach (var token in eventTokens)
-        //{
-        //    token.Dispose();
-        //}
-        //resizeTimer.Dispose();
-        //typingTimer.Dispose();
+        ClearParentFormEvents();
+        foreach (var token in eventTokens)
+        {
+            token.Dispose();
+        }
+        typingTimer.Dispose();
         formCts.Cancel();
         formCts.Dispose();
         await CleanUpAsync(roomId, connectionId, isHost: localParticipant.Id == room.HostParticipant.Id);

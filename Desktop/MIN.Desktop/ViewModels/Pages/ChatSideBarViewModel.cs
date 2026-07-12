@@ -8,16 +8,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
-using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
-using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Cards;
 using MIN.Desktop.ViewModels.Modals;
+using MIN.Desktop.ViewModels.Pages.ChatViewModels;
 using MIN.DI.FeatureCollection;
 
 namespace MIN.Desktop.ViewModels.Pages;
@@ -31,11 +29,8 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     private readonly IDialogService dialogService;
     private readonly CancellationTokenSource appCts = null!;
 
-    private HashSet<IDisposable> eventTokens = null!;
     private ParticipantInfo localParticipant = null!;
     private Guid roomId;
-
-    private Guid? privateChatParticipantId;
 
     /// <inheritdoc />
     public override ViewLayoutType LayoutType => ViewLayoutType.RightSideBar;
@@ -103,6 +98,11 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     public bool IsOpened { get; set; }
 
     /// <summary>
+    /// Id выбранного участника для приватного общения
+    /// </summary>
+    public Guid? PrivateChatParticipantId { get; set; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatSideBarViewModel"/>
     /// </summary>
     public ChatSideBarViewModel(IMinFeatureCollection featureCollection,
@@ -125,64 +125,7 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
                     IsOpened = false;
                 }
             };
-
-            SubscribeToEvents(featureCollection.Core.EventBus);
         }
-    }
-
-    private void SubscribeToEvents(IEventBus eventBus)
-    {
-        eventTokens =
-        [
-            eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
-            eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
-        ];
-    }
-
-    private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
-    {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
-        Room.AddParticipant(eventMessage.Message.Participant);
-
-        // TODO
-        //AddMessageToChatFlow(eventMessage.Message);
-        await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-        {
-            RoomId = roomId,
-            DescribableMessage = eventMessage.Message
-        }, cancellationToken);
-        //NotifyIfNeeded(eventMessage.Message);
-
-        UpdateParticipantFlow();
-    }
-
-    private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
-    {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
-        var leavingParticipantId = eventMessage.Message.Participant.Id;
-        Room.RemoveParticipantById(leavingParticipantId);
-        if (privateChatParticipantId == leavingParticipantId)
-        {
-            privateChatParticipantId = null;
-        }
-
-        //AddMessageToChatFlow(eventMessage.Message);
-        await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-        {
-            RoomId = roomId,
-            DescribableMessage = eventMessage.Message,
-        }, cancellationToken);
-        //NotifyIfNeeded(eventMessage.Message);
-
-        UpdateParticipantFlow();
     }
 
     /// <summary>
@@ -194,30 +137,35 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
         Room = room;
         roomId = room.Id;
 
-        UpdateStats();
+        UpdateStats(room);
+        UpdateParticipantFlow(room.CurrentParticipants);
     }
 
-    private void UpdateStats()
+    /// <summary>
+    /// Обновить статы
+    /// </summary>
+    public void UpdateStats(Room room)
     {
-        IsHost = Room.HostParticipant?.Id == localParticipant.Id;
-        HostName = IsHost ? "Ты" : Room.HostParticipant?.Name ?? "Неизвестно";
+        IsHost = room.HostParticipant?.Id == localParticipant.Id;
+        HostName = IsHost ? "Ты" : room.HostParticipant?.Name ?? "Неизвестно";
 
-        if (IpAddressParser.TryParseIpAddress(Room.ConnectionAddress, out var gottenIpAddress, out var port))
+        if (IpAddressParser.TryParseIpAddress(room.ConnectionAddress, out var gottenIpAddress, out var port))
         {
             Port = port.ToString();
             IpAddress = gottenIpAddress;
         }
 
-        Classroom = string.IsNullOrEmpty(Room.Cabinet) ? DesktopConstants.UndefinedPcName : Room.Cabinet;
-
-        UpdateParticipantFlow();
+        Classroom = string.IsNullOrEmpty(room.Cabinet) ? DesktopConstants.UndefinedPcName : room.Cabinet;
     }
 
-    private void UpdateParticipantFlow()
+    /// <summary>
+    /// Обновить список участников
+    /// </summary>
+    public void UpdateParticipantFlow(IEnumerable<Participant> participants)
     {
         RoomParticipants.Clear();
 
-        foreach (var participant in Room.CurrentParticipants)
+        foreach (var participant in participants)
         {
             var card = new ParticipantCardViewModel(participant,
                 featureCollection.Core.EventBus,
@@ -236,7 +184,7 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
                     }
                 }
 
-                privateChatParticipantId = selected ? participant.Id : null;
+                PrivateChatParticipantId = selected ? participant.Id : null;
             };
 
             card.OnKickParticipantClicked += async (participant) =>

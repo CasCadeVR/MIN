@@ -1,4 +1,4 @@
-using MIN.Desktop.ViewModels.Pages;
+using MIN.Desktop.ViewModels.Pages.ChatViewModels;
 using MIN.Desktop.Views.Base;
 
 namespace MIN.Desktop.Views.Central;

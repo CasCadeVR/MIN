@@ -3,7 +3,7 @@
 /// <summary>
 /// Локальные настройки комнаты
 /// </summary>
-public record struct LocalRoomSettings
+public record LocalRoomSettings
 {
     /// <summary>
     /// Включены ли уведомления

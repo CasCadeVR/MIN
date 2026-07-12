@@ -10,6 +10,7 @@ using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base.Interfaces;
 using MIN.Desktop.ViewModels.Pages;
+using MIN.Desktop.ViewModels.Pages.ChatViewModels;
 using MIN.Desktop.ViewModels.Windows;
 using MIN.Desktop.Views;
 using MIN.Desktop.Views.Base;
