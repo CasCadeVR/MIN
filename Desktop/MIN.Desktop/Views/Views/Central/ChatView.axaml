@@ -10,6 +10,7 @@
              mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="720"
              x:DataType="vm:ChatViewModel"
              Padding="{DynamicResource PaddingPage}"
+             MaxWidth="960"
              x:Class="MIN.Desktop.Views.Central.ChatView">
 
     <Design.DataContext>
@@ -22,44 +23,114 @@
                     Background="{DynamicResource SidebarBackground}"
                     Padding="{DynamicResource PaddingTopBar}"
                     CornerRadius="{DynamicResource CornerRadiusLarge}">
-                <DockPanel
-                    HorizontalSpacing="8">
 
-                    <Button
-                        Command="{Binding DisconnectCommand}"
-                        Content="Выйти" />
 
-                     <Button
-                        Command="{Binding ToggleSideBarCommand}"
-                        Classes="icon"
-                        DockPanel.Dock="Right">
-                            <Svg Path="/Assets/Icons/about.svg" />
-                     </Button>
+                      <DockPanel
+                        HorizontalSpacing="8">
 
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        Margin="6,0,0,0"
-                        Classes="header5"
-                        Text="Комната " />
+                        <Button
+                            Command="{Binding DisconnectCommand}"
+                            Content="Выйти" />
 
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        Classes="header3"
-                        Text="{Binding RoomName}" />
-                </DockPanel>
+                            <Button
+                            Command="{Binding ToggleSideBarCommand}"
+                            Classes="icon"
+                            DockPanel.Dock="Right">
+                                <Svg Path="/Assets/Icons/about.svg" />
+                            </Button>
+
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Margin="6,0,0,0"
+                            Classes="header5"
+                            Text="Комната " />
+
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Classes="header3"
+                            Text="{Binding RoomName}" />
+                    </DockPanel>
+              
             </Border>
 
              <Border DockPanel.Dock="Bottom"
                     Background="{DynamicResource SidebarBackground}"
                     Padding="{DynamicResource PaddingTopBar}"
                     CornerRadius="{DynamicResource CornerRadiusLarge}">
-    
+                <StackPanel>
+
+                    <ScrollViewer Classes="horizontal"
+                                  IsVisible="{Binding SomeFilesAttached}">
+                        <ItemsControl ItemsSource="{Binding AttachedFiles}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel
+                                        Spacing="8"
+                                        Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel
+                                        Spacing="8"
+                                        Orientation="Horizontal" >
+                                        <TextBlock
+                                            Text="{Binding File.FileName}" />
+
+                                        <Button
+                                            Classes="close"
+                                            Command="{Binding DeleteClickCommand}">
+                                                <Svg Path="/Assets/Icons/close.svg" />
+                                            </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <TextBlock Text="{Binding StatusContent}"
+                        Opacity="0.5"
+                        IsVisible="{Binding ShowStatus}"/>
+
+                     <!-- TextBox and actions -->
+
                     <DockPanel HorizontalSpacing="8" >
                         <Button
                             VerticalAlignment="Bottom"
                             DockPanel.Dock="Left"
                             Classes="icon">
                             <Svg Path="/Assets/Icons/plus.svg" />
+                             <Button.Flyout>
+                            <Flyout Placement="Top">
+                                <StackPanel>
+                                     <Button
+                                        Command="{Binding UploadFileClickCommand}"
+                                        Background="Transparent"
+                                        HorizontalContentAlignment="Stretch">
+
+                                        <StackPanel Orientation="Horizontal" >
+                                            <Svg Path="/Assets/Icons/file-upload.svg" />
+                                            <TextBlock VerticalAlignment="Center"
+                                                       Text="Отправить файл" />
+                                        </StackPanel>
+
+                                    </Button>
+                                   
+                                    <Button
+                                        Command="{Binding StartSessionClickCommand}"
+                                        Background="Transparent"
+                                        HorizontalContentAlignment="Stretch">
+
+                                        <StackPanel Orientation="Horizontal" >
+                                            <Svg Path="/Assets/Icons/rocket.svg" />
+                                            <TextBlock VerticalAlignment="Center"
+                                                       Text="Начать активность" />
+                                        </StackPanel>
+
+                                    </Button>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
                         </Button>
 
                         <Button
@@ -75,15 +146,17 @@
                             TextWrapping="Wrap"
                             AcceptsReturn="True"
                             MaxLines="10"
-                            Text="{Binding SendingMessage}"
+                            Text="{Binding SendingMessage, Converter={converters:TrimConverter}}"
                             PlaceholderText="Сообщение" />
                     </DockPanel>
+                </StackPanel>
              </Border>
 
             <!-- Messages -->
 
             <ScrollViewer behaviors:AutoScrollToBottomBehavior.AutoScroll="True"
-                  VerticalScrollBarVisibility="Auto" DockPanel.Dock="Bottom" Classes="main">
+                          VerticalAlignment="Bottom"
+                  VerticalScrollBarVisibility="Auto" Classes="main">
                 <ItemsControl ItemsSource="{Binding Messages}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -98,10 +171,20 @@
                                <Border Classes="message-row"
                                     Classes.private="{Binding IsPrivate}"
                                     Classes.selected="{Binding IsSelected}">
+                                    <Interaction.Behaviors>
+                                        <EventTriggerBehavior EventName="PointerPressed">
+                                             <InvokeCommandAction
+                                                    Command="{Binding ClickCommand}" />
+                                        </EventTriggerBehavior>
+                                    </Interaction.Behaviors>
 
-                                    <TextBlock
-                                        HorizontalAlignment="Center"
-                                        Text="{Binding Text}" />
+                                    <Border Classes="message system"
+                                        HorizontalAlignment="Center">
+                                        <TextBlock
+                                            Foreground="{DynamicResource TextOnPrimary}"
+                                            HorizontalAlignment="Center"
+                                            Text="{Binding Text}" />
+                                    </Border>
                                 </Border>
                             </DataTemplate>
 
@@ -109,13 +192,16 @@
 
                             <DataTemplate x:DataType="messages:ChatTextMessageViewModel">
                                 <Border Classes="message-row"
+                                    Margin="{Binding TimePadding}"
                                     Classes.private="{Binding IsPrivate}"
                                     Classes.selected="{Binding IsSelected}">
 
                                     <Border Classes="message"
                                         Padding="{DynamicResource PaddingMedium}"
                                         Classes.self="{Binding IsLocal}"
-                                        HorizontalAlignment="{Binding IsLocal, Converter={converters:BoolToMessageAlignConverter}}">
+                                        HorizontalAlignment="{Binding IsLocal,
+                                        Converter={converters:BoolToMessageAlignConverter}}">
+
                                         <StackPanel Spacing="8">
                                             <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
                                                 <TextBlock Classes="small"

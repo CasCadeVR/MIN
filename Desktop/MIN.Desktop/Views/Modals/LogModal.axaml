@@ -58,11 +58,6 @@
                                             Margin="0,0,0,8"
                                             Background="{Binding LogItem.LogLevel,
                                             Converter={converters:LogLevelToBrushConverter}}">
-                                         <Interaction.Behaviors>
-                                            <EventTriggerBehavior EventName="PointerPressed">
-                                                <InvokeCommandAction Command="{Binding CopyToClipboardCommand}" />
-                                            </EventTriggerBehavior>
-                                        </Interaction.Behaviors>
                                         <TextBlock
                                             Foreground="{DynamicResource TextOnPrimary}"
                                             Margin="4,0,0,0"

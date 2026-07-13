@@ -125,6 +125,7 @@
         </Style>
 
         <Style Selector="^.message-row">
+            <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
             <Setter Property="Background" Value="Transparent" />
 
             <!-- Ховер сообщения -->
@@ -155,6 +156,11 @@
             <!-- Своё сообщение -->
             <Style Selector="^.self">
                 <Setter Property="Background" Value="{DynamicResource ChatMessageSelf}" />
+            </Style>
+
+            <Style Selector="^.system">
+                <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
+                <Setter Property="Background" Value="{DynamicResource SystemBackground}" />
             </Style>
         </Style>
     </Style>

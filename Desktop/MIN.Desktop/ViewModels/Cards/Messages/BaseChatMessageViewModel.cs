@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages;
@@ -47,6 +48,11 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     public bool IsSelected { get; set; }
 
     /// <summary>
+    /// Margin между сообщениями по прошедшему времени
+    /// </summary>
+    public Thickness TimePadding { get; init; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
     /// </summary>
     public BaseChatMessageViewModel()
@@ -59,14 +65,16 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     /// </summary>
     public BaseChatMessageViewModel(string name,
        DateTime time,
+       Thickness timePadding,
        bool isLocal,
        bool isHost,
        bool removeHeaders)
     {
-        IsHost = isHost;
-        IsLocal = isLocal;
-        RemoveHeaders = removeHeaders;
         SenderName = name;
         Timestamp = time.ToShortTimeString();
+        TimePadding = timePadding;
+        IsLocal = isLocal;
+        IsHost = isHost;
+        RemoveHeaders = removeHeaders;
     }
 }

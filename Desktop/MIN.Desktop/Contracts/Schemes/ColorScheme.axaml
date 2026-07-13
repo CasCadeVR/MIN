@@ -93,6 +93,7 @@
 
             <Color x:Key="ChatPrivate">#818CF8</Color>           <!-- Private chat background -->
             <Color x:Key="ChatTimestamp">#71717A</Color>           <!-- Time label -->
+            <Color x:Key="SystemBackground">Transparent</Color>           <!-- Background color on system messages -->
 
             <x:String x:Key="SvgDefaultStyle">* { fill: #e9e9e9; stroke: #e9e9e9; }</x:String>
             <x:String x:Key="SvgAccentStyle">* { fill: #6366F1; stroke: #6366F1; }</x:String>
@@ -118,7 +119,7 @@
             <!-- SURFACE / BG    -->
             <!-- *************** -->
 
-            <Color x:Key="SurfaceBackground">#818CF8</Color>     <!-- Window / page background -->
+            <Color x:Key="SurfaceBackground">#bfc5f9</Color>     <!-- Window / page background -->
             <Color x:Key="SurfaceCard">#FFFFFF</Color>            <!-- Card, panel, raised surface -->
             <Color x:Key="SurfaceCardHover">#d3d3d1</Color>        <!-- Cards hover -->
             <Color x:Key="SurfaceCardPressed">#b8b8b8</Color>        <!-- Cards pressed -->
@@ -176,16 +177,17 @@
             <!-- CHAT MESSAGES   -->
             <!-- *************** -->
 
-            <Color x:Key="ChatMessageSelf">#6366F1</Color>         <!-- My message background -->
-            <Color x:Key="ChatMessageSelfHover">#8083ff</Color>         <!-- My message hover background -->
-            <Color x:Key="ChatMessageSelfPressed">#5b5edd</Color>         <!-- My message pressed background -->
+            <Color x:Key="ChatMessageSelf">#e2e4f9</Color>         <!-- My message background -->
+            <Color x:Key="ChatMessageSelfHover">#e2e4f9</Color>         <!-- My message hover background -->
+            <Color x:Key="ChatMessageSelfPressed">#dadcef</Color>         <!-- My message pressed background -->
 
-            <Color x:Key="ChatMessageTheir">#2C2C2E</Color>        <!-- Their message hover background -->
-            <Color x:Key="ChatMessageTheirHover">#4e4e51</Color>        <!-- Their message pressed background -->
-            <Color x:Key="ChatMessageTheirPressed">#222224</Color>        <!-- Their message background -->
+            <Color x:Key="ChatMessageTheir">#efefef</Color>        <!-- Their message hover background -->
+            <Color x:Key="ChatMessageTheirHover">#f7f7f7</Color>        <!-- Their message pressed background -->
+            <Color x:Key="ChatMessageTheirPressed">#dedede</Color>        <!-- Their message background -->
 
             <Color x:Key="ChatPrivate">#818CF8</Color>           <!-- Private chat background -->
             <Color x:Key="ChatTimestamp">#71717A</Color>           <!-- Time label -->
+            <Color x:Key="SystemBackground">#CC9ca1c8</Color>           <!-- Background color on system messages -->
 
             <x:String x:Key="SvgDefaultStyle">* { fill: #595959; stroke: #595959; }</x:String>
             <x:String x:Key="SvgAccentStyle">* { fill: #6366F1; stroke: #6366F1; }</x:String>

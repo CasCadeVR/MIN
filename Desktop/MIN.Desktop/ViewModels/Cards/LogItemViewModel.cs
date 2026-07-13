@@ -1,5 +1,4 @@
 using System;
-using CommunityToolkit.Mvvm.Input;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Helpers.Contracts.Models;
 
@@ -21,14 +20,5 @@ public partial class LogItemViewModel : CardViewModelBase, IDisposable
     public LogItemViewModel(LogItem logItem)
     {
         LogItem = logItem;
-    }
-
-    /// <summary>
-    /// Отписаться от события
-    /// </summary>
-    [RelayCommand]
-    public void CopyToClipboard()
-    {
-
     }
 }

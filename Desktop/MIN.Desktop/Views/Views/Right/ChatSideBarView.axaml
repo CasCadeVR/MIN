@@ -122,18 +122,18 @@
                                                             <Flyout Placement="Bottom">
                                                                  <StackPanel>
                                                                     <Button
-                                                                            Command="{Binding TogglePrivateChatCommand}"
-                                                                            Content="{Binding IsSelected,
-                                                                            Converter={converters:BoolToPrivateChatTextConverter}}"
-                                                                            Background="Transparent"
-                                                                            HorizontalContentAlignment="Stretch"
-                                                                            IsVisible="{Binding CanStartPrivateChat}" />
+                                                                        Command="{Binding TogglePrivateChatCommand}"
+                                                                        Content="{Binding IsSelected,
+                                                                        Converter={converters:BoolToPrivateChatTextConverter}}"
+                                                                        Background="Transparent"
+                                                                        HorizontalContentAlignment="Stretch"
+                                                                        IsVisible="{Binding CanStartPrivateChat}" />
                                                                     <Button
-                                                                            Command="{Binding KickParticipantCommand}"
-                                                                            Content="Кикнуть участника"
-                                                                            Background="Transparent"
-                                                                            HorizontalContentAlignment="Stretch"
-                                                                            IsVisible="{Binding CanKick}" />
+                                                                        Command="{Binding KickParticipantCommand}"
+                                                                        Content="Кикнуть участника"
+                                                                        Background="Transparent"
+                                                                        HorizontalContentAlignment="Stretch"
+                                                                        IsVisible="{Binding CanKick}" />
                                                                 </StackPanel>
                                                             </Flyout>
                                                         </Button.Flyout>

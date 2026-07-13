@@ -1,4 +1,8 @@
-﻿namespace MIN.Desktop.ViewModels.Cards.Messages;
+﻿using System;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
+
+namespace MIN.Desktop.ViewModels.Cards.Messages;
 
 /// <summary>
 /// Системное сообщение
@@ -11,7 +15,18 @@ public partial class SystemChatMessageViewModel : BaseChatMessageViewModel
     public string Text { get; init; } = string.Empty;
 
     /// <summary>
+    /// Событие по нажатию на системное сообщение
+    /// </summary>
+    public Func<Task>? OnClicked { get; set; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="SystemChatMessageViewModel"/>
     /// </summary>
     public SystemChatMessageViewModel() : base() { }
+
+    [RelayCommand]
+    private void Click()
+    {
+        OnClicked?.Invoke();
+    }
 }

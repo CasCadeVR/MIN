@@ -1,7 +1,8 @@
-﻿using MIN.Common.Core.Contracts.Interfaces;
+﻿using System;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Interfaces;
 
-namespace MIN.Desktop.Contracts.Models;
+namespace MIN.Desktop.Contracts.Models.Statuses;
 
 /// <summary>
 /// UI Статус отправки файла на сервер

@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Input;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Enums;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
@@ -38,85 +41,37 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     #endregion
 
-    #region Resizing
+    #region Chat action events
 
-    private void PerformResize()
+    [RelayCommand]
+    private async Task UploadFileClick()
     {
-        //chatFlow.SuspendLayout();
-        //try
-        //{
-        //    foreach (ChatMessageRow row in chatFlow.Controls)
-        //    {
-        //        row.Width = chatFlow.Width - row.Margin.Horizontal;
-        //        var child = row.container.Controls[0];
-        //        if (child is IResizableComponent resizableComponent)
-        //        {
-        //            row.Height = resizableComponent.ResizeOutOfPrefferedSize() + row.Padding.Top;
-        //        }
-        //    }
-        //}
-        //finally
-        //{
-        //    chatFlow.ResumeLayout();
-        //}
+        var files = await parentWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Выберите файл",
+            AllowMultiple = false,
+            FileTypeFilter =
+            [
+                new FilePickerFileType("Изображения") { Patterns = ["*.png", "*.jpg", "*.jpeg"] },
+                new FilePickerFileType("Все файлы") { Patterns = ["*.*"] },
+            ]
+        });
+
+        foreach (var file in files)
+        {
+            UploadFile(file.Path.LocalPath);
+        }
     }
 
-    private void chatFlow_Resize(object sender, EventArgs e)
+    [RelayCommand]
+    private void StartSessionClick()
     {
-        //if (Width <= MinimumSize.Width + splitContainerSideBar.Panel2.Width)
-        //{
-        //    if (!splitContainerSideBar.Panel2Collapsed)
-        //    {
-        //        splitContainerSideBar.Panel2Collapsed = true;
-        //    }
-        //    aboutButton.Visible = false;
-        //}
-        //else
-        //{
-        //    aboutButton.Visible = true;
-        //}
-
-        //if (!isResizing)
-        //{
-        //    isResizing = true;
-        //    resizeTimer.Stop();
-        //    resizeTimer.Start();
-        //}
-    }
-
-    private void participantsFlow_Resize(object sender, EventArgs e)
-    {
-        //foreach (ParticipantCard card in participantsFlow.Controls.OfType<ParticipantCard>())
-        //{
-        //    card.Width = participantsFlow.Width - participantsFlow.Margin.Horizontal * 2;
-        //}
-    }
-
-    #endregion
-
-    #region Context menu strips events
-
-    private void InitializeContextMenuStrips()
-    {
-        //chatActionContextMenuStrip.UploadFileClick += () =>
-        //{
-        //    if (openFileDialog.ShowDialog() == DialogResult.OK)
-        //    {
-        //        foreach (var filePath in openFileDialog.FileNames)
-        //        {
-        //            UploadFile(filePath);
-        //        }
-        //    }
-        //};
-
-        //chatActionContextMenuStrip.StartSessionClick += () =>
-        //{
-        //    var downloadedSessions = featureCollection.Sessions.SessionScanner.DownloadedSessions.Values;
-        //    if (!downloadedSessions.Any())
-        //    {
-        //        InAppNotifier.Info("У вас не установлена ни одна сессия!");
-        //        return;
-        //    }
+        var downloadedSessions = featureCollection.Sessions.SessionScanner.DownloadedSessions.Values;
+        if (!downloadedSessions.Any())
+        {
+            InAppNotifier.Info("У вас не установлена ни одна сессия!");
+            return;
+        }
 
         //    var choosingForm = new SessionChoosingForm(downloadedSessions);
         //    choosingForm.OnSelected += (session) =>
@@ -125,7 +80,6 @@ public partial class ChatViewModel : RoutableViewModelBase
         //        SendSessionStartMessage(session);
         //    };
         //    choosingForm.ShowDialog();
-        //};
     }
 
     #endregion
@@ -182,19 +136,6 @@ public partial class ChatViewModel : RoutableViewModelBase
             typingTimer.Stop();
             typingTimer.Start();
         }
-    }
-
-    private void messageTextBox_KeyPress(object sender, EventArgs e)
-    {
-        //if (e.KeyChar == '\r') // Enter
-        //{
-        //    if ((ModifierKeys & Keys.Shift) == 0)
-        //    {
-        //        _ = SendMessage();
-        //        ResizeMessageTextBox();
-        //        e.Handled = true;
-        //    }
-        //}
     }
 
     #endregion

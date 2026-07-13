@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -68,21 +69,42 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
 
-            OnNavigatedTo = (sender, e) =>
-            {
-                if (this.chatSideBarViewModel.IsOpened)
-                {
-                    ChangeView(this.chatSideBarViewModel);
-                }
-            };
+            OnNavigatedTo = ActionOnNavigatedTo;
+            OnNavigatedFrom = ActionOnNavigatedFrom;
 
             SubscribeToEvents(featureCollection.Core.EventBus);
             InitializeNotifications();
             InitializeTypingTimer();
-            InitializeContextMenuStrips();
             InitializeParentFormWindowStateEvents();
-            //HideMultiFileAttachmentUploader();
-            //HideStatusRow();
+            InitializeObservableCollections();
+        }
+    }
+
+    private void ActionOnNavigatedTo(object? sender, EventArgs e)
+    {
+        if (chatSideBarViewModel.IsOpened)
+        {
+            ChangeView(chatSideBarViewModel);
+        }
+
+        if (loadedPage == 1)
+        {
+            return;
+        }
+
+        loadedPage = 1;
+        var lastHistory = featureCollection.Core.RoomFactory
+            .GetOrCreateContext(roomId).Messages.GetRecentHistory();
+
+        RenderMessages(lastHistory.ToList());
+        ShowLoadMoreLabel();
+    }
+
+    private void ActionOnNavigatedFrom(object? sender, EventArgs e)
+    {
+        if (loadedPage > 1)
+        {
+            Messages.Clear();
         }
     }
 

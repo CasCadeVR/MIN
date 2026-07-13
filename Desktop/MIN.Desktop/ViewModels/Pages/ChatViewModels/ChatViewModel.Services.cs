@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Common.Core.Contracts.Interfaces;
@@ -100,8 +101,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         Process.Start("explorer.exe", $"/select,\"{filePath}\"");
     }
 
-    private bool IsMessageValid() => !string.IsNullOrWhiteSpace(SendingMessage);
-    //|| multiFileAttachmentUploader.AttachedFiles.Any();
+    private bool IsMessageValid() => !string.IsNullOrWhiteSpace(SendingMessage) || SomeFilesAttached;
 
     private async Task SendSelfStatusChangedMessage(OnlineStatus newStatus)
     {
@@ -145,30 +145,30 @@ public partial class ChatViewModel : RoutableViewModelBase
                 );
             }
 
-            //foreach (var fileAttachement in multiFileAttachmentUploader.AttachedFiles)
-            //{
-            //    if (featureCollection.FileTransfer.FileHelperService.IsFileImage(fileAttachement.FileName))
-            //    {
-            //        try
-            //        {
-            //            using var img = Image.FromFile(fileAttachement.FilePath);
-            //        }
-            //        catch (ArgumentException ex)
-            //        {
-            //            InAppNotifier.Error($"Не удалось загрузить файл {fileAttachement.FileName}: {ex.Message}");
-            //            return;
-            //        }
-            //    }
+            foreach (var fileAttachement in AttachedFiles)
+            {
+                if (featureCollection.FileTransfer.FileHelperService.IsFileImage(fileAttachement.File.FileName))
+                {
+                    try
+                    {
+                        using var bitmap = new Bitmap(fileAttachement.File.FilePath);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        InAppNotifier.Error($"Не удалось загрузить файл {fileAttachement.File.FileName}: {ex.Message}");
+                        return;
+                    }
+                }
 
-            //    await featureCollection.Chat.ChatFileService.SendFileAsync(roomId,
-            //       fileAttachement.FileName,
-            //       fileAttachement.FilePath,
-            //       chatSideBarViewModel.PrivateChatParticipantId,
-            //       formCts.Token
-            //   );
-            //}
+                await featureCollection.Chat.ChatFileService.SendFileAsync(roomId,
+                   fileAttachement.File.FileName,
+                   fileAttachement.File.FilePath,
+                   chatSideBarViewModel.PrivateChatParticipantId,
+                   formCts.Token
+               );
+            }
 
-            //HideMultiFileAttachmentUploader(withClear: true);
+            AttachedFiles.Clear();
             SendingMessage = string.Empty;
         }
         catch (Exception ex)

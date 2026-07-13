@@ -1,7 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Avalonia.Collections;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Constants;
+using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Cards;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -10,7 +18,26 @@ namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 /// </summary>
 public partial class ChatViewModel : RoutableViewModelBase
 {
-    //private readonly List<IDescribableStatus> currentStatuses = [];
+    private readonly AvaloniaList<IDescribableStatus> currentStatuses = [];
+
+    /// <summary>
+    /// Приложенные файлы
+    /// </summary>
+    public AvaloniaList<FileAttachmentViewModel> AttachedFiles { get; } = [];
+
+    /// <summary>
+    /// Показать статус
+    /// </summary>
+
+    public bool ShowStatus => currentStatuses.Count > 0;
+
+    [ObservableProperty]
+    public partial string StatusContent { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Показать приложенные файлаы
+    /// </summary>
+    public bool SomeFilesAttached => AttachedFiles.Count > 0;
 
     #region Update
 
@@ -31,114 +58,55 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         for (var i = messages.Count - 1; i >= 0; i--)
         {
-            var index = appendOnTop ? (messages.Count - 1) - i : i;
+            var index = appendOnTop ? messages.Count - 1 - i : i;
             AddMessageToChatFlow(messages[index], appendOnTop, scrollToBottom: false);
         }
+    }
+
+    private void InitializeObservableCollections()
+    {
+        currentStatuses.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowStatus));
+        AttachedFiles.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(SomeFilesAttached));
+            SendMessageCommand.NotifyCanExecuteChanged();
+        };
     }
 
     #endregion
 
     #region Helper methods
 
-    //private void AddStatus(IDescribableStatus status)
-    //{
-    //    currentStatuses.Add(status);
-    //    ShowStatusRow();
-    //    statusLabel.Text = string.Join(", ", currentStatuses.Select(x => x.GetDescription()));
-    //}
+    private void AddStatus(IDescribableStatus status)
+    {
+        currentStatuses.Add(status);
+        StatusContent = string.Join(", ", currentStatuses.Select(x => x.GetDescription()));
+    }
 
-    //private void RemoveStatus(Guid statusId)
-    //{
-    //    var foundStatus = currentStatuses.FirstOrDefault(x => x.Id == statusId);
-    //    if (foundStatus != null)
-    //    {
-    //        currentStatuses.Remove(foundStatus);
-    //    }
+    private void RemoveStatus(Guid statusId)
+    {
+        var foundStatus = currentStatuses.FirstOrDefault(x => x.Id == statusId);
+        if (foundStatus != null)
+        {
+            currentStatuses.Remove(foundStatus);
+        }
 
-    //    if (currentStatuses.Count == 0)
-    //    {
-    //        HideStatusRow();
-    //    }
-    //    else
-    //    {
-    //        statusLabel.Text = string.Join(", ", currentStatuses.Select(x => x.GetDescription()));
-    //    }
-    //}
+        if (currentStatuses.Count != 0)
+        {
+            StatusContent = string.Join(", ", currentStatuses.Select(x => x.GetDescription()));
+        }
+    }
 
-    //private void UploadFile(string filePath)
-    //{
-    //    ShowMultiFileAttachmentUploader();
-    //    multiFileAttachmentUploader.OnLastFileRemoved
-    //        += () => HideMultiFileAttachmentUploader();
-    //    var fileAttachment = new FileAttachment(Path.GetFileName(filePath),
-    //        filePath);
+    private void UploadFile(string filePath)
+    {
+        var fileAttachment = new FileAttachment(Path.GetFileName(filePath),
+            filePath);
 
-    //    multiFileAttachmentUploader.AddFileAttachment(fileAttachment);
-    //}
+        var fileVm = new FileAttachmentViewModel(fileAttachment);
+        fileVm.OnDelete += () => AttachedFiles.Remove(fileVm);
 
-    #endregion
-
-    #region Extra rows
-
-    //private void HideMultiFileAttachmentUploader(bool withClear = false)
-    //{
-    //    if (withClear)
-    //    {
-    //        multiFileAttachmentUploader.Clear();
-    //    }
-
-    //    var row = tableLayoutPanelButtons.GetRow(multiFileAttachmentUploader);
-
-    //    tableLayoutPanelButtons.SuspendLayout();
-
-    //    tableLayoutPanelButtons.RowStyles[row].Height = 0;
-
-    //    multiFileAttachmentUploader.Visible = false;
-    //    multiFileAttachmentUploader.OnLastFileRemoved = null;
-
-    //    tableLayoutPanelButtons.ResumeLayout(true);
-    //    ResizeMessageTextBox();
-    //}
-
-    //private void ShowMultiFileAttachmentUploader()
-    //{
-    //    var row = tableLayoutPanelButtons.GetRow(multiFileAttachmentUploader);
-
-    //    tableLayoutPanelButtons.SuspendLayout();
-
-    //    tableLayoutPanelButtons.RowStyles[row].Height = MultiFileAttachmentUploaderHeight;
-
-    //    multiFileAttachmentUploader.Visible = true;
-
-    //    tableLayoutPanelButtons.ResumeLayout(true);
-    //    ResizeMessageTextBox();
-    //}
-
-    //private void HideStatusRow()
-    //{
-    //    var row = tableLayoutPanelButtons.GetRow(statusLabel);
-
-    //    tableLayoutPanelButtons.SuspendLayout();
-
-    //    tableLayoutPanelButtons.RowStyles[row].Height = 0;
-    //    statusLabel.Visible = false;
-
-    //    tableLayoutPanelButtons.ResumeLayout(true);
-    //    ResizeMessageTextBox();
-    //}
-
-    //private void ShowStatusRow()
-    //{
-    //    var row = tableLayoutPanelButtons.GetRow(statusLabel);
-
-    //    tableLayoutPanelButtons.SuspendLayout();
-
-    //    tableLayoutPanelButtons.RowStyles[row].Height = StatsLabelHeight;
-    //    statusLabel.Visible = true;
-
-    //    tableLayoutPanelButtons.ResumeLayout(true);
-    //    ResizeMessageTextBox();
-    //}
+        AttachedFiles.Add(fileVm);
+    }
 
     #endregion
 }

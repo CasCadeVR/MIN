@@ -7,10 +7,12 @@ using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Stores.Contracts.Constants;
+using MIN.Desktop.Contracts.Models.Statuses;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.FileTransfer.Events;
+using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Sessions.Core.Events;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
@@ -98,11 +100,11 @@ public partial class ChatViewModel : RoutableViewModelBase
             return;
         }
 
-        //if (eventMessage.Direction == FileTransferDirection.Upload)
-        //{
-        //    var sanitizedSize = featureCollection.FileTransfer.FileHelperService.FormatFileSize(eventMessage.FileSize);
-        //    AddStatus(new FileUploadingStatus(eventMessage.TransferId, eventMessage.FileName, eventMessage.Sender.Name, sanitizedSize));
-        //}
+        if (eventMessage.Direction == FileTransferDirection.Upload)
+        {
+            var sanitizedSize = featureCollection.FileTransfer.FileHelperService.FormatFileSize(eventMessage.FileSize);
+            AddStatus(new FileUploadingStatus(eventMessage.TransferId, eventMessage.FileName, eventMessage.Sender.Name, sanitizedSize));
+        }
     }
 
     private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
@@ -112,7 +114,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             return;
         }
 
-        //RemoveStatus(eventMessage.TransferId);
+        RemoveStatus(eventMessage.TransferId);
     }
 
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
@@ -122,7 +124,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             return;
         }
 
-        //RemoveStatus(eventMessage.TransferId);
+        RemoveStatus(eventMessage.TransferId);
     }
 
     #endregion

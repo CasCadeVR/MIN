@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Collections;
 using MIN.Chat.Messaging;
 using MIN.Common.Core.Contracts.Interfaces;
@@ -22,7 +24,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// </summary>
     public AvaloniaList<BaseChatMessageViewModel> Messages { get; } = [];
 
-    private readonly int messageMinPadding = 4;
+    private readonly int messageMaxPadding = 8;
 
     private Guid? lastPrivateChatParticipantId;
     private IMessage? lastChatMessage;
@@ -32,73 +34,62 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private void AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool scrollToBottom = true, bool countTowardCap = true)
     {
-        try
+        var isSelfMessage = message.SenderId == localParticipant.Id;
+        var isHostMessage = room?.HostParticipant?.Id == message.SenderId;
+        var isCurrentPrivate = message.RecipientId == localParticipant.Id
+            || (message.SenderId == localParticipant.Id && message.RecipientId != null);
+
+        BaseChatMessageViewModel? messageCard = null;
+        switch (message)
         {
-            var isSelfMessage = message.SenderId == localParticipant.Id;
-            var isHostMessage = room?.HostParticipant?.Id == message.SenderId;
-            var isCurrentPrivate = message.RecipientId == localParticipant.Id
-                || (message.SenderId == localParticipant.Id && message.RecipientId != null);
+            case ChatTextMessage m:
+                messageCard = CreateTextMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                break;
 
-            BaseChatMessageViewModel? messageCard = null;
-            switch (message)
-            {
-                case ChatTextMessage m:
-                    messageCard = CreateTextMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
-                    break;
+            //case SessionReadyMessage m:
+            //    messageCard = CreateSessionMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+            //    break;
 
-                //case SessionReadyMessage m:
-                //    messageCard = CreateSessionMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
-                //    break;
+            //case FileMetadataMessage m:
+            //    messageCard = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
+            //        ? CreateChatImagePreviewMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop)
+            //        : CreateFileMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+            //    break;
 
-                //case FileMetadataMessage m:
-                //    messageCard = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
-                //        ? CreateChatImagePreviewMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop)
-                //        : CreateFileMessageCard(m, row, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
-                //    break;
+            case SystemTextMessage m:
+                messageCard = CreateSystemMessageLabel(m);
+                break;
 
-                case SystemTextMessage m:
-                    messageCard = CreateSystemMessageLabel(m);
-                    break;
-
-                case IDescribable d:
-                    messageCard = CreateDescribableLabel(d);
-                    break;
-                default:
-                    return;
-            }
-
-            if (ShouldTrimExcessMessages())
-            {
-                ReplaceOldestWithLoadMore();
-            }
-
-            if (appendOnTop)
-            {
-                Messages.Add(messageCard);
-            }
-            else
-            {
-                Messages.Insert(0, messageCard);
-            }
-
-            if (countTowardCap)
-            {
-                renderedMessageCount++;
-            }
-
-            //if (messageCard is IResizableComponent resizableComponent)
-            //{
-            //    row.Height = resizableComponent.ResizeOutOfPrefferedSize() + row.Padding.Top;
-            //    resizableComponent.AskParentForResize += PerformResize;
-            //}
+            case IDescribable d:
+                messageCard = CreateDescribableLabel(d);
+                break;
+            default:
+                return;
         }
-        finally
+
+        if (ShouldTrimExcessMessages())
         {
-            //if (scrollToBottom)
-            //{
-            //    chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
-            //}
+            ReplaceOldestWithLoadMore();
         }
+
+        if (appendOnTop)
+        {
+            Messages.Insert(0, messageCard);
+        }
+        else
+        {
+            Messages.Add(messageCard);
+        }
+
+        if (countTowardCap)
+        {
+            renderedMessageCount++;
+        }
+
+        //if (scrollToBottom)
+        //{
+        //    chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
+        //}
     }
 
     private void ShowLoadMoreLabel()
@@ -113,9 +104,9 @@ public partial class ChatViewModel : RoutableViewModelBase
             Text = "+ Загрузить ещё",
         };
 
-        //loadMoreLabel.Click += OnLoadMoreClicked;
+        loadMoreLabel.OnClicked += OnLoadMoreClicked;
 
-        Messages.Add(loadMoreLabel);
+        Messages.Insert(0, loadMoreLabel);
     }
 
     private void RemoveLoadMoreLabel()
@@ -125,14 +116,14 @@ public partial class ChatViewModel : RoutableViewModelBase
             return;
         }
 
-        //loadMoreLabel.Click -= OnLoadMoreClicked;
+        loadMoreLabel.OnClicked -= OnLoadMoreClicked;
 
         Messages.Remove(loadMoreLabel);
         loadMoreLabel.Dispose();
         loadMoreLabel = null;
     }
 
-    private async void OnLoadMoreClicked(object? sender, EventArgs e)
+    private async Task OnLoadMoreClicked()
     {
         var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
         var memoryCount = context.Messages.GetMessageCount();
@@ -160,22 +151,21 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private bool ShouldTrimExcessMessages()
     {
-        //var maxVisible = loadedPage * StoreConstants.MessagesPageSize;
-        //return renderedMessageCount >= maxVisible;
-        return true;
+        var maxVisible = loadedPage * StoreConstants.MessagesPageSize;
+        return renderedMessageCount >= maxVisible;
     }
 
     private void ReplaceOldestWithLoadMore()
     {
-        //for (var i = chatFlow.Controls.Count - 1; i >= 0; i--)
-        //{
-        //    if (chatFlow.Controls[i] is ChatMessageRow row && row.container.Controls[0] != loadMoreLabel)
-        //    {
-        //        chatFlow.Controls.RemoveAt(i);
-        //        renderedMessageCount--;
-        //        break;
-        //    }
-        //}
+        for (var i = 0; i < Messages.Count; i++)
+        {
+            if (Messages[i] != loadMoreLabel)
+            {
+                Messages.RemoveAt(i);
+                renderedMessageCount--;
+                break;
+            }
+        }
 
         ShowLoadMoreLabel();
     }
@@ -184,9 +174,9 @@ public partial class ChatViewModel : RoutableViewModelBase
             bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
-        var minutesPassed = CalculateTimePadding(msg.Timestamp);
+        var timePadding = CalculateTimePadding(msg.Timestamp);
 
-        var card = new ChatTextMessageViewModel(msg, isSelf, isHost, removeHeaders);
+        var card = new ChatTextMessageViewModel(msg, timePadding, isSelf, isHost, removeHeaders);
 
         if (!withAppendOnTop)
         {
@@ -300,15 +290,17 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     #region Helper methods
 
-    private int CalculateTimePadding(DateTime messageTimestamp)
+
+    private Thickness CalculateTimePadding(DateTime timestamp)
     {
         if (lastChatMessage == null)
         {
-            return 0;
+            return new Thickness(0, 0, 0, 0);
         }
 
-        var minutes = (int)(messageTimestamp - lastChatMessage.Timestamp).TotalMinutes;
-        return minutes > messageMinPadding ? messageMinPadding * 2 : minutes + messageMinPadding;
+        var minutes = (int)(timestamp - lastChatMessage.Timestamp).TotalMinutes;
+        var gap = Math.Min(minutes, messageMaxPadding);
+        return new Thickness(0, gap, 0, 0);
     }
 
     private void SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false,
