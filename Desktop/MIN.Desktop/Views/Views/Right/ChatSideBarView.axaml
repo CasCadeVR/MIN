@@ -119,20 +119,37 @@
                                                             IsVisible="{Binding CanInterract}" >
                                                         <Svg Path="/Assets/Icons/about-card.svg" />
                                                          <Button.Flyout>
-                                                            <Flyout Placement="Bottom">
+
+
+
+                                                            <Flyout FlyoutPresenterClasses="buttons"
+                                                                    Placement="Bottom">
                                                                  <StackPanel>
-                                                                    <Button
+                                                                     <Button
                                                                         Classes="no-background"
-                                                                        Command="{Binding TogglePrivateChatCommand}"
-                                                                        Content="{Binding IsSelected,
-                                                                        Converter={converters:BoolToPrivateChatTextConverter}}"
                                                                         HorizontalContentAlignment="Stretch"
-                                                                        IsVisible="{Binding CanStartPrivateChat}" />
+                                                                        IsVisible="{Binding CanStartPrivateChat}"
+                                                                        Command="{Binding TogglePrivateChatCommand}">
+
+                                                                        <StackPanel>
+                                                                            <Svg Path="/Assets/Icons/private-chat.svg" />
+                                                                            <TextBlock VerticalAlignment="Center"
+                                                                                Text="{Binding IsSelected,
+                                                                                Converter={converters:BoolToPrivateChatTextConverter}}" />
+                                                                        </StackPanel>
+                                                                    </Button>
+                                   
                                                                     <Button
                                                                         Command="{Binding KickParticipantCommand}"
-                                                                        Background="Transparent"
+                                                                        Classes="no-background"
                                                                         HorizontalContentAlignment="Stretch"
-                                                                        IsVisible="{Binding CanKick}" />
+                                                                        IsVisible="{Binding CanKick}">
+                                                                        <StackPanel>
+                                                                            <Svg Path="/Assets/Icons/close.svg" />
+                                                                            <TextBlock VerticalAlignment="Center"
+                                                                                       Text="Кикнуть участника" />
+                                                                        </StackPanel>
+                                                                    </Button>
                                                                 </StackPanel>
                                                             </Flyout>
                                                         </Button.Flyout>

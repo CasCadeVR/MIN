@@ -181,7 +181,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
-        var card = new ChatTextMessageViewModel(msg, timePadding, isSelf, isHost, removeHeaders);
+        var card = new ChatTextMessageViewModel(msg, timePadding, isSelf, isHost, removeHeaders, parentWindow.Clipboard);
 
         if (!withAppendOnTop)
         {
@@ -200,11 +200,10 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         var card = new ChatFileMessageViewModel(featureCollection.FileTransfer,
             featureCollection.Core.EventBus, msg, timePadding,
-            localParticipant, isHost, removeHeaders);
+            localParticipant, isHost, removeHeaders, parentWindow.Clipboard);
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
-        card.OnCardContextMenuStripClicked += () => OnShowFileClicked(msg.FilePath);
 
         if (!withAppendOnTop)
         {

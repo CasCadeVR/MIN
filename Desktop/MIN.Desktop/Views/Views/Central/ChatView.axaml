@@ -109,32 +109,29 @@
                             Classes="icon">
                             <Svg Path="/Assets/Icons/plus.svg" />
                              <Button.Flyout>
-                            <Flyout Placement="Top">
+                            <Flyout FlyoutPresenterClasses="buttons"
+                                    Placement="Top">
                                 <StackPanel>
                                      <Button
-                                        Command="{Binding UploadFileClickCommand}"
-                                        Background="Transparent"
-                                        HorizontalContentAlignment="Stretch">
+                                        Classes="no-background"
+                                        Command="{Binding UploadFileClickCommand}">
 
-                                        <StackPanel Orientation="Horizontal" >
+                                        <StackPanel>
                                             <Svg Path="/Assets/Icons/file-upload.svg" />
                                             <TextBlock VerticalAlignment="Center"
                                                        Text="Отправить файл" />
                                         </StackPanel>
-
                                     </Button>
                                    
                                     <Button
-                                        Command="{Binding StartSessionClickCommand}"
-                                        Background="Transparent"
-                                        HorizontalContentAlignment="Stretch">
+                                        Classes="no-background"
+                                        Command="{Binding StartSessionClickCommand}">
 
-                                        <StackPanel Orientation="Horizontal" >
+                                        <StackPanel>
                                             <Svg Path="/Assets/Icons/rocket.svg" />
                                             <TextBlock VerticalAlignment="Center"
                                                        Text="Начать активность" />
                                         </StackPanel>
-
                                     </Button>
                                 </StackPanel>
                             </Flyout>
@@ -209,6 +206,22 @@
                                         Classes.self="{Binding IsLocal}"
                                         HorizontalAlignment="{Binding IsLocal,
                                         Converter={converters:BoolToMessageAlignConverter}}">
+                                        <Border.ContextFlyout>
+                                            <Flyout Placement="Right">
+                                                <StackPanel>
+                                                    <Button
+                                                        Command="{Binding CopyToClipboardCommand}"
+                                                        Classes="no-background"
+                                                        HorizontalContentAlignment="Stretch">
+                                                        <StackPanel Spacing="8" Orientation="Horizontal" >
+                                                            <Svg Path="/Assets/Icons/copy.svg" />
+                                                            <TextBlock VerticalAlignment="Center"
+                                                                Text="Скопировать текст" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Flyout>
+                                        </Border.ContextFlyout>
 
                                         <StackPanel Spacing="8">
                                             <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
@@ -218,6 +231,8 @@
 
                                                 <TextBlock Classes="small"
                                                     IsVisible="{Binding IsHost}"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
                                                     Text="Хост"
                                                     DockPanel.Dock="Right" />
                                             </DockPanel>
@@ -252,11 +267,30 @@
                                         Classes.self="{Binding IsLocal}"
                                         HorizontalAlignment="{Binding IsLocal,
                                         Converter={converters:BoolToMessageAlignConverter}}">
-                                        <Interaction.Behaviors>
-                                            <EventTriggerBehavior EventName="RightTapped">
+                                        <Border.ContextFlyout>
+                                            <Flyout FlyoutPresenterClasses="buttons"
+                                                    Placement="Right">
+                                                <StackPanel>
+                                                    <Button Command="{Binding CopyNameToClipboardCommand}"
+                                                            Classes="no-background">
+                                                        <StackPanel>
+                                                            <Svg Path="/Assets/Icons/copy.svg" />
+                                                            <TextBlock VerticalAlignment="Center"
+                                                                Text="Скопировать имя" />
+                                                        </StackPanel>
+                                                    </Button>
 
-                                            </EventTriggerBehavior>
-                                        </Interaction.Behaviors>
+                                                    <Button Command="{Binding ShowInFolderCommand}"
+                                                            Classes="no-background">
+                                                        <StackPanel>
+                                                            <Svg Path="/Assets/Icons/folder.svg" />
+                                                            <TextBlock VerticalAlignment="Center"
+                                                                Text="Показать в проводнике" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Flyout>
+                                        </Border.ContextFlyout>
 
                                         <StackPanel Spacing="8">
                                             <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
@@ -266,6 +300,8 @@
 
                                                 <TextBlock Classes="small"
                                                     IsVisible="{Binding IsHost}"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
                                                     Text="Хост"
                                                     DockPanel.Dock="Right" />
                                             </DockPanel>
@@ -289,13 +325,20 @@
                                                         Grid.RowSpan="3"
                                                         Grid.Row="0"
                                                         Grid.Column="0"
+                                                        Height="70"
+                                                        Width="70"
+                                                        Margin="10,0"
                                                         Background="{DynamicResource Secondary}">
-                                                        <Button 
-                                                            Height="60" Width="60" >
-                                                            <Panel>
+                                                        <Button
+                                                            Classes="file"
+                                                            Command="{Binding InteractionClickCommand}">
+                                                            <Panel
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center">
                                                             <Svg
                                                                 Height="50" Width="50"
-                                                                Path="/Assets/Icons/file.svg" />
+                                                                Path="{Binding FileDownloadState,
+                                                                Converter={converters:FileDownloadStateToSvgConverter}}" />
 
                                                             <TextBlock
                                                                 HorizontalAlignment="Center"
@@ -303,9 +346,17 @@
                                                                 Text="{Binding InteractionFileStatus}" />
                                                             </Panel>
                                                         </Button>
+                                                        <Interaction.Behaviors>
+                                                            <EventTriggerBehavior EventName="PointerEntered">
+                                                                <InvokeCommandAction Command="{Binding InteractionMouseEnterCommand}" />
+                                                            </EventTriggerBehavior>
+                                                            <EventTriggerBehavior EventName="PointerExited">
+                                                                <InvokeCommandAction Command="{Binding InteractionMouseLeaveCommand}" />
+                                                            </EventTriggerBehavior>
+                                                        </Interaction.Behaviors>
                                                     </Border>
 
-                                                    <TextBlock
+                                                    <SelectableTextBlock
                                                         Grid.Row="0"
                                                         Grid.Column="1"
                                                         Classes="header5"

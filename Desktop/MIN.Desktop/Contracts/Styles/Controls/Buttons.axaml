@@ -55,6 +55,8 @@
                                 Text="В сети" />
                         </StackPanel>
                     </Button>
+                    <Button Classes="no-background">Без фона</Button>
+
                 </StackPanel>
             </Border>
         </Border>
@@ -63,7 +65,7 @@
     <!-- Primary (Default) -->
     <Style Selector="Button">
         <Setter Property="Background" Value="{DynamicResource Primary}"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextOnPrimary}"/>
         <Setter Property="Padding" Value="{DynamicResource PaddingButton}"/>
         <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusDefault}"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -77,14 +79,26 @@
             </Transitions>
         </Setter>
 
+        <Style Selector="^ TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextOnPrimary}" />
+        </Style>
+
+        <Style Selector="^ SelectableTextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextOnPrimary}" />
+        </Style>
+
+        <Style Selector="^ Svg">
+            <Setter Property="Css" Value="{DynamicResource SvgPrimaryStyle}" />
+        </Style>
+
+         <Style Selector="^:pressed /template/ ContentPresenter">
+            <Setter Property="RenderTransform" Value="scale(0.98)"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryPressed}"/>
+        </Style>
+
         <Style Selector="^:pointerover">
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Background" Value="{DynamicResource PrimaryHover}"/>
-        </Style>
-
-        <Style Selector="^:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource PrimaryPressed}"/>
-            <Setter Property="RenderTransform" Value="scale(0.98)"/>
         </Style>
 
         <Style Selector="^.busy">
@@ -137,6 +151,7 @@
             <Style Selector="^ Svg">
                 <Setter Property="Width" Value="{DynamicResource IconButton}" />
                 <Setter Property="Height" Value="{DynamicResource IconButton}" />
+                <Setter Property="Css" Value="{DynamicResource SvgTextStyle}" />
             </Style>
 
              <Style Selector="^.small">
@@ -158,6 +173,14 @@
             <Setter Property="Padding" Value="{DynamicResource PaddingCard}" />
             <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+
+             <Style Selector="^ TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            </Style>
+
+            <Style Selector="^ SelectableTextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            </Style>
 
             <Style Selector="^:pointerover">
                 <Setter Property="Background" Value="{DynamicResource SurfaceCardHover}" />
@@ -194,6 +217,37 @@
 
         <Style Selector="^.no-background">
             <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+
+            <Style Selector="^ TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            </Style>
+
+            <Style Selector="^ Svg">
+                <Setter Property="Css" Value="{DynamicResource SvgDefaultStyle}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^.no-background:pressed  /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardPressed}" />
+            <Setter Property="Opacity" Value="0.8" />
+        </Style>
+
+        <Style Selector="^.no-background:pointerover">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Opacity" Value="0.9" />
+        </Style>
+
+        <Style Selector="^.file">
+            <Setter Property="Background" Value="{DynamicResource FileMessageIconBackground}"/>
+        </Style>
+
+        <Style Selector="^.file:pressed  /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource FileMessageIconBackgroundPressed}" />
+        </Style>
+
+        <Style Selector="^.file:pointerover">
+            <Setter Property="Background" Value="{DynamicResource FileMessageIconBackgroundHover}" />
         </Style>
 
         <!-- Secondary -->

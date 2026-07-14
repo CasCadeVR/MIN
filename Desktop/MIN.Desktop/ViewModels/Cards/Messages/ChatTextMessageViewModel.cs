@@ -1,5 +1,9 @@
-﻿using Avalonia;
+﻿using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Input.Platform;
+using CommunityToolkit.Mvvm.Input;
 using MIN.Chat.Messaging;
+using MIN.Desktop.Infrastructure.Services;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages;
 
@@ -8,6 +12,8 @@ namespace MIN.Desktop.ViewModels.Cards.Messages;
 /// </summary>
 public partial class ChatTextMessageViewModel : BaseChatMessageViewModel
 {
+    private readonly IClipboard? clipboard;
+
     /// <summary>
     /// Содержимое сообщения
     /// </summary>
@@ -20,14 +26,27 @@ public partial class ChatTextMessageViewModel : BaseChatMessageViewModel
         Thickness timePadding,
         bool isLocal,
         bool isHostMessage,
-        bool removeHeaders)
+        bool removeHeaders,
+        IClipboard? clipboard)
         : base(chatMessage.Sender.Name,
             chatMessage.Timestamp,
             timePadding,
             isLocal,
             isHostMessage,
-            removeHeaders)
+            removeHeaders,
+            chatMessage.RecipientId != null)
     {
         ChatMessage = chatMessage;
+        this.clipboard = clipboard;
+    }
+
+    [RelayCommand]
+    private async Task CopyToClipboard()
+    {
+        if (clipboard != null)
+        {
+            await clipboard.SetTextAsync(ChatMessage.Content);
+            InAppNotifier.Info("Скопировано в буфер обмена");
+        }
     }
 }

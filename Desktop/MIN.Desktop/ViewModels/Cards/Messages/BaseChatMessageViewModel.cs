@@ -68,7 +68,8 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
        Thickness timePadding,
        bool isLocal,
        bool isHost,
-       bool removeHeaders)
+       bool removeHeaders,
+       bool isPrivate)
     {
         SenderName = name;
         Timestamp = time.ToShortTimeString();
@@ -76,5 +77,6 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
         IsLocal = isLocal;
         IsHost = isHost;
         RemoveHeaders = removeHeaders;
+        IsPrivate = isPrivate;
     }
 }

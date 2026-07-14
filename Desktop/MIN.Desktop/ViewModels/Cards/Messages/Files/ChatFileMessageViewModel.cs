@@ -5,9 +5,12 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
+using MIN.Desktop.Contracts.Models.Enums;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.FileTransfer.Events;
@@ -22,6 +25,7 @@ public partial class ChatFileMessageViewModel : BaseChatMessageViewModel
 {
     private readonly IFileTransferFeatureCollection fileTransferFeatureCollection = null!;
     private readonly IEventBus eventBus = null!;
+    private readonly IClipboard? clipboard;
     private readonly ParticipantInfo localParticipant = null!;
     private readonly string cachedFormat = string.Empty;
 
@@ -59,6 +63,12 @@ public partial class ChatFileMessageViewModel : BaseChatMessageViewModel
     public partial string UniversalFileStatus { get; set; } = string.Empty;
 
     /// <summary>
+    /// Состояния скачивания файла
+    /// </summary>
+    [ObservableProperty]
+    public partial FileDownloadState FileDownloadState { get; set; } = FileDownloadState.None;
+
+    /// <summary>
     /// Событие, возникающее по нажатию на кнопку скачать
     /// </summary>
     public event Func<Task>? OnDownloadRequested;
@@ -69,11 +79,6 @@ public partial class ChatFileMessageViewModel : BaseChatMessageViewModel
     public event Func<Task>? OnCancelRequested;
 
     /// <summary>
-    /// Событие по нажатию на контекстное меню карточки
-    /// </summary>
-    public Action? OnCardContextMenuStripClicked { get; set; }
-
-    /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatFileMessageViewModel"/>
     /// </summary>
     public ChatFileMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
@@ -82,17 +87,20 @@ public partial class ChatFileMessageViewModel : BaseChatMessageViewModel
         Thickness timePadding,
         ParticipantInfo localParticipant,
         bool isHostMessage,
-        bool removeHeaders)
+        bool removeHeaders,
+        IClipboard? clipboard)
         : base(fileMetadataMessage.Sender.Name,
             fileMetadataMessage.Timestamp,
             timePadding,
             localParticipant.Id == fileMetadataMessage.Sender.Id,
             isHostMessage,
-            removeHeaders)
+            removeHeaders,
+            fileMetadataMessage.RecipientId != null)
     {
         this.fileTransferFeatureCollection = fileTransferFeatureCollection;
         this.eventBus = eventBus;
         this.localParticipant = localParticipant;
+        this.clipboard = clipboard;
         FileMetadataMessage = fileMetadataMessage;
 
         cachedFormat = fileTransferFeatureCollection.FileHelperService
@@ -102,6 +110,13 @@ public partial class ChatFileMessageViewModel : BaseChatMessageViewModel
 
         FillLabels();
         SubscribeToEvents();
+    }
+    private void FillLabels()
+    {
+        UniversalFileStatus = fileTransferFeatureCollection.FileHelperService
+            .FormatFileSize(FileMetadataMessage.FileSize);
+        InteractionFileStatus = cachedFormat;
+
     }
 
     private void SubscribeToEvents()
@@ -180,33 +195,32 @@ public partial class ChatFileMessageViewModel : BaseChatMessageViewModel
             .FormatFileSize(FileMetadataMessage.FileSize);
     }
 
-    private void FillLabels()
+    private void UpdateIconOutOfState()
     {
-        UniversalFileStatus = fileTransferFeatureCollection.FileHelperService
-            .FormatFileSize(FileMetadataMessage.FileSize);
-        InteractionFileStatus = cachedFormat;
+        InteractionFileStatus = string.Empty;
+        FileDownloadState = IsDownloading
+            ? FileDownloadState.IsDownloading : downloaded
+            ? FileDownloadState.Downloaded : FileDownloadState.NotDownloaded;
     }
 
-    private void fileInterractButton_MouseEnter(object sender, EventArgs e)
+    [RelayCommand]
+    private void InteractionMouseEnter()
     {
         UpdateIconOutOfState();
     }
 
-    private void UpdateIconOutOfState()
+    [RelayCommand]
+    private void InteractionMouseLeave()
     {
-        InteractionFileStatus = string.Empty;
-        //fileInterractButton.BackgroundImage = isDownloading
-        //    ? Resources.close : downloaded
-        //    ? Resources.file : Resources.download;
-    }
-
-    private void fileInterractButton_MouseLeave(object sender, EventArgs e)
-    {
-        //fileInterractButton.BackgroundImage = null;
+        if (FileDownloadState != FileDownloadState.IsDownloading)
+        {
+            FileDownloadState = FileDownloadState.None;
+        }
         InteractionFileStatus = cachedFormat;
     }
 
-    private void fileInterractButton_Click(object sender, EventArgs e)
+    [RelayCommand]
+    private void InteractionClick()
     {
         if (IsDownloading)
         {
@@ -242,6 +256,28 @@ public partial class ChatFileMessageViewModel : BaseChatMessageViewModel
         {
             OnDownloadRequested?.Invoke();
         }
+    }
+
+    [RelayCommand]
+    private async Task CopyNameToClipboard()
+    {
+        if (clipboard != null)
+        {
+            await clipboard.SetTextAsync(FileMetadataMessage.FileName);
+            InAppNotifier.Info("Скопировано в буфер обмена");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ShowInFolder()
+    {
+        if (!Path.Exists(FileMetadataMessage.FilePath))
+        {
+            InAppNotifier.Warning("Файл не нашёлся");
+            return;
+        }
+
+        Process.Start("explorer.exe", $"/select,\"{FileMetadataMessage.FilePath}\"");
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

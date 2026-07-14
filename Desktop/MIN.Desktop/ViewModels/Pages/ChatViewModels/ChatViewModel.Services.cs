@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
@@ -88,17 +87,6 @@ public partial class ChatViewModel : RoutableViewModelBase
             fileMetadata,
             formCts.Token
         );
-    }
-
-    private void OnShowFileClicked(string? filePath)
-    {
-        if (!Path.Exists(filePath))
-        {
-            InAppNotifier.Warning("Файл не нашёлся");
-            return;
-        }
-
-        Process.Start("explorer.exe", $"/select,\"{filePath}\"");
     }
 
     private bool IsMessageValid() => !string.IsNullOrWhiteSpace(SendingMessage) || SomeFilesAttached;

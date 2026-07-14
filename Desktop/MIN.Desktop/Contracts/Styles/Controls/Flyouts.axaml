@@ -71,18 +71,58 @@
                                 Text="В сети" />
                         </StackPanel>
                     </Button>
+                  <Button Content="Button with flyout">
+                    <Button.Flyout >
+                      <Flyout FlyoutPresenterClasses="buttons">
+                          <StackPanel>
+                            <Button
+                            Classes="no-background">
+                            <StackPanel>
+                                <Svg Path="/Assets/Icons/file-upload.svg" />
+                                <TextBlock VerticalAlignment="Center"
+                                            Text="Отправить файл" />
+                            </StackPanel>
+                        </Button>
+                                   
+                        <Button
+                            Classes="no-background">
+                            <StackPanel>
+                                <Svg Path="/Assets/Icons/rocket.svg" />
+                                <TextBlock VerticalAlignment="Center"
+                                            Text="Начать активность" />
+                            </StackPanel>
+                        </Button>
+                         </StackPanel>
+                      </Flyout>
+                    </Button.Flyout>
+                  </Button>
                 </StackPanel>
             </Border>
         </Border>
     </Design.PreviewWith>
 
      <Style Selector="FlyoutPresenter">
-        <Setter Property="Padding" Value="0" />
         <Setter Property="Background" Value="{DynamicResource SurfaceElevated}" />
         <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
 
         <Setter Property="RenderTransformOrigin" Value="0%,0%" />
         <Setter Property="Opacity" Value="0" />
+
+          <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+
+                    <!-- Здесь Padding принудительно установлен в PaddingCard,
+                    а то что-то по умочанию справа есть неубераемый padding -->
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Padding="{DynamicResource PaddingSmall}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
 
         <Style.Animations>
             <Animation Duration="0:0:0.2" FillMode="Both">
@@ -98,6 +138,18 @@
                 </KeyFrame>
             </Animation>
         </Style.Animations>
+    </Style>
+
+     <Style Selector="FlyoutPresenter.buttons">
+        <Style Selector="^ Button">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
+
+            <Style Selector="^ > StackPanel">
+                <Setter Property="Spacing" Value="4" />
+                <Setter Property="Orientation" Value="Horizontal" />
+            </Style>
+        </Style>
     </Style>
 
     <Style Selector="FlyoutPresenter.cardDetails">

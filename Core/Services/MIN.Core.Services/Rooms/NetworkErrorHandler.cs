@@ -50,7 +50,19 @@ public class NetworkErrorHandler : INetworkErrorHandler
     }
 
     string? INetworkErrorHandler.GetDisconnectDetailsFor(Guid paritipantId, Guid roomId)
-        => kickHistory.TryGetValue(paritipantId, out var reason) ? reason : null;
+    {
+        kickHistory.TryGetValue(paritipantId, out var reason);
+
+        if (reason != null)
+        {
+            kickHistory.TryRemove(paritipantId, out _);
+            return reason;
+        }
+        else
+        {
+            return null;
+        }
+    }
 
     async Task INetworkErrorHandler.SendErrorAsync(string message, Guid recipientId, Guid roomId, bool critical, int timeoutMs)
     {
