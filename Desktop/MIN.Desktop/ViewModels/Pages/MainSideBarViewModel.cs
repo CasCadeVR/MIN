@@ -27,6 +27,7 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     private readonly SettingsSideBarViewModel settingsSideBarViewModel;
     private readonly DiscoveryViewModel discoveryViewModel;
     private readonly Dictionary<Guid, ChatViewModel> activeChatViews = [];
+    private readonly List<RecentRoomCardViewModel> allRooms = [];
     private readonly ParticipantInfo localParticipant = null!;
     private RecentRoomCardViewModel? selectedRecentRoomCardViewModel;
 
@@ -35,6 +36,15 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     /// </summary>
     [ObservableProperty]
     public partial AvaloniaList<RecentRoomCardViewModel> RecentRooms { get; set; } = [];
+
+    /// <summary>
+    /// Поле поиска локальных комнат
+    /// </summary>
+    [ObservableProperty]
+    public partial string SearchTerm { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    partial void OnSearchTermChanged(string value) => PerformRecentRoomSearch();
 
     /// <inheritdoc />
     public override ViewLayoutType LayoutType => ViewLayoutType.LeftSideBar;
@@ -123,6 +133,7 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
             }
         };
 
+        allRooms.Add(card);
         RecentRooms.Add(card);
         SelectChatCard(card);
     }
@@ -133,18 +144,28 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     public void UnregisterChat(Guid roomId)
     {
         activeChatViews.Remove(roomId);
-        var room = RecentRooms.FirstOrDefault(x => x.RoomId == roomId);
+        var room = allRooms.FirstOrDefault(x => x.RoomId == roomId);
 
         if (room != null)
         {
             RecentRooms.Remove(room);
+            allRooms.Remove(room);
             room.Dispose();
         }
     }
 
-    /// <summary>
-    /// Получить view чата
-    /// </summary>
-    public ChatViewModel? GetChatView(Guid roomId)
-      => activeChatViews.TryGetValue(roomId, out var chatPanelView) ? chatPanelView : null;
+    [RelayCommand]
+    private void PerformRecentRoomSearch()
+    {
+        RecentRooms.Clear();
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            RecentRooms.AddRange(allRooms);
+        }
+        else
+        {
+            RecentRooms.AddRange(allRooms.Where(r =>
+                r.RoomName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)));
+        }
+    }
 }

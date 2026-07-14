@@ -2,6 +2,7 @@
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages.ChatViewModels"
              xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
              xmlns:messages="using:MIN.Desktop.ViewModels.Cards.Messages"
+             xmlns:messagesFiles="using:MIN.Desktop.ViewModels.Cards.Messages.Files"
              xmlns:designer="using:MIN.Desktop.Contracts.Designer"
              xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -23,8 +24,6 @@
                     Background="{DynamicResource SidebarBackground}"
                     Padding="{DynamicResource PaddingTopBar}"
                     CornerRadius="{DynamicResource CornerRadiusLarge}">
-
-
                       <DockPanel
                         HorizontalSpacing="8">
 
@@ -71,18 +70,27 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel
-                                        Spacing="8"
-                                        Orientation="Horizontal" >
-                                        <TextBlock
-                                            Text="{Binding File.FileName}" />
+                                    <Border Classes="card">
+                                        <Panel Height="100" Width="100" >
+                                            <Svg
+                                                Opacity="0.2"
+                                                Height="100" Width="100"
+                                                Path="/Assets/Icons/file-upload.svg" />
 
-                                        <Button
-                                            Classes="close"
-                                            Command="{Binding DeleteClickCommand}">
-                                                <Svg Path="/Assets/Icons/close.svg" />
-                                            </Button>
-                                    </StackPanel>
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding File.FileName}" />
+
+                                            <Button
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Classes="icon small close"
+                                                Command="{Binding DeleteClickCommand}">
+                                                    <Svg Path="/Assets/Icons/close.svg" />
+                                                </Button>
+                                        </Panel>
+                                    </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -215,15 +223,113 @@
                                             </DockPanel>
 
                                             <DockPanel HorizontalSpacing="8">
-                                                <SelectableTextBlock
-                                                    Text="{Binding ChatMessage.Content}" />
-
                                                 <TextBlock
                                                     DockPanel.Dock="Right"
                                                     Classes="caption"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Bottom"
                                                     Text="{Binding Timestamp}" />
+
+                                                <SelectableTextBlock
+                                                    Text="{Binding ChatMessage.Content}" />
+                                            </DockPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </Border>
+                            </DataTemplate>
+
+                            <!-- Файловое сообщение -->
+
+                            <DataTemplate x:DataType="messagesFiles:ChatFileMessageViewModel">
+                                <Border Classes="message-row"
+                                    Margin="{Binding TimePadding}"
+                                    Classes.private="{Binding IsPrivate}"
+                                    Classes.selected="{Binding IsSelected}">
+
+                                    <Border Classes="message"
+                                        MaxWidth="400"
+                                        Padding="{DynamicResource PaddingMedium}"
+                                        Classes.self="{Binding IsLocal}"
+                                        HorizontalAlignment="{Binding IsLocal,
+                                        Converter={converters:BoolToMessageAlignConverter}}">
+                                        <Interaction.Behaviors>
+                                            <EventTriggerBehavior EventName="RightTapped">
+
+                                            </EventTriggerBehavior>
+                                        </Interaction.Behaviors>
+
+                                        <StackPanel Spacing="8">
+                                            <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
+                                                <TextBlock Classes="small"
+                                                    FontWeight="Bold"
+                                                    Text="{Binding SenderName}" />
+
+                                                <TextBlock Classes="small"
+                                                    IsVisible="{Binding IsHost}"
+                                                    Text="Хост"
+                                                    DockPanel.Dock="Right" />
+                                            </DockPanel>
+
+                                            <DockPanel HorizontalSpacing="8">
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    Classes="caption"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Bottom"
+                                                    Text="{Binding Timestamp}" />
+
+                                                <Grid
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    RowSpacing="8"
+                                                    ColumnSpacing="8"
+                                                    RowDefinitions="Auto, Auto, Auto"
+                                                    ColumnDefinitions="Auto, *">
+                                                    <Border
+                                                        Grid.RowSpan="3"
+                                                        Grid.Row="0"
+                                                        Grid.Column="0"
+                                                        Background="{DynamicResource Secondary}">
+                                                        <Button 
+                                                            Height="60" Width="60" >
+                                                            <Panel>
+                                                            <Svg
+                                                                Height="50" Width="50"
+                                                                Path="/Assets/Icons/file.svg" />
+
+                                                            <TextBlock
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
+                                                                Text="{Binding InteractionFileStatus}" />
+                                                            </Panel>
+                                                        </Button>
+                                                    </Border>
+
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        Classes="header5"
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Top"
+                                                        MaxLines="2"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        Text="{Binding FileMetadataMessage.FileName}" />
+
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Top"
+                                                        Text="{Binding UniversalFileStatus}" />
+
+                                                    <ProgressBar
+                                                        Grid.Row="2"
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Top"
+                                                        Value="{Binding DownloadProgress}"
+                                                        IsVisible="{Binding IsDownloading}"/>
+                                                </Grid>
                                             </DockPanel>
                                         </StackPanel>
                                     </Border>

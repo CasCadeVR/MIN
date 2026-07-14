@@ -52,7 +52,7 @@
                             Classes.leftOff2="{x:True}"
                             Command="{Binding MinimizeCommand, RelativeSource={RelativeSource TemplatedParent}}"
                             IsVisible="{TemplateBinding CanMinimize}">
-                            <Svg Classes.text="{x:True}" Path="/Assets/Icons/minimize.svg" />
+                            <Svg Classes.primary="{x:True}" Path="/Assets/Icons/minimize.svg" />
                         </Button>
                         <Button
                             x:Name="PART_MaximizeButton"
@@ -67,7 +67,7 @@
                                 </MultiBinding>
                             </Button.IsVisible>
                             <Svg
-                                Classes.text="{x:True}"
+                                Classes.primary="{x:True}"
                                 Classes.maximize="{Binding $parent[Window].WindowState, Converter={converters:EqualityConverter}, ConverterParameter={x:Static WindowState.Normal}}"
                                 Classes.restore="{Binding $parent[Window].WindowState, Converter={converters:EqualityConverter}, ConverterParameter={x:Static WindowState.Maximized}}" />
                         </Button>
@@ -79,7 +79,7 @@
                             WindowDecorationProperties.ElementRole="CloseButton"
                             IsVisible="{TemplateBinding CanClose}"
                             Command="{Binding CloseCommand, RelativeSource={RelativeSource TemplatedParent}}">
-                                <Svg Classes.text="{x:True}" Path="/Assets/Icons/close.svg" />
+                                <Svg Classes.primary="{x:True}" Path="/Assets/Icons/close.svg" />
                         </Button>
                     </StackPanel>
                 </Panel>

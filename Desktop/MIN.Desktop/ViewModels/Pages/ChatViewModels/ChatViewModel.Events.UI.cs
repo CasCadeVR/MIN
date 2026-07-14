@@ -49,11 +49,11 @@ public partial class ChatViewModel : RoutableViewModelBase
         var files = await parentWindow.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Выберите файл",
-            AllowMultiple = false,
+            AllowMultiple = true,
             FileTypeFilter =
             [
-                new FilePickerFileType("Изображения") { Patterns = ["*.png", "*.jpg", "*.jpeg"] },
                 new FilePickerFileType("Все файлы") { Patterns = ["*.*"] },
+                new FilePickerFileType("Изображения") { Patterns = ["*.png", "*.jpg", "*.jpeg"] },
             ]
         });
 

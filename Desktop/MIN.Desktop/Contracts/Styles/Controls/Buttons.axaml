@@ -87,14 +87,6 @@
             <Setter Property="RenderTransform" Value="scale(0.98)"/>
         </Style>
 
-        <Style Selector="^.close">
-
-            <Style Selector="^:pointerover">
-                <Setter Property="Cursor" Value="Hand" />
-                <Setter Property="Background" Value="{DynamicResource StatusError}" />
-            </Style>
-        </Style>
-
         <Style Selector="^.busy">
             <Setter Property="Opacity" Value="1" />
             <Style.Animations>
@@ -146,6 +138,18 @@
                 <Setter Property="Width" Value="{DynamicResource IconButton}" />
                 <Setter Property="Height" Value="{DynamicResource IconButton}" />
             </Style>
+
+             <Style Selector="^.small">
+                <Setter Property="Width" Value="{DynamicResource IconSmall}" />
+                <Setter Property="Height" Value="{DynamicResource IconSmall}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^.close">
+            <Style Selector="^:pointerover">
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Background" Value="{DynamicResource StatusError}" />
+            </Style>
         </Style>
 
         <Style Selector="^.card">
@@ -161,15 +165,35 @@
 
             <Style Selector="^:pressed">
                 <Setter Property="Background" Value="{DynamicResource SurfaceCardPressed}" />
+
+                <Style Selector="^ TextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource TextOnCardSelected}" />
+                </Style>
+
+                <Style Selector="^ SelectableTextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource TextOnCardSelected}" />
+                </Style>
             </Style>
 
             <Style Selector="^.selected">
                 <Setter Property="Background" Value="{DynamicResource Primary}" />
+
+                <Style Selector="^ TextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource TextOnCardSelected}" />
+                </Style>
+
+                <Style Selector="^ SelectableTextBlock">
+                    <Setter Property="Foreground" Value="{DynamicResource TextOnCardSelected}" />
+                </Style>
             </Style>
 
             <Style Selector="^.selected:pointerover">
                 <Setter Property="Background" Value="{DynamicResource PrimaryHover}" />
             </Style>
+        </Style>
+
+        <Style Selector="^.no-background">
+            <Setter Property="Background" Value="Transparent"/>
         </Style>
 
         <!-- Secondary -->
@@ -180,6 +204,7 @@
             <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
+
         <Style Selector="^.secondary:pointerover /template/ ContentPresenter">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Background" Value="{DynamicResource Primary}"/>
@@ -192,14 +217,15 @@
                 <Setter Property="Css" Value="{DynamicResource SvgAccentStyle}" />
             </Style>
         </Style>
+
         <Style Selector="^.primary:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource PrimaryHover}"/>
+        </Style>
 
+         <Style Selector="^.primary:pointerover">
              <Style Selector="^ Svg">
-                <Setter Property="Css" Value="{DynamicResource SvgTextStyle}" />
+                <Setter Property="Css" Value="{DynamicResource SvgPrimaryStyle}" />
             </Style>
         </Style>
     </Style>
-
-
 </Styles>

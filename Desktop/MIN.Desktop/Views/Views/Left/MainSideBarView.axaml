@@ -32,15 +32,14 @@
                     <Svg Path="/Assets/Icons/compass.svg" />
                 </Button>
 
-                <DockPanel  >
+                <DockPanel>
                     <Svg Path="/Assets/Icons/magnifying-glass.svg" />
 
-                    <TextBox PlaceholderText="Поиск">
-
-                    </TextBox>
+                    <TextBox
+                        Text="{Binding SearchTerm}"
+                        PlaceholderText="Поиск" />
                 
                 </DockPanel>
-              
             </DockPanel>
 
             <!-- Room cards -->
@@ -60,14 +59,21 @@
                                     Margin="0,6">
                                 <StackPanel Spacing="8">
                                     <DockPanel HorizontalSpacing="8">
-                                        <TextBlock  DockPanel.Dock="Right"
+                                        <TextBlock
+                                            Classes="card-text"
+                                            Classes.card-text-selected="{Binding IsSelected}"
+                                            DockPanel.Dock="Right"
                                             Text="{Binding ParticipantsInfo}" />
 
-                                        <TextBlock DockPanel.Dock="Right"
+                                        <TextBlock
+                                            Classes="card-text"
+                                            Classes.card-text-selected="{Binding IsSelected}"
+                                            DockPanel.Dock="Right"
                                             Text="{Binding LastMessageReceivedAt, Converter={converters:DateToShortDateConverter}}" />
 
                                         <TextBlock
-                                            Classes="header4"
+                                            Classes="header4 card-text"
+                                            Classes.card-text-selected="{Binding IsSelected}"
                                             Text="{Binding RoomName}" />
                                     </DockPanel>
 
@@ -80,11 +86,14 @@
                                             CornerRadius="{DynamicResource CornerRadiusLarge}"
                                             Background="{DynamicResource Primary}">
                                              <TextBlock
-                                                Classes="header4"
+                                                Classes="header4 card-text"
+                                                Classes.card-text-selected="{Binding IsSelected}"
                                                 Text="{Binding MissedMessagesCount}" />
                                         </Border>
 
                                         <TextBlock
+                                            Classes="card-text"
+                                            Classes.card-text-selected="{Binding IsSelected}"
                                             VerticalAlignment="Center"
                                             MaxLines="3"
                                             Text="{Binding LastMessageContent}" />

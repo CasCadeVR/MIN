@@ -122,15 +122,14 @@
                                                             <Flyout Placement="Bottom">
                                                                  <StackPanel>
                                                                     <Button
+                                                                        Classes="no-background"
                                                                         Command="{Binding TogglePrivateChatCommand}"
                                                                         Content="{Binding IsSelected,
                                                                         Converter={converters:BoolToPrivateChatTextConverter}}"
-                                                                        Background="Transparent"
                                                                         HorizontalContentAlignment="Stretch"
                                                                         IsVisible="{Binding CanStartPrivateChat}" />
                                                                     <Button
                                                                         Command="{Binding KickParticipantCommand}"
-                                                                        Content="Кикнуть участника"
                                                                         Background="Transparent"
                                                                         HorizontalContentAlignment="Stretch"
                                                                         IsVisible="{Binding CanKick}" />

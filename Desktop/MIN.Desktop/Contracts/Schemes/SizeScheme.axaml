@@ -26,6 +26,7 @@
 
     <system:Double x:Key="IconAverage">24</system:Double>
     <system:Double x:Key="IconButton">24</system:Double>
+    <system:Double x:Key="IconSmall">16</system:Double>
 
     <system:Double x:Key="ScrollBarSize">8</system:Double>
 

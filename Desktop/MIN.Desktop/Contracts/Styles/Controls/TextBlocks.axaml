@@ -24,9 +24,15 @@
     </Border>
   </Design.PreviewWith>
 
+    <Style Selector="SelectableTextBlock">
+        <Setter Property="SelectionBrush" Value="{DynamicResource TextSelection}"/>
+        <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextOnPrimary}"/>
+    </Style>
+
     <Style Selector="TextBlock, SelectableTextBlock">
         <Setter Property="TextWrapping" Value="Wrap"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
 
     <Style Selector="TextBlock.header1, SelectableTextBlock.header1">
@@ -73,8 +79,11 @@
         <Setter Property="Opacity" Value="0.6"/>
     </Style>
 
-    <Style Selector="SelectableTextBlock">
-        <Setter Property="SelectionBrush" Value="{DynamicResource Primary}"/>
-        <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextOnPrimary}"/>
+    <Style Selector="TextBlock.card-text, SelectableTextBlock.card-text">
+        <Setter Property="Foreground" Value="{DynamicResource TextOnCard}" />
+    </Style>
+
+    <Style Selector="TextBlock.card-text-selected, SelectableTextBlock.card-text-selected">
+        <Setter Property="Foreground" Value="{DynamicResource TextOnCardSelected}" />
     </Style>
 </Styles>
