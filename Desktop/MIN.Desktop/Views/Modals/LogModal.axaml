@@ -4,6 +4,7 @@
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
         xmlns:designer="using:MIN.Desktop.Contracts.Designer"
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+        xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
@@ -32,20 +33,23 @@
         <controls:CustomTitleBar />
 
         <Border Padding="{DynamicResource PaddingCard}">
-            <StackPanel>
+            <DockPanel>
                 <!-- Helper buttons -->
                  <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right">
-                     <Button Classes="icon">
+                     <Button Command="{Binding ScrollUpCommand}"
+                         Classes="icon">
                          <Svg Path="/Assets/Icons/arrow-up.svg"/>
                      </Button>
-                       <Button Classes="icon">
+                       <Button Command="{Binding LoadMoreCommand}"
+                           Classes="icon">
                          <Svg Path="/Assets/Icons/arrow-down.svg"/>
                      </Button>
                 </StackPanel>
 
-                <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                <ScrollViewer Classes="main"
+                    behaviors:AutoScrollToBottomBehavior.AutoScrollUp="{Binding AutoScrollTop}"
+                    behaviors:AutoScrollToBottomBehavior.AutoScrollBottom="{Binding AutoScrollBottom}">
                     <StackPanel Spacing="4" Margin="0,8,0,0">
-
                         <ItemsControl ItemsSource="{Binding LogItems}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -55,6 +59,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Classes="log"
+                                            Cursor="Hand"
                                             Margin="0,0,0,8"
                                             Background="{Binding LogItem.LogLevel,
                                             Converter={converters:LogLevelToBrushConverter}}">
@@ -62,6 +67,13 @@
                                             Foreground="{DynamicResource TextOnPrimary}"
                                             Margin="4,0,0,0"
                                             Text="{Binding LogItem.Message}" />
+                                        <Interaction.Behaviors>
+                                            <EventTriggerBehavior EventName="PointerPressed">
+                                                 <InvokeCommandAction
+                                                    Command="{Binding CopyToClipBoardCommand}"
+                                                    CommandParameter="{Binding LogItem.Message}" />
+                                            </EventTriggerBehavior>
+                                        </Interaction.Behaviors>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -69,7 +81,7 @@
 
                     </StackPanel>
                 </ScrollViewer>
-            </StackPanel>
+            </DockPanel>
         </Border>
     </DockPanel>
 </Window>

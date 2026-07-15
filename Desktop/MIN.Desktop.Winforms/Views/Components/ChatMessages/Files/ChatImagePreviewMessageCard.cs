@@ -23,6 +23,7 @@ public partial class ChatImagePreviewMessageCard : BaseChatMessageCard, IDisposa
     private readonly SynchronizationContext uiContext = null!;
     private readonly ParticipantInfo localParticipant = null!;
     private readonly string cachedFileFormat = string.Empty;
+
     private Size? cachedImgSize;
     private HashSet<IDisposable> eventTokens = null!;
     private bool isDownloading;

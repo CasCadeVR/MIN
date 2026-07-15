@@ -53,11 +53,9 @@ public partial class ChatViewModel : RoutableViewModelBase
             //    break;
 
             case FileMetadataMessage m:
-                //messageCard = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
-                //    ? CreateChatImagePreviewMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop)
-                //    : CreateFileMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
-
-                messageCard = CreateFileMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                messageCard = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
+                    ? CreateChatImagePreviewMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop)
+                    : CreateFileMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
                 break;
 
             case SystemTextMessage m:
@@ -239,32 +237,27 @@ public partial class ChatViewModel : RoutableViewModelBase
     //    return card;
     //}
 
-    //private ChatImagePreviewMessageCard CreateChatImagePreviewMessageCard(FileMetadataMessage msg, ChatMessageRow row,
-    //bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
-    //{
-    //    var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
-    //    var minutesPassed = CalculateTimePadding(msg.Timestamp);
+    private ChatFileImagePreviewMessageViewModel CreateChatImagePreviewMessageCard(FileMetadataMessage msg,
+    bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
+    {
+        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
+        var timePadding = CalculateTimePadding(msg.Timestamp);
 
-    //    var card = new ChatImagePreviewMessageCard(featureCollection.FileTransfer,
-    //        featureCollection.Core.EventBus,
-    //        msg, localParticipant, isHost, removeHeaders)
-    //    {
-    //        Anchor = isSelf ? AnchorStyles.Right : AnchorStyles.Left,
-    //        Margin = new Padding(20, 0, 20, 0),
-    //    };
+        var card = new ChatFileImagePreviewMessageViewModel(featureCollection.FileTransfer,
+            featureCollection.Core.EventBus, msg, timePadding,
+            localParticipant, isHost, removeHeaders, parentWindow.Clipboard);
 
-    //    card.OnDownloadRequested += () => OnDownloadRequested(msg);
-    //    card.OnCancelRequested += () => OnCancelRequested(msg);
-    //    card.OnCardContextMenuStripClicked += () => OnShowFileClicked(msg.FilePath);
-    //    if (!withAppendOnTop)
-    //    {
-    //        InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
-    //    }
-    //    ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
-    //    row.Height = card.Height;
-    //    lastChatMessage = msg;
-    //    return card;
-    //}
+        card.OnDownloadRequested += () => OnDownloadRequested(msg);
+        card.OnCancelRequested += () => OnCancelRequested(msg);
+
+        if (!withAppendOnTop)
+        {
+            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+        }
+
+        lastChatMessage = msg;
+        return card;
+    }
 
     private static SystemChatMessageViewModel CreateSystemMessageLabel(SystemTextMessage msg)
     {

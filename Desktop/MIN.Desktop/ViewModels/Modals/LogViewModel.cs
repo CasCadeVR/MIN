@@ -1,6 +1,9 @@
-﻿using System;
+﻿using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Desktop.ViewModels.Base;
@@ -15,8 +18,23 @@ namespace MIN.Desktop.ViewModels.Modals;
 /// </summary>
 public partial class LogViewModel : ModalViewModelBase
 {
+    private const int LogPageSize = 100;
+
     private readonly ILoggerProvider loggerProvider;
+    private readonly IClipboard? clipboard;
     private int currentPage;
+
+    /// <summary>
+    /// Флаг переключения автоскролла вверх
+    /// </summary>
+    [ObservableProperty]
+    public partial bool AutoScrollTop { get; set; }
+
+    /// <summary>
+    /// Флаг переключения автоскролла вниз
+    /// </summary>
+    [ObservableProperty]
+    public partial bool AutoScrollBottom { get; set; }
 
     /// <summary>
     /// Список логов
@@ -31,6 +49,11 @@ public partial class LogViewModel : ModalViewModelBase
     {
         this.loggerProvider = loggerProvider;
 
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+        {
+            clipboard = lifetime.Windows[0].Clipboard;
+        }
+
         if (!Design.IsDesignMode)
         {
             loggerProvider.OnLogReceived += OnLogReceived;
@@ -44,21 +67,20 @@ public partial class LogViewModel : ModalViewModelBase
 
     private void AddLogMessage(LogItem item)
     {
-        LogItems.Insert(0, new LogItemViewModel(item));
+        LogItems.Insert(0, new LogItemViewModel(item, clipboard));
     }
 
     [RelayCommand]
-    private void LoadLogs()
+    private async Task LoadLogs()
     {
-        var history = loggerProvider.GetRecentLogHistory(currentPage, 100);
+        var history = loggerProvider.GetRecentLogHistory(currentPage, LogPageSize);
 
         foreach (var item in history)
         {
-            LogItems.Add(new LogItemViewModel(item));
+            LogItems.Add(new LogItemViewModel(item, clipboard));
         }
 
-        //logListBox.TopIndex = 0;
-        //logListBox.Update();
+        await ScrollToTop();
     }
 
     [RelayCommand]
@@ -67,16 +89,31 @@ public partial class LogViewModel : ModalViewModelBase
         loggerProvider.OnLogReceived -= OnLogReceived;
     }
 
-    private void loadMoreButton_Click(object sender, EventArgs e)
+    [RelayCommand]
+    private async Task LoadMore()
     {
         currentPage++;
-        LoadLogs();
-        //var visibleItems = logListBox.ClientSize.Height / logListBox.ItemHeight;
-        //logListBox.TopIndex = Math.Max(LogItems.Count - visibleItems + 1, 0);
+        await LoadLogs();
+        await ScrollToBottom();
     }
 
-    private void scrollUpButton_Click(object sender, EventArgs e)
+    [RelayCommand]
+    private async Task ScrollUp()
     {
-        //logListBox.TopIndex = 0;
+        await ScrollToTop();
+    }
+
+    private async Task ScrollToTop()
+    {
+        AutoScrollTop = true;
+        await Task.Yield();
+        AutoScrollTop = false;
+    }
+
+    private async Task ScrollToBottom()
+    {
+        AutoScrollBottom = true;
+        await Task.Yield();
+        AutoScrollBottom = false;
     }
 }

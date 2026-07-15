@@ -124,6 +124,16 @@
             <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
         </Style>
 
+        <Style Selector="^.on-image">
+            <Setter Property="Background" Value="{DynamicResource TextBackgroundOnImage}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+
+            <Style Selector="^ TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimary}" />
+            </Style>
+        </Style>
+
         <Style Selector="^.message-row">
             <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
             <Setter Property="Background" Value="Transparent" />

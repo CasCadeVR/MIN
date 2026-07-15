@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -21,15 +22,20 @@ public partial class ChatViewModel : RoutableViewModelBase
     private readonly AvaloniaList<IDescribableStatus> currentStatuses = [];
 
     /// <summary>
+    /// Показать статус
+    /// </summary>
+    public bool ShowStatus => currentStatuses.Count > 0;
+
+    /// <summary>
     /// Приложенные файлы
     /// </summary>
     public AvaloniaList<FileAttachmentViewModel> AttachedFiles { get; } = [];
 
     /// <summary>
-    /// Показать статус
+    /// Флаг переключения автоскролла вниз
     /// </summary>
-
-    public bool ShowStatus => currentStatuses.Count > 0;
+    [ObservableProperty]
+    public partial bool AutoScrollBottom { get; set; }
 
     [ObservableProperty]
     public partial string StatusContent { get; set; } = string.Empty;
@@ -106,6 +112,13 @@ public partial class ChatViewModel : RoutableViewModelBase
         fileVm.OnDelete += () => AttachedFiles.Remove(fileVm);
 
         AttachedFiles.Add(fileVm);
+    }
+
+    private async Task ScrollToBottom()
+    {
+        AutoScrollBottom = true;
+        await Task.Yield();
+        AutoScrollBottom = false;
     }
 
     #endregion

@@ -13,6 +13,8 @@
     <NetSdkVersion>10.0.5</NetSdkVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="AnimatedImage.Avalonia" Version="2.1.4" />
+    <PackageVersion Include="Avalonia.Labs.Gif" Version="12.0.2" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(NetSdkVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(NetSdkVersion)" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />

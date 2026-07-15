@@ -57,6 +57,8 @@
             <Color x:Key="TextOnCard">#FFFFFF</Color>          <!-- Text ON cards -->
             <Color x:Key="TextOnCardSelected">#FFFFFF</Color>          <!-- Text ON selected cards -->
 
+            <Color x:Key="TextBackgroundOnImage">#5A2a2a2a</Color>          <!-- Text backgrund ON Images -->
+
             <Color x:Key="TextSelection">#3B82F6</Color>          <!-- Selection for SelectableTextBlock -->
 
             <!-- *************** -->
@@ -169,6 +171,8 @@
 
             <Color x:Key="TextOnCard">#2C2C2E</Color>          <!-- Text ON cards -->
             <Color x:Key="TextOnCardSelected">#FFFFFF</Color>          <!-- Text ON selected cards -->
+
+            <Color x:Key="TextBackgroundOnImage">#5A2a2a2a</Color>          <!-- Text backgrund ON Images -->
 
             <Color x:Key="TextSelection">#6366F1</Color>          <!-- Selection for SelectableTextBlock -->
 
