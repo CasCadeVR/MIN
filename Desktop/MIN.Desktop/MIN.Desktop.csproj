@@ -38,6 +38,9 @@
   </ItemGroup>
 
     <ItemGroup>
+    <Compile Update="Views\Modals\SessionChoosingModal.axaml.cs">
+      <DependentUpon>SessionChoosingModal.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Modals\ParticipantKickModal.axaml.cs">
       <DependentUpon>ParticipantKickModal.axaml</DependentUpon>
     </Compile>
@@ -53,8 +56,8 @@
     <Compile Update="Views\Modals\DirectConnectModal.axaml.cs">
       <DependentUpon>DirectConnectModal.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Modals\DialogBoxViewModel.axaml.cs">
-      <DependentUpon>DialogBoxViewModel.axaml</DependentUpon>
+    <Compile Update="Views\Modals\DialogBoxModal.axaml.cs">
+      <DependentUpon>DialogBoxModal.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Modals\CreateRoomModal.axaml.cs">
       <DependentUpon>CreateRoomModal.axaml</DependentUpon>

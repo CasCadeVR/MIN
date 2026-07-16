@@ -72,7 +72,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     }
 
     [RelayCommand]
-    private void StartSessionClick()
+    private async Task StartSessionClick()
     {
         var downloadedSessions = featureCollection.Sessions.SessionScanner.DownloadedSessions.Values;
         if (!downloadedSessions.Any())
@@ -81,13 +81,11 @@ public partial class ChatViewModel : RoutableViewModelBase
             return;
         }
 
-        //    var choosingForm = new SessionChoosingForm(downloadedSessions);
-        //    choosingForm.OnSelected += (session) =>
-        //    {
-        //        choosingForm.Close();
-        //        SendSessionStartMessage(session);
-        //    };
-        //    choosingForm.ShowDialog();
+        var choosingForm = await dialogService.ShowAsync<SessionChoosingViewModel>();
+        if (choosingForm! == true)
+        {
+            SendSessionStartMessage(choosingForm!.SelectedSession!);
+        }
     }
 
     #endregion

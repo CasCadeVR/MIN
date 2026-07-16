@@ -514,9 +514,13 @@
 
                                                 <Panel>
                                                     <StackPanel>
+
                                                         <!-- Image area -->
+
                                                         <Panel MaxWidth="800">
+
                                                             <!-- Layer 0: actual image (downloaded) -->
+
                                                             <avagif:GifImage Source="{Binding GifPreviewImage}"
                                                                     Stretch="Uniform"
                                                                     IsVisible="{Binding FileDownloadState,
@@ -530,6 +534,7 @@
                                                                         ConverterParameter={x:Static enums:FileDownloadState.Downloaded}}" />
 
                                                             <!-- Layer 1: overlay (not downloaded / downloading) -->
+
                                                             <Border
                                                                 IsVisible="{Binding FileDownloadState,
                                                                 Converter={converters:EqualityConverter},

@@ -72,6 +72,4 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     }
 
     private bool CanCreate() => !HasErrors;
-
-    internal object ShowDialog() => throw new NotImplementedException();
 }

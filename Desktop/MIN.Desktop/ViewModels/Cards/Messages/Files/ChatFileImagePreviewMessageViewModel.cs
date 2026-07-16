@@ -66,8 +66,7 @@ public partial class ChatFileImagePreviewMessageViewModel : BaseChatMessageViewM
     /// <summary>
     /// Превью изображения
     /// </summary>
-    [ObservableProperty]
-    public partial Bitmap? PreviewImage { get; set; }
+    public Bitmap? PreviewImage { get; set; }
 
     /// <summary>
     /// .gif Превью изображения

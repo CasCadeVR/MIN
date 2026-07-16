@@ -9,7 +9,7 @@
         MinWidth="800" MinHeight="500"
         x:Class="MIN.Desktop.Views.Modals.DialogBoxView"
         x:DataType="vm:MainWindowViewModel"
-        Title="MIN - Создание комнаты">
+        Title="MIN">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
