@@ -32,6 +32,9 @@
                         <TextBox
                             MaxLength="120"
                             MaxWidth="400"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            MaxLines="5"
                             Text="{Binding Reason, Converter={converters:TrimConverter}}"
                             PlaceholderText="Причина...">
                             <Interaction.Behaviors>

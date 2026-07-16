@@ -117,7 +117,10 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
         GetWindow()?.Close();
     }
 
-    private static Window? GetWindow() =>
+    /// <summary>
+    /// Получить окно приложения
+    /// </summary>
+    public static Window? GetWindow() =>
         Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime
             ? lifetime.Windows[0]
             : null;

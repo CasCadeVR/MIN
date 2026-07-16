@@ -32,9 +32,11 @@
                 </TextBlock>
             </DockPanel>
 
-            <TextBlock DockPanel.Dock="Bottom" Classes="small" HorizontalAlignment="Center">
-                Версия
-            </TextBlock>
+            <TextBlock DockPanel.Dock="Bottom"
+                       Classes="small"
+                       Opacity="0.7"
+                       HorizontalAlignment="Center"
+                       Text="{Binding Version}"/>
 
             <ScrollViewer Classes="main">
                 <StackPanel Spacing="6">
@@ -57,6 +59,7 @@
                         </TextBlock>
 
                         <TextBox Text="{Binding DiscoveryTimeout}"
+                            MaxWidth="120"
                             Grid.Column="1"/>
                     </Grid>
 
@@ -67,6 +70,7 @@
                         </TextBlock>
 
                         <TextBox Text="{Binding DiscoveryPort}"
+                            MaxWidth="120"
                             Grid.Column="1"/>
                     </Grid>
 

@@ -48,6 +48,12 @@ public partial class ChatViewModel : RoutableViewModelBase
     public partial string RoomName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Является ли локальный пользователь хостом комнаты
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsHost { get; set; }
+
+    /// <summary>
     /// Идентификатор комнаты
     /// </summary>
     public Guid RoomId => roomId;
@@ -118,6 +124,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         this.room = room;
         RoomName = room.Name;
+        IsHost = localParticipant.Id == room.HostParticipant.Id;
         this.connectionId = connectionId;
         roomId = room.Id;
 

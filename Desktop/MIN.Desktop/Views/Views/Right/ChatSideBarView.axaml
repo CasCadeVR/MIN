@@ -22,14 +22,13 @@
             Padding="{DynamicResource PaddingPage}"
             CornerRadius="{DynamicResource CornerRadiusLarge}">
         <DockPanel VerticalSpacing="10" >
-            <DockPanel HorizontalSpacing="16" DockPanel.Dock="Top" >
+            <DockPanel DockPanel.Dock="Top" >
                 <Button Command="{Binding CloseAsyncCommand}"
+                        HorizontalAlignment="Left"
                     DockPanel.Dock="Left"
                     Classes="icon">
                     <Svg Path="/Assets/Icons/close.svg" />
                 </Button>
-             
-                <Rectangle />
             </DockPanel>
 
             <StackPanel DockPanel.Dock="Top" Spacing="6">
@@ -119,9 +118,6 @@
                                                             IsVisible="{Binding CanInterract}" >
                                                         <Svg Path="/Assets/Icons/about-card.svg" />
                                                          <Button.Flyout>
-
-
-
                                                             <Flyout FlyoutPresenterClasses="buttons"
                                                                     Placement="Bottom">
                                                                  <StackPanel>

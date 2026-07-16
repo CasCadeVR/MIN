@@ -1,13 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Modals;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -21,6 +28,9 @@ public partial class ChatViewModel : RoutableViewModelBase
     private readonly Timer typingTimer = new() { Interval = 3000 };
 
     private bool isParentWindowActive = true;
+
+    [ObservableProperty]
+    public partial int CaretIndex { get; set; }
 
     #region Timers
 
@@ -89,31 +99,24 @@ public partial class ChatViewModel : RoutableViewModelBase
     [RelayCommand]
     private async Task EditRoom()
     {
-        //if (room == null)
-        //{
-        //    return;
-        //}
+        var editForm = await dialogService.ShowDialogAsync<CreateRoomViewModel>(vm =>
+        {
+            vm.InitializeWithRoom(new RoomInfo(room));
+        });
 
-        //var editForm = new RoomCreateForm(new RoomInfo(room));
-        //var result = editForm.ShowDialog();
-
-        //if (result == DialogResult.Abort)
-        //{
-        //    await Disconnect();
-        //}
-        //else if (result == DialogResult.OK
-        //    && (editForm.Room.Name != room.Name
-        //    || editForm.Room.MaximumParticipants != room.MaximumParticipants))
-        //{
-        //    try
-        //    {
-        //        await featureCollection.Chat.ChatRoomService.SendUpdatedRoomInfoAsync(editForm.Room, formCts.Token);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        InAppNotifier.Error(ex.Message);
-        //    }
-        //}
+        if ((editForm! == true && editForm != null)
+            && (editForm.Room.Name != room.Name
+            || editForm.Room.MaximumParticipants != room.MaximumParticipants))
+        {
+            try
+            {
+                await featureCollection.Chat.ChatRoomService.SendUpdatedRoomInfoAsync(editForm.Room, formCts.Token);
+            }
+            catch (Exception ex)
+            {
+                InAppNotifier.Error(ex.Message);
+            }
+        }
     }
 
     #endregion
@@ -167,40 +170,59 @@ public partial class ChatViewModel : RoutableViewModelBase
         isParentWindowActive = true;
     }
 
-    private void messageTextBox_KeyDown(object sender, KeyEventArgs e)
-    {
-        //if (e.Control && e.KeyCode == Keys.V)
-        //{
-        //    if (Clipboard.ContainsFileDropList())
-        //    {
-        //        foreach (var filePath in Clipboard.GetFileDropList())
-        //        {
-        //            if (filePath != null)
-        //            {
-        //                UploadFile(filePath);
-        //            }
-        //        }
-        //        e.Handled = true;
-        //        e.SuppressKeyPress = true;
-        //    }
-        //    else if (Clipboard.ContainsImage())
-        //    {
-        //        var image = Clipboard.GetImage();
-        //        if (image == null)
-        //        {
-        //            e.Handled = true;
-        //            e.SuppressKeyPress = true;
-        //            return;
-        //        }
+    [RelayCommand]
+    private async Task PasteData() => await PasteDataFromClipboard(false);
 
-        //        var timestamp = DateTime.Now.ToString("yyyy-dd-MM-HH-mm-ss-fffff");
-        //        var tempPath = Path.Combine(Path.GetTempPath(), $"clipboard_{timestamp}.png");
-        //        image.Save(tempPath, ImageFormat.Png);
-        //        UploadFile(tempPath);
-        //        e.Handled = true;
-        //        e.SuppressKeyPress = true;
-        //    }
-        //}
+    [RelayCommand]
+    private async Task PasteDataWithText() => await PasteDataFromClipboard(true);
+
+    private async Task PasteDataFromClipboard(bool includingText = false)
+    {
+        var clipboard = parentWindow.Clipboard;
+
+        if (clipboard == null)
+        {
+            return;
+        }
+
+        var formats = await clipboard.GetDataFormatsAsync();
+
+        if (formats.Contains(DataFormat.File))
+        {
+            if (await clipboard.TryGetFilesAsync() is IEnumerable<IStorageItem> files)
+            {
+                foreach (var file in files)
+                {
+                    if (!string.IsNullOrEmpty(file.Path.AbsolutePath))
+                    {
+                        UploadFile(file.Path.AbsolutePath);
+                    }
+                }
+                return;
+            }
+        }
+
+        if (includingText)
+        {
+            if (formats.Contains(DataFormat.Text))
+            {
+                if (await clipboard.TryGetTextAsync() is string text)
+                {
+                    SendingMessage = SendingMessage.Insert(CaretIndex, text);
+                    CaretIndex += text.Length;
+                    return;
+                }
+            }
+        }
+
+        var image = await clipboard.TryGetBitmapAsync();
+        if (image is Bitmap bitmap)
+        {
+            var timestamp = DateTime.Now.ToString("yyyy-dd-MM-HH-mm-ss-fffff");
+            var tempPath = Path.Combine(Path.GetTempPath(), $"clipboard_{timestamp}.png");
+            bitmap.Save(tempPath); // Avalonia 12: Bitmap.Save(string)
+            UploadFile(tempPath);
+        }
     }
 
     #endregion

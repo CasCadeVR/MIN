@@ -88,7 +88,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             renderedMessageCount++;
         }
 
-        // TODO
+        // TODO check if its missed (didnt saw)
         //if (scrollToBottom)
         //{
         //    chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;

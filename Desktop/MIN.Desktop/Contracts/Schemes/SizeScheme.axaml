@@ -23,6 +23,7 @@
     <Thickness x:Key="PaddingTopBar">8</Thickness>
     <Thickness x:Key="PaddingInput">12</Thickness>
     <Thickness x:Key="PaddingPage">16</Thickness>
+    <Thickness x:Key="PaddingLarge">20</Thickness>
 
     <system:Double x:Key="IconAverage">24</system:Double>
     <system:Double x:Key="IconButton">24</system:Double>

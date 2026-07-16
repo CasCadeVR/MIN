@@ -89,6 +89,10 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
             featureCollection.Helper.SettingsProvider.OnSettingsSaved += FillControls;
 
             FillControls();
+
+            Application.Current!.RequestedThemeVariant = Settings.LightThemeEnabled
+                ? ThemeVariant.Light
+                : ThemeVariant.Dark;
         }
     }
 
@@ -146,6 +150,7 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
         Settings = featureCollection.Helper.SettingsProvider.GetSettings();
         Version = $"Версия: {featureCollection.Helper.VersionProvider.Version.ToString()}";
         DefaultParticipantName = Settings.DefaultParticipantName;
+        LightThemeEnabled = Settings.LightThemeEnabled;
         DiscoveryTimeout = Settings.DiscoveryTimeout;
         DiscoveryPort = Settings.DiscoveryPort;
     }

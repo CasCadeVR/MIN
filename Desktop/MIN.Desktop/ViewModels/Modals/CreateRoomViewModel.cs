@@ -16,7 +16,7 @@ namespace MIN.Desktop.ViewModels.Modals;
 /// </summary>
 public partial class CreateRoomViewModel : ModalViewModelBase
 {
-    private readonly bool isNew;
+    private bool isNew;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
@@ -38,19 +38,20 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     /// <summary>
     /// Настраиваемая комната
     /// </summary>
-    public RoomInfo Room { get; set; } = null!;
+    public RoomInfo Room { get; set; } = new RoomInfo();
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="CreateRoomViewModel"/>
+    /// Инициализироовать с уже созданной комнатой
     /// </summary>
-    public CreateRoomViewModel(RoomInfo? room = null)
+    public void InitializeWithRoom(RoomInfo room)
     {
-        isNew = room == null;
-        Room = new RoomInfo();
+        isNew = false;
 
         if (!isNew)
         {
-            Room = new RoomInfo(room!);
+            Room = room;
+            Name = room.Name;
+            RoomMaxPlayers = room.MaximumParticipants;
         }
     }
 
@@ -71,4 +72,6 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     }
 
     private bool CanCreate() => !HasErrors;
+
+    internal object ShowDialog() => throw new NotImplementedException();
 }

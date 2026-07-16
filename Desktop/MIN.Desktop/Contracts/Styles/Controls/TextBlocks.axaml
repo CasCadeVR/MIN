@@ -69,9 +69,13 @@
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
 
-    <Style Selector="TextBlock.small, SelectableTextBlock.small">
-        <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
-        <Setter Property="Opacity" Value="0.6"/>
+    <Style Selector="TextBlock.chat, SelectableTextBlock.chat">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeChat}"/>
+    </Style>
+
+    <Style Selector="TextBlock.info, SelectableTextBlock.info">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeInfo}"/>
+        <Setter Property="Opacity" Value="0.7"/>
     </Style>
 
     <Style Selector="TextBlock.caption, SelectableTextBlock.caption">

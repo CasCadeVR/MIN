@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Input.Platform;
 using Avalonia.Labs.Gif;
-using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -42,19 +41,6 @@ public partial class ChatFileImagePreviewMessageViewModel : BaseChatMessageViewM
     private GifStreamSource gifPreviewImage = null!;
 
     /// <summary>
-    /// .gif Превью изображения
-    /// </summary>
-    public GifStreamSource GifPreviewImage
-    {
-        get => gifPreviewImage;
-        private set
-        {
-            gifPreviewImage = value;
-            OnPropertyChanged();
-        }
-    }
-
-    /// <summary>
     /// Содержимое сообщения файла
     /// </summary>
     public FileMetadataMessage FileMetadataMessage { get; init; }
@@ -81,7 +67,20 @@ public partial class ChatFileImagePreviewMessageViewModel : BaseChatMessageViewM
     /// Превью изображения
     /// </summary>
     [ObservableProperty]
-    public partial IImage? PreviewImage { get; set; }
+    public partial Bitmap? PreviewImage { get; set; }
+
+    /// <summary>
+    /// .gif Превью изображения
+    /// </summary>
+    public GifStreamSource GifPreviewImage
+    {
+        get => gifPreviewImage;
+        private set
+        {
+            gifPreviewImage = value;
+            OnPropertyChanged();
+        }
+    }
 
     /// <summary>
     /// Состояния скачивания файла
@@ -239,6 +238,10 @@ public partial class ChatFileImagePreviewMessageViewModel : BaseChatMessageViewM
         {
             gifStream = File.OpenRead(filePath);
             GifPreviewImage = GifStreamSource.FromStream(gifStream);
+        }
+        else if (cachedFormat == "svg")
+        {
+            PreviewImage = ImageHelper.SvgToBitmap(filePath);
         }
         else
         {

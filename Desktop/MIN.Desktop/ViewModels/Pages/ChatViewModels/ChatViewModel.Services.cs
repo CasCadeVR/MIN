@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,6 +9,7 @@ using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Windows;
 using MIN.FileTransfer.Messaging;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Models;
@@ -33,10 +32,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private void InitializeNotifications()
     {
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
-        {
-            parentWindow = lifetime.Windows[0];
-        }
+        parentWindow = MainWindowViewModel.GetWindow()!;
 
         featureCollection.Helper.NotificationService.OnNotificationClick += () =>
         {
@@ -141,10 +137,17 @@ public partial class ChatViewModel : RoutableViewModelBase
                     {
                         using var bitmap = new Bitmap(fileAttachement.File.FilePath);
                     }
-                    catch (ArgumentException ex)
+                    catch
                     {
-                        InAppNotifier.Error($"Не удалось загрузить файл {fileAttachement.File.FileName}: {ex.Message}");
-                        return;
+                        try
+                        {
+                            using var bitmap = ImageHelper.SvgToBitmap(fileAttachement.File.FilePath);
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            InAppNotifier.Error($"Не удалось загрузить файл {fileAttachement.File.FileName}: {ex.Message}");
+                            return;
+                        }
                     }
                 }
 
