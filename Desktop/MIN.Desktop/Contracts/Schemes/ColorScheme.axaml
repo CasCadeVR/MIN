@@ -33,6 +33,8 @@
             <Color x:Key="SurfaceInput">#000000</Color>            <!-- TextBox / input background -->
             <Color x:Key="SurfaceTaskBar">#2C2C2E</Color>            <!-- Taskbar background -->
 
+            <Color x:Key="SurfaceDrag">#A1000000</Color>          <!-- Background when dragging file -->
+
             <!-- *************** -->
             <!-- SIDEBAR         -->
             <!-- *************** -->
@@ -57,7 +59,7 @@
             <Color x:Key="TextOnCard">#FFFFFF</Color>          <!-- Text ON cards -->
             <Color x:Key="TextOnCardSelected">#FFFFFF</Color>          <!-- Text ON selected cards -->
 
-            <Color x:Key="TextBackgroundOnImage">#7A2a2a2a</Color>          <!-- Text backgrund ON Images -->
+            <Color x:Key="TextBackgroundOnImage">#7A2a2a2a</Color>          <!-- Text background ON Images -->
 
             <Color x:Key="TextSelection">#3B82F6</Color>          <!-- Selection for SelectableTextBlock -->
 
@@ -147,6 +149,8 @@
             <Color x:Key="SurfaceElevated">#e9e9e8</Color>        <!-- Modal, dropdown, tooltip -->
             <Color x:Key="SurfaceInput">#e9e9e9</Color>            <!-- TextBox / input background -->
             <Color x:Key="SurfaceTaskBar">#d3d3d1</Color>            <!-- Taskbar background -->
+
+            <Color x:Key="SurfaceDrag">#A1000000</Color>          <!-- Background when dragging file -->
 
             <!-- *************** -->
             <!-- SIDEBAR         -->

@@ -20,553 +20,594 @@
         <designer:DesignerChatViewModel/>
     </Design.DataContext>
 
-    <Border>
-        <DockPanel VerticalSpacing="10" >
-            <Border DockPanel.Dock="Top"
-            Background="{DynamicResource SidebarBackground}"
-            Padding="{DynamicResource PaddingTopBar}"
-            CornerRadius="{DynamicResource CornerRadiusLarge}">
-                <DockPanel>
-                    <Button HorizontalAlignment="Right"
-                    DockPanel.Dock="Right"
-                    Classes="icon">
-                        <Svg Path="/Assets/Icons/about.svg" />
-                        <Button.Flyout>
-                            <Flyout FlyoutPresenterClasses="buttons"
-                                    Placement="BottomEdgeAlignedLeft">
-                                    <StackPanel>
-                                        <Button
-                                        Classes="no-background"
-                                        HorizontalContentAlignment="Stretch"
-                                        Command="{Binding DisconnectCommand}">
+    <Panel
+        DragDrop.AllowDrop="True"
+        DragDrop.DragEnter="Border_DragEnter"
+        DragDrop.DragLeave="Border_DragLeave"
+        DragDrop.DragOver="Border_DragOver"
+        DragDrop.Drop="Border_Drop"
+        behaviors:DropFilesBehavior.DropFilesCommand="{Binding DropFilesCommand}">
+        <Border
+           Background="Transparent">
+            <DockPanel VerticalSpacing="10">
 
-                                        <StackPanel>
-                                            <Svg Path="/Assets/Icons/leave.svg" />
-                                            <TextBlock VerticalAlignment="Center"
-                                                Text="Покинуть комнату"/>
-                                        </StackPanel>
-                                    </Button>
-                                   
-                                    <Button
-                                        Command="{Binding EditRoomCommand}"
-                                        Classes="no-background"
-                                        HorizontalContentAlignment="Stretch"
-                                        IsVisible="{Binding IsHost}">
-                                        <StackPanel>
-                                            <Svg Path="/Assets/Icons/edit.svg" />
-                                            <TextBlock VerticalAlignment="Center"
-                                                Text="Редактировать комнату" />
-                                        </StackPanel>
-                                    </Button>
-                                </StackPanel>
-                            </Flyout>
-                        </Button.Flyout>
-                    </Button>
+                <!-- Topbar -->
 
-                    <Button HorizontalAlignment="Left"
-                        Command="{Binding ToggleSideBarCommand}"
-                        Classes="no-background">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Margin="6,0,0,0"
-                                Classes="header5"
-                                Text="Комната " />
-
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Classes="header3"
-                                Text="{Binding RoomName}" />
-                        </StackPanel>
-                    </Button>
-                </DockPanel>
-            </Border>
-
-             <Border DockPanel.Dock="Bottom"
-                    Background="{DynamicResource SidebarBackground}"
-                    Padding="{DynamicResource PaddingTopBar}"
-                    CornerRadius="{DynamicResource CornerRadiusLarge}">
-                <StackPanel>
-
-                    <ScrollViewer Classes="horizontal"
-                                  IsVisible="{Binding SomeFilesAttached}">
-                        <ItemsControl ItemsSource="{Binding AttachedFiles}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel
-                                        Spacing="8"
-                                        Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Classes="card">
-                                        <Panel Height="100" Width="100" >
-                                            <Svg
-                                                Opacity="0.2"
-                                                Height="100" Width="100"
-                                                Path="/Assets/Icons/file-upload.svg" />
-
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Text="{Binding File.FileName}" />
-
-                                            <Button
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Top"
-                                                Classes="icon small close"
-                                                Command="{Binding DeleteClickCommand}">
-                                                    <Svg Path="/Assets/Icons/close.svg" />
-                                                </Button>
-                                        </Panel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-
-                    <TextBlock Text="{Binding StatusContent}"
-                        Opacity="0.5"
-                        IsVisible="{Binding ShowStatus}"/>
-
-                     <!-- TextBox and actions -->
-
-                    <DockPanel HorizontalSpacing="8" >
-                        <Button
-                            VerticalAlignment="Bottom"
-                            DockPanel.Dock="Left"
-                            Classes="icon">
-                            <Svg Path="/Assets/Icons/plus.svg" />
+                <Border DockPanel.Dock="Top"
+                Background="{DynamicResource SidebarBackground}"
+                Padding="{DynamicResource PaddingTopBar}"
+                CornerRadius="{DynamicResource CornerRadiusLarge}">
+                    <DockPanel>
+                        <Button HorizontalAlignment="Right"
+                        DockPanel.Dock="Right"
+                        Classes="icon">
+                            <Svg Path="/Assets/Icons/about.svg" />
                             <Button.Flyout>
-                            <Flyout FlyoutPresenterClasses="buttons"
-                                    Placement="Top">
-                                <StackPanel>
-                                     <Button
-                                        Classes="no-background"
-                                        Command="{Binding UploadFileClickCommand}">
-
-                                        <StackPanel>
-                                            <Svg Path="/Assets/Icons/file-upload.svg" />
-                                            <TextBlock VerticalAlignment="Center"
-                                                       Text="Отправить файл" />
-                                        </StackPanel>
-                                    </Button>
-                                   
-                                    <Button
-                                        Classes="no-background"
-                                        Command="{Binding StartSessionClickCommand}">
-
-                                        <StackPanel>
-                                            <Svg Path="/Assets/Icons/rocket.svg" />
-                                            <TextBlock VerticalAlignment="Center"
-                                                Text="Начать активность" />
-                                        </StackPanel>
-                                    </Button>
-                                </StackPanel>
-                            </Flyout>
-                        </Button.Flyout>
-                        </Button>
-
-                        <Button
-                            Command="{Binding SendMessageCommand}"
-                            VerticalAlignment="Bottom"
-                            Classes="icon primary"
-                            DockPanel.Dock="Right"
-                            HotKey="Enter">
-                                <Svg Path="/Assets/Icons/send.svg" />
-                        </Button>
-
-                        <TextBox
-                            TextWrapping="Wrap"
-                            AcceptsReturn="True"
-                            MaxLines="10"
-                            CaretIndex="{Binding CaretIndex, Mode=TwoWay}"
-                            Text="{Binding SendingMessage, Converter={converters:TrimConverter}}"
-                            PlaceholderText="Сообщение">
-
-                            <TextBox.ContextFlyout>
                                 <Flyout FlyoutPresenterClasses="buttons"
-                                    Placement="Top">
-                                    <Button
-                                        Command="{Binding PasteDataWithTextCommand}"
-                                        Classes="no-background"
-                                        HorizontalContentAlignment="Stretch"
-                                        IsVisible="{Binding IsHost}">
+                                        Placement="BottomEdgeAlignedRight">
                                         <StackPanel>
-                                            <Svg Path="/Assets/Icons/paste.svg" />
-                                            <TextBlock VerticalAlignment="Center"
-                                                Text="Вставить" />
-                                        </StackPanel>
-                                    </Button>
+                                            <Button
+                                            Classes="no-background"
+                                            HorizontalContentAlignment="Stretch"
+                                            Command="{Binding DisconnectCommand}">
+
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/leave.svg" />
+                                                <TextBlock VerticalAlignment="Center"
+                                                    Text="Покинуть комнату"/>
+                                            </StackPanel>
+                                        </Button>
+                                   
+                                        <Button
+                                            Command="{Binding EditRoomCommand}"
+                                            Classes="no-background"
+                                            HorizontalContentAlignment="Stretch"
+                                            IsVisible="{Binding IsHost}">
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/edit.svg" />
+                                                <TextBlock VerticalAlignment="Center"
+                                                    Text="Редактировать комнату" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
                                 </Flyout>
-                            </TextBox.ContextFlyout>
+                            </Button.Flyout>
+                        </Button>
 
-                             <Interaction.Behaviors>
-                                <EventTriggerBehavior EventName="PastingFromClipboard">
-                                    <InvokeCommandAction
-                                        Command="{Binding PasteDataCommand}" />
-                                </EventTriggerBehavior>
-                            </Interaction.Behaviors>
-                        </TextBox>
+                        <Button HorizontalAlignment="Left"
+                            Command="{Binding ToggleSideBarCommand}"
+                            Classes="no-background">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Margin="6,0,0,0"
+                                    Classes="header5"
+                                    Text="Комната " />
+
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Classes="header3"
+                                    Text="{Binding RoomName}" />
+                            </StackPanel>
+                        </Button>
                     </DockPanel>
-                </StackPanel>
-             </Border>
+                </Border>
 
-            <!-- Messages -->
+                <!-- TextBox and actions -->
 
-            <ScrollViewer behaviors:AutoScrollToBottomBehavior.AutoScrollBottom="{Binding AutoScrollBottom}"
-                          VerticalAlignment="Bottom"
-                  VerticalScrollBarVisibility="Auto" Classes="main">
-                <ItemsControl ItemsSource="{Binding Messages}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <designer:MultiDataTemplate UseCache="False">
-                            <!-- Системное сообщение -->
+                 <Border DockPanel.Dock="Bottom"
+                        Background="{DynamicResource SidebarBackground}"
+                        Padding="{DynamicResource PaddingTopBar}"
+                        CornerRadius="{DynamicResource CornerRadiusLarge}">
+                    <StackPanel>
 
-                            <DataTemplate x:DataType="messages:SystemChatMessageViewModel">
-                               <Border Classes="message-row"
-                                    Classes.private="{Binding IsPrivate}"
-                                    Classes.selected="{Binding IsSelected}">
-                                    <Interaction.Behaviors>
-                                        <EventTriggerBehavior EventName="PointerPressed">
-                                             <InvokeCommandAction
-                                                    Command="{Binding ClickCommand}" />
-                                        </EventTriggerBehavior>
-                                    </Interaction.Behaviors>
-
-                                    <Border Classes="message system"
-                                        HorizontalAlignment="Center">
-                                        <TextBlock
-                                            Classes="chat"
-                                            Foreground="{DynamicResource TextOnPrimary}"
-                                            HorizontalAlignment="Center"
-                                            Text="{Binding Text}" />
-                                    </Border>
-                                </Border>
-                            </DataTemplate>
-
-                            <!-- Текстовое сообщение -->
-
-                            <DataTemplate x:DataType="messages:ChatTextMessageViewModel">
-                                <Border Classes="message-row"
-                                    Margin="{Binding TimePadding}"
-                                    Classes.private="{Binding IsPrivate}"
-                                    Classes.selected="{Binding IsSelected}">
-
-                                    <Border Classes="message"
-                                        Padding="{DynamicResource PaddingMedium}"
-                                        Classes.self="{Binding IsLocal}"
-                                        HorizontalAlignment="{Binding IsLocal,
-                                        Converter={converters:BoolToMessageAlignConverter}}">
-                                        <Border.ContextFlyout>
-                                            <Flyout Placement="Right">
-                                                <StackPanel>
-                                                    <Button
-                                                        Command="{Binding CopyToClipboardCommand}"
-                                                        Classes="no-background"
-                                                        HorizontalContentAlignment="Stretch">
-                                                        <StackPanel Spacing="8" Orientation="Horizontal" >
-                                                            <Svg Path="/Assets/Icons/copy.svg" />
-                                                            <TextBlock VerticalAlignment="Center"
-                                                                Text="Скопировать текст" />
-                                                        </StackPanel>
-                                                    </Button>
-                                                </StackPanel>
-                                            </Flyout>
-                                        </Border.ContextFlyout>
-
-                                        <StackPanel Spacing="8">
-                                            <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
-                                                <TextBlock
-                                                    FontWeight="Bold"
-                                                    Text="{Binding SenderName}" />
+                        <ScrollViewer Classes="horizontal"
+                                      IsVisible="{Binding SomeFilesAttached}">
+                            <ItemsControl ItemsSource="{Binding AttachedFiles}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel
+                                            Spacing="8"
+                                            Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Classes="card">
+                                            <Panel Height="100" Width="100" >
+                                                <Svg
+                                                    Opacity="0.2"
+                                                    Height="100" Width="100"
+                                                    Path="/Assets/Icons/file-upload.svg" />
 
                                                 <TextBlock
-                                                    IsVisible="{Binding IsHost}"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Top"
-                                                    Text="Хост"
-                                                    DockPanel.Dock="Right" />
-                                            </DockPanel>
-
-                                            <DockPanel HorizontalSpacing="8">
-                                                <TextBlock
-                                                    DockPanel.Dock="Right"
-                                                    Classes="info"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Bottom"
-                                                    Text="{Binding Timestamp}" />
-
-                                                <SelectableTextBlock
-                                                    Classes="chat"
-                                                    Text="{Binding ChatMessage.Content}" />
-                                            </DockPanel>
-                                        </StackPanel>
-                                    </Border>
-                                </Border>
-                            </DataTemplate>
-
-                            <!-- Файловое сообщение -->
-
-                            <DataTemplate x:DataType="messagesFiles:ChatFileMessageViewModel">
-                                <Border Classes="message-row"
-                                    Margin="{Binding TimePadding}"
-                                    Classes.private="{Binding IsPrivate}"
-                                    Classes.selected="{Binding IsSelected}">
-
-                                    <Border Classes="message"
-                                        MaxWidth="400"
-                                        Padding="{DynamicResource PaddingMedium}"
-                                        Classes.self="{Binding IsLocal}"
-                                        HorizontalAlignment="{Binding IsLocal,
-                                        Converter={converters:BoolToMessageAlignConverter}}">
-                                        <Border.ContextFlyout>
-                                            <Flyout FlyoutPresenterClasses="buttons"
-                                                    Placement="Right">
-                                                <StackPanel>
-                                                    <Button Command="{Binding CopyNameToClipboardCommand}"
-                                                            Classes="no-background">
-                                                        <StackPanel>
-                                                            <Svg Path="/Assets/Icons/copy.svg" />
-                                                            <TextBlock VerticalAlignment="Center"
-                                                                Text="Скопировать имя" />
-                                                        </StackPanel>
-                                                    </Button>
-
-                                                    <Button Command="{Binding ShowInFolderCommand}"
-                                                            Classes="no-background">
-                                                        <StackPanel>
-                                                            <Svg Path="/Assets/Icons/folder.svg" />
-                                                            <TextBlock VerticalAlignment="Center"
-                                                                Text="Показать в проводнике" />
-                                                        </StackPanel>
-                                                    </Button>
-                                                </StackPanel>
-                                            </Flyout>
-                                        </Border.ContextFlyout>
-
-                                        <StackPanel Spacing="8">
-                                            <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
-                                                <TextBlock
-                                                    FontWeight="Bold"
-                                                    Text="{Binding SenderName}" />
-
-                                                <TextBlock
-                                                    IsVisible="{Binding IsHost}"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Top"
-                                                    Text="Хост"
-                                                    DockPanel.Dock="Right" />
-                                            </DockPanel>
-
-                                            <DockPanel HorizontalSpacing="8">
-                                                <TextBlock
-                                                    DockPanel.Dock="Right"
-                                                    Classes="info"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Bottom"
-                                                    Text="{Binding Timestamp}" />
-
-                                                <Grid
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
-                                                    RowSpacing="8"
-                                                    ColumnSpacing="8"
-                                                    RowDefinitions="Auto, Auto, Auto"
-                                                    ColumnDefinitions="Auto, *">
-                                                    <Border
-                                                        Grid.RowSpan="3"
-                                                        Grid.Row="0"
-                                                        Grid.Column="0"
-                                                        Height="70"
-                                                        Width="70"
-                                                        Margin="10,0"
-                                                        Background="{DynamicResource Secondary}">
-                                                        <Button
-                                                            Classes="file"
-                                                            Command="{Binding InteractionClickCommand}">
-                                                            <Panel
-                                                                HorizontalAlignment="Center"
-                                                                VerticalAlignment="Center">
-                                                            <Svg
-                                                                Height="50" Width="50"
-                                                                Path="{Binding FileDownloadState,
-                                                                Converter={converters:FileDownloadStateToSvgConverter}}" />
+                                                    Text="{Binding File.FileName}" />
 
-                                                            <TextBlock
-                                                                HorizontalAlignment="Center"
-                                                                VerticalAlignment="Center"
-                                                                Text="{Binding InteractionFileStatus}" />
-                                                            </Panel>
-                                                        </Button>
-                                                        <Interaction.Behaviors>
-                                                            <EventTriggerBehavior EventName="PointerEntered">
-                                                                <InvokeCommandAction Command="{Binding InteractionMouseEnterCommand}" />
-                                                            </EventTriggerBehavior>
-                                                            <EventTriggerBehavior EventName="PointerExited">
-                                                                <InvokeCommandAction Command="{Binding InteractionMouseLeaveCommand}" />
-                                                            </EventTriggerBehavior>
-                                                        </Interaction.Behaviors>
-                                                    </Border>
-
-                                                    <SelectableTextBlock
-                                                        Grid.Row="0"
-                                                        Grid.Column="1"
-                                                        Classes="header5"
-                                                        HorizontalAlignment="Left"
-                                                        VerticalAlignment="Top"
-                                                        MaxLines="2"
-                                                        TextTrimming="CharacterEllipsis"
-                                                        Text="{Binding FileMetadataMessage.FileName}" />
-
-                                                    <TextBlock
-                                                        Grid.Row="1"
-                                                        Grid.Column="1"
-                                                        HorizontalAlignment="Left"
-                                                        VerticalAlignment="Top"
-                                                        Text="{Binding UniversalFileStatus}" />
-
-                                                    <ProgressBar
-                                                        Grid.Row="2"
-                                                        Grid.Column="1"
-                                                        HorizontalAlignment="Stretch"
-                                                        VerticalAlignment="Top"
-                                                        Value="{Binding DownloadProgress}"
-                                                        IsVisible="{Binding IsDownloading}"/>
-                                                </Grid>
-                                            </DockPanel>
-                                        </StackPanel>
-                                    </Border>
-                                </Border>
-                            </DataTemplate>
-
-                            <!-- Файловое сообщение превью изображения -->
-
-                            <DataTemplate x:DataType="messagesFiles:ChatFileImagePreviewMessageViewModel">
-                                <Border Classes="message-row"
-                                    Margin="{Binding TimePadding}"
-                                    Classes.private="{Binding IsPrivate}"
-                                    Classes.selected="{Binding IsSelected}">
-
-                                    <Border Classes="message"
-                                        MaxWidth="900"
-                                        Padding="{DynamicResource PaddingMedium}"
-                                        Classes.self="{Binding IsLocal}"
-                                        HorizontalAlignment="{Binding IsLocal,
-                                        Converter={converters:BoolToMessageAlignConverter}}">
-                                        <Border.ContextFlyout>
-                                            <Flyout FlyoutPresenterClasses="buttons"
-                                                    Placement="Right">
-                                                <StackPanel>
-                                                    <Button Command="{Binding CopyNameToClipboardCommand}"
-                                                            Classes="no-background">
-                                                        <StackPanel>
-                                                            <Svg Path="/Assets/Icons/copy.svg" />
-                                                            <TextBlock VerticalAlignment="Center"
-                                                                Text="Скопировать имя файла" />
-                                                        </StackPanel>
-                                                    </Button>
-
-                                                    <Button Command="{Binding ShowInFolderCommand}"
-                                                            Classes="no-background">
-                                                        <StackPanel>
-                                                            <Svg Path="/Assets/Icons/folder.svg" />
-                                                            <TextBlock VerticalAlignment="Center"
-                                                                Text="Показать в проводнике" />
-                                                        </StackPanel>
-                                                    </Button>
-                                                </StackPanel>
-                                            </Flyout>
-                                        </Border.ContextFlyout>
-
-                                        <StackPanel Spacing="8">
-                                            <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
-                                                <TextBlock
-                                                    FontWeight="Bold"
-                                                    Text="{Binding SenderName}" />
-
-                                                <TextBlock
-                                                    IsVisible="{Binding IsHost}"
+                                                <Button
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Top"
-                                                    Text="Хост"
-                                                    DockPanel.Dock="Right" />
-                                            </DockPanel>
-
-                                            <Panel>
-                                                <StackPanel>
-                                                    <!-- Image area -->
-                                                    <Panel MaxWidth="800">
-                                                        <!-- Layer 0: actual image (downloaded) -->
-                                                        <avagif:GifImage Source="{Binding GifPreviewImage}"
-                                                                Stretch="Uniform"
-                                                                IsVisible="{Binding FileDownloadState,
-                                                                    Converter={converters:EqualityConverter},
-                                                                    ConverterParameter={x:Static enums:FileDownloadState.Downloaded}}"/>
-
-                                                        <Image Source="{Binding PreviewImage}"
-                                                                Stretch="Uniform"
-                                                                IsVisible="{Binding FileDownloadState,
-                                                                    Converter={converters:EqualityConverter},
-                                                                    ConverterParameter={x:Static enums:FileDownloadState.Downloaded}}" />
-
-                                                        <!-- Layer 1: overlay (not downloaded / downloading) -->
-                                                        <Border
-                                                            IsVisible="{Binding FileDownloadState,
-                                                            Converter={converters:EqualityConverter},
-                                                            ConverterParameter={x:Static enums:FileDownloadState.NotDownloaded}}"
-                                                            Padding="{DynamicResource PaddingLarge}">
-                                                            <StackPanel
-                                                                VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
-                                                                <Button
-                                                                    VerticalAlignment="Center"
-                                                                    HorizontalAlignment="Center"
-                                                                    Classes="icon" Command="{Binding InteractionClickCommand}">
-                                                                    <Svg Path="{Binding FileDownloadState,
-                                                                            Converter={converters:FileDownloadStateToSvgConverter}}"
-                                                                        Width="48" Height="48" />
-                                                                </Button>
-
-                                                                <TextBlock Text="{Binding FileNameAndSize}"
-                                                                    HorizontalAlignment="Center" />
-                                                            </StackPanel>
-                                                        </Border>
-                                                    </Panel>
-
-                                                    <!-- Layer 2: progress bar (during download) -->
-
-                                                    <ProgressBar
-                                                        HorizontalAlignment="Stretch"
-                                                        VerticalAlignment="Top"
-                                                        Value="{Binding DownloadProgress}"
-                                                        IsVisible="{Binding IsDownloading}"/>
-
-                                                </StackPanel>
-
-                                                <Border
-                                                    DockPanel.Dock="Right"
-                                                    Classes="on-image"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Bottom"
-                                                    Margin="0,0,4,4">
-                                                    <TextBlock
-                                                        Classes="info"
-                                                        Text="{Binding Timestamp}" />
-                                                </Border>
+                                                    Classes="icon small close"
+                                                    Command="{Binding DeleteClickCommand}">
+                                                        <Svg Path="/Assets/Icons/close.svg" />
+                                                    </Button>
                                             </Panel>
-                                        </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <TextBlock Text="{Binding StatusContent}"
+                            Opacity="0.5"
+                            IsVisible="{Binding ShowStatus}"/>
+
+                        <DockPanel HorizontalSpacing="8" >
+                            <Button
+                                VerticalAlignment="Bottom"
+                                DockPanel.Dock="Left"
+                                Classes="icon">
+                                <Svg Path="/Assets/Icons/plus.svg" />
+                                <Button.Flyout>
+                                <Flyout FlyoutPresenterClasses="buttons"
+                                        Placement="Top">
+                                    <StackPanel>
+                                         <Button
+                                            Classes="no-background"
+                                            Command="{Binding UploadFileClickCommand}">
+
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/file-upload.svg" />
+                                                <TextBlock VerticalAlignment="Center"
+                                                           Text="Отправить файл" />
+                                            </StackPanel>
+                                        </Button>
+                                   
+                                        <Button
+                                            Classes="no-background"
+                                            Command="{Binding StartSessionClickCommand}">
+
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/rocket.svg" />
+                                                <TextBlock VerticalAlignment="Center"
+                                                    Text="Начать активность" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                            </Button>
+
+                            <Button
+                                Command="{Binding SendMessageCommand}"
+                                VerticalAlignment="Bottom"
+                                Classes="icon primary"
+                                DockPanel.Dock="Right"
+                                HotKey="Enter">
+                                    <Svg Path="/Assets/Icons/send.svg" />
+                            </Button>
+
+                            <TextBox
+                                TextWrapping="Wrap"
+                                AcceptsReturn="True"
+                                MaxLines="10"
+                                CaretIndex="{Binding CaretIndex, Mode=TwoWay}"
+                                Text="{Binding SendingMessage, Converter={converters:TrimConverter}}"
+                                PlaceholderText="Сообщение">
+
+                                <TextBox.ContextFlyout>
+                                    <Flyout FlyoutPresenterClasses="buttons"
+                                        Placement="Top">
+                                        <Button
+                                            Command="{Binding PasteDataWithTextCommand}"
+                                            Classes="no-background"
+                                            HorizontalContentAlignment="Stretch"
+                                            IsVisible="{Binding IsHost}">
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/paste.svg" />
+                                                <TextBlock VerticalAlignment="Center"
+                                                    Text="Вставить" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Flyout>
+                                </TextBox.ContextFlyout>
+
+                                 <Interaction.Behaviors>
+                                    <EventTriggerBehavior EventName="PastingFromClipboard">
+                                        <InvokeCommandAction
+                                            Command="{Binding PasteDataCommand}" />
+                                    </EventTriggerBehavior>
+                                </Interaction.Behaviors>
+                            </TextBox>
+                        </DockPanel>
+                    </StackPanel>
+                 </Border>
+
+                <!-- Messages -->
+
+
+                <ScrollViewer
+                    behaviors:AutoScrollToBottomBehavior.AutoScrollBottom="{Binding AutoScrollBottom}"
+                    VerticalAlignment="Bottom"
+                    VerticalScrollBarVisibility="Auto"
+                    Classes="main">
+                    <ItemsControl ItemsSource="{Binding Messages}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <designer:MultiDataTemplate UseCache="False">
+                                <!-- Системное сообщение -->
+
+                                <DataTemplate x:DataType="messages:SystemChatMessageViewModel">
+                                   <Border Classes="message-row"
+                                        Classes.private="{Binding IsPrivate}"
+                                        Classes.selected="{Binding IsSelected}">
+                                        <Interaction.Behaviors>
+                                            <EventTriggerBehavior EventName="PointerPressed">
+                                                 <InvokeCommandAction
+                                                        Command="{Binding ClickCommand}" />
+                                            </EventTriggerBehavior>
+                                        </Interaction.Behaviors>
+
+                                        <Border Classes="message system"
+                                            HorizontalAlignment="Center">
+                                            <TextBlock
+                                                Classes="chat"
+                                                Foreground="{DynamicResource TextOnPrimary}"
+                                                HorizontalAlignment="Center"
+                                                Text="{Binding Text}" />
+                                        </Border>
                                     </Border>
-                                </Border>
-                            </DataTemplate>
-                        </designer:MultiDataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-        </DockPanel>
-    </Border>
+                                </DataTemplate>
+
+                                <!-- Текстовое сообщение -->
+
+                                <DataTemplate x:DataType="messages:ChatTextMessageViewModel">
+                                    <Border Classes="message-row"
+                                        Margin="{Binding TimePadding}"
+                                        Classes.private="{Binding IsPrivate}"
+                                        Classes.selected="{Binding IsSelected}">
+
+                                        <Border Classes="message"
+                                            Padding="{DynamicResource PaddingMedium}"
+                                            Classes.self="{Binding IsLocal}"
+                                            HorizontalAlignment="{Binding IsLocal,
+                                            Converter={converters:BoolToMessageAlignConverter}}">
+                                            <Border.ContextFlyout>
+                                                <Flyout Placement="Right">
+                                                    <StackPanel>
+                                                        <Button
+                                                            Command="{Binding CopyToClipboardCommand}"
+                                                            Classes="no-background"
+                                                            HorizontalContentAlignment="Stretch">
+                                                            <StackPanel Spacing="8" Orientation="Horizontal" >
+                                                                <Svg Path="/Assets/Icons/copy.svg" />
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                    Text="Скопировать текст" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Flyout>
+                                            </Border.ContextFlyout>
+
+                                            <StackPanel Spacing="8">
+                                                <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
+                                                    <TextBlock
+                                                        FontWeight="Bold"
+                                                        Text="{Binding SenderName}" />
+
+                                                    <TextBlock
+                                                        IsVisible="{Binding IsHost}"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Text="Хост"
+                                                        DockPanel.Dock="Right" />
+                                                </DockPanel>
+
+                                                <DockPanel HorizontalSpacing="8">
+                                                    <TextBlock
+                                                        DockPanel.Dock="Right"
+                                                        Classes="info"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Bottom"
+                                                        Text="{Binding Timestamp}" />
+
+                                                    <SelectableTextBlock
+                                                        Classes="chat"
+                                                        Text="{Binding ChatMessage.Content}" />
+                                                </DockPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </Border>
+                                </DataTemplate>
+
+                                <!-- Файловое сообщение -->
+
+                                <DataTemplate x:DataType="messagesFiles:ChatFileMessageViewModel">
+                                    <Border Classes="message-row"
+                                        Margin="{Binding TimePadding}"
+                                        Classes.private="{Binding IsPrivate}"
+                                        Classes.selected="{Binding IsSelected}">
+
+                                        <Border Classes="message"
+                                            MaxWidth="400"
+                                            Padding="{DynamicResource PaddingMedium}"
+                                            Classes.self="{Binding IsLocal}"
+                                            HorizontalAlignment="{Binding IsLocal,
+                                            Converter={converters:BoolToMessageAlignConverter}}">
+                                            <Border.ContextFlyout>
+                                                <Flyout FlyoutPresenterClasses="buttons"
+                                                        Placement="Right">
+                                                    <StackPanel>
+                                                        <Button Command="{Binding CopyNameToClipboardCommand}"
+                                                                Classes="no-background">
+                                                            <StackPanel>
+                                                                <Svg Path="/Assets/Icons/copy.svg" />
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                    Text="Скопировать имя" />
+                                                            </StackPanel>
+                                                        </Button>
+
+                                                        <Button Command="{Binding ShowInFolderCommand}"
+                                                                Classes="no-background">
+                                                            <StackPanel>
+                                                                <Svg Path="/Assets/Icons/folder.svg" />
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                    Text="Показать в проводнике" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Flyout>
+                                            </Border.ContextFlyout>
+
+                                            <StackPanel Spacing="8">
+                                                <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
+                                                    <TextBlock
+                                                        FontWeight="Bold"
+                                                        Text="{Binding SenderName}" />
+
+                                                    <TextBlock
+                                                        IsVisible="{Binding IsHost}"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Text="Хост"
+                                                        DockPanel.Dock="Right" />
+                                                </DockPanel>
+
+                                                <DockPanel HorizontalSpacing="8">
+                                                    <TextBlock
+                                                        DockPanel.Dock="Right"
+                                                        Classes="info"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Bottom"
+                                                        Text="{Binding Timestamp}" />
+
+                                                    <Grid
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        RowSpacing="8"
+                                                        ColumnSpacing="8"
+                                                        RowDefinitions="Auto, Auto, Auto"
+                                                        ColumnDefinitions="Auto, *">
+                                                        <Border
+                                                            Grid.RowSpan="3"
+                                                            Grid.Row="0"
+                                                            Grid.Column="0"
+                                                            Height="70"
+                                                            Width="70"
+                                                            Margin="10,0"
+                                                            Background="{DynamicResource Secondary}">
+                                                            <Button
+                                                                Classes="file"
+                                                                Command="{Binding InteractionClickCommand}">
+                                                                <Panel
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center">
+                                                                <Svg
+                                                                    Height="50" Width="50"
+                                                                    Path="{Binding FileDownloadState,
+                                                                    Converter={converters:FileDownloadStateToSvgConverter}}" />
+
+                                                                <TextBlock
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"
+                                                                    Text="{Binding InteractionFileStatus}" />
+                                                                </Panel>
+                                                            </Button>
+                                                            <Interaction.Behaviors>
+                                                                <EventTriggerBehavior EventName="PointerEntered">
+                                                                    <InvokeCommandAction Command="{Binding InteractionMouseEnterCommand}" />
+                                                                </EventTriggerBehavior>
+                                                                <EventTriggerBehavior EventName="PointerExited">
+                                                                    <InvokeCommandAction Command="{Binding InteractionMouseLeaveCommand}" />
+                                                                </EventTriggerBehavior>
+                                                            </Interaction.Behaviors>
+                                                        </Border>
+
+                                                        <SelectableTextBlock
+                                                            Grid.Row="0"
+                                                            Grid.Column="1"
+                                                            Classes="header5"
+                                                            HorizontalAlignment="Left"
+                                                            VerticalAlignment="Top"
+                                                            MaxLines="2"
+                                                            TextTrimming="CharacterEllipsis"
+                                                            Text="{Binding FileMetadataMessage.FileName}" />
+
+                                                        <TextBlock
+                                                            Grid.Row="1"
+                                                            Grid.Column="1"
+                                                            HorizontalAlignment="Left"
+                                                            VerticalAlignment="Top"
+                                                            Text="{Binding UniversalFileStatus}" />
+
+                                                        <ProgressBar
+                                                            Grid.Row="2"
+                                                            Grid.Column="1"
+                                                            HorizontalAlignment="Stretch"
+                                                            VerticalAlignment="Top"
+                                                            Value="{Binding DownloadProgress}"
+                                                            IsVisible="{Binding IsDownloading}"/>
+                                                    </Grid>
+                                                </DockPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </Border>
+                                </DataTemplate>
+
+                                <!-- Файловое сообщение превью изображения -->
+
+                                <DataTemplate x:DataType="messagesFiles:ChatFileImagePreviewMessageViewModel">
+                                    <Border Classes="message-row"
+                                        Margin="{Binding TimePadding}"
+                                        Classes.private="{Binding IsPrivate}"
+                                        Classes.selected="{Binding IsSelected}">
+
+                                        <Border Classes="message"
+                                            MaxWidth="900"
+                                            Padding="{DynamicResource PaddingMedium}"
+                                            Classes.self="{Binding IsLocal}"
+                                            HorizontalAlignment="{Binding IsLocal,
+                                            Converter={converters:BoolToMessageAlignConverter}}">
+                                            <Border.ContextFlyout>
+                                                <Flyout FlyoutPresenterClasses="buttons"
+                                                        Placement="Right">
+                                                    <StackPanel>
+                                                        <Button Command="{Binding CopyNameToClipboardCommand}"
+                                                                Classes="no-background">
+                                                            <StackPanel>
+                                                                <Svg Path="/Assets/Icons/copy.svg" />
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                    Text="Скопировать имя файла" />
+                                                            </StackPanel>
+                                                        </Button>
+
+                                                        <Button Command="{Binding ShowInFolderCommand}"
+                                                                Classes="no-background">
+                                                            <StackPanel>
+                                                                <Svg Path="/Assets/Icons/folder.svg" />
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                    Text="Показать в проводнике" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Flyout>
+                                            </Border.ContextFlyout>
+
+                                            <StackPanel Spacing="8">
+                                                <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
+                                                    <TextBlock
+                                                        FontWeight="Bold"
+                                                        Text="{Binding SenderName}" />
+
+                                                    <TextBlock
+                                                        IsVisible="{Binding IsHost}"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Text="Хост"
+                                                        DockPanel.Dock="Right" />
+                                                </DockPanel>
+
+                                                <Panel>
+                                                    <StackPanel>
+                                                        <!-- Image area -->
+                                                        <Panel MaxWidth="800">
+                                                            <!-- Layer 0: actual image (downloaded) -->
+                                                            <avagif:GifImage Source="{Binding GifPreviewImage}"
+                                                                    Stretch="Uniform"
+                                                                    IsVisible="{Binding FileDownloadState,
+                                                                        Converter={converters:EqualityConverter},
+                                                                        ConverterParameter={x:Static enums:FileDownloadState.Downloaded}}"/>
+
+                                                            <Image Source="{Binding PreviewImage}"
+                                                                    Stretch="Uniform"
+                                                                    IsVisible="{Binding FileDownloadState,
+                                                                        Converter={converters:EqualityConverter},
+                                                                        ConverterParameter={x:Static enums:FileDownloadState.Downloaded}}" />
+
+                                                            <!-- Layer 1: overlay (not downloaded / downloading) -->
+                                                            <Border
+                                                                IsVisible="{Binding FileDownloadState,
+                                                                Converter={converters:EqualityConverter},
+                                                                ConverterParameter={x:Static enums:FileDownloadState.NotDownloaded}}"
+                                                                Padding="{DynamicResource PaddingLarge}">
+                                                                <StackPanel
+                                                                    VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+                                                                    <Button
+                                                                        VerticalAlignment="Center"
+                                                                        HorizontalAlignment="Center"
+                                                                        Classes="icon" Command="{Binding InteractionClickCommand}">
+                                                                        <Svg Path="{Binding FileDownloadState,
+                                                                                Converter={converters:FileDownloadStateToSvgConverter}}"
+                                                                            Width="48" Height="48" />
+                                                                    </Button>
+
+                                                                    <TextBlock Text="{Binding FileNameAndSize}"
+                                                                        HorizontalAlignment="Center" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </Panel>
+
+                                                        <!-- Layer 2: progress bar (during download) -->
+
+                                                        <ProgressBar
+                                                            HorizontalAlignment="Stretch"
+                                                            VerticalAlignment="Top"
+                                                            Value="{Binding DownloadProgress}"
+                                                            IsVisible="{Binding IsDownloading}"/>
+
+                                                    </StackPanel>
+
+                                                    <Border
+                                                        DockPanel.Dock="Right"
+                                                        Classes="on-image"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Bottom"
+                                                        Margin="0,0,4,4">
+                                                        <TextBlock
+                                                            Classes="info"
+                                                            Text="{Binding Timestamp}" />
+                                                    </Border>
+                                                </Panel>
+                                            </StackPanel>
+                                        </Border>
+                                    </Border>
+                                </DataTemplate>
+                            </designer:MultiDataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- Drag and drop overlay --> 
+
+        <Border
+            Classes="drag"
+            IsVisible="False"
+            x:Name="DragDropBorder">
+                <Border
+                    MaxWidth="200"
+                    MaxHeight="150"
+                    Classes="card">
+                     <StackPanel
+                        VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16">
+                        <Svg Path="/Assets/Icons/file-upload.svg"
+                            Width="48" Height="48" />
+
+                          <StackPanel VerticalAlignment="Center"
+                                      Orientation="Horizontal">
+                              <TextBlock MaxWidth="200" TextAlignment="Center" TextWrapping="Wrap">
+                                    <TextBlock Text="Перекинуть файлы в комнату " />
+                                    <TextBlock Text="{Binding RoomName}" />
+                              </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+            </Border>
+        </Border>
+    </Panel>
 </UserControl>
