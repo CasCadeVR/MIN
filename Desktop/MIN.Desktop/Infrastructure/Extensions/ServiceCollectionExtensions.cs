@@ -1,8 +1,10 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Common.Mvc.Extensions;
 using MIN.Desktop.Contracts.Attributes;
 using MIN.Desktop.Contracts.Interfaces;
@@ -36,8 +38,29 @@ public static partial class ServiceCollectionExtensions
             .AddSingleton<Func<IMultiRoutingWindow>>(provider => provider.GetRequiredService<MainWindowViewModel>)
             .AddSingleton<Func<Window>>(provider => () =>
             {
+                var hostedServices = provider.GetServices<IHostedService>();
                 Window window = provider.GetRequiredService<Window>();
                 window.DataContext = provider.GetRequiredService<MainWindowViewModel>();
+                var isClosing = false;
+
+                window.Closing += async (_, e) =>
+                {
+                    if (isClosing)
+                    {
+                        return;
+                    }
+
+                    isClosing = true;
+                    e.Cancel = true;
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    foreach (var svc in hostedServices)
+                    {
+                        await svc.StopAsync(cts.Token);
+                    }
+
+                    window.Close();
+                };
+
                 return window;
             })
             .AddDialogs()

@@ -102,7 +102,7 @@ public class SessionScanner : ISessionScanner
         }
 
         var path = Path.Combine(
-            sessionsDirectory, session.SessionId, session.GeThumbnailPath());
+            sessionsDirectory, session.SessionId, session.GetThumbnailPath());
         return File.Exists(path) ? File.ReadAllBytes(path) : null;
     }
 }

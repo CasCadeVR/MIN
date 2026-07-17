@@ -106,10 +106,9 @@ public class SessionMonitor : IHostedService
         }
     }
 
-    Task IHostedService.StopAsync(CancellationToken cancellationToken)
+    async Task IHostedService.StopAsync(CancellationToken cancellationToken)
     {
-        sessionProcessBridge.StopListeningAsync(cancellationToken);
-        sessionProcessManager.StopAllAsync();
-        return Task.CompletedTask;
+        await sessionProcessBridge.StopListeningAsync(cancellationToken);
+        await sessionProcessManager.StopAllAsync();
     }
 }

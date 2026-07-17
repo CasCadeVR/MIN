@@ -29,6 +29,7 @@ public class SessionProcessBridge : ISessionProcessBridge
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
     private CancellationTokenSource cts = null!;
+    private bool disposed;
 
     /// <summary>
     /// Инициализирует новый экзепмляр <see cref="SessionProcessBridge"/>
@@ -174,10 +175,15 @@ public class SessionProcessBridge : ISessionProcessBridge
         await processTransport.SendAsync(data, context, cancellationToken);
     }
 
-    Task ISessionProcessBridge.StopListeningAsync(CancellationToken cancellationToken)
+    async Task ISessionProcessBridge.StopListeningAsync(CancellationToken cancellationToken)
     {
-        cts.Cancel();
-        cts.Dispose();
-        return Task.CompletedTask;
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        cts?.Cancel();
+        cts?.Dispose();
     }
 }

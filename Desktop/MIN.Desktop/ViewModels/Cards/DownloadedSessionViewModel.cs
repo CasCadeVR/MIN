@@ -42,7 +42,7 @@ public partial class DownloadedSessionViewModel : CardViewModelBase, IDisposable
     public partial string MaximumParticipantInfo { get; set; } = string.Empty;
 
     /// <summary>
-    /// Сессия
+    /// Ссылка на установку сессии
     /// </summary>
     [ObservableProperty]
     public partial string DownloadLink { get; set; } = string.Empty;
@@ -97,7 +97,7 @@ public partial class DownloadedSessionViewModel : CardViewModelBase, IDisposable
 
         if (Session.ThumbnailFileName != null)
         {
-            var bytes = File.ReadAllBytes(Session.GeThumbnailPath());
+            var bytes = File.ReadAllBytes(Session.GetThumbnailPath());
             using var ms = new MemoryStream(bytes);
 
             var format = Session.ThumbnailFileName.TakeLast(3).ToString();
@@ -152,5 +152,14 @@ public partial class DownloadedSessionViewModel : CardViewModelBase, IDisposable
             DownloadLink = "Скопировано!";
         }
         catch { }
+    }
+
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    public override void Dispose()
+    {
+        gifStream?.Dispose();
+        gifStream = null;
+
+        base.Dispose();
     }
 }

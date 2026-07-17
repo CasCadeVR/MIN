@@ -113,6 +113,7 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
                 await stream.WriteAsync(data, cancellationToken);
                 await stream.FlushAsync(cancellationToken);
             }
+            catch (Exception ex) when (ex is IOException or ObjectDisposedException or InvalidOperationException) { }
             finally
             {
                 writeLock.Release();

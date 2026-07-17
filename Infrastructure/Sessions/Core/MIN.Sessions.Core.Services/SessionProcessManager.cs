@@ -98,7 +98,6 @@ public class SessionProcessManager : ISessionProcessManager
         currentExitHandler = async (_, _) => await AnnounceExit(session, context, cancellationToken);
         startedProcess.Exited += currentExitHandler;
 
-
         return true;
     }
 
@@ -124,6 +123,7 @@ public class SessionProcessManager : ISessionProcessManager
                 SubRoomId = context.SubRoomId,
             }, context.RoomId, identityService.SelfParticipant.Id, cancellationToken);
         }
+        runningProcesses.Remove(context);
     }
 
     bool ISessionProcessManager.SessionClientAppExists(Session session)
@@ -135,6 +135,7 @@ public class SessionProcessManager : ISessionProcessManager
         {
             await StopProcessWithTimeOut(context, process, clearAnnounce: false);
         }
+        runningProcesses.Remove(context);
     }
 
     async Task ISessionProcessManager.StopForRoomAsync(Guid roomId)

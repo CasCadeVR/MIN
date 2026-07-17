@@ -131,8 +131,12 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     {
         if (cts != null)
         {
-            await cts.CancelAsync();
-            cts.Dispose();
+            try
+            {
+                cts?.Cancel();
+            }
+            catch (ObjectDisposedException) { }
+            cts?.Dispose();
             cts = null!;
         }
         roomConnector.ConnectionStateChanged -= OnConnectionStateChanged;

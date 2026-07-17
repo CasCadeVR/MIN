@@ -165,13 +165,22 @@
             <Setter Property="Background" Value="{DynamicResource ChatMessageTheir}" />
 
             <!-- Своё сообщение -->
+
             <Style Selector="^.self">
                 <Setter Property="Background" Value="{DynamicResource ChatMessageSelf}" />
             </Style>
 
+            <!-- Системное -->
+
             <Style Selector="^.system">
                 <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
                 <Setter Property="Background" Value="{DynamicResource SystemBackground}" />
+            </Style>
+
+            <!-- Неактивное (сессия например) -->
+
+            <Style Selector="^.unactive">
+                <Setter Property="Background" Value="{DynamicResource SurfaceDisabled}" />
             </Style>
         </Style>
 

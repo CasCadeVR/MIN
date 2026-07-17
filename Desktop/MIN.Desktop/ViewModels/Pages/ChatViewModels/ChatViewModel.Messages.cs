@@ -12,7 +12,9 @@ using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Cards.Messages;
 using MIN.Desktop.ViewModels.Cards.Messages.Files;
+using MIN.Desktop.ViewModels.Cards.Messages.Sessions;
 using MIN.FileTransfer.Messaging;
+using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -48,9 +50,9 @@ public partial class ChatViewModel : RoutableViewModelBase
                 messageCard = CreateTextMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
                 break;
 
-            //case SessionReadyMessage m:
-            //    messageCard = CreateSessionMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
-            //    break;
+            case SessionReadyMessage m:
+                messageCard = CreateSessionMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                break;
 
             case FileMetadataMessage m:
                 messageCard = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
@@ -212,30 +214,25 @@ public partial class ChatViewModel : RoutableViewModelBase
         return card;
     }
 
-    //private ChatSessionMessageCard CreateSessionMessageCard(SessionReadyMessage msg, ChatMessageRow row,
-    //       bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
-    //{
-    //    var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
-    //    var minutesPassed = CalculateTimePadding(msg.Timestamp);
+    private ChatSessionMessageViewModel CreateSessionMessageCard(SessionReadyMessage msg,
+           bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
+    {
+        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
+        var timePadding = CalculateTimePadding(msg.Timestamp);
 
-    //    var card = new ChatSessionMessageCard(featureCollection.Sessions,
-    //        featureCollection.Core.EventBus, roomId,
-    //        msg, localParticipant, isHost, removeHeaders)
-    //    {
-    //        Anchor = isSelf ? AnchorStyles.Right : AnchorStyles.Left,
-    //        Margin = new Padding(20, 0, 20, 0),
-    //    };
-    //    card.OnJoinRequested += () => OnSessionJoinRequested(msg);
+        var card = new ChatSessionMessageViewModel(featureCollection.Sessions,
+            featureCollection.Core.EventBus, dialogService, roomId,
+            msg, localParticipant, timePadding, isHost, removeHeaders);
+        card.OnJoinRequested += () => OnSessionJoinRequested(msg);
 
-    //    if (!withAppendOnTop)
-    //    {
-    //        InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
-    //    }
-    //    ApplyMessageRowStyling(row, isCurrentPrivate, minutesPassed);
-    //    row.Height = card.Height;
-    //    lastChatMessage = msg;
-    //    return card;
-    //}
+        if (!withAppendOnTop)
+        {
+            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+        }
+
+        lastChatMessage = msg;
+        return card;
+    }
 
     private ChatFileImagePreviewMessageViewModel CreateChatImagePreviewMessageCard(FileMetadataMessage msg,
     bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)

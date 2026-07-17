@@ -242,7 +242,7 @@
             <Setter Property="Background" Value="{DynamicResource FileMessageIconBackground}"/>
         </Style>
 
-        <Style Selector="^.file:pressed  /template/ ContentPresenter">
+        <Style Selector="^.file:pressed /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource FileMessageIconBackgroundPressed}" />
         </Style>
 
@@ -251,6 +251,7 @@
         </Style>
 
         <!-- Secondary -->
+
         <Style Selector="^.secondary">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
@@ -279,6 +280,21 @@
          <Style Selector="^.primary:pointerover">
              <Style Selector="^ Svg">
                 <Setter Property="Css" Value="{DynamicResource SvgPrimaryStyle}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^.on-primary">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCard}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+
+            <Style Selector="^ TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            </Style>
+
+            <Style Selector="^ SelectableTextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             </Style>
         </Style>
     </Style>

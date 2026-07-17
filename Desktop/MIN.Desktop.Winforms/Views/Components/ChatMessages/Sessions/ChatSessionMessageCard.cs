@@ -11,7 +11,7 @@ using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 namespace MIN.Desktop.Components;
 
 /// <summary>
-/// Карточка сообщения, представляющая файл от пользователя
+/// Карточка сообщения, представляющая сессию от пользователя
 /// </summary>
 public partial class ChatSessionMessageCard : BaseChatMessageCard, IDisposable
 {

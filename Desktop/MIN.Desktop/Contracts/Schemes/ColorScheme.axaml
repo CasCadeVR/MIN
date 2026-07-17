@@ -26,6 +26,7 @@
             <!-- *************** -->
 
             <Color x:Key="SurfaceBackground">#1C1C1E</Color>     <!-- Window / page background -->
+            <Color x:Key="SurfaceDisabled">#101011</Color>            <!-- Disabled -->
             <Color x:Key="SurfaceCard">#2C2C2E</Color>            <!-- Card, panel, raised surface -->
             <Color x:Key="SurfaceCardHover">#434343</Color>        <!-- Cards hover -->
             <Color x:Key="SurfaceCardPressed">#222224</Color>        <!-- Cards pressed -->
@@ -143,6 +144,7 @@
             <!-- *************** -->
 
             <Color x:Key="SurfaceBackground">#bfc5f9</Color>     <!-- Window / page background -->
+            <Color x:Key="SurfaceDisabled">#d5d5d5</Color>            <!-- Disabled -->
             <Color x:Key="SurfaceCard">#FFFFFF</Color>            <!-- Card, panel, raised surface -->
             <Color x:Key="SurfaceCardHover">#d3d3d1</Color>        <!-- Cards hover -->
             <Color x:Key="SurfaceCardPressed">#b8b8b8</Color>        <!-- Cards pressed -->
