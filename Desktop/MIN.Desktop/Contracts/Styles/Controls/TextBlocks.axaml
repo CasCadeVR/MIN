@@ -90,4 +90,12 @@
     <Style Selector="TextBlock.card-text-selected, SelectableTextBlock.card-text-selected">
         <Setter Property="Foreground" Value="{DynamicResource TextOnCardSelected}" />
     </Style>
+
+    <Style Selector="TextBlock.link">
+        <Setter Property="Cursor" Value="Hand" />
+
+         <Style Selector="^:pointerover">
+            <Setter Property="TextDecorations" Value="Underline" />
+        </Style>
+    </Style>
 </Styles>

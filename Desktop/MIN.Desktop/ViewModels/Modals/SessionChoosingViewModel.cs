@@ -48,7 +48,7 @@ public partial class SessionChoosingViewModel : ModalViewModelBase
                         sessionVm.Unselect();
                     }
                 }
-                SelectedSession = session;
+                SelectedSession = selected ? session : null;
                 SelectSessionCommand.NotifyCanExecuteChanged();
             };
             AvaibleSessions.Add(card);

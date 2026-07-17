@@ -193,7 +193,7 @@
                                 AcceptsReturn="True"
                                 MaxLines="10"
                                 CaretIndex="{Binding CaretIndex, Mode=TwoWay}"
-                                Text="{Binding SendingMessage, Converter={converters:TrimConverter}}"
+                                Text="{Binding SendingMessage}"
                                 PlaceholderText="Сообщение">
 
                                 <TextBox.ContextFlyout>
@@ -225,7 +225,6 @@
                  </Border>
 
                 <!-- Messages -->
-
 
                 <ScrollViewer
                     behaviors:AutoScrollToBottomBehavior.AutoScrollBottom="{Binding AutoScrollBottom}"

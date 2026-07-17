@@ -123,7 +123,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             if (!string.IsNullOrWhiteSpace(SendingMessage))
             {
                 await featureCollection.Chat.ChatTextService.SendMessageAsync(roomId,
-                    SendingMessage,
+                    SendingMessage.Trim(),
                     chatSideBarViewModel.PrivateChatParticipantId,
                     formCts.Token
                 );

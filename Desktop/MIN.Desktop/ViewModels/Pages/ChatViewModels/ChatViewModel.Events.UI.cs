@@ -81,7 +81,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             return;
         }
 
-        var choosingForm = await dialogService.ShowAsync<SessionChoosingViewModel>();
+        var choosingForm = await dialogService.ShowDialogAsync<SessionChoosingViewModel>();
         if (choosingForm! == true)
         {
             SendSessionStartMessage(choosingForm!.SelectedSession!);

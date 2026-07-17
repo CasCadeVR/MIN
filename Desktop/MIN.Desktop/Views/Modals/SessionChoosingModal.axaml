@@ -20,10 +20,9 @@
 
     <DockPanel>
         <controls:CustomTitleBar CanMinimize="False" CanMaximize="False" />
-
-        <Border Padding="{DynamicResource PaddingCard}">
             <DockPanel>
-                <Border DockPanel.Dock="Bottom" Classes="footer">
+                <Border DockPanel.Dock="Bottom"
+                        Classes="footer">
                     <Panel>
                         <Button
                             Command="{Binding CloseCommand}"
@@ -34,30 +33,36 @@
                             HotKey="Escape" />
                         <Button
                             Command="{Binding SelectSessionCommand}"
-                            Content="Начать сессию"
+                            Content="Начать"
                             HorizontalAlignment="Right"
                             HotKey="Enter" />
                     </Panel>
                 </Border>
 
-                <ScrollViewer Classes="main horizontal">
-                    <StackPanel Spacing="4" Margin="0,8,0,0">
-                        <ItemsControl ItemsSource="{Binding AvaibleSessions}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <VirtualizingStackPanel/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Button Classes="card"
-                                            Command="{Binding SelectCommand}"
-                                            Classes.selected="{Binding IsSelected}"
-                                            Width="250">
+                <ScrollViewer Classes="main horizontal"
+                      MaxWidth="782"
+                      MaxHeight="780">
+                    <ItemsControl ItemsSource="{Binding AvaibleSessions}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                 <WrapPanel Orientation="Horizontal"
+                                    LineSpacing="8"
+                                    ItemSpacing="8"
+                                    Margin="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="card"
+                                        VerticalContentAlignment="Top"
+                                        Command="{Binding SelectCommand}"
+                                        Classes.selected="{Binding IsSelected}"
+                                        Width="250">
 
-                                        <Grid RowSpacing="8"
-                                            RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+                                    <Grid RowSpacing="8"
+                                        RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
 
+                                        <Border Classes="card">
                                             <Panel Grid.Row="0" Height="226">
                                                 <gif:GifImage Source="{Binding GifSessionImage}"
                                                     Stretch="Uniform"
@@ -70,42 +75,54 @@
                                                     IsVisible="{Binding GifSessionImage,
                                                         Converter={converters:EqualityConverter},
                                                         ConverterParameter={x:Null}}"/>
+
+                                                <Svg Path="/Assets/Icons/rocket.svg"
+                                                        Width="96"
+                                                        Height="96"
+                                                        IsVisible="{Binding Session.ThumbnailFileName,
+                                                        Converter={converters:EqualityConverter},
+                                                        ConverterParameter={x:Null}}"/>
                                             </Panel>
+                                        </Border>
 
-                                            <TextBlock Grid.Row="1"
-                                                HorizontalAlignment="Center"
-                                                Text="{Binding Session.Name}" />
+                                        <TextBlock Grid.Row="1"
+                                            Classes="header3"
+                                            HorizontalAlignment="Center"
+                                            Text="{Binding Session.Name}" />
 
-                                            <TextBlock Grid.Row="2"
-                                                HorizontalAlignment="Center"
-                                                TextWrapping="Wrap"
-                                                Text="{Binding Session.Description}" />
+                                        <TextBlock Grid.Row="2"
+                                            Classes="small"
+                                            HorizontalAlignment="Center"
+                                            TextWrapping="Wrap"
+                                            Text="{Binding Session.Description}" />
 
-                                            <TextBlock Grid.Row="3"
-                                                HorizontalAlignment="Center"
-                                                Text="{Binding MaximumParticipantInfo}" />
+                                        <TextBlock Grid.Row="3"
+                                            HorizontalAlignment="Center"
+                                            Text="{Binding MaximumParticipantInfo}" />
 
-                                            <TextBlock Grid.Row="4"
+                                        <TextBlock VerticalAlignment="Center" Grid.Row="4">
+                                                <TextBlock VerticalAlignment="Top"
+                                                    Text="Ссылка: " />
+                                                <TextBlock Classes="link"
                                                 HorizontalAlignment="Center"
                                                 Text="{Binding DownloadLink}" />
-                                            <Interaction.Behaviors>
+                                                <Interaction.Behaviors>
                                                 <EventTriggerBehavior EventName="PointerPressed">
-                                                        <InvokeCommandAction
+                                                    <InvokeCommandAction
                                                         Command="{Binding CopyLinkCommand}" />
                                                 </EventTriggerBehavior>
                                             </Interaction.Behaviors>
+                                        </TextBlock>
 
-                                            <TextBlock Grid.Row="5"
-                                                HorizontalAlignment="Center"
-                                                Text="{Binding Version}" />
-                                        </Grid>
-                                    </Button>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
+                                        <TextBlock Grid.Row="5"
+                                            HorizontalAlignment="Center"
+                                            Text="{Binding Version}" />
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </ScrollViewer>
             </DockPanel>
-        </Border>
     </DockPanel>
 </Window>

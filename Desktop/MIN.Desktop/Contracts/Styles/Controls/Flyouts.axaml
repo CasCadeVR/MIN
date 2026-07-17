@@ -38,39 +38,6 @@
                                 Text="В сети" />
                         </StackPanel>
                     </Button>
-                <Button Classes="card">
-                     <Button.Flyout>
-                        <Flyout Placement="Left">
-                            <Border>
-                                <StackPanel Spacing="8">
-                                     <DockPanel>
-                                        <TextBlock  DockPanel.Dock="Right"
-                                            Text="Роль участника" />
-
-                                        <SelectableTextBlock
-                                            Classes="header5"
-                                            Text="Имя участника" />
-                                    </DockPanel>
-                                    <TextBlock Text="В сети" />
-                                </StackPanel>
-                            </Border>
-                        </Flyout>
-                    </Button.Flyout>
-                        <StackPanel Spacing="6">
-                            <DockPanel HorizontalSpacing="6">
-                                <TextBlock  DockPanel.Dock="Right"
-                                    Text="Роль участника" />
-
-                                <SelectableTextBlock
-                                    Classes="header5"
-                                    Text="Имя участника" />
-                            </DockPanel>
-
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="В сети" />
-                        </StackPanel>
-                    </Button>
                   <Button Content="Button with flyout">
                     <Button.Flyout >
                       <Flyout FlyoutPresenterClasses="buttons">
@@ -115,7 +82,7 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}">
 
-                    <!-- Здесь Padding принудительно установлен в PaddingCard,
+                    <!-- Здесь Padding принудительно установлен в PaddingSmall,
                     а то что-то по умочанию справа есть неубераемый padding -->
                     <ContentPresenter Content="{TemplateBinding Content}"
                                       ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -152,7 +119,7 @@
         </Style>
     </Style>
 
-    <Style Selector="FlyoutPresenter.cardDetails">
+    <Style Selector="FlyoutPresenter.cardDetails /template/ ContentPresenter">
         <Setter Property="Padding" Value="{DynamicResource PaddingCard}" />
     </Style>
 
