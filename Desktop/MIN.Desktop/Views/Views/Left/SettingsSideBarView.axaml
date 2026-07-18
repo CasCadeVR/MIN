@@ -8,8 +8,8 @@
              x:DataType="vm:SettingsSideBarViewModel"
              Padding="{DynamicResource PaddingPage}"
              DockPanel.Dock="Left"
-             MinWidth="320"
-             MaxWidth="320"
+             MinWidth="300"
+             MaxWidth="600"
              x:Class="MIN.Desktop.Views.Left.SettingsSideBarView">
 
     <Design.DataContext>

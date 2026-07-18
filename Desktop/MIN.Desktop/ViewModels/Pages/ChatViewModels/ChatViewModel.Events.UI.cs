@@ -12,6 +12,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Desktop.Contracts.Enums;
+using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
+using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Modals;
@@ -29,6 +32,41 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     [ObservableProperty]
     public partial int CaretIndex { get; set; }
+
+    #region Layouting
+
+    [ObservableProperty]
+    public partial WindowLayout CurrentLayout { get; private set; }
+
+    private void InitializeLayoutStyles()
+    {
+        this.RegisterMessageListener<LayoutModeChangedReferenceCommand, ChatViewModel>((msg, _) =>
+            CurrentLayout = msg.Layout);
+    }
+
+    /// <summary>
+    /// Открыть боковую панель
+    /// </summary>
+    [RelayCommand]
+    public void ToggleRightSideBar()
+    {
+        if (!chatSideBarViewModel.IsOpened)
+        {
+            ChangeView(chatSideBarViewModel);
+        }
+        else
+        {
+            chatSideBarViewModel.CloseView(this);
+        }
+    }
+
+    [RelayCommand]
+    private void ShowLeftSideBar()
+    {
+        ChangeView(mainSideBarViewModel);
+    }
+
+    #endregion
 
     #region Timers
 

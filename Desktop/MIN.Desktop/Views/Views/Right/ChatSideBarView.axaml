@@ -10,8 +10,8 @@
              x:DataType="vm:ChatSideBarViewModel"
              Padding="{DynamicResource PaddingPage}"
              DockPanel.Dock="Left"
-             MinWidth="320"
-             MaxWidth="320"
+             MinWidth="300"
+             MaxWidth="600"
              x:Class="MIN.Desktop.Views.Right.ChatSideBarView">
 
     <Design.DataContext>
@@ -74,14 +74,14 @@
 
                 <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="Адрес: " />
-                    <TextBlock Text="{Binding IpAddress}" />
+                    <SelectableTextBlock Text="{Binding IpAddress}" />
                 </StackPanel>
 
                 <!-- Port -->
 
                 <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
                     <TextBlock Text="Порт: " />
-                    <TextBlock Text="{Binding Port}" />
+                    <SelectableTextBlock Text="{Binding Port}" />
                 </StackPanel>
 
                 <!-- Online -->

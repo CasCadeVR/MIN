@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages.ChatViewModels"
-             xmlns:enums="using:MIN.Desktop.Contracts.Models.Enums"
+             xmlns:enums="using:MIN.Desktop.Contracts.Enums"
+             xmlns:modelsEnums="using:MIN.Desktop.Contracts.Models.Enums"
              xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
              xmlns:messages="using:MIN.Desktop.ViewModels.Cards.Messages"
              xmlns:messagesFiles="using:MIN.Desktop.ViewModels.Cards.Messages.Files"
@@ -15,6 +16,7 @@
              x:DataType="vm:ChatViewModel"
              Padding="{DynamicResource PaddingPage}"
              MaxWidth="960"
+             MinWidth="300"
              x:Class="MIN.Desktop.Views.Central.ChatView">
 
     <Design.DataContext>
@@ -75,8 +77,17 @@
                             </Button.Flyout>
                         </Button>
 
+                        <Button Command="{Binding ShowLeftSideBarCommand}"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding CurrentLayout,
+                                    Converter={converters:EqualityConverter},
+                                    ConverterParameter={x:Static enums:WindowLayout.Narrow}}"
+                                Classes="icon">
+                            <Svg Path="/Assets/Icons/arrow-left.svg" />
+                        </Button>
+
                         <Button HorizontalAlignment="Left"
-                            Command="{Binding ToggleSideBarCommand}"
+                            Command="{Binding ToggleRightSideBar}"
                             Classes="no-background">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock
@@ -399,7 +410,7 @@
                                                             Grid.Column="0"
                                                             Height="70"
                                                             Width="70"
-                                                            Margin="10,0"
+                                                            Margin="4,0"
                                                             Background="{DynamicResource Secondary}">
                                                             <Button
                                                                 Classes="file"
@@ -525,20 +536,20 @@
                                                                     Stretch="Uniform"
                                                                     IsVisible="{Binding FileDownloadState,
                                                                         Converter={converters:EqualityConverter},
-                                                                        ConverterParameter={x:Static enums:FileDownloadState.Downloaded}}"/>
+                                                                        ConverterParameter={x:Static modelsEnums:FileDownloadState.Downloaded}}"/>
 
                                                             <Image Source="{Binding PreviewImage}"
                                                                     Stretch="Uniform"
                                                                     IsVisible="{Binding FileDownloadState,
                                                                         Converter={converters:EqualityConverter},
-                                                                        ConverterParameter={x:Static enums:FileDownloadState.Downloaded}}" />
+                                                                        ConverterParameter={x:Static modelsEnums:FileDownloadState.Downloaded}}" />
 
                                                             <!-- Layer 1: overlay (not downloaded / downloading) -->
 
                                                             <Border
                                                                 IsVisible="{Binding FileDownloadState,
                                                                 Converter={converters:EqualityConverter},
-                                                                ConverterParameter={x:Static enums:FileDownloadState.NotDownloaded}}"
+                                                                ConverterParameter={x:Static modelsEnums:FileDownloadState.NotDownloaded}}"
                                                                 Padding="{DynamicResource PaddingLarge}">
                                                                 <StackPanel
                                                                     VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">

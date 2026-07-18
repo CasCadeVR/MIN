@@ -5,10 +5,12 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Models.ReferenceCommands;
+using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
@@ -43,11 +45,23 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     [ObservableProperty]
     public partial string SearchTerm { get; set; } = string.Empty;
 
+    [ObservableProperty]
+    public partial bool IsNavigationMode { get; set; }
+
     /// <inheritdoc />
     partial void OnSearchTermChanged(string value) => PerformRecentRoomSearch();
 
     /// <inheritdoc />
     public override ViewLayoutType LayoutType => ViewLayoutType.LeftSideBar;
+
+    [ObservableProperty]
+    public partial WindowLayout CurrentLayout { get; private set; }
+
+    private void InitializeLayoutStyles()
+    {
+        this.RegisterMessageListener<LayoutModeChangedReferenceCommand, MainSideBarViewModel>((msg, _) =>
+            CurrentLayout = msg.Layout);
+    }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MainSideBarViewModel"/>
@@ -67,7 +81,11 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
             this.RegisterMessageListener<RegisterRoomReferenceCommand, MainSideBarViewModel>(static (message, vm)
                => vm.RegisterChat(message.Room, message.View));
 
+            this.RegisterMessageListener<LayoutModeChangedReferenceCommand, MainSideBarViewModel>((msg, _) =>
+                IsNavigationMode = msg.Layout == WindowLayout.Narrow);
+
             SubscribeToEvents();
+            InitializeLayoutStyles();
         }
     }
 
@@ -126,7 +144,12 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
 
         card.Clicked += () =>
         {
-            if (selectedRecentRoomCardViewModel != card)
+            if (IsNavigationMode)
+            {
+                GoBack();
+            }
+
+            if (selectedRecentRoomCardViewModel != card || CurrentLayout == WindowLayout.Narrow)
             {
                 SelectChatCard(card);
                 ChangeView(viewModel);
@@ -138,10 +161,7 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
         SelectChatCard(card);
     }
 
-    /// <summary>
-    /// Удалить чат
-    /// </summary>
-    public void UnregisterChat(Guid roomId)
+    private void UnregisterChat(Guid roomId)
     {
         activeChatViews.Remove(roomId);
         var room = allRooms.FirstOrDefault(x => x.RoomId == roomId);
@@ -152,6 +172,13 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
             allRooms.Remove(room);
             room.Dispose();
         }
+    }
+
+    [RelayCommand]
+    private void GoBack()
+    {
+        WeakReferenceMessenger.Default.Send(new RestoreCentralReferenceCommand());
+        IsNavigationMode = false;
     }
 
     [RelayCommand]

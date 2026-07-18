@@ -8,8 +8,8 @@
              x:DataType="vm:MainSideBarViewModel"
              Padding="{DynamicResource PaddingPage}"
              DockPanel.Dock="Left"
-             MinWidth="320"
-             MaxWidth="320"
+             MinWidth="300"
+             MaxWidth="500"
              x:Class="MIN.Desktop.Views.Left.MainSideBarView">
 
     <Design.DataContext>
@@ -36,13 +36,16 @@
                     <Svg Path="/Assets/Icons/compass.svg" />
                 </Button>
 
-                <DockPanel>
-                    <Svg Path="/Assets/Icons/magnifying-glass.svg" />
+                <Border Classes="input">
+                    <DockPanel>
+                        <Svg Margin="8,0,0,0"
+                            Path="/Assets/Icons/magnifying-glass.svg" />
 
-                    <TextBox
-                        Text="{Binding SearchTerm}"
-                        PlaceholderText="Поиск" />
-                </DockPanel>
+                        <TextBox
+                            Text="{Binding SearchTerm}"
+                            PlaceholderText="Поиск" />
+                    </DockPanel>
+                </Border>
             </DockPanel>
 
             <!-- Room cards -->
@@ -84,13 +87,14 @@
                                         <Border
                                             DockPanel.Dock="Right"
                                             IsVisible="{Binding MissedMessagesCount,
-                                            Converter={converters:GreaterThanZeroConverter}}"
+                                                Converter={converters:GreaterThanZeroConverter}}"
                                             Padding="{DynamicResource PaddingSmall}"
                                             CornerRadius="{DynamicResource CornerRadiusLarge}"
                                             Background="{DynamicResource Primary}">
                                              <TextBlock
-                                                Classes="header4 card-text"
+                                                Classes="header4"
                                                 Classes.card-text-selected="{Binding IsSelected}"
+                                                Foreground="{DynamicResource TextOnPrimary}"
                                                 Text="{Binding MissedMessagesCount}" />
                                         </Border>
 
@@ -99,6 +103,7 @@
                                             Classes.card-text-selected="{Binding IsSelected}"
                                             VerticalAlignment="Center"
                                             MaxLines="3"
+                                            MaxWidth="200"
                                             Text="{Binding LastMessageContent}" />
                                     </DockPanel>
                                 </StackPanel>
@@ -109,5 +114,4 @@
             </ScrollViewer>
         </DockPanel>
     </Border>
-
 </UserControl>

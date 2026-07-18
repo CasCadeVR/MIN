@@ -1,6 +1,6 @@
 ﻿using MIN.Desktop.Contracts.Enums;
 
-namespace MIN.Desktop.Contracts.Models.ReferenceCommands;
+namespace MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 
 /// <summary>
 /// Команда закрытия View

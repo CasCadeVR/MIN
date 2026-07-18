@@ -20,6 +20,11 @@ public static class MultiRoutingWindowExtensions
         { ViewLayoutType.Central, [] },
         { ViewLayoutType.RightSideBar, [] },
     };
+
+    private static object? rememberedRightSideBar;
+    private static object? rememberedLeftSideBar;
+    private static object? rememberedCentral;
+
     //private static CancellationTokenSource? viewChangeBusyCts;
 
     /// <summary>
@@ -102,14 +107,36 @@ public static class MultiRoutingWindowExtensions
             switch (routableViewModel.LayoutType)
             {
                 case ViewLayoutType.LeftSideBar:
+
+                    if (screen.LayoutMode == WindowLayout.Narrow && screen.CentralViewModel != null)
+                    {
+                        rememberedCentral = screen.CentralViewModel;
+                        screen.CentralViewModel = null;
+                    }
+
                     screen.LeftSideBarViewModel = routableViewModel;
                     break;
 
                 case ViewLayoutType.Central:
+
+                    if (screen.LayoutMode == WindowLayout.Narrow)
+                    {
+                        screen.LeftSideBarViewModel = null;
+                    }
+
                     screen.CentralViewModel = routableViewModel;
+                    rememberedCentral = null;
+                    ResetRelated(screen);
                     break;
 
                 case ViewLayoutType.RightSideBar:
+
+                    if (screen.LayoutMode < WindowLayout.ThreeColumns && screen.CentralViewModel != null)
+                    {
+                        rememberedCentral = screen.CentralViewModel;
+                        screen.CentralViewModel = null;
+                    }
+
                     screen.RightSideBarViewModel = routableViewModel;
                     break;
 
@@ -144,13 +171,13 @@ public static class MultiRoutingWindowExtensions
     public static async Task<bool> BackAsync(this IMultiRoutingWindow screen, ViewLayoutType viewLayoutType)
     {
         IRoutableViewModel? backViewModel = null;
-        while (navigationStack.Count > 0 && (backViewModel == null
+        while (navigationStack[viewLayoutType].Count > 0 && (backViewModel == null
             || backViewModel == screen.LeftSideBarViewModel
             || backViewModel == screen.CentralViewModel
             || backViewModel == screen.RightSideBarViewModel))
         {
             backViewModel = navigationStack[viewLayoutType][^1];
-            navigationStack[backViewModel.LayoutType].Remove(backViewModel);
+            navigationStack[viewLayoutType].Remove(backViewModel);
         }
         if (backViewModel != null)
         {
@@ -173,7 +200,7 @@ public static class MultiRoutingWindowExtensions
             return await BackAsync(screen, layoutType);
         }
 
-        for (var i = navigationStack.Count - 1; i >= 0; i--)
+        for (var i = navigationStack[layoutType].Count - 1; i >= 0; i--)
         {
             var target = navigationStack[layoutType][i];
             if (type.IsAssignableFrom(target.GetType()))
@@ -208,6 +235,13 @@ public static class MultiRoutingWindowExtensions
 
             case ViewLayoutType.RightSideBar:
                 screen.RightSideBarViewModel = null;
+
+                if (screen.LayoutMode < WindowLayout.ThreeColumns && rememberedCentral != null)
+                {
+                    screen.CentralViewModel = rememberedCentral;
+                    rememberedCentral = null;
+                }
+
                 break;
         }
     }
@@ -218,6 +252,74 @@ public static class MultiRoutingWindowExtensions
             && rightPriorViewModel.RelatedToCentral)
         {
             screen.RightSideBarViewModel = null;
+            rememberedRightSideBar = null;
+        }
+    }
+
+    /// <summary>
+    /// Расположить по layout страницы
+    /// </summary>
+    public static void ArrangeLayout(this IMultiRoutingWindow screen)
+    {
+        switch (screen.LayoutMode)
+        {
+            case WindowLayout.ThreeColumns:
+                // Восстановить Right, если был запомнен
+                if (rememberedRightSideBar != null)
+                {
+                    screen.RightSideBarViewModel = rememberedRightSideBar;
+                }
+
+                rememberedRightSideBar = null;
+
+                if (rememberedCentral != null)
+                {
+                    screen.CentralViewModel = rememberedCentral;
+                }
+
+                rememberedCentral = null;
+                break;
+
+            case WindowLayout.TwoColumns:
+                // Спрятать Right (запомнить для восстановления)
+                if (screen.RightSideBarViewModel != null)
+                {
+                    rememberedRightSideBar = screen.RightSideBarViewModel;
+                }
+
+                screen.RightSideBarViewModel = null;
+
+                if (rememberedLeftSideBar != null)
+                {
+                    screen.LeftSideBarViewModel = rememberedLeftSideBar;
+                }
+
+                rememberedLeftSideBar = null;
+
+                if (rememberedCentral != null)
+                {
+                    screen.CentralViewModel = rememberedCentral;
+                }
+
+                rememberedCentral = null;
+                break;
+
+            case WindowLayout.Narrow:
+                // Спрятать Left + Right (запомнить)
+                if (screen.RightSideBarViewModel != null)
+                {
+                    rememberedRightSideBar = screen.RightSideBarViewModel;
+                }
+
+                screen.RightSideBarViewModel = null;
+
+                if (screen.LeftSideBarViewModel != null)
+                {
+                    rememberedLeftSideBar = screen.LeftSideBarViewModel;
+                }
+
+                screen.LeftSideBarViewModel = null;
+                break;
         }
     }
 }

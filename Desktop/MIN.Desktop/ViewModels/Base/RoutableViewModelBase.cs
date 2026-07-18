@@ -1,7 +1,7 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.Messaging;
 using MIN.Desktop.Contracts.Enums;
-using MIN.Desktop.Contracts.Models.ReferenceCommands;
+using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 using MIN.Desktop.ViewModels.Base.Interfaces;
 
 namespace MIN.Desktop.ViewModels.Base;

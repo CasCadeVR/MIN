@@ -1,6 +1,6 @@
 ﻿using MIN.Desktop.ViewModels.Base.Interfaces;
 
-namespace MIN.Desktop.Contracts.Models.ReferenceCommands;
+namespace MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 
 /// <summary>
 /// Команда показа View

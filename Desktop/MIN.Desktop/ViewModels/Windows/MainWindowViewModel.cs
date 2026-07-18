@@ -7,9 +7,11 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Models.ReferenceCommands;
+using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Pages;
@@ -21,6 +23,9 @@ namespace MIN.Desktop.ViewModels.Windows;
 /// </summary>
 public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
 {
+    [ObservableProperty]
+    public partial WindowLayout LayoutMode { get; set; } = WindowLayout.ThreeColumns;
+
     /// <inheritdoc />
     [ObservableProperty]
     public partial object? LeftSideBarViewModel { get; set; }
@@ -37,6 +42,9 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     /// Текущие уведомления внутри приложения
     /// </summary>
     public AvaloniaList<NotificationItem> Notifications { get; init; } = [];
+
+    partial void OnLayoutModeChanged(WindowLayout value)
+        => WeakReferenceMessenger.Default.Send(new LayoutModeChangedReferenceCommand(value));
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MainWindowViewModel"/>
@@ -84,6 +92,12 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
             }
         });
 
+        this.RegisterMessageListener<ShowNavigationReferenceCommand, MainWindowViewModel>(async (message, vm) =>
+        {
+            // Это костыль, потому что discovery не может сослаться на mainSideBarViewModel
+            await this.ShowAsync(mainSideBarViewModel);
+        });
+
         _ = this.ShowAsync(mainSideBarViewModel);
         _ = this.ShowAsync(discoveryViewModel);
     }
@@ -115,6 +129,20 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     private void Close()
     {
         GetWindow()?.Close();
+    }
+
+    /// <summary>
+    /// Обновить разметку страницы из под размеров окнна
+    /// </summary>
+    public void UpdateLayout(WindowLayout newMode)
+    {
+        if (LayoutMode == newMode)
+        {
+            return;
+        }
+
+        LayoutMode = newMode;
+        this.ArrangeLayout();
     }
 
     /// <summary>

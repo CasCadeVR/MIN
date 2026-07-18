@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Contracts.Interfaces;
+﻿using MIN.Desktop.Contracts.Enums;
+
+namespace MIN.Desktop.Contracts.Interfaces;
 
 /// <summary>
 /// Окно, предаставляющее маршрутизацию по страницам
@@ -6,6 +8,11 @@
 /// </summary>
 public interface IMultiRoutingWindow
 {
+    /// <summary>
+    /// Layout на странице
+    /// </summary>
+    WindowLayout LayoutMode { get; }
+
     /// <summary>
     /// Левая страница
     /// </summary>

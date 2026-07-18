@@ -191,6 +191,11 @@
             <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
             <Setter Property="Padding" Value="{DynamicResource PaddingPage}" />
         </Style>
+
+        <Style Selector="^.input">
+            <Setter Property="Background" Value="{DynamicResource SurfaceInput}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+        </Style>
     </Style>
 
     <Style Selector="Svg">

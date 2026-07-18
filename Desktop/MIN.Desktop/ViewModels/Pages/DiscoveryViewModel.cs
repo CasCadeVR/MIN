@@ -14,6 +14,8 @@ using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models.ReferenceCommands;
+using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
+using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Modals;
@@ -54,6 +56,9 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
     [ObservableProperty]
     public partial AvaloniaList<DiscoveredRoomCardViewModel> DiscoveredRooms { get; set; } = [];
 
+    [ObservableProperty]
+    public partial WindowLayout CurrentLayout { get; private set; }
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="DiscoveryViewModel"/>
     /// </summary>
@@ -72,7 +77,14 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
 
             lifeTimeCts = ctsProvider.AppCts;
             SubscribeToEvents();
+            InitializeLayoutStyles();
         }
+    }
+
+    private void InitializeLayoutStyles()
+    {
+        this.RegisterMessageListener<LayoutModeChangedReferenceCommand, DiscoveryViewModel>((msg, _) =>
+            CurrentLayout = msg.Layout);
     }
 
     private void SubscribeToEvents()
@@ -269,5 +281,11 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
             await OnRoomJoin(result.Endpoint);
             result.EnableConnectButton();
         };
+    }
+
+    [RelayCommand]
+    private void ShowLeftSideBar()
+    {
+        WeakReferenceMessenger.Default.Send(new ShowNavigationReferenceCommand());
     }
 }

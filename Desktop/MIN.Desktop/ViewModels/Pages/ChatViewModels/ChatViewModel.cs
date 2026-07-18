@@ -22,6 +22,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 {
     private readonly ChatSideBarViewModel chatSideBarViewModel;
     private readonly DiscoveryViewModel discoveryViewModel;
+    private readonly MainSideBarViewModel mainSideBarViewModel;
     private readonly IDialogService dialogService;
 
     private readonly IMinFeatureCollection featureCollection;
@@ -62,11 +63,13 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// Инициализирует новый экземпляр <see cref="ChatViewModel"/>
     /// </summary>
     public ChatViewModel(ChatSideBarViewModel chatSideBarViewModel,
+        MainSideBarViewModel mainSideBarViewModel,
         DiscoveryViewModel discoveryViewModel,
         IMinFeatureCollection featureCollection,
         IDialogService dialogService)
     {
         this.featureCollection = featureCollection;
+        this.mainSideBarViewModel = mainSideBarViewModel;
         this.discoveryViewModel = discoveryViewModel;
         this.chatSideBarViewModel = chatSideBarViewModel;
         this.dialogService = dialogService;
@@ -81,6 +84,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             SubscribeToEvents(featureCollection.Core.EventBus);
             InitializeNotifications();
             InitializeTypingTimer();
+            InitializeLayoutStyles();
             InitializeParentFormWindowStateEvents();
             InitializeObservableCollections();
         }
@@ -119,7 +123,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// </summary>
     public async Task LoadRoomDataAndRefresh(Room room, Guid connectionId)
     {
-        ToggleSideBar();
+        ToggleRightSideBar();
         await chatSideBarViewModel.LoadRoomDataAndRefresh(room, localParticipant);
 
         this.room = room;
@@ -129,22 +133,6 @@ public partial class ChatViewModel : RoutableViewModelBase
         roomId = room.Id;
 
         UpdateChatFlow();
-    }
-
-    /// <summary>
-    /// Открыть боковую панель
-    /// </summary>
-    [RelayCommand]
-    public void ToggleSideBar()
-    {
-        if (!chatSideBarViewModel.IsOpened)
-        {
-            ChangeView(chatSideBarViewModel);
-        }
-        else
-        {
-            chatSideBarViewModel.CloseView(this);
-        }
     }
 
     private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)
