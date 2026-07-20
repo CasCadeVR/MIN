@@ -16,7 +16,8 @@
         <design:DesignerMainSideBarViewModel/>
     </Design.DataContext>
 
-    <Border Background="{DynamicResource SidebarBackground}" CornerRadius="16"
+    <Border Background="{DynamicResource SidebarBackground}"
+            CornerRadius="16"
             Padding="{DynamicResource PaddingCard}">
         <DockPanel VerticalSpacing="10" >
             <DockPanel

@@ -18,7 +18,12 @@ public interface INotificationService
     event Action NotificationTurnOffClicked;
 
     /// <summary>
-    /// Отправить уведомление
+    /// Отправить описуемое уведомление
     /// </summary>
     void Notify(IDescribable describable, string roomName);
+
+    /// <summary>
+    /// Отправить уведомление с сообщением
+    /// </summary>
+    void Notify(string message, string roomName);
 }

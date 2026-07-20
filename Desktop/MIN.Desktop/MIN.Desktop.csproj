@@ -38,6 +38,9 @@
   </ItemGroup>
 
     <ItemGroup>
+    <Compile Update="Views\Windows\NotificationWindow.axaml.cs">
+      <DependentUpon>NotificationWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Modals\SessionChoosingModal.axaml.cs">
       <DependentUpon>SessionChoosingModal.axaml</DependentUpon>
     </Compile>

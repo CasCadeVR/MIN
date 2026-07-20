@@ -45,7 +45,8 @@
                 <FocusAdornerTemplate>
                     <Border
                         Name="FocusBorder"
-                        BorderBrush="{DynamicResource Primary}"
+                        BorderBrush="{DynamicResource StatusInfo}"
+                        CornerRadius="{DynamicResource CornerRadiusDefault}"
                         BorderThickness="2" />
                 </FocusAdornerTemplate>
             </Setter.Value>
@@ -242,5 +243,6 @@
     <StyleInclude Source="/Contracts/Styles/Controls/ScrollViewers.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/TextBoxes.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/ToggleSwitches.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/Expanders.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/ProgressBars.axaml"/>
 </Styles>

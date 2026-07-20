@@ -227,6 +227,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
             if (!string.IsNullOrEmpty(eventMessage.LeavingMessage))
             {
+                NotifyIfNeeded(eventMessage.LeavingMessage);
                 InAppNotifier.Info(eventMessage.LeavingMessage);
             }
             await Disconnect();
@@ -239,6 +240,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         if (e.NeedToDisconnect)
         {
+            NotifyIfNeeded(e.ErrorMessage);
             ClearParentFormEvents();
             await Disconnect();
         }

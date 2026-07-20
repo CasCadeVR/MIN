@@ -10,6 +10,11 @@ namespace MIN.Desktop.Views;
 public partial class MainWindow : WindowEx<MainWindowViewModel>
 {
     /// <summary>
+    /// Текущий Layout
+    /// </summary>
+    public WindowLayout CurrentLayout { get; private set; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="MainWindow"/>
     /// </summary>
     public MainWindow()
@@ -31,6 +36,7 @@ public partial class MainWindow : WindowEx<MainWindowViewModel>
             > 600 => WindowLayout.TwoColumns,
             _ => WindowLayout.Narrow
         };
+        CurrentLayout = mode;
         vm.UpdateLayout(mode);
     }
 }

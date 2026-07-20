@@ -60,7 +60,7 @@ public sealed class RoomStore : IRoomStore
                 .Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId)
                 .ToList();
             room.TotalMessageCount = GetMessagesCountFor(context, participantId);
-            room.LocalRoomSettings = default;
+            room.LocalRoomSettings.NotificationsEnabled = false;
             return room;
         }
 

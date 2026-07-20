@@ -1,5 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Threading;
 using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Desktop.ViewModels.Windows;
+using MIN.Desktop.Views.Windows;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Desktop.Infrastructure.Services;
@@ -7,8 +14,11 @@ namespace MIN.Desktop.Infrastructure.Services;
 /// <inheritdoc cref="INotificationService"/>
 public class NotificationService : INotificationService
 {
-    //private readonly static List<NotificationForm> activeNotifications = [];
-    private readonly static object uiLock = new();
+    private const int NotificationsOffset = 8;
+
+    private readonly static List<NotificationWindow> activeNotifications = [];
+    private Window? parentWindow;
+    private bool closing;
 
     /// <summary>
     /// Событие по нажатию на уведомление
@@ -22,67 +32,73 @@ public class NotificationService : INotificationService
 
     void INotificationService.Notify(IDescribable describable, string roomName)
     {
-        OnNotificationClick?.Invoke();
-        NotificationTurnOffClicked?.Invoke();
-        //if (Application.Current.Get.Count == 0)
-        //{
-        //    return;
-        //}
-
-        //var mainForm = Application.OpenForms[0];
-
-        //if (mainForm!.InvokeRequired)
-        //{
-        //    mainForm.Invoke(new Action(() => CreateAndShow(describable, roomName)));
-        //}
-        //else
-        //{
-        //    CreateAndShow(describable, roomName);
-        //}
+        EnsureParentWindow();
+        Dispatcher.UIThread.Post(() => CreateAndShow(describable.GetDescription(), roomName));
     }
 
-    private void CreateAndShow(IDescribable describable, string roomName)
+    void INotificationService.Notify(string message, string roomName)
     {
-        lock (uiLock)
+        EnsureParentWindow();
+        Dispatcher.UIThread.Post(() => CreateAndShow(message, roomName));
+    }
+
+    private void EnsureParentWindow()
+    {
+        if (parentWindow == null)
         {
-            //var notification = new NotificationForm(describable, roomName);
-            //notification.NotificationTurnOffClicked += NotificationTurnOffClicked;
-            //notification.NotificationClicked += OnNotificationClick;
+            parentWindow = MainWindowViewModel.GetWindow();
+            parentWindow!.Closed += (_, _) =>
+            {
+                closing = true;
+                foreach (var n in activeNotifications)
+                {
+                    n.Close();
+                }
 
-            //var screen = Screen.FromPoint(Cursor.Position);
-            //screen ??= Screen.PrimaryScreen!;
-
-            //var baseX = screen.WorkingArea.Right - 10;
-            //var baseY = screen.WorkingArea.Bottom - 10;
-
-            //activeNotifications.Add(notification);
-
-            //RepositionAll(baseX, baseY);
-
-            //notification.FormClosed += (s, e) =>
-            //{
-            //    lock (uiLock)
-            //    {
-            //        activeNotifications.Remove(notification);
-            //        RepositionAll(baseX, baseY);
-            //    }
-            //};
-
-            //notification.Show();
-            //notification.StartAppearAnimation(notification.Location);
+                activeNotifications.Clear();
+            };
         }
     }
 
-    private static void RepositionAll(int baseX, int baseY)
+    private void CreateAndShow(string message, string roomName)
     {
-        //var offsetY = 0;
+        var notification = new NotificationWindow(message, roomName, parentWindow);
+        notification.NotificationClicked += OnNotificationClick;
+        notification.NotificationTurnOffClicked += NotificationTurnOffClicked;
+        notification.Closed += (_, _) =>
+        {
+            if (closing)
+            {
+                return;
+            }
 
-        //foreach (var notification in activeNotifications)
-        //{
-        //    var targetY = baseY - notification.Height - offsetY - 10;
-        //    var targetX = baseX - notification.Width;
-        //    notification.Location = new Point(targetX, targetY);
-        //    offsetY += notification.Height + 10;
-        //}
+            activeNotifications.Remove(notification);
+            RepositionAll();
+        };
+
+        activeNotifications.Add(notification);
+        notification.Show();
+        RepositionAll();
+    }
+
+    private void RepositionAll()
+    {
+        if (parentWindow == null)
+        {
+            return;
+        }
+
+        var screen = parentWindow.Screens.Primary;
+        var baseX = screen!.WorkingArea.Right - NotificationsOffset;
+        var baseY = screen.WorkingArea.Bottom - NotificationsOffset;
+        var offsetY = 0;
+
+        foreach (var n in activeNotifications.Where(x => !x.IsDismissing))
+        {
+            var newX = (int)(baseX - n.Width);
+            var newY = (int)(baseY - n.Height - offsetY);
+            n.Position = new PixelPoint(newX, newY);
+            offsetY += (int)n.Height + NotificationsOffset;
+        }
     }
 }

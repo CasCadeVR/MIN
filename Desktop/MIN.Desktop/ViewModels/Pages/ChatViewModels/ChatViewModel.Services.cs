@@ -41,16 +41,24 @@ public partial class ChatViewModel : RoutableViewModelBase
         };
 
         featureCollection.Helper.NotificationService.NotificationTurnOffClicked += ()
-            => room.LocalRoomSettings?.NotificationsEnabled = false;
+            => room.LocalRoomSettings.NotificationsEnabled = false;
     }
 
     private void NotifyIfNeeded(IDescribable describable)
     {
-        if (room.LocalRoomSettings?.NotificationsEnabled == true
-            && (parentWindow.WindowState == WindowState.Minimized || !parentWindow.IsFocused))
+        if (room.LocalRoomSettings.NotificationsEnabled
+            && (parentWindow.WindowState == WindowState.Minimized || !isParentWindowActive))
         {
-            featureCollection.Helper.NotificationService
-                .Notify(describable, room.Name);
+            featureCollection.Helper.NotificationService.Notify(describable, room.Name);
+        }
+    }
+
+    private void NotifyIfNeeded(string message)
+    {
+        if (room.LocalRoomSettings.NotificationsEnabled
+            && (parentWindow.WindowState == WindowState.Minimized || !isParentWindowActive))
+        {
+            featureCollection.Helper.NotificationService.Notify(message, room.Name);
         }
     }
 

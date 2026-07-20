@@ -8,14 +8,13 @@
         xmlns:pagesRight="using:MIN.Desktop.Views.Right"
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
-        xmlns:enums="using:MIN.Desktop.Contracts.Enums"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:designer="using:MIN.Desktop.Contracts.Designer"
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="500"
         Width="1124" Height="500"
-        MinWidth="300" MinHeight="400"
+        MinWidth="300" MinHeight="330"
         SizeChanged="Window_SizeChanged"
         x:Class="MIN.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -28,7 +27,7 @@
     </Design.DataContext>
 
     <Window.Styles>
-            <Style Selector=".notifications Border">
+         <Style Selector=".notifications Border">
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Duration="0:0:.2" Property="Opacity" />

@@ -41,10 +41,6 @@
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
     </Style>
 
-    <Style Selector="TextBlock.inverted, SelectableTextBlock.inverted">
-        <Setter Property="Foreground" Value="{DynamicResource TextAccent}"/>
-    </Style>
-
     <Style Selector="TextBlock.header2, SelectableTextBlock.header2">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeH2}"/>
         <Setter Property="FontWeight" Value="Bold"/>
@@ -71,6 +67,7 @@
 
     <Style Selector="TextBlock.chat, SelectableTextBlock.chat">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeChat}"/>
+        <Setter Property="TextAlignment" Value="Center"/>
     </Style>
 
     <Style Selector="TextBlock.info, SelectableTextBlock.info">
@@ -89,6 +86,10 @@
 
     <Style Selector="TextBlock.card-text-selected, SelectableTextBlock.card-text-selected">
         <Setter Property="Foreground" Value="{DynamicResource TextOnCardSelected}" />
+    </Style>
+
+    <Style Selector="TextBlock.inverted, SelectableTextBlock.inverted">
+        <Setter Property="Foreground" Value="{DynamicResource TextAccent}"/>
     </Style>
 
     <Style Selector="TextBlock.link">

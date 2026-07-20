@@ -52,7 +52,6 @@
                                 Converter={converters:BoolToDiscoveryButtonTextConverter}}" />
 
                             <Svg
-                                DockPanel.Dock="Right"
                                 Height="18"
                                 Margin="16,0,0,0"
                                 Path="/Assets/Icons/loading.svg"
@@ -64,8 +63,21 @@
 
                     <Button
                         Command="{Binding ConnectDirectlyCommand}"
-                        DockPanel.Dock="Right">
+                        DockPanel.Dock="Right"
+                        IsVisible="{Binding CurrentLayout,
+                            Converter={converters:NonEqualityConverter},
+                            ConverterParameter={x:Static enums:WindowLayout.Narrow}}">
                        Подключиться напрямую
+                    </Button>
+
+                    <Button
+                        Classes="icon"
+                        Command="{Binding ConnectDirectlyCommand}"
+                        DockPanel.Dock="Right"
+                        IsVisible="{Binding CurrentLayout,
+                            Converter={converters:EqualityConverter},
+                            ConverterParameter={x:Static enums:WindowLayout.Narrow}}">
+                       <Svg Path="/Assets/Icons/connect.svg"/>
                     </Button>
 
                     <Rectangle />

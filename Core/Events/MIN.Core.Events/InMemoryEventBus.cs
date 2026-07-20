@@ -63,7 +63,7 @@ public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
     IDisposable IEventBus.Subscribe<T>(Func<T, bool> filter, Func<T, CancellationToken, Task> handler)
     {
         var eventType = typeof(T);
-        var handlers = this.handlers.GetOrAdd(eventType, _ => new List<Func<object, CancellationToken, Task>>());
+        var handlers = this.handlers.GetOrAdd(eventType, _ => []);
 
         Func<object, CancellationToken, Task> wrappedHandler = async (eventObj, ct) =>
         {

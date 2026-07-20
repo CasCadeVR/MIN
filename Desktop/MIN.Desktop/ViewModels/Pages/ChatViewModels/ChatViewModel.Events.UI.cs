@@ -18,6 +18,7 @@ using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Modals;
+using MIN.Desktop.Views;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -40,6 +41,11 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private void InitializeLayoutStyles()
     {
+        if (parentWindow is MainWindow mainWindow)
+        {
+            CurrentLayout = mainWindow.CurrentLayout;
+        }
+
         this.RegisterMessageListener<LayoutModeChangedReferenceCommand, ChatViewModel>((msg, _) =>
             CurrentLayout = msg.Layout);
     }

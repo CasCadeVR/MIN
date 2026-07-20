@@ -21,7 +21,7 @@
     <Border Background="{DynamicResource SidebarSecondaryBackground}"
             Padding="{DynamicResource PaddingPage}"
             CornerRadius="{DynamicResource CornerRadiusLarge}">
-        <DockPanel VerticalSpacing="10" >
+        <DockPanel VerticalSpacing="4" >
             <DockPanel DockPanel.Dock="Top" >
                 <Button Command="{Binding CloseAsyncCommand}"
                         HorizontalAlignment="Left"
@@ -29,67 +29,66 @@
                     Classes="icon">
                     <Svg Path="/Assets/Icons/close.svg" />
                 </Button>
+
+                <TextBlock VerticalAlignment="Center"
+                    Classes="header4">
+                    Информация о комнате
+                </TextBlock>
             </DockPanel>
 
             <StackPanel DockPanel.Dock="Top" Spacing="6">
 
-                <!-- Room Notifications -->
+                <Border Classes="card">
+                    <Expander Classes="roomGroup" Header="Уведомления" IsExpanded="False">
+                        <ToggleSwitch IsChecked="{Binding Room.LocalRoomSettings.NotificationsEnabled}" />
+                    </Expander>
+                </Border>
 
-                <StackPanel Margin="0,8" HorizontalAlignment="Center">
-                    <TextBlock
-                        Text="Уведомления"
-                        HorizontalAlignment="Center" />
-                    <ToggleSwitch IsChecked="{Binding Room.LocalRoomSettings.NotificationsEnabled}" />
-                </StackPanel>
+                <Border Classes="card">
+                    <Expander Classes="roomGroup" Header="Информация" IsExpanded="False">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                             <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                               <TextBlock Text="Хост: " />
+                                <TextBlock Text="{Binding HostName}" />
+                            </StackPanel>
 
-                <!-- Host -->
+                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                                <TextBlock Text="Создана: " />
+                                <TextBlock Text="{Binding Room.CreatedAt, Converter={converters:DateToShortDateConverter}}" />
+                            </StackPanel>
 
-                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Хост: " />
-                    <TextBlock Text="{Binding HostName}" />
-                </StackPanel>
+                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                                <TextBlock Text="Кабинет: " />
+                                <TextBlock Text="{Binding Classroom}" />
+                            </StackPanel>
 
-                <!-- Room create time -->
+                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                                <TextBlock Text="№ Компьютера: " />
+                                <TextBlock Text="{Binding Room.PcNumber}" />
+                            </StackPanel>
 
-                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Создана: " />
-                    <TextBlock Text="{Binding Room.CreatedAt, Converter={converters:DateToShortDateConverter}}" />
-                </StackPanel>
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <TextBlock Margin="0,0,8,0" Text="В сети: " />
+                                <TextBlock Text="{Binding ParticipantsInfo}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Expander>
+                </Border>
+                <Border Classes="card">
+                    <Expander Classes="roomGroup" Header="Сеть" IsExpanded="False">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                                <TextBlock Text="Адрес: " />
+                                <SelectableTextBlock Text="{Binding IpAddress}" />
+                            </StackPanel>
 
-                <!-- Cabinet -->
-
-                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Кабинет: " />
-                    <TextBlock Text="{Binding Classroom}" />
-                </StackPanel>
-
-                <!-- Computer -->
-
-                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="№ Компьютера: " />
-                    <TextBlock Text="{Binding Room.PcNumber}" />
-                </StackPanel>
-
-                <!-- IP Address -->
-
-                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Адрес: " />
-                    <SelectableTextBlock Text="{Binding IpAddress}" />
-                </StackPanel>
-
-                <!-- Port -->
-
-                <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Порт: " />
-                    <SelectableTextBlock Text="{Binding Port}" />
-                </StackPanel>
-
-                <!-- Online -->
-
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Margin="0,0,8,0" Text="В сети: " />
-                    <TextBlock Text="{Binding ParticipantsInfo}" />
-                </StackPanel>
+                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
+                                <TextBlock Text="Порт: " />
+                                <SelectableTextBlock Text="{Binding Port}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Expander>
+                </Border>
             </StackPanel>
 
             <TextBlock DockPanel.Dock="Top" Classes="header5" HorizontalAlignment="Center">
