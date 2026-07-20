@@ -65,6 +65,7 @@ public static partial class ServiceCollectionExtensions
             })
             .AddDialogs()
             .AddViews()
+            .AddCards()
             .AddViewModels()
             .AddTransient<ChatViewModel>() // ← перезаписывает Singleton на Transient
             .AddTransient<ChatSideBarViewModel>(); // ← перезаписывает Singleton на Transient
@@ -85,6 +86,9 @@ public static partial class ServiceCollectionExtensions
 
     [GenerateServiceRegistrations(AssignableTo = typeof(RoutableViewBase<>), ExcludeAssignableTo = typeof(MainWindow), AsSelf = true)]
     private static partial IServiceCollection AddViews(this IServiceCollection services);
+
+    [GenerateServiceRegistrations(AssignableTo = typeof(CardViewBase<>), AsSelf = true)]
+    private static partial IServiceCollection AddCards(this IServiceCollection services);
 
     [GenerateServiceRegistrations(AssignableTo = typeof(IViewModel), ExcludeAssignableTo = typeof(MainWindowViewModel), AsSelf = true, Lifetime = ServiceLifetime.Singleton)]
     private static partial IServiceCollection AddViewModels(this IServiceCollection services);

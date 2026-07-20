@@ -38,6 +38,21 @@
   </ItemGroup>
 
     <ItemGroup>
+    <Compile Update="Views\Cards\Messages\ChatFileImagePreviewMessageView.axaml.cs">
+      <DependentUpon>ChatFileImagePreviewMessageView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Cards\Messages\ChatSessionMessageView.axaml.cs">
+      <DependentUpon>ChatSessionMessageView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Cards\Messages\ChatTextMessageView.axaml.cs">
+      <DependentUpon>ChatTextMessageView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Cards\Messages\ChatFileMessageView.axaml.cs">
+      <DependentUpon>ChatFileMessageView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Cards\Messages\SystemChatMessageView.axaml.cs">
+      <DependentUpon>SystemChatMessageView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Windows\NotificationWindow.axaml.cs">
       <DependentUpon>NotificationWindow.axaml</DependentUpon>
     </Compile>

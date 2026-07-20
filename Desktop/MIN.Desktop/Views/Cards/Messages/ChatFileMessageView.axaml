@@ -1,0 +1,144 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages.Files"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="20"
+             x:DataType="vm:ChatFileMessageViewModel"
+             x:Class="MIN.Desktop.Views.Cards.Messages.ChatFileMessageView">
+
+    <Design.DataContext>
+        <vm:ChatFileMessageViewModel/>
+    </Design.DataContext>
+
+   <Border Classes="message-row"
+        Margin="{Binding TimePadding}"
+        Classes.private="{Binding IsPrivate}"
+        Classes.selected="{Binding IsSelected}">
+
+        <Border Classes="message"
+            MaxWidth="400"
+            Padding="{DynamicResource PaddingMedium}"
+            Classes.self="{Binding IsLocal}"
+            HorizontalAlignment="{Binding IsLocal,
+            Converter={converters:BoolToMessageAlignConverter}}">
+            <Border.ContextFlyout>
+                <Flyout FlyoutPresenterClasses="buttons"
+                        Placement="Right">
+                    <StackPanel>
+                        <Button Command="{Binding CopyNameToClipboardCommand}"
+                                Classes="no-background">
+                            <StackPanel>
+                                <Svg Path="/Assets/Icons/copy.svg" />
+                                <TextBlock VerticalAlignment="Center"
+                                    Text="Скопировать имя" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding ShowInFolderCommand}"
+                                Classes="no-background">
+                            <StackPanel>
+                                <Svg Path="/Assets/Icons/folder.svg" />
+                                <TextBlock VerticalAlignment="Center"
+                                    Text="Показать в проводнике" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Flyout>
+            </Border.ContextFlyout>
+
+            <StackPanel Spacing="8">
+                <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
+                    <TextBlock
+                        FontWeight="Bold"
+                        Text="{Binding SenderName}" />
+
+                    <TextBlock
+                        IsVisible="{Binding IsHost}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Text="Хост"
+                        DockPanel.Dock="Right" />
+                </DockPanel>
+
+                <DockPanel HorizontalSpacing="8">
+                    <TextBlock
+                        DockPanel.Dock="Right"
+                        Classes="info"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Text="{Binding Timestamp}" />
+
+                    <Grid
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        RowSpacing="8"
+                        ColumnSpacing="8"
+                        RowDefinitions="Auto, Auto, Auto"
+                        ColumnDefinitions="Auto, *">
+                        <Border
+                            Grid.RowSpan="3"
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Height="70"
+                            Width="70"
+                            Margin="4,0"
+                            Background="{DynamicResource Secondary}">
+                            <Button
+                                Classes="file"
+                                Command="{Binding InteractionClickCommand}">
+                                <Panel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                <Svg
+                                    Height="50" Width="50"
+                                    Path="{Binding FileDownloadState,
+                                    Converter={converters:FileDownloadStateToSvgConverter}}" />
+
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding InteractionFileStatus}" />
+                                </Panel>
+                            </Button>
+                            <Interaction.Behaviors>
+                                <EventTriggerBehavior EventName="PointerEntered">
+                                    <InvokeCommandAction Command="{Binding InteractionMouseEnterCommand}" />
+                                </EventTriggerBehavior>
+                                <EventTriggerBehavior EventName="PointerExited">
+                                    <InvokeCommandAction Command="{Binding InteractionMouseLeaveCommand}" />
+                                </EventTriggerBehavior>
+                            </Interaction.Behaviors>
+                        </Border>
+
+                        <SelectableTextBlock
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Classes="header5"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            MaxLines="2"
+                            TextTrimming="CharacterEllipsis"
+                            Text="{Binding FileMetadataMessage.FileName}" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Text="{Binding UniversalFileStatus}" />
+
+                        <ProgressBar
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top"
+                            Value="{Binding DownloadProgress}"
+                            IsVisible="{Binding IsDownloading}"/>
+                    </Grid>
+                </DockPanel>
+            </StackPanel>
+        </Border>
+    </Border>
+</UserControl>

@@ -67,7 +67,6 @@
 
     <Style Selector="TextBlock.chat, SelectableTextBlock.chat">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeChat}"/>
-        <Setter Property="TextAlignment" Value="Center"/>
     </Style>
 
     <Style Selector="TextBlock.info, SelectableTextBlock.info">

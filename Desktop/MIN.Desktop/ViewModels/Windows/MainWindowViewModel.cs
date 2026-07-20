@@ -123,6 +123,9 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
         window.WindowState = window.WindowState == WindowState.Maximized
             ? WindowState.Normal
             : WindowState.Maximized;
+
+        // Assume that in maximize it would fit 3 columns
+        UpdateLayout(WindowLayout.ThreeColumns);
     }
 
     [RelayCommand]

@@ -272,6 +272,13 @@ public static class MultiRoutingWindowExtensions
 
                 rememberedRightSideBar = null;
 
+                if (rememberedLeftSideBar != null)
+                {
+                    screen.LeftSideBarViewModel = rememberedLeftSideBar;
+                }
+
+                rememberedLeftSideBar = null;
+
                 if (rememberedCentral != null)
                 {
                     screen.CentralViewModel = rememberedCentral;

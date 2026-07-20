@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.ViewModels.Windows;
 using MIN.Desktop.Views.Base;
@@ -22,14 +23,18 @@ public partial class MainWindow : WindowEx<MainWindowViewModel>
         InitializeComponent();
     }
 
-    private void Window_SizeChanged(object? sender, Avalonia.Controls.SizeChangedEventArgs e)
+    private void Window_SizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        CalculateResize(e.NewSize.Width);
+    }
+
+    private void CalculateResize(double width)
     {
         if (DataContext is not MainWindowViewModel vm)
         {
             return;
         }
 
-        var width = e.NewSize.Width;
         var mode = width switch
         {
             > 1100 => WindowLayout.ThreeColumns,
