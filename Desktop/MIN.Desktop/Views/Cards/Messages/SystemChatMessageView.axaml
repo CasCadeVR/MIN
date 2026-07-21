@@ -27,6 +27,7 @@
                 Classes="chat"
                 Foreground="{DynamicResource TextOnPrimary}"
                 HorizontalAlignment="Center"
+                TextAlignment="Center"
                 Text="{Binding Text}" />
         </Border>
     </Border>

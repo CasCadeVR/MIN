@@ -1,7 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages.ChatViewModels"
              xmlns:enums="using:MIN.Desktop.Contracts.Enums"
-             xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
+             xmlns:behaviors="using:MIN.Desktop.Infrastructure.Behaviors"
+             xmlns:scrollBehaviors="using:MIN.Desktop.Infrastructure.Behaviors.ScrollViewers"
              xmlns:messages="using:MIN.Desktop.Views.Cards.Messages"
              xmlns:messagesVM="using:MIN.Desktop.ViewModels.Cards.Messages"
              xmlns:messagesVMFiles="using:MIN.Desktop.ViewModels.Cards.Messages.Files"
@@ -91,7 +92,6 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock
                                     VerticalAlignment="Center"
-                                    Margin="6,0,0,0"
                                     Classes="header5"
                                     Text="Комната " />
 
@@ -237,41 +237,72 @@
 
                 <!-- Messages -->
 
-                <ScrollViewer
-                    behaviors:AutoScrollToBottomBehavior.AutoScrollBottom="{Binding AutoScrollBottom}"
-                    VerticalAlignment="Bottom"
-                    Classes="main">
-                    <ItemsControl ItemsSource="{Binding Messages}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <VirtualizingStackPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <designer:MultiDataTemplate UseCache="False">
-                                <DataTemplate x:DataType="messagesVM:SystemChatMessageViewModel">
-                                   <messages:SystemChatMessageView />
-                                </DataTemplate>
+                <Panel VerticalAlignment="Bottom" > 
+                    <ScrollViewer
+                        x:Name="MessagesScroller"
+                        ScrollChanged="OnMessagesScrollChanged"
+                        scrollBehaviors:AutoScrollToBottomBehavior.AutoScrollBottom="{Binding AutoScrollBottom}"
+                        Classes="main">
+                        <ItemsControl ItemsSource="{Binding Messages}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <designer:MultiDataTemplate UseCache="False">
+                                    <DataTemplate x:DataType="messagesVM:SystemChatMessageViewModel">
+                                       <messages:SystemChatMessageView />
+                                    </DataTemplate>
 
-                                <DataTemplate x:DataType="messagesVM:ChatTextMessageViewModel">
-                                   <messages:ChatTextMessageView />
-                                </DataTemplate>
+                                    <DataTemplate x:DataType="messagesVM:ChatTextMessageViewModel">
+                                       <messages:ChatTextMessageView />
+                                    </DataTemplate>
 
-                                <DataTemplate x:DataType="messagesVMFiles:ChatFileMessageViewModel">
-                                   <messages:ChatFileMessageView />
-                                </DataTemplate>
+                                    <DataTemplate x:DataType="messagesVMFiles:ChatFileMessageViewModel">
+                                       <messages:ChatFileMessageView />
+                                    </DataTemplate>
 
-                                <DataTemplate x:DataType="messagesVMFiles:ChatFileImagePreviewMessageViewModel">
-                                   <messages:ChatFileImagePreviewMessageView />
-                                </DataTemplate>
+                                    <DataTemplate x:DataType="messagesVMFiles:ChatFileImagePreviewMessageViewModel">
+                                       <messages:ChatFileImagePreviewMessageView />
+                                    </DataTemplate>
 
-                                <DataTemplate x:DataType="sessionFiles:ChatSessionMessageViewModel">
-                                   <messages:ChatSessionMessageView />
-                                </DataTemplate>
-                            </designer:MultiDataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                                    <DataTemplate x:DataType="sessionFiles:ChatSessionMessageViewModel">
+                                       <messages:ChatSessionMessageView />
+                                    </DataTemplate>
+                                </designer:MultiDataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <Button Classes="icon"
+                            IsVisible="{Binding !IsAtBottom}"
+                            Background="{DynamicResource SurfaceCard}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Command="{Binding ScrollToBottomCommand}">
+                        <Panel>
+                            <Svg Margin="{DynamicResource PaddingCard}"
+                                Path="/Assets/Icons/arrow-down.svg" />
+
+                            <Border
+                                VerticalAlignment="Top"
+                                HorizontalAlignment="Right"
+                                Width="24"
+                                Height="24"
+                                Margin="-6"
+                                IsVisible="{Binding MissedMessagesCount,
+                                    Converter={converters:GreaterThanZeroConverter}}"
+                                CornerRadius="{DynamicResource CornerRadiusLarge}"
+                                Background="{DynamicResource Primary}">
+                                <TextBlock VerticalAlignment="Center"
+                                           Text="{Binding MissedMessagesCount}"
+                                           TextAlignment="Center" />
+                            </Border>
+                        </Panel>
+                    </Button>
+                </Panel>
+                
             </DockPanel>
         </Border>
 

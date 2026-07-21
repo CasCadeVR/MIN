@@ -326,6 +326,13 @@ public static class MultiRoutingWindowExtensions
                 }
 
                 screen.LeftSideBarViewModel = null;
+
+                if (rememberedCentral != null)
+                {
+                    screen.CentralViewModel = rememberedCentral;
+                }
+
+                rememberedCentral = null;
                 break;
         }
     }

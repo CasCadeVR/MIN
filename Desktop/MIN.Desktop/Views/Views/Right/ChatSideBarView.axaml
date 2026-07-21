@@ -18,6 +18,14 @@
         <designer:DesignerChatSideBarViewModel/>
     </Design.DataContext>
 
+    <UserControl.Styles>
+        <Style Selector="Rectangle.divider">
+            <Setter Property="Fill" Value="#555" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="Height" Value="1" />
+        </Style>
+    </UserControl.Styles>
+
     <Border Background="{DynamicResource SidebarSecondaryBackground}"
             Padding="{DynamicResource PaddingPage}"
             CornerRadius="{DynamicResource CornerRadiusLarge}">
@@ -39,53 +47,70 @@
             <StackPanel DockPanel.Dock="Top" Spacing="6">
 
                 <Border Classes="card">
-                    <Expander Classes="roomGroup" Header="Уведомления" IsExpanded="False">
-                        <ToggleSwitch IsChecked="{Binding Room.LocalRoomSettings.NotificationsEnabled}" />
-                    </Expander>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            FontSize="{DynamicResource FontSizeH5}"
+                            FontWeight="Bold"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0"
+                            Text="Уведомления" />
+                        <ToggleSwitch
+                            IsChecked="{Binding Room.LocalRoomSettings.NotificationsEnabled}" />
+                    </StackPanel>
                 </Border>
 
                 <Border Classes="card">
                     <Expander Classes="roomGroup" Header="Информация" IsExpanded="False">
-                        <StackPanel Spacing="8" HorizontalAlignment="Center">
-                             <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                               <TextBlock Text="Хост: " />
-                                <TextBlock Text="{Binding HostName}" />
-                            </StackPanel>
+                        <StackPanel Margin="0,8,0,0" Spacing="8">
+                            <DockPanel>
+                               <TextBlock DockPanel.Dock="Left" Text="Хост: " />
+                                <TextBlock DockPanel.Dock="Right"  Text="{Binding HostName}" />
+                                <Rectangle Classes="divider" />
+                            </DockPanel>
 
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock Text="Создана: " />
-                                <TextBlock Text="{Binding Room.CreatedAt, Converter={converters:DateToShortDateConverter}}" />
-                            </StackPanel>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Text="Создана: " />
+                                <TextBlock DockPanel.Dock="Right"
+                                           Text="{Binding Room.CreatedAt,
+                                           Converter={converters:DateToShortDateConverter}}" />
+                                <Rectangle Classes="divider" />
+                            </DockPanel>
 
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock Text="Кабинет: " />
-                                <TextBlock Text="{Binding Classroom}" />
-                            </StackPanel>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Text="Кабинет: " />
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding Classroom}" />
+                                <Rectangle Classes="divider" />
+                            </DockPanel>
 
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock Text="№ Компьютера: " />
-                                <TextBlock Text="{Binding Room.PcNumber}" />
-                            </StackPanel>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Text="№ Компьютера: " />
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding Room.PcNumber}" />
+                                <Rectangle Classes="divider" />
+                            </DockPanel>
 
-                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock Margin="0,0,8,0" Text="В сети: " />
-                                <TextBlock Text="{Binding ParticipantsInfo}" />
-                            </StackPanel>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Margin="0,0,8,0" Text="В сети: " />
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding ParticipantsInfo}" />
+                                <Rectangle Classes="divider" />
+                            </DockPanel>
                         </StackPanel>
                     </Expander>
                 </Border>
+
                 <Border Classes="card">
                     <Expander Classes="roomGroup" Header="Сеть" IsExpanded="False">
-                        <StackPanel Spacing="8" HorizontalAlignment="Center">
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock Text="Адрес: " />
-                                <SelectableTextBlock Text="{Binding IpAddress}" />
-                            </StackPanel>
+                        <StackPanel Margin="0,8,0,0" Spacing="8">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Text="Адрес: " />
+                                <SelectableTextBlock DockPanel.Dock="Right" Text="{Binding IpAddress}" />
+                                <Rectangle Classes="divider" />
+                            </DockPanel>
 
-                            <StackPanel Spacing="8" HorizontalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock Text="Порт: " />
-                                <SelectableTextBlock Text="{Binding Port}" />
-                            </StackPanel>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Left" Text="Порт: " />
+                                <SelectableTextBlock DockPanel.Dock="Right" Text="{Binding Port}" />
+                                <Rectangle Classes="divider" />
+                            </DockPanel>
                         </StackPanel>
                     </Expander>
                 </Border>
@@ -152,6 +177,7 @@
 
                                                     <TextBlock Text="{Binding ParticipantName}"
                                                         VerticalAlignment="Center"
+                                                        MaxWidth="300"
                                                         Classes="header4" />
                                                 </DockPanel>
                                                 <TextBlock Text="{Binding ParticipantRole}"  />
@@ -177,7 +203,9 @@
 
                                         <SelectableTextBlock
                                             Classes="header5"
-                                            Text="{Binding ParticipantName}" />
+                                            Text="{Binding ParticipantName,
+                                                Converter={converters:TruncateWithEllipsisConverter},
+                                                ConverterParameter=20}" />
                                     </DockPanel>
 
                                     <StackPanel Orientation="Horizontal">

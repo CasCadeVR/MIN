@@ -45,6 +45,7 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     /// Имя своего участника по умолчанию
     /// </summary>
     [ObservableProperty]
+    [Display(Name = "Имя участника")]
     [NotifyDataErrorInfo]
     [ParticipantName]
     [NotEndsWith(".")]

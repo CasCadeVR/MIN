@@ -50,7 +50,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             return;
         }
 
-        AddMessageToChatFlow(eventMessage.Message);
+        await AddMessageToChatFlow(eventMessage.Message);
         await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
         {
             RoomId = roomId,
@@ -66,7 +66,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             return;
         }
 
-        AddMessageToChatFlow(eventMessage.Message);
+        await AddMessageToChatFlow(eventMessage.Message);
         await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
         {
             RoomId = roomId,
@@ -84,7 +84,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             return;
         }
 
-        AddMessageToChatFlow(eventMessage.Message);
+        await AddMessageToChatFlow(eventMessage.Message);
         await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
         {
             RoomId = roomId,
@@ -140,7 +140,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         room.AddParticipant(eventMessage.Message.Participant);
 
-        AddMessageToChatFlow(eventMessage.Message);
+        await AddMessageToChatFlow(eventMessage.Message);
         await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
         {
             RoomId = roomId,
@@ -165,7 +165,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             chatSideBarViewModel.PrivateChatParticipantId = null;
         }
 
-        AddMessageToChatFlow(eventMessage.Message);
+        await AddMessageToChatFlow(eventMessage.Message);
         await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
         {
             RoomId = roomId,
@@ -189,7 +189,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (RoomName != eventMessage.RoomInfo.Name)
         {
-            SendSystemMessage(new SystemTextMessage
+            await SendSystemMessage(new SystemTextMessage
             {
                 Content = $"Хост поменял название комнаты с {RoomName} на {eventMessage.RoomInfo.Name}",
             }, needsToNotify: true);
@@ -211,7 +211,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         loadedPage = e.Page;
         room.TotalMessageCount = e.TotalCount;
         RemoveLoadMoreLabel();
-        RenderMessages(e.Messages, appendOnTop: true);
+        await RenderMessages(e.Messages, appendOnTop: true);
 
         if (loadedPage * StoreConstants.MessagesPageSize < room.TotalMessageCount)
         {

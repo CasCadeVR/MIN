@@ -123,13 +123,18 @@
 
                                     <SelectableTextBlock HorizontalAlignment="Center"
                                         Classes="header4"
-                                        Text="{Binding Room.Name}" />
+                                        Text="{Binding Room.Name,
+                                            Converter={converters:TruncateWithEllipsisConverter},
+                                            ConverterParameter=15}" />
 
                                     <StackPanel Spacing="8"
                                         HorizontalAlignment="Center"
                                         Orientation="Horizontal">
-                                        <TextBlock Text="Создатель: " />
-                                        <TextBlock Text="{Binding Room.HostParticipant.Name}" />
+                                        <TextBlock
+                                            Text="Создатель: " />
+                                        <TextBlock Text="{Binding Room.HostParticipant.Name,
+                                                Converter={converters:TruncateWithEllipsisConverter},
+                                                ConverterParameter=20}" />
                                     </StackPanel>
 
                                     <!-- Room create time -->

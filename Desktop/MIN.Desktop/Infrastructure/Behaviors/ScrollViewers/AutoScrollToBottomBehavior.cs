@@ -2,7 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Xaml.Interactivity;
 
-namespace MIN.Desktop.Contracts.Behaviors;
+namespace MIN.Desktop.Infrastructure.Behaviors.ScrollViewers;
 
 /// <summary>
 /// Прокрутка <see cref="ScrollViewer"/> вниз и вверх

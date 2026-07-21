@@ -7,7 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Xaml.Interactivity;
 
-namespace MIN.Desktop.Contracts.Behaviors;
+namespace MIN.Desktop.Infrastructure.Behaviors;
 
 /// <summary>
 /// <see cref="Control"/>, позволяющий принимать файлы через drag and drop

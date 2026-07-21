@@ -17,9 +17,10 @@ public partial class CreateParticipantViewModel : ModalViewModelBase
     private readonly IIdentityService identityService;
 
     [ObservableProperty]
+    [Display(Name = "Имя участника")]
     [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
     [NotifyDataErrorInfo]
-    [Required]
+    [Required(ErrorMessage = "Введите своё имя")]
     [ParticipantName]
     [NotEndsWith(".")]
     public partial string Name { get; set; } = "";

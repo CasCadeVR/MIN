@@ -19,9 +19,10 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     private bool isNew;
 
     [ObservableProperty]
+    [Display(Name = "Имя комнаты")]
     [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
     [NotifyDataErrorInfo]
-    [Required]
+    [Required(ErrorMessage = "Придумайте имя для комнаты")]
     [RoomName]
     [NotEndsWith(".")]
     public partial string Name { get; set; } = "";

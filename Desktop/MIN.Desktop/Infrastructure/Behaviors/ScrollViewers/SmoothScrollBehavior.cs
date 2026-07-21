@@ -13,7 +13,7 @@ using Avalonia.Layout;
 using Avalonia.VisualTree;
 using Avalonia.Xaml.Interactivity;
 
-namespace MIN.Desktop.Contracts.Behaviors;
+namespace MIN.Desktop.Infrastructure.Behaviors.ScrollViewers;
 
 /// <summary>
 /// Мягкая прокрутка <see cref="ScrollViewer"/>

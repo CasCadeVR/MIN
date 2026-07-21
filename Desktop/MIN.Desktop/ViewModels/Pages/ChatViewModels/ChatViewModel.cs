@@ -90,7 +90,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
-    private void ActionOnNavigatedTo(object? sender, EventArgs e)
+    private async void ActionOnNavigatedTo(object? sender, EventArgs e)
     {
         if (chatSideBarViewModel.IsOpened)
         {
@@ -106,7 +106,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var lastHistory = featureCollection.Core.RoomFactory
             .GetOrCreateContext(roomId).Messages.GetRecentHistory();
 
-        RenderMessages(lastHistory.ToList());
+        await RenderMessages(lastHistory.ToList());
         ShowLoadMoreLabel();
     }
 
@@ -132,7 +132,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         this.connectionId = connectionId;
         roomId = room.Id;
 
-        UpdateChatFlow();
+        await UpdateChatFlow();
     }
 
     private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)

@@ -36,7 +36,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     private SystemChatMessageViewModel? loadMoreLabel;
     private int renderedMessageCount;
 
-    private void AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool scrollToBottom = true, bool countTowardCap = true)
+    private async Task AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool scrollToBottom = true, bool countTowardCap = true)
     {
         var isSelfMessage = message.SenderId == localParticipant.Id;
         var isHostMessage = room?.HostParticipant?.Id == message.SenderId;
@@ -47,17 +47,17 @@ public partial class ChatViewModel : RoutableViewModelBase
         switch (message)
         {
             case ChatTextMessage m:
-                messageCard = CreateTextMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                messageCard = await CreateTextMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
                 break;
 
             case SessionReadyMessage m:
-                messageCard = CreateSessionMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                messageCard = await CreateSessionMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
                 break;
 
             case FileMetadataMessage m:
                 messageCard = featureCollection.FileTransfer.FileHelperService.IsFileImage(m.FileName)
-                    ? CreateChatImagePreviewMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop)
-                    : CreateFileMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                    ? await CreateChatImagePreviewMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop)
+                    : await CreateFileMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
                 break;
 
             case SystemTextMessage m:
@@ -90,11 +90,10 @@ public partial class ChatViewModel : RoutableViewModelBase
             renderedMessageCount++;
         }
 
-        // TODO check if its missed (didnt saw)
-        //if (scrollToBottom)
-        //{
-        //    chatFlow.VerticalScroll.Value = chatFlow.VerticalScroll.Maximum;
-        //}
+        if (!IsAtBottom && message.SenderId != localParticipant.Id && !appendOnTop)
+        {
+            MissedMessagesCount++;
+        }
     }
 
     private void ShowLoadMoreLabel()
@@ -145,7 +144,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
             loadedPage++;
             RemoveLoadMoreLabel();
-            RenderMessages(pageMessages, appendOnTop: true);
+            await RenderMessages(pageMessages, appendOnTop: true);
 
             if (loadedPage * StoreConstants.MessagesPageSize < memoryCount)
             {
@@ -175,7 +174,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         ShowLoadMoreLabel();
     }
 
-    private ChatTextMessageViewModel CreateTextMessageCard(ChatTextMessage msg,
+    private async Task<ChatTextMessageViewModel> CreateTextMessageCard(ChatTextMessage msg,
             bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
@@ -185,14 +184,14 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (!withAppendOnTop)
         {
-            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+            await InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
         }
 
         lastChatMessage = msg;
         return card;
     }
 
-    private ChatFileMessageViewModel CreateFileMessageCard(FileMetadataMessage msg,
+    private async Task<ChatFileMessageViewModel> CreateFileMessageCard(FileMetadataMessage msg,
         bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
@@ -207,14 +206,14 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (!withAppendOnTop)
         {
-            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+            await InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
         }
 
         lastChatMessage = msg;
         return card;
     }
 
-    private ChatSessionMessageViewModel CreateSessionMessageCard(SessionReadyMessage msg,
+    private async Task<ChatSessionMessageViewModel> CreateSessionMessageCard(SessionReadyMessage msg,
            bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
@@ -227,15 +226,15 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (!withAppendOnTop)
         {
-            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+            await InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
         }
 
         lastChatMessage = msg;
         return card;
     }
 
-    private ChatFileImagePreviewMessageViewModel CreateChatImagePreviewMessageCard(FileMetadataMessage msg,
-    bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
+    private async Task<ChatFileImagePreviewMessageViewModel> CreateChatImagePreviewMessageCard(FileMetadataMessage msg,
+        bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
     {
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
         var timePadding = CalculateTimePadding(msg.Timestamp);
@@ -249,7 +248,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (!withAppendOnTop)
         {
-            InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+            await InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
         }
 
         lastChatMessage = msg;
@@ -292,14 +291,14 @@ public partial class ChatViewModel : RoutableViewModelBase
         return new Thickness(0, gap, 0, 0);
     }
 
-    private void SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false,
+    private async Task SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false,
         bool countTowardCap = false)
     {
-        AddMessageToChatFlow(systemMessage, scrollToBottom: true, countTowardCap: countTowardCap);
+        await AddMessageToChatFlow(systemMessage, scrollToBottom: true, countTowardCap: countTowardCap);
 
         if (needsToNotify)
         {
-            featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
+            await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
             {
                 RoomId = roomId,
                 DescribableMessage = systemMessage,
@@ -308,7 +307,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
-    private void InsertPrivateChatSystemMessageIfNeeded(Guid senderId, Guid? recipientId,
+    private async Task InsertPrivateChatSystemMessageIfNeeded(Guid senderId, Guid? recipientId,
         bool isCurrentPrivate)
     {
         if (!isCurrentPrivate)
@@ -327,7 +326,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var sender = room?.CurrentParticipants.FirstOrDefault(x => x.Id == senderId);
         var recipient = room?.CurrentParticipants.FirstOrDefault(x => x.Id == recipientId);
 
-        SendSystemMessage(new SystemTextMessage
+        await SendSystemMessage(new SystemTextMessage
         {
             Content = recipient?.Id != localParticipant.Id
                 ? $"Это начало приватного общения с {recipient?.Name}"

@@ -4,7 +4,7 @@
         xmlns:controls="using:MIN.Desktop.TemplatedControls"
         xmlns:designer="using:MIN.Desktop.Contracts.Designer"
         xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
-        xmlns:behaviors="using:MIN.Desktop.Contracts.Behaviors"
+        xmlns:behaviors="using:MIN.Desktop.Infrastructure.Behaviors.ScrollViewers"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"

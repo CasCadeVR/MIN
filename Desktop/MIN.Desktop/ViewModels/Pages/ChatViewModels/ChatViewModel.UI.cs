@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
@@ -22,14 +23,14 @@ public partial class ChatViewModel : RoutableViewModelBase
     private readonly AvaloniaList<IDescribableStatus> currentStatuses = [];
 
     /// <summary>
-    /// Показать статус
-    /// </summary>
-    public bool ShowStatus => currentStatuses.Count > 0;
-
-    /// <summary>
     /// Приложенные файлы
     /// </summary>
     public AvaloniaList<FileAttachmentViewModel> AttachedFiles { get; } = [];
+
+    /// <summary>
+    /// Показать статус
+    /// </summary>
+    public bool ShowStatus => currentStatuses.Count > 0;
 
     /// <summary>
     /// Флаг переключения автоскролла вниз
@@ -37,8 +38,26 @@ public partial class ChatViewModel : RoutableViewModelBase
     [ObservableProperty]
     public partial bool AutoScrollBottom { get; set; }
 
+    /// <summary>
+    /// Является ли сейчас ползунок в самом низу scroll viewer
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsAtBottom { get; set; }
+
+    partial void OnIsAtBottomChanged(bool value)
+    {
+        if (value == true)
+        {
+            MissedMessagesCount = 0;
+        }
+    }
+
     [ObservableProperty]
     public partial string StatusContent { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial int MissedMessagesCount { get; set; }
+
 
     /// <summary>
     /// Показать приложенные файлаы
@@ -47,12 +66,12 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     #region Update
 
-    private void UpdateChatFlow()
+    private async Task UpdateChatFlow()
     {
         Messages.Clear();
 
         var messages = room.ChatHistory;
-        RenderMessages(messages);
+        await RenderMessages(messages);
 
         if (room.TotalMessageCount > StoreConstants.MessagesPageSize)
         {
@@ -60,12 +79,12 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
-    private void RenderMessages(List<IMessage> messages, bool appendOnTop = false)
+    private async Task RenderMessages(List<IMessage> messages, bool appendOnTop = false)
     {
         for (var i = messages.Count - 1; i >= 0; i--)
         {
             var index = appendOnTop ? messages.Count - 1 - i : i;
-            AddMessageToChatFlow(messages[index], appendOnTop, scrollToBottom: false);
+            await AddMessageToChatFlow(messages[index], appendOnTop, scrollToBottom: false);
         }
     }
 
@@ -114,6 +133,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         AttachedFiles.Add(fileVm);
     }
 
+    [RelayCommand]
     private async Task ScrollToBottom()
     {
         AutoScrollBottom = true;
