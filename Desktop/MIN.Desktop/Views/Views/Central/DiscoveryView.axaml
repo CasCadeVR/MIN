@@ -15,7 +15,7 @@
         <designer:DesignerDiscoveryViewModel/>
     </Design.DataContext>
 
-    <Border>
+    <Border Classes="appear-from-top">
         <DockPanel VerticalSpacing="10" >
             <Border DockPanel.Dock="Top"
                     Margin="0,0,0,16"
@@ -65,8 +65,8 @@
                         Command="{Binding ConnectDirectlyCommand}"
                         DockPanel.Dock="Right"
                         IsVisible="{Binding CurrentLayout,
-                            Converter={converters:NonEqualityConverter},
-                            ConverterParameter={x:Static enums:WindowLayout.Narrow}}">
+                            Converter={converters:EqualityConverter},
+                            ConverterParameter={x:Static enums:WindowLayout.ThreeColumns}}">
                        Подключиться напрямую
                     </Button>
 
@@ -75,8 +75,8 @@
                         Command="{Binding ConnectDirectlyCommand}"
                         DockPanel.Dock="Right"
                         IsVisible="{Binding CurrentLayout,
-                            Converter={converters:EqualityConverter},
-                            ConverterParameter={x:Static enums:WindowLayout.Narrow}}">
+                            Converter={converters:NonEqualityConverter},
+                            ConverterParameter={x:Static enums:WindowLayout.ThreeColumns}}">
                        <Svg Path="/Assets/Icons/connect.svg"/>
                     </Button>
 
@@ -115,8 +115,8 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Classes="card"
-                                    Width="300">
+                            <Border Classes="card appear-from-top"
+                                    Width="256">
                                 <StackPanel Spacing="8">
                                     <TextBlock HorizontalAlignment="Center"
                                         Text="Комната " />

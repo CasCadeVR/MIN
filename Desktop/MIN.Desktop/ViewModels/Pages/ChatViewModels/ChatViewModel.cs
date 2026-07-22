@@ -103,6 +103,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
 
         loadedPage = 1;
+        renderedMessageCount = 0;
         var lastHistory = featureCollection.Core.RoomFactory
             .GetOrCreateContext(roomId).Messages.GetRecentHistory();
 

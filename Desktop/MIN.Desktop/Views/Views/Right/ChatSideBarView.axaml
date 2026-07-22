@@ -1,6 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
-             xmlns:statuses="using:MIN.Core.Entities.Contracts.Enums"
              xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:designer="using:MIN.Desktop.Contracts.Designer"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -26,7 +25,8 @@
         </Style>
     </UserControl.Styles>
 
-    <Border Background="{DynamicResource SidebarSecondaryBackground}"
+    <Border Classes="appear-from-right"
+            Background="{DynamicResource SidebarSecondaryBackground}"
             Padding="{DynamicResource PaddingPage}"
             CornerRadius="{DynamicResource CornerRadiusLarge}">
         <DockPanel VerticalSpacing="4" >

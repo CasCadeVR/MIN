@@ -1,0 +1,132 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer">
+
+    <Design.PreviewWith>
+        <designer:DesignerControlsTemplates />
+    </Design.PreviewWith>
+
+<Style Selector="Border">
+         <Style Selector="^.card">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingCard}" />
+        </Style>
+
+        <Style Selector="^.sidebar">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingPage}" />
+        </Style>
+
+         <Style Selector="^.log">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
+        </Style>
+
+        <Style Selector="^.topbar">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingTopBar}" />
+        </Style>
+
+        <Style Selector="^.secondary">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Background" Value="{DynamicResource SidebarSecondaryBackground}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingPage}" />
+        </Style>
+
+        <Style Selector="^.footer">
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}" />
+            <Setter Property="Padding" Value="24 20" />
+            <Setter Property="BorderThickness" Value="0 2 0 0" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
+        </Style>
+
+        <Style Selector="^.on-image">
+            <Setter Property="Background" Value="{DynamicResource TextBackgroundOnImage}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+
+            <Style Selector="^ TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimary}" />
+                <Setter Property="FontWeight" Value="Bold" />
+            </Style>
+        </Style>
+
+        <Style Selector="^.message-row">
+            <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
+            <Setter Property="Background" Value="Transparent" />
+
+            <!-- Ховер сообщения -->
+            <Style Selector="^:pointerover">
+                <Setter Property="Background" Value="{DynamicResource ChatMessageTheirHover}" />
+            </Style>
+
+            <!-- Ховер своего сообщения -->
+            <Style Selector="^.self:pointerover">
+                <Setter Property="Background" Value="{DynamicResource ChatMessageSelfHover}" />
+            </Style>
+
+            <!-- Приватное -->
+            <Style Selector="^.private">
+                <Setter Property="Background" Value="{DynamicResource ChatPrivate}" />
+            </Style>
+
+            <!-- Выделенное -->
+            <Style Selector="^.selected">
+                <Setter Property="Background" Value="{DynamicResource Primary}" />
+            </Style>
+
+            <Style.Animations>
+                <Animation Duration="0:0:0:0.2">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0.0" />
+                        <Setter Property="TranslateTransform.Y" Value="10" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1.0" />
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <Style Selector="^.message">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}" />
+            <Setter Property="Background" Value="{DynamicResource ChatMessageTheir}" />
+
+            <!-- Своё сообщение -->
+
+            <Style Selector="^.self">
+                <Setter Property="Background" Value="{DynamicResource ChatMessageSelf}" />
+            </Style>
+
+            <!-- Системное -->
+
+            <Style Selector="^.system">
+                <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
+                <Setter Property="Background" Value="{DynamicResource SystemBackground}" />
+            </Style>
+
+            <!-- Неактивное (сессия например) -->
+
+            <Style Selector="^.unactive">
+                <Setter Property="Background" Value="{DynamicResource SurfaceDisabled}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^.drag">
+            <Setter Property="Background" Value="{DynamicResource SurfaceDrag}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
+            <Setter Property="BorderThickness" Value="4" />
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingPage}" />
+        </Style>
+
+        <Style Selector="^.input">
+            <Setter Property="Background" Value="{DynamicResource SurfaceInput}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+        </Style>
+    </Style>
+</Styles>

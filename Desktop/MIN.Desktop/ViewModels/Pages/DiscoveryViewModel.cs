@@ -57,7 +57,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
     public partial AvaloniaList<DiscoveredRoomCardViewModel> DiscoveredRooms { get; set; } = [];
 
     [ObservableProperty]
-    public partial WindowLayout CurrentLayout { get; private set; }
+    public partial WindowLayout CurrentLayout { get; private set; } = WindowLayout.ThreeColumns;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="DiscoveryViewModel"/>

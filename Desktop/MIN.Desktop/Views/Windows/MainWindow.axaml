@@ -14,7 +14,7 @@
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="500"
         Width="1124" Height="500"
-        MinWidth="300" MinHeight="330"
+        MinWidth="320" MinHeight="330"
         SizeChanged="Window_SizeChanged"
         x:Class="MIN.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -25,6 +25,8 @@
     </Design.DataContext>
 
     <Window.Styles>
+        <!-- Notifications -->
+
          <Style Selector=".notifications Border">
             <Setter Property="Transitions">
                 <Transitions>

@@ -16,7 +16,8 @@
         <designer:DesignerSettingsViewModel/>
     </Design.DataContext>
 
-    <Border Background="{DynamicResource SidebarSecondaryBackground}"
+    <Border Classes="appear-from-left"
+            Background="{DynamicResource SidebarSecondaryBackground}"
             Padding="{DynamicResource PaddingPage}"
             CornerRadius="{DynamicResource CornerRadiusLarge}">
         <DockPanel VerticalSpacing="10" >
@@ -44,7 +45,8 @@
                     <!-- Default Name -->
 
                     <DockPanel HorizontalSpacing="12">
-                        <TextBlock VerticalAlignment="Center">
+                        <TextBlock MaxWidth="68"
+                            VerticalAlignment="Center">
                             Имя по умолчанию
                         </TextBlock>
 

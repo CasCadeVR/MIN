@@ -39,11 +39,11 @@ public interface IRoutableViewModel
     /// <summary>
     /// Перейти назад
     /// </summary>
-    protected void ChangeViewToPrevious(object? sender = null);
+    protected void ChangeViewToPrevious();
 
     /// <summary>
     /// Перейти назад
     /// </summary>
     /// <typeparam name="T">Тип view model, на который нужно переместиться назад</typeparam>
-    protected void ChangeViewToPrevious<T>(object? sender = null) where T : IRoutableViewModel;
+    protected void ChangeViewToPrevious<T>() where T : IRoutableViewModel;
 }

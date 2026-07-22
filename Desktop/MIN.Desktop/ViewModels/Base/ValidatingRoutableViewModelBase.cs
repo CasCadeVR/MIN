@@ -32,27 +32,24 @@ public abstract class ValidatingRoutableViewModelBase : ValidatingViewModelBase,
     public void ChangeView<TViewModel>(TViewModel viewModel) where TViewModel : IRoutableViewModel
     {
         WeakReferenceMessenger.Default.Send(new ShowViewReferenceCommand(viewModel));
-        viewModel.OnNavigatedTo?.Invoke(this, EventArgs.Empty);
     }
 
     /// <inheritdoc />
     public void CloseView(object? sender = null)
     {
-        OnNavigatedFrom?.Invoke(sender ?? this, EventArgs.Empty);
+        OnNavigatedFrom?.Invoke(sender, EventArgs.Empty);
         WeakReferenceMessenger.Default.Send(new CloseViewReferenceCommand(LayoutType));
     }
 
     /// <inheritdoc />
-    public void ChangeViewToPrevious(object? sender = null)
+    public void ChangeViewToPrevious()
     {
-        OnNavigatedFrom?.Invoke(sender ?? this, EventArgs.Empty);
         WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand(LayoutType, null));
     }
 
     /// <inheritdoc />
-    public void ChangeViewToPrevious<T>(object? sender = null) where T : IRoutableViewModel
+    public void ChangeViewToPrevious<T>() where T : IRoutableViewModel
     {
-        OnNavigatedFrom?.Invoke(sender ?? this, EventArgs.Empty);
         WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand(LayoutType, typeof(T)));
     }
 }

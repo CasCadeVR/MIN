@@ -65,7 +65,7 @@ public static class MultiRoutingWindowExtensions
             {
                 if (screen.RightSideBarViewModel is RoutableViewModelBase routableRightSidebar)
                 {
-                    routableRightSidebar.CloseView(routableViewModel);
+                    routableRightSidebar.CloseView();
                 }
                 else
                 {
@@ -107,6 +107,12 @@ public static class MultiRoutingWindowExtensions
             switch (routableViewModel.LayoutType)
             {
                 case ViewLayoutType.LeftSideBar:
+                    if (screen.LeftSideBarViewModel is IRoutableViewModel routabelLeft && routabelLeft != (IRoutableViewModel)routableViewModel)
+                    {
+                        routabelLeft.OnNavigatedFrom?.Invoke(routableViewModel, EventArgs.Empty);
+                    }
+
+                    routableViewModel.OnNavigatedTo?.Invoke(screen.LeftSideBarViewModel, EventArgs.Empty);
 
                     if (screen.LayoutMode == WindowLayout.Narrow && screen.CentralViewModel != null)
                     {
@@ -118,18 +124,29 @@ public static class MultiRoutingWindowExtensions
                     break;
 
                 case ViewLayoutType.Central:
+                    screen.CentralViewModel = routableViewModel;
+                    rememberedCentral = null;
+
+                    if (screen.CentralViewModel is IRoutableViewModel routabelCenter && routabelCenter != (IRoutableViewModel)routableViewModel)
+                    {
+                        routabelCenter.OnNavigatedFrom?.Invoke(routableViewModel, EventArgs.Empty);
+                    }
+
+                    routableViewModel.OnNavigatedTo?.Invoke(screen.CentralViewModel, EventArgs.Empty);
 
                     if (screen.LayoutMode == WindowLayout.Narrow)
                     {
                         screen.LeftSideBarViewModel = null;
                     }
-
-                    screen.CentralViewModel = routableViewModel;
-                    rememberedCentral = null;
-                    ResetRelated(screen);
                     break;
 
                 case ViewLayoutType.RightSideBar:
+                    if (screen.RightSideBarViewModel is IRoutableViewModel routabelRight && routabelRight != (IRoutableViewModel)routableViewModel)
+                    {
+                        routabelRight.OnNavigatedFrom?.Invoke(routableViewModel, EventArgs.Empty);
+                    }
+
+                    routableViewModel.OnNavigatedTo?.Invoke(screen.RightSideBarViewModel, EventArgs.Empty);
 
                     if (screen.LayoutMode < WindowLayout.ThreeColumns && screen.CentralViewModel != null)
                     {
@@ -141,26 +158,14 @@ public static class MultiRoutingWindowExtensions
                     break;
 
                 default:
-                    screen.CentralViewModel = routableViewModel;
-                    break;
+                    throw new NotImplementedException();
             }
         }
         catch (OperationCanceledException)
         {
             if (navigationStack.Count > 0)
             {
-                //if (leftPriorViewModel != null)
-                //{
-                //    navigationStack[leftPriorViewModel.LayoutType].Remove(navigationStack[leftPriorViewModel.LayoutType][^1]);
-                //}
-                //if (centralPriorViewModel != null)
-                //{
-                //    navigationStack[centralPriorViewModel.LayoutType].Remove(navigationStack[centralPriorViewModel.LayoutType][^1]);
-                //}
-                //if (rightPriorViewModel != null)
-                //{
-                //    navigationStack[rightPriorViewModel.LayoutType].Remove(navigationStack[rightPriorViewModel.LayoutType][^1]);
-                //}
+                navigationStack[routableViewModel.LayoutType].Remove(navigationStack[routableViewModel.LayoutType][^1]);
             }
         }
     }
@@ -264,7 +269,6 @@ public static class MultiRoutingWindowExtensions
         switch (screen.LayoutMode)
         {
             case WindowLayout.ThreeColumns:
-                // Восстановить Right, если был запомнен
                 if (rememberedRightSideBar != null)
                 {
                     screen.RightSideBarViewModel = rememberedRightSideBar;
@@ -288,7 +292,6 @@ public static class MultiRoutingWindowExtensions
                 break;
 
             case WindowLayout.TwoColumns:
-                // Спрятать Right (запомнить для восстановления)
                 if (screen.RightSideBarViewModel != null)
                 {
                     rememberedRightSideBar = screen.RightSideBarViewModel;
@@ -312,7 +315,6 @@ public static class MultiRoutingWindowExtensions
                 break;
 
             case WindowLayout.Narrow:
-                // Спрятать Left + Right (запомнить)
                 if (screen.RightSideBarViewModel != null)
                 {
                     rememberedRightSideBar = screen.RightSideBarViewModel;

@@ -15,8 +15,9 @@
     <Design.DataContext>
         <design:DesignerMainSideBarViewModel/>
     </Design.DataContext>
-
-    <Border Background="{DynamicResource SidebarBackground}"
+         
+    <Border Classes="appear-from-left"
+            Background="{DynamicResource SidebarBackground}"
             CornerRadius="16"
             Padding="{DynamicResource PaddingCard}">
         <DockPanel VerticalSpacing="10" >
@@ -60,7 +61,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Button Classes="card"
+                            <Button Classes="card appear-from-bottom"
                                     Classes.selected="{Binding IsSelected}"
                                     Command="{Binding SelectItemCommand}"
                                     Margin="0,6">
@@ -85,22 +86,35 @@
                                     </DockPanel>
 
                                     <DockPanel>
-                                        <Border
+                                        <Panel
                                             DockPanel.Dock="Right"
                                             IsVisible="{Binding MissedMessagesCount,
-                                                Converter={converters:GreaterThanZeroConverter}}"
-                                            Padding="{DynamicResource PaddingSmall}"
-                                            CornerRadius="{DynamicResource CornerRadiusLarge}"
-                                            Background="{DynamicResource Primary}">
-                                             <TextBlock
-                                                Classes="header4"
-                                                Classes.card-text-selected="{Binding IsSelected}"
-                                                Foreground="{DynamicResource TextOnPrimary}"
-                                                Text="{Binding MissedMessagesCount}" />
-                                        </Border>
+                                                Converter={converters:GreaterThanZeroConverter}}">
+
+                                            <Border
+                                                Width="24"
+                                                Height="24"
+                                                CornerRadius="{DynamicResource CornerRadiusLarge}"
+                                                Background="{DynamicResource Primary}" />
+
+                                            <Border
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"
+                                                Padding="{DynamicResource PaddingSmall}"
+                                                CornerRadius="{DynamicResource CornerRadiusLarge}"
+                                                Background="{DynamicResource Primary}">
+                                                <TextBlock
+                                                    Classes="header5"
+                                                    Classes.card-text-selected="{Binding IsSelected}"
+                                                    Foreground="{DynamicResource TextOnPrimary}"
+                                                    Text="{Binding MissedMessagesCount}" />
+                                            </Border>
+                                        </Panel>
+                                        
 
                                         <TextBlock
                                             Classes="card-text"
+                                            HorizontalAlignment="Left"
                                             Classes.card-text-selected="{Binding IsSelected}"
                                             VerticalAlignment="Center"
                                             MaxLines="3"

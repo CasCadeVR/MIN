@@ -31,7 +31,8 @@
         DragDrop.Drop="Border_Drop"
         behaviors:DropFilesBehavior.DropFilesCommand="{Binding DropFilesCommand}">
         <Border
-           Background="Transparent">
+            Classes="appear-from-top"
+            Background="Transparent">
             <DockPanel VerticalSpacing="10">
 
                 <!-- Topbar -->

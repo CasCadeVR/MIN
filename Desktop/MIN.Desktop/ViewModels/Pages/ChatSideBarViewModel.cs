@@ -217,6 +217,6 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     [RelayCommand]
     public void CloseAsync()
     {
-        CloseView();
+        CloseView(this);
     }
 }

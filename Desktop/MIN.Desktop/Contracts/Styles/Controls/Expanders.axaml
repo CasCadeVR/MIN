@@ -119,7 +119,7 @@
                     <Border
                         HorizontalAlignment="Stretch"
                         IsVisible="{TemplateBinding IsExpanded,
-                                                    Mode=TwoWay}"
+                            Mode=TwoWay}"
                         Padding="{TemplateBinding Padding}"
                         VerticalAlignment="Stretch">
                         <ContentPresenter
@@ -131,6 +131,36 @@
                 </StackPanel>
             </ControlTemplate>
         </Setter>
+
+        <Style Selector="^:expanded /template/ Border">
+            <Style.Animations>
+                <Animation Duration="0:0:0:0.1">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0.0" />
+                        <Setter Property="TranslateTransform.Y" Value="-10" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1.0" />
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <Style Selector="^:not(:expanded) /template/ Border">
+            <Style.Animations>
+                <Animation Duration="0:0:0:0.1">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="0.0" />
+                        <Setter Property="TranslateTransform.Y" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1.0" />
+                        <Setter Property="TranslateTransform.Y" Value="10" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
 
         <Style Selector="^:expanded /template/ ToggleButton">
             <Setter Property="Tag" Value="expanded" />
