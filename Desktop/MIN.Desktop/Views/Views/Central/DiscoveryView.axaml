@@ -23,9 +23,9 @@
                     Padding="{DynamicResource PaddingTopBar}"
                     CornerRadius="{DynamicResource CornerRadiusLarge}">
                 <DockPanel HorizontalSpacing="8" >
-
                     <Button Command="{Binding ShowLeftSideBarCommand}"
                         DockPanel.Dock="Left"
+                        ToolTip.Tip="Меню"
                         IsVisible="{Binding CurrentLayout,
                             Converter={converters:EqualityConverter},
                             ConverterParameter={x:Static enums:WindowLayout.Narrow}}"
@@ -36,6 +36,7 @@
                     <Button
                         Command="{Binding CreateRoomCommand}"
                         DockPanel.Dock="Left"
+                        ToolTip.Tip="Создать комнату"
                         Classes="icon">
                         <Svg Path="/Assets/Icons/plus.svg" />
                     </Button>
@@ -48,8 +49,14 @@
                             <TextBlock
                                 Foreground="{DynamicResource TextOnPrimary}"
                                 VerticalAlignment="Center"
-                                Text="{Binding isDiscovering,
-                                Converter={converters:BoolToDiscoveryButtonTextConverter}}" />
+                                IsVisible="{Binding !isDiscovering}"
+                                Text="Найти комнаты" />
+
+                            <TextBlock
+                                Foreground="{DynamicResource TextOnPrimary}"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding isDiscovering}"
+                                Text="Остановить поиск" />
 
                             <Svg
                                 Height="18"
@@ -72,6 +79,7 @@
 
                     <Button
                         Classes="icon"
+                        ToolTip.Tip="Подключиться напрямую"
                         Command="{Binding ConnectDirectlyCommand}"
                         DockPanel.Dock="Right"
                         IsVisible="{Binding CurrentLayout,
@@ -82,7 +90,7 @@
 
                     <Rectangle />
                 </DockPanel>
-            </Border>
+             </Border>
 
              <Border DockPanel.Dock="Bottom"
                     Background="{DynamicResource SidebarBackground}"
@@ -90,10 +98,16 @@
                     CornerRadius="{DynamicResource CornerRadiusLarge}">
                 <StackPanel Orientation="Horizontal" Spacing="8" >
                     <TextBlock
-                        Text="{Binding isDiscovering,
-                        Converter={converters:BoolToDiscoveryCounterConverter}}"
                         Margin="6,0,0,0"
-                        DockPanel.Dock="Right" />
+                        DockPanel.Dock="Right"
+                        IsVisible="{Binding isDiscovering}"
+                        Text="Поиск комнат..." />
+
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        DockPanel.Dock="Right"
+                        IsVisible="{Binding !isDiscovering}"
+                        Text="Всего нашлось комнат: " />
 
                     <TextBlock
                         IsVisible="{Binding !isDiscovering}"
@@ -144,7 +158,8 @@
                                         Orientation="Horizontal">
                                         <TextBlock Text="Создана: " />
                                         <TextBlock Text="{Binding Room.CreatedAt,
-                                        Converter={converters:DateToRelativeDateConverter}}" />
+                                            Converter={converters:DateConverter},
+                                            ConverterParameter={x:Static converters:DateMode.Short}}" />
                                     </StackPanel>
 
                                     <!-- Cabinet -->

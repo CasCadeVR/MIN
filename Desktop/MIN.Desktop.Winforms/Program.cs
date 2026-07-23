@@ -7,6 +7,7 @@ using MIN.Desktop.Views.Forms;
 using MIN.Desktop.Views.Panels.PanelViews.ChatPanel;
 using MIN.Desktop.Views.Panels.SidePanelViews;
 using MIN.DI;
+using MIN.Helpers.Services;
 
 namespace MIN.Desktop.Winforms;
 

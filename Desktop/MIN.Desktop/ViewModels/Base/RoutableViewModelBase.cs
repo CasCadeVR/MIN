@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
@@ -47,4 +49,10 @@ public abstract class RoutableViewModelBase : ViewModelBase, IRoutableViewModel
     {
         WeakReferenceMessenger.Default.Send(new ShowPreviousViewReferenceCommand(LayoutType, typeof(T)));
     }
+
+    /// <inheritdoc />
+    public virtual Task ViewContentLoadAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <inheritdoc />
+    public virtual Task ViewContentUnloadAsync() => Task.CompletedTask;
 }

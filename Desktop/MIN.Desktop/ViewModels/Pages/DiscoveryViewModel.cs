@@ -18,6 +18,7 @@ using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Cards;
 using MIN.Desktop.ViewModels.Modals;
 using MIN.Desktop.ViewModels.Pages.ChatViewModels;
 using MIN.DI.FeatureCollection;
@@ -135,11 +136,11 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
 
         try
         {
-            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, createViewModelResult.RoomAutoPortForward, lifeTimeCts.Token);
-            await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
-
             var chatViewModel = chatViewModelFactory.Create();
             ChangeView(chatViewModel);
+
+            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, createViewModelResult.RoomAutoPortForward, lifeTimeCts.Token);
+            await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
 
             await chatViewModel.LoadRoomDataAndRefresh(room, CoreRegistryConstants.LocalConnectionId);
             RegisterRoom(roomInfo, chatViewModel);
@@ -229,7 +230,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         {
             ConnectionResult connectionResult = new();
 
-            await dialogService.ShowAsync<LoadingViewModel>(async vm =>
+            _ = dialogService.ShowDialogAsync<LoadingViewModel>(async vm =>
             {
                 await vm.LoadRoomDataAndRefresh(async room =>
                     {

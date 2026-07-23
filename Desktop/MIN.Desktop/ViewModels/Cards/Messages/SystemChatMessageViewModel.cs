@@ -25,8 +25,10 @@ public partial class SystemChatMessageViewModel : BaseChatMessageViewModel
     public SystemChatMessageViewModel() : base() { }
 
     [RelayCommand]
-    private void Click()
+    private async Task Click()
     {
-        OnClicked?.Invoke();
+        var task = OnClicked?.Invoke();
+        task ??= Task.CompletedTask;
+        await task;
     }
 }

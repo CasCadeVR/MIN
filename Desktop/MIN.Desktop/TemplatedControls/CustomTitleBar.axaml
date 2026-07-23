@@ -94,7 +94,6 @@
         <Setter Property="Height" Value="28" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="ShowTitle" Value="True" />
         <Setter Property="IsVisible" Value="{Binding $parent[Window].(design:DesignAttachments.UseCustomTitleBar)}" />
 
         <Style Selector="^ /template/ StackPanel">

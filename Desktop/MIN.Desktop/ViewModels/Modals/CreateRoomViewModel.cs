@@ -16,8 +16,6 @@ namespace MIN.Desktop.ViewModels.Modals;
 /// </summary>
 public partial class CreateRoomViewModel : ModalViewModelBase
 {
-    private bool isNew;
-
     [ObservableProperty]
     [Display(Name = "Имя комнаты")]
     [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
@@ -46,14 +44,9 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     /// </summary>
     public void InitializeWithRoom(RoomInfo room)
     {
-        isNew = false;
-
-        if (!isNew)
-        {
-            Room = room;
-            Name = room.Name;
-            RoomMaxPlayers = room.MaximumParticipants;
-        }
+        Room = room;
+        Name = room.Name;
+        RoomMaxPlayers = room.MaximumParticipants;
     }
 
     [RelayCommand(CanExecute = nameof(CanCreate))]

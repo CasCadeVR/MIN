@@ -1,0 +1,281 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Input.Platform;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Contracts;
+using MIN.Desktop.Contracts.Models.Enums;
+using MIN.Desktop.Infrastructure.Services;
+using MIN.FileTransfer.DI.FeatureCollection;
+using MIN.FileTransfer.Events;
+using MIN.FileTransfer.Messaging;
+
+namespace MIN.Desktop.ViewModels.Cards.Messages.Files;
+
+public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageViewModel
+{
+    /// <inheritdoc />
+    readonly protected IFileTransferFeatureCollection fileTransferFeatureCollection;
+
+    /// <inheritdoc />
+    readonly protected IEventBus eventBus;
+
+    /// <inheritdoc />
+    readonly protected IClipboard? clipboard;
+
+    /// <inheritdoc />
+    readonly protected ParticipantInfo localParticipant;
+
+    /// <summary>
+    /// Закешированный формат
+    /// </summary>
+    readonly protected string cachedFormat;
+
+    /// <summary>
+    /// Список токенов подписки
+    /// </summary>
+    protected HashSet<IDisposable> eventTokens = null!;
+
+    /// <summary>
+    /// Файл загружен
+    /// </summary>
+    protected bool downloaded;
+
+    /// <summary>
+    /// Подкиска на прогресс скачивание
+    /// </summary>
+    protected IDisposable fileTransferProgressSubsciptionToken = null!;
+
+    /// <summary>
+    /// Сообщение файла
+    /// </summary>
+    public FileMetadataMessage FileMetadataMessage { get; init; }
+
+    [ObservableProperty]
+    public partial int DownloadProgress { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDownloading { get; set; }
+
+    [ObservableProperty]
+    public partial FileDownloadState FileDownloadState { get; set; } = FileDownloadState.None;
+
+    /// <summary>
+    /// Запрос на скавивания
+    /// </summary>
+    public event Func<Task>? OnDownloadRequested;
+
+    /// <summary>
+    /// Запрос отмены
+    /// </summary>
+    public event Func<Task>? OnCancelRequested;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="ChatFileBaseMessageViewModel"/>
+    /// </summary>
+    protected ChatFileBaseMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
+        IEventBus eventBus,
+        FileMetadataMessage fileMetadataMessage,
+        Thickness timePadding,
+        ParticipantInfo localParticipant,
+        bool isHostMessage,
+        bool removeHeaders,
+        IClipboard? clipboard)
+        : base(fileMetadataMessage.Sender.Name,
+            fileMetadataMessage.Timestamp,
+            timePadding,
+            localParticipant.Id == fileMetadataMessage.Sender.Id,
+            isHostMessage,
+            removeHeaders,
+            fileMetadataMessage.RecipientId != null)
+    {
+        this.fileTransferFeatureCollection = fileTransferFeatureCollection;
+        this.eventBus = eventBus;
+        this.localParticipant = localParticipant;
+        this.clipboard = clipboard;
+        FileMetadataMessage = fileMetadataMessage;
+
+        cachedFormat = fileTransferFeatureCollection.FileHelperService
+            .GetFileType(fileMetadataMessage.FileName);
+
+        downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
+
+        FillLabels();
+        SubscribeToEvents();
+    }
+
+    /// <summary>
+    /// Заолнить поля
+    /// </summary>
+    protected virtual void FillLabels() { }
+
+    /// <summary>
+    /// Получен пакет файла
+    /// </summary>
+    protected virtual void OnTransferProgressUpdated(string formattedReceived, string formattedTotal) { }
+
+    /// <summary>
+    /// Передача прервалась
+    /// </summary>
+    protected virtual void OnTransferFailed(string errorMessage) { }
+
+    /// <summary>
+    /// Передача завершилась
+    /// </summary>
+    protected virtual void OnTransferCompleted() { }
+
+    /// <summary>
+    /// Вызвать событие скачивания
+    /// </summary>
+    protected void InvokeDownloadRequested()
+    {
+        OnDownloadRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// Вызвать событие отмены
+    /// </summary>
+    protected void InvokeCancelRequested()
+    {
+        OnCancelRequested?.Invoke();
+    }
+
+    private void SubscribeToEvents()
+    {
+        eventTokens =
+        [
+            eventBus.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted),
+            eventBus.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed),
+            eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted)
+        ];
+    }
+
+    private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.FileMetadataId != FileMetadataMessage.Id)
+        {
+            return;
+        }
+
+        IsDownloading = true;
+
+        fileTransferProgressSubsciptionToken = eventBus.Subscribe((FileTransferProgressEvent e, CancellationToken _) =>
+        {
+            if (eventMessage.FileMetadataId != FileMetadataMessage.Id)
+            {
+                return Task.CompletedTask;
+            }
+
+            var progress = 100 * e.BytesReceived / FileMetadataMessage.FileSize;
+            DownloadProgress = (int)Math.Min(progress, 100);
+            OnTransferProgressUpdated(
+                fileTransferFeatureCollection.FileHelperService.FormatFileSize(e.BytesReceived),
+                fileTransferFeatureCollection.FileHelperService.FormatFileSize(eventMessage.FileSize));
+
+            return Task.CompletedTask;
+        });
+
+        UpdateIconOutOfState();
+        OnTransferProgressUpdated("0",
+            fileTransferFeatureCollection.FileHelperService.FormatFileSize(eventMessage.FileSize));
+    }
+
+    private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.FileMetadataId != FileMetadataMessage.Id
+            || eventMessage.SenderId != localParticipant.Id)
+        {
+            return;
+        }
+
+        IsDownloading = false;
+
+        UpdateIconOutOfState();
+        OnTransferFailed(eventMessage.ErrorMessage ?? string.Empty);
+
+        fileTransferProgressSubsciptionToken.Dispose();
+    }
+
+    private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.FileMetadataId != FileMetadataMessage.Id)
+        {
+            return;
+        }
+
+        downloaded = true;
+        FileMetadataMessage.FilePath = eventMessage.FilePath;
+        fileTransferProgressSubsciptionToken?.Dispose();
+
+        IsDownloading = false;
+
+        UpdateIconOutOfState();
+        OnTransferCompleted();
+    }
+
+    /// <summary>
+    /// Обновить иконку состояния файла
+    /// </summary>
+    protected void UpdateIconOutOfState()
+    {
+        FileDownloadState = IsDownloading
+            ? FileDownloadState.IsDownloading : downloaded
+            ? FileDownloadState.Downloaded : FileDownloadState.NotDownloaded;
+    }
+
+    [RelayCommand]
+    private async Task CopyNameToClipboard()
+    {
+        if (clipboard != null)
+        {
+            await clipboard.SetTextAsync(FileMetadataMessage.FileName);
+            InAppNotifier.Info("Скопировано в буфер обмена");
+        }
+    }
+
+    [RelayCommand]
+    private async Task ShowInFolder()
+    {
+        if (!Path.Exists(FileMetadataMessage.FilePath))
+        {
+            InAppNotifier.Warning("Файл не нашёлся");
+            return;
+        }
+
+        var dir = Path.GetDirectoryName(FileMetadataMessage.FilePath);
+        if (string.IsNullOrEmpty(dir))
+        {
+            return;
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            Process.Start("explorer.exe", $"/select,\"{FileMetadataMessage.FilePath}\"");
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            Process.Start("open", $"-R \"{FileMetadataMessage.FilePath}\"");
+        }
+        else // unix
+        {
+            Process.Start("xdg-open", dir);
+        }
+    }
+
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    public override void Dispose()
+    {
+        foreach (var token in eventTokens)
+        {
+            token.Dispose();
+        }
+        base.Dispose();
+    }
+}

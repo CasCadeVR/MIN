@@ -12,7 +12,7 @@ using MIN.Core.Stores.Contracts.Models;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.ViewModels.Base;
 
-namespace MIN.Desktop.ViewModels.Pages;
+namespace MIN.Desktop.ViewModels.Cards;
 
 /// <summary>
 /// Модель карточки комнаты на боковой панели

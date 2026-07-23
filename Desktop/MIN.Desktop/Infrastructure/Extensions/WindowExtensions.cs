@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia;
 using Avalonia.Controls;
 using MIN.Desktop.Contracts.Constants;
 
@@ -11,6 +12,11 @@ namespace MIN.Desktop.Infrastructure.Extensions;
 public static class WindowExtensions
 {
     private readonly static Dictionary<Window, bool> isClosingByUser = [];
+
+    /// <summary>
+    /// Получить контекст окна
+    /// </summary>
+    public static Window? GetWindow(this Visual visual) => TopLevel.GetTopLevel(visual) as Window;
 
     /// <summary>
     /// Установить стили из используемой платформы

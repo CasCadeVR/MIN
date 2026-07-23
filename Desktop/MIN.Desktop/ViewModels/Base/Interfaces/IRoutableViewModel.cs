@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MIN.Desktop.Contracts.Enums;
 
 namespace MIN.Desktop.ViewModels.Base.Interfaces;
@@ -46,4 +48,15 @@ public interface IRoutableViewModel
     /// </summary>
     /// <typeparam name="T">Тип view model, на который нужно переместиться назад</typeparam>
     protected void ChangeViewToPrevious<T>() where T : IRoutableViewModel;
+
+    /// <summary>
+    /// Загружает контент, который должен отображаться в представлении
+    /// Во время выполнения возвращаемой задачи будет виден индикатор загрузки
+    /// </summary>
+    Task ViewContentLoadAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Выгружает контент, который должен отображаться в представлении
+    /// </summary>
+    Task ViewContentUnloadAsync();
 }

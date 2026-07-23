@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
-using MIN.Common.Core.Extensions;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Base.Interfaces;
 
@@ -14,18 +15,12 @@ namespace MIN.Desktop.Infrastructure.Extensions;
 /// </summary>
 public static class MultiRoutingWindowExtensions
 {
-    private readonly static Dictionary<ViewLayoutType, List<IRoutableViewModel>> navigationStack = new()
-    {
-        { ViewLayoutType.LeftSideBar, [] },
-        { ViewLayoutType.Central, [] },
-        { ViewLayoutType.RightSideBar, [] },
-    };
+    private const int LoadingAssetMinWaitMs = 10;
+    private const int LoadingAssetMaximumWaitMs = 500;
 
     private static object? rememberedRightSideBar;
     private static object? rememberedLeftSideBar;
     private static object? rememberedCentral;
-
-    //private static CancellationTokenSource? viewChangeBusyCts;
 
     /// <summary>
     /// Переходит к представлению, назначенному данной ViewModel
@@ -39,26 +34,29 @@ public static class MultiRoutingWindowExtensions
         {
             return;
         }
-        //CancellationToken ctsToken;
-        //if (viewChangeBusyCts != null)
-        //{
-        //    viewChangeBusyCts.Cancel();
-        //    viewChangeBusyCts.Dispose();
-        //}
-        //viewChangeBusyCts = new CancellationTokenSource();
-        //ctsToken = viewChangeBusyCts.Token;
+
+        var contextViewModel = screen.GetViewModelOutOfLayoutType(routableViewModel.LayoutType);
+
+        CancellationToken ctsToken;
+        if (screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType] != null)
+        {
+            screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType]!.Cancel();
+            screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType]!.Dispose();
+        }
+        screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType] = new CancellationTokenSource();
+        ctsToken = screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType]!.Token;
 
         if (routableViewModel.LayoutType == ViewLayoutType.LeftSideBar
             && screen.LeftSideBarViewModel is IRoutableViewModel leftPriorViewModel)
         {
-            navigationStack[routableViewModel.LayoutType].RemoveByPredicate(screen.LeftSideBarViewModel, (item, param) => item.GetType() == param.GetType());
-            navigationStack[routableViewModel.LayoutType].Add(leftPriorViewModel);
+            screen.NavigationStack[routableViewModel.LayoutType].RemoveAll(item => item.GetType() == routableViewModel.GetType());
+            screen.NavigationStack[routableViewModel.LayoutType].Add(leftPriorViewModel);
         }
         else if (routableViewModel.LayoutType == ViewLayoutType.Central
             && screen.CentralViewModel is IRoutableViewModel centralPriorViewModel)
         {
-            navigationStack[routableViewModel.LayoutType].RemoveByPredicate(screen.CentralViewModel, (item, param) => item.GetType() == param.GetType());
-            navigationStack[routableViewModel.LayoutType].Add(centralPriorViewModel);
+            screen.NavigationStack[routableViewModel.LayoutType].RemoveAll(item => item.GetType() == routableViewModel.GetType());
+            screen.NavigationStack[routableViewModel.LayoutType].Add(centralPriorViewModel);
 
             if (screen.RightSideBarViewModel is IRoutableViewModel rightPriorViewModel
                 && rightPriorViewModel.RelatedToCentral)
@@ -76,8 +74,8 @@ public static class MultiRoutingWindowExtensions
         else if (routableViewModel.LayoutType == ViewLayoutType.RightSideBar
             && screen.RightSideBarViewModel is IRoutableViewModel rightPriorViewModel)
         {
-            navigationStack[routableViewModel.LayoutType].RemoveByPredicate(screen.RightSideBarViewModel, (item, param) => item.GetType() == param.GetType());
-            navigationStack[routableViewModel.LayoutType].Add(rightPriorViewModel);
+            screen.NavigationStack[routableViewModel.LayoutType].RemoveAll(item => item.GetType() == routableViewModel.GetType());
+            screen.NavigationStack[routableViewModel.LayoutType].Add(rightPriorViewModel);
         }
         else
         {
@@ -88,22 +86,37 @@ public static class MultiRoutingWindowExtensions
 
         try
         {
-            //    ctsToken.ThrowIfCancellationRequested();
-            //    var sw = Stopwatch.StartNew();
-            //    Task contentLoadTask = routableViewModel.ViewContentLoadAsync(ctsToken);
-            //    if (screen.ActiveViewModel != null)
-            //    {
-            //        // Only show loading screen if page isn't loading super quickly.
-            //        await Task.Delay(50, ctsToken);
-            //        if (!contentLoadTask.IsCompleted)
-            //        {
-            //            ctsToken.ThrowIfCancellationRequested();
-            //            screen.ActiveViewModel = AssetHelper.GetFullAssetPath("/Assets/Icons/loading.svg");
-            //            await Task.Delay((int)Math.Max(0, 500 - sw.Elapsed.TotalMilliseconds), ctsToken);
-            //        }
-            //    }
-            //    await contentLoadTask;
-            //    ctsToken.ThrowIfCancellationRequested();
+            ctsToken.ThrowIfCancellationRequested();
+            var sw = Stopwatch.StartNew();
+            var contentLoadTask = routableViewModel.ViewContentLoadAsync(ctsToken);
+            if (contextViewModel != null)
+            {
+                // Only show loading screen if page isn't loading super quickly.
+                await Task.Delay(LoadingAssetMinWaitMs, ctsToken);
+                if (!contentLoadTask.IsCompleted)
+                {
+                    ctsToken.ThrowIfCancellationRequested();
+                    var loadingAsset = AssetHelper.GetFullAssetPath("/Assets/Icons/loading.svg");
+                    switch (routableViewModel.LayoutType)
+                    {
+                        case ViewLayoutType.LeftSideBar:
+                            screen.LeftSideBarViewModel = loadingAsset;
+                            break;
+
+                        case ViewLayoutType.Central:
+                            screen.CentralViewModel = loadingAsset;
+                            break;
+
+                        case ViewLayoutType.RightSideBar:
+                            screen.RightSideBarViewModel = loadingAsset;
+                            break;
+                    }
+
+                    await Task.Delay((int)Math.Max(0, LoadingAssetMaximumWaitMs - sw.Elapsed.TotalMilliseconds), ctsToken);
+                }
+            }
+            await contentLoadTask;
+            ctsToken.ThrowIfCancellationRequested();
             switch (routableViewModel.LayoutType)
             {
                 case ViewLayoutType.LeftSideBar:
@@ -163,9 +176,9 @@ public static class MultiRoutingWindowExtensions
         }
         catch (OperationCanceledException)
         {
-            if (navigationStack.Count > 0)
+            if (screen.NavigationStack.Count > 0)
             {
-                navigationStack[routableViewModel.LayoutType].Remove(navigationStack[routableViewModel.LayoutType][^1]);
+                screen.NavigationStack[routableViewModel.LayoutType].Remove(screen.NavigationStack[routableViewModel.LayoutType][^1]);
             }
         }
     }
@@ -176,13 +189,11 @@ public static class MultiRoutingWindowExtensions
     public static async Task<bool> BackAsync(this IMultiRoutingWindow screen, ViewLayoutType viewLayoutType)
     {
         IRoutableViewModel? backViewModel = null;
-        while (navigationStack[viewLayoutType].Count > 0 && (backViewModel == null
-            || backViewModel == screen.LeftSideBarViewModel
-            || backViewModel == screen.CentralViewModel
-            || backViewModel == screen.RightSideBarViewModel))
+        while (screen.NavigationStack[viewLayoutType].Count > 0 && (backViewModel == null
+            || backViewModel == screen.GetViewModelOutOfLayoutType(viewLayoutType)))
         {
-            backViewModel = navigationStack[viewLayoutType][^1];
-            navigationStack[viewLayoutType].Remove(backViewModel);
+            backViewModel = screen.NavigationStack[viewLayoutType][^1];
+            screen.NavigationStack[viewLayoutType].Remove(backViewModel);
         }
         if (backViewModel != null)
         {
@@ -205,15 +216,15 @@ public static class MultiRoutingWindowExtensions
             return await BackAsync(screen, layoutType);
         }
 
-        for (var i = navigationStack[layoutType].Count - 1; i >= 0; i--)
+        for (var i = screen.NavigationStack[layoutType].Count - 1; i >= 0; i--)
         {
-            var target = navigationStack[layoutType][i];
+            var target = screen.NavigationStack[layoutType][i];
             if (type.IsAssignableFrom(target.GetType()))
             {
                 // Cleanup the stack up and including the back-target.
-                for (var j = i; j < navigationStack.Count; j++)
+                for (var j = i; j < screen.NavigationStack[target.LayoutType].Count; j++)
                 {
-                    navigationStack[target.LayoutType].RemoveAt(j);
+                    screen.NavigationStack[target.LayoutType].RemoveAt(j);
                 }
                 await screen.ShowAsync(target);
                 return true;

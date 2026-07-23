@@ -186,6 +186,27 @@
         </Style>
     </Style>
 
+    <Style Selector="ToolTip">
+        <Setter Property="Theme" Value="{x:Null}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextOnPrimary}" />
+        <Setter Property="Background" Value="{DynamicResource Primary}" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="13" />
+
+         <Style.Animations>
+            <Animation Duration="0:0:.2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1.1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
     <StyleInclude Source="/Contracts/Styles/Controls/Borders.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/TextBlocks.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/Buttons.axaml"/>

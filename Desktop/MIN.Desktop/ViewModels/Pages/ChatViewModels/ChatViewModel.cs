@@ -27,6 +27,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private readonly IMinFeatureCollection featureCollection;
     private readonly CancellationTokenSource formCts = new();
+    private readonly TaskCompletionSource loadingTcs = new();
 
     private readonly ParticipantInfo localParticipant = null!;
     private Guid roomId;
@@ -119,6 +120,9 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
+    /// <inheritdoc />
+    public override async Task ViewContentLoadAsync(CancellationToken cancellationToken = default) => await loadingTcs.Task;
+
     /// <summary>
     /// Подгрузить данные о комнате и перезагрузить страницу
     /// </summary>
@@ -134,6 +138,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         roomId = room.Id;
 
         await UpdateChatFlow();
+        loadingTcs.SetResult();
     }
 
     private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)

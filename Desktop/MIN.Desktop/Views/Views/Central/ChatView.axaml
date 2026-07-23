@@ -44,6 +44,7 @@
                     <DockPanel>
                         <Button HorizontalAlignment="Right"
                         DockPanel.Dock="Right"
+                        ToolTip.Tip="Действия"
                         Classes="icon">
                             <Svg Path="/Assets/Icons/about.svg" />
                             <Button.Flyout>
@@ -80,6 +81,7 @@
 
                         <Button Command="{Binding ShowLeftSideBarCommand}"
                                 HorizontalAlignment="Left"
+                                ToolTip.Tip="Меню"
                                 IsVisible="{Binding CurrentLayout,
                                     Converter={converters:EqualityConverter},
                                     ConverterParameter={x:Static enums:WindowLayout.Narrow}}"
@@ -112,44 +114,45 @@
                         Padding="{DynamicResource PaddingTopBar}"
                         CornerRadius="{DynamicResource CornerRadiusLarge}">
                     <StackPanel>
+                        <Border IsVisible="{Binding SomeFilesAttached}">
+                            <ScrollViewer Classes="horizontal">
+                                <ItemsControl ItemsSource="{Binding AttachedFiles}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel
+                                                Spacing="8"
+                                                Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Classes="card appear-from-left">
+                                                <Panel Height="100" Width="100" >
+                                                    <Svg
+                                                        Opacity="0.2"
+                                                        Height="100" Width="100"
+                                                        Path="/Assets/Icons/file-upload.svg" />
 
-                        <ScrollViewer Classes="horizontal"
-                                      IsVisible="{Binding SomeFilesAttached}">
-                            <ItemsControl ItemsSource="{Binding AttachedFiles}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel
-                                            Spacing="8"
-                                            Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Classes="card">
-                                            <Panel Height="100" Width="100" >
-                                                <Svg
-                                                    Opacity="0.2"
-                                                    Height="100" Width="100"
-                                                    Path="/Assets/Icons/file-upload.svg" />
+                                                    <TextBlock
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Text="{Binding File.FileName}" />
 
-                                                <TextBlock
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    Text="{Binding File.FileName}" />
-
-                                                <Button
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Top"
-                                                    Classes="icon small close"
-                                                    Command="{Binding DeleteClickCommand}">
+                                                    <Button
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Classes="icon small close"
+                                                        Margin="-6"
+                                                        Command="{Binding DeleteClickCommand}">
                                                         <Svg Path="/Assets/Icons/close.svg" />
                                                     </Button>
-                                            </Panel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
+                                                </Panel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
 
                         <TextBlock Text="{Binding StatusContent}"
                             Opacity="0.5"
@@ -159,11 +162,12 @@
                             <Button
                                 VerticalAlignment="Bottom"
                                 DockPanel.Dock="Left"
+                                ToolTip.Tip="Приложения"
                                 Classes="icon">
                                 <Svg Path="/Assets/Icons/plus.svg" />
                                 <Button.Flyout>
                                 <Flyout FlyoutPresenterClasses="buttons"
-                                        Placement="Top">
+                                    Placement="Top">
                                     <StackPanel>
                                          <Button
                                             Classes="no-background"
@@ -194,6 +198,7 @@
                             <Button
                                 Command="{Binding SendMessageCommand}"
                                 VerticalAlignment="Bottom"
+                                ToolTip.Tip="Отправить"
                                 Classes="icon primary"
                                 DockPanel.Dock="Right"
                                 HotKey="Enter">
@@ -277,6 +282,7 @@
                     </ScrollViewer>
 
                     <Button Classes="icon"
+                            ToolTip.Tip="Пролистать вниз"
                             IsVisible="{Binding !IsAtBottom}"
                             Background="{DynamicResource SurfaceCard}"
                             HorizontalAlignment="Right"
@@ -293,7 +299,8 @@
                                 Height="24"
                                 Margin="-6"
                                 IsVisible="{Binding MissedMessagesCount,
-                                    Converter={converters:GreaterThanZeroConverter}}"
+                                    Converter={converters:NumericComparisonConverter},
+                                    ConverterParameter=>0}"
                                 CornerRadius="{DynamicResource CornerRadiusLarge}"
                                 Background="{DynamicResource Primary}">
                                 <TextBlock VerticalAlignment="Center"

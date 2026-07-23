@@ -26,7 +26,7 @@ public partial class DirectConnectViewModel : ModalViewModelBase
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
     [Required]
-    [Range(0, 65536)]
+    [Range(0, 65535)]
     [NotifyDataErrorInfo]
     public partial int Port { get; set; }
 

@@ -22,9 +22,7 @@
         <Border Classes="message"
             MaxWidth="900"
             Padding="{DynamicResource PaddingMedium}"
-            Classes.self="{Binding IsLocal}"
-            HorizontalAlignment="{Binding IsLocal,
-            Converter={converters:BoolToMessageAlignConverter}}">
+            Classes.self="{Binding IsLocal}">
             <Border.ContextFlyout>
                 <Flyout FlyoutPresenterClasses="buttons"
                         Placement="Right">

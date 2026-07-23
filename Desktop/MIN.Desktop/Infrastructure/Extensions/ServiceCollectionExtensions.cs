@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using System.Threading;
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -39,12 +38,16 @@ public static partial class ServiceCollectionExtensions
             .AddSingleton<Func<Window>>(provider => () =>
             {
                 var hostedServices = provider.GetServices<IHostedService>();
-                Window window = provider.GetRequiredService<Window>();
+                var cts = provider.GetRequiredService<ICtsProvider>().AppCts;
+
+                var window = provider.GetRequiredService<Window>();
                 window.DataContext = provider.GetRequiredService<MainWindowViewModel>();
                 var isClosing = false;
 
                 window.Closing += async (_, e) =>
                 {
+                    cts.CancelAfter(TimeSpan.FromSeconds(5));
+
                     if (isClosing)
                     {
                         return;
@@ -52,7 +55,6 @@ public static partial class ServiceCollectionExtensions
 
                     isClosing = true;
                     e.Cancel = true;
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                     foreach (var svc in hostedServices)
                     {
                         await svc.StopAsync(cts.Token);
@@ -73,7 +75,6 @@ public static partial class ServiceCollectionExtensions
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.RegisterAsImplementedInterfaces<CtsProvider>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<SettingsProvider>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<NotificationService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<DialogService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatViewModelFactory>(ServiceLifetime.Singleton);

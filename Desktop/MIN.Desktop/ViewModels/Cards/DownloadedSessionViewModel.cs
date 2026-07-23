@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Avalonia.Labs.Gif;
@@ -100,7 +99,7 @@ public partial class DownloadedSessionViewModel : CardViewModelBase, IDisposable
             var bytes = File.ReadAllBytes(Session.GetThumbnailPath());
             using var ms = new MemoryStream(bytes);
 
-            var format = Session.ThumbnailFileName.TakeLast(3).ToString();
+            var format = Path.GetExtension(Session.ThumbnailFileName);
 
             gifStream?.Dispose();
             gifStream = null;

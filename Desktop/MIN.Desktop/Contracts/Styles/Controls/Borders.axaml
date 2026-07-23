@@ -95,11 +95,13 @@
         <Style Selector="^.message">
             <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusMedium}" />
             <Setter Property="Background" Value="{DynamicResource ChatMessageTheir}" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
 
             <!-- Своё сообщение -->
 
             <Style Selector="^.self">
                 <Setter Property="Background" Value="{DynamicResource ChatMessageSelf}" />
+                <Setter Property="HorizontalAlignment" Value="Right" />
             </Style>
 
             <!-- Системное -->

@@ -1,6 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages"
-             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -19,9 +18,7 @@
 
         <Border Classes="message"
             Padding="{DynamicResource PaddingMedium}"
-            Classes.self="{Binding IsLocal}"
-            HorizontalAlignment="{Binding IsLocal,
-            Converter={converters:BoolToMessageAlignConverter}}">
+            Classes.self="{Binding IsLocal}">
             <Border.ContextFlyout>
                 <Flyout Placement="Right">
                     <StackPanel>

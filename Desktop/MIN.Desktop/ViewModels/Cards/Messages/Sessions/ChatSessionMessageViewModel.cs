@@ -64,7 +64,7 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
     /// Доступна ли сессия
     /// </summary>
     [ObservableProperty]
-    public partial bool IsNotAvaible { get; set; }
+    public partial bool IsNotAvailable { get; set; }
 
     /// <summary>
     /// Событие, возникающее по нажатию на кнопку присоединиться
@@ -176,7 +176,7 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
             : (isFull ? "Заполнено" : "Присоединиться") + $" (Учавствуют: {participantsRatio})";
 
         CanJoin = !maximumParticipants.HasValue || !isFull;
-        IsNotAvaible = currentAmount <= 0 || isFull;
+        IsNotAvailable = currentAmount <= 0 || isFull;
     }
 
     [RelayCommand]

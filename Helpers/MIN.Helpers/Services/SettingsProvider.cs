@@ -1,8 +1,7 @@
-﻿using System;
-using MIN.Helpers.Contracts.Interfaces.SettingsServices;
+﻿using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models;
 
-namespace MIN.Desktop.Infrastructure.Services;
+namespace MIN.Helpers.Services;
 
 ///<inheritdoc cref="ISettingsProvider"/>
 public class SettingsProvider : ISettingsProvider

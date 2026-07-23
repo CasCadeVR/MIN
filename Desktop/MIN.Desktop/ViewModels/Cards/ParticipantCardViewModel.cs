@@ -21,7 +21,6 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
     private readonly Participant participant;
     private readonly IEventBus eventBus;
     private readonly Guid roomId;
-    private readonly bool isHost;
     private readonly bool isSelf;
     private HashSet<IDisposable> eventTokens = null!;
 
@@ -35,12 +34,6 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
     /// </summary>
     [ObservableProperty]
     public partial string ParticipantName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Роль участника
-    /// </summary>
-    [ObservableProperty]
-    public partial string ParticipantRole { get; set; } = string.Empty;
 
     /// <summary>
     /// Статус участника
@@ -67,6 +60,12 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
     public partial bool IsOffline { get; set; }
 
     /// <summary>
+    /// Является ли пользователь хостом
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsHost { get; set; }
+
+    /// <summary>
     /// Может ли кикнуть участника
     /// </summary>
     [ObservableProperty]
@@ -82,7 +81,7 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
     /// Может ли вообще что то делать
     /// </summary>
     [ObservableProperty]
-    public partial bool CanInterract { get; set; }
+    public partial bool CanInteract { get; set; }
 
     /// <summary>
     /// Событие по нажатию на кнопку начала приватного общения у участника
@@ -107,11 +106,11 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
         this.participant = participant;
         this.eventBus = eventBus;
         this.roomId = roomId;
-        this.isHost = isHost;
         this.isSelf = isSelf;
         CanKick = asHost && !isSelf;
+        IsHost = isHost;
         CanStartPrivateChat = !isSelf;
-        CanInterract = CanKick || CanStartPrivateChat;
+        CanInteract = CanKick || CanStartPrivateChat;
 
         if (!Design.IsDesignMode)
         {
@@ -173,15 +172,6 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
         ParticipantName = participant.Name;
         ParticipantStatus = isSelf ? OnlineStatus.Online : participant.CurrentStatus;
         IsOffline = ParticipantStatus == OnlineStatus.Offline;
-
-        if (isHost)
-        {
-            ParticipantRole = "Хост";
-        }
-        else
-        {
-            ParticipantRole = "";
-        }
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

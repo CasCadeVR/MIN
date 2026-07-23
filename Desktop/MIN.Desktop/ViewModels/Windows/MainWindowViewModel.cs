@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -14,6 +16,7 @@ using MIN.Desktop.Contracts.Models.ReferenceCommands;
 using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Base.Interfaces;
 using MIN.Desktop.ViewModels.Pages;
 
 namespace MIN.Desktop.ViewModels.Windows;
@@ -37,6 +40,36 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     /// <inheritdoc />
     [ObservableProperty]
     public partial object? RightSideBarViewModel { get; set; }
+
+    private readonly Dictionary<ViewLayoutType, List<IRoutableViewModel>> navigationStack = new()
+    {
+        { ViewLayoutType.LeftSideBar, [] },
+        { ViewLayoutType.Central, [] },
+        { ViewLayoutType.RightSideBar, [] },
+    };
+
+    private readonly Dictionary<ViewLayoutType, CancellationTokenSource?> viewChangeBusyCtsByLayout = new()
+    {
+        { ViewLayoutType.LeftSideBar, null },
+        { ViewLayoutType.Central, null },
+        { ViewLayoutType.RightSideBar, null },
+    };
+
+    /// <inheritdoc />
+    public Dictionary<ViewLayoutType, List<IRoutableViewModel>> NavigationStack => navigationStack;
+
+    /// <inheritdoc />
+    public Dictionary<ViewLayoutType, CancellationTokenSource?> ViewChangeBusyCtsByLayout => viewChangeBusyCtsByLayout;
+
+    /// <inheritdoc />
+    object? IMultiRoutingWindow.GetViewModelOutOfLayoutType(ViewLayoutType type)
+        => type switch
+        {
+            ViewLayoutType.LeftSideBar => LeftSideBarViewModel,
+            ViewLayoutType.Central => CentralViewModel,
+            ViewLayoutType.RightSideBar => RightSideBarViewModel,
+            _ => null
+        };
 
     /// <summary>
     /// Текущие уведомления внутри приложения

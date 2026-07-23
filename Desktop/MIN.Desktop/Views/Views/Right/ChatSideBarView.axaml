@@ -72,7 +72,8 @@
                                 <TextBlock DockPanel.Dock="Left" Text="Создана: " />
                                 <TextBlock DockPanel.Dock="Right"
                                            Text="{Binding Room.CreatedAt,
-                                           Converter={converters:DateToShortDateConverter}}" />
+                                           Converter={converters:DateConverter},
+                                            ConverterParameter={x:Static converters:DateMode.Short}}" />
                                 <Rectangle Classes="divider" />
                             </DockPanel>
 
@@ -138,8 +139,9 @@
                                             <StackPanel Spacing="8">
                                                 <DockPanel>
                                                     <Button Classes="icon"
+                                                            ToolTip.Tip="Подробнее"
                                                             DockPanel.Dock="Right"
-                                                            IsVisible="{Binding CanInterract}" >
+                                                            IsVisible="{Binding CanInteract}" >
                                                         <Svg Path="/Assets/Icons/about-card.svg" />
                                                          <Button.Flyout>
                                                             <Flyout FlyoutPresenterClasses="buttons"
@@ -153,9 +155,14 @@
 
                                                                         <StackPanel>
                                                                             <Svg Path="/Assets/Icons/private-chat.svg" />
+
                                                                             <TextBlock VerticalAlignment="Center"
-                                                                                Text="{Binding IsSelected,
-                                                                                Converter={converters:BoolToPrivateChatTextConverter}}" />
+                                                                                IsVisible="{Binding IsSelected}"
+                                                                                Text="Прекратить приватное общение" />
+
+                                                                            <TextBlock VerticalAlignment="Center"
+                                                                                 IsVisible="{Binding !IsSelected}"
+                                                                                Text="Начать приватное общение" />
                                                                         </StackPanel>
                                                                     </Button>
                                    
@@ -180,26 +187,32 @@
                                                         MaxWidth="300"
                                                         Classes="header4" />
                                                 </DockPanel>
-                                                <TextBlock Text="{Binding ParticipantRole}"  />
 
-                                                <TextBlock
-                                                    VerticalAlignment="Center"
-                                                    Text="{Binding ParticipantLastSeenAt,
-                                                    Converter={converters:DateToShortDateConverter}}"
-                                                    IsVisible="{Binding IsOffline}" />
+                                                <TextBlock IsVisible="{Binding IsHost}"
+                                                    Text="Хост"  />
 
-                                                <TextBlock
-                                                    VerticalAlignment="Center"
-                                                    Text="{Binding ParticipantStatus,
-                                                    Converter={converters:OnlineStatusToTextConverter}}" />
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Text="{Binding ParticipantStatus,
+                                                        Converter={converters:OnlineStatusToTextConverter}}" />
+
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Text="{Binding ParticipantLastSeenAt,
+                                                        Converter={converters:DateConverter},
+                                                            ConverterParameter={x:Static converters:DateMode.Short}}"
+                                                        IsVisible="{Binding IsOffline}" />
+                                                </StackPanel>
                                             </StackPanel>
                                         </Border>
                                     </Flyout>
                                 </Button.Flyout>
                                 <StackPanel Spacing="6">
                                     <DockPanel HorizontalSpacing="6">
-                                        <TextBlock  DockPanel.Dock="Right"
-                                            Text="{Binding ParticipantRole}" />
+                                        <TextBlock DockPanel.Dock="Right"
+                                            IsVisible="{Binding IsHost}"
+                                            Text="Хост"  />
 
                                         <SelectableTextBlock
                                             Classes="header5"
@@ -211,14 +224,15 @@
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock
                                             VerticalAlignment="Center"
-                                            Text="{Binding ParticipantLastSeenAt,
-                                            Converter={converters:DateToShortDateConverter}}"
-                                            IsVisible="{Binding IsOffline}" />
+                                            Text="{Binding ParticipantStatus,
+                                            Converter={converters:OnlineStatusToTextConverter}}" />
 
                                         <TextBlock
                                             VerticalAlignment="Center"
-                                            Text="{Binding ParticipantStatus,
-                                            Converter={converters:OnlineStatusToTextConverter}}" />
+                                            Text="{Binding ParticipantLastSeenAt,
+                                            Converter={converters:DateConverter},
+                                                ConverterParameter={x:Static converters:DateMode.Short}}"
+                                            IsVisible="{Binding IsOffline}" />
                                     </StackPanel>
                                 </StackPanel>
                             </Button>

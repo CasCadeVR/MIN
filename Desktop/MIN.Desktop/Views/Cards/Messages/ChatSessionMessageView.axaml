@@ -1,6 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages.Sessions"
-             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -21,9 +20,7 @@
             MaxWidth="400"
             Padding="{DynamicResource PaddingMedium}"
             Classes.self="{Binding IsLocal}"
-            Classes.unactive="{Binding IsNotAvaible}"
-            HorizontalAlignment="{Binding IsLocal,
-            Converter={converters:BoolToMessageAlignConverter}}">
+            Classes.unactive="{Binding IsNotAvailable}">
 
             <StackPanel Spacing="8">
                 <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">

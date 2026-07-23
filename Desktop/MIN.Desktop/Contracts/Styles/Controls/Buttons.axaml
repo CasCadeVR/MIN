@@ -160,10 +160,12 @@
         </Style>
 
         <Style Selector="^.close">
-            <Style Selector="^:pointerover">
+            <Style Selector="^:pointerover /template/ ContentPresenter">
                 <Setter Property="Cursor" Value="Hand" />
                 <Setter Property="Background" Value="{DynamicResource StatusError}" />
             </Style>
+
+
         </Style>
 
         <Style Selector="^.card">

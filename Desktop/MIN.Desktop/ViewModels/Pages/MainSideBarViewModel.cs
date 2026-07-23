@@ -14,6 +14,7 @@ using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Cards;
 using MIN.Desktop.ViewModels.Pages.ChatViewModels;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Extensions;

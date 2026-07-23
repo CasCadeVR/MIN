@@ -37,10 +37,12 @@
                 <!-- Helper buttons -->
                  <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right">
                      <Button Command="{Binding ScrollUpCommand}"
+                         ToolTip.Tip="Пролистать вверх"
                          Classes="icon">
                          <Svg Path="/Assets/Icons/arrow-up.svg"/>
                      </Button>
                        <Button Command="{Binding LoadMoreCommand}"
+                           ToolTip.Tip="Пролистать вниз + подгрузить"
                            Classes="icon">
                          <Svg Path="/Assets/Icons/arrow-down.svg"/>
                      </Button>

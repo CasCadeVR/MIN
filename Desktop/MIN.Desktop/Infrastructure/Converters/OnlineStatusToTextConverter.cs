@@ -14,7 +14,7 @@ public class OnlineStatusToTextConverter : Converter<OnlineStatusToTextConverter
     {
         if (value is not OnlineStatus onlineStatus)
         {
-            return "Всего нашлось комнат: ";
+            return string.Empty;
         }
 
         var resultText = string.Empty;

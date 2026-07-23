@@ -11,7 +11,7 @@ using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 
-namespace MIN.Desktop.ViewModels.Pages;
+namespace MIN.Desktop.ViewModels.Cards;
 
 /// <summary>
 /// Модель карточки комнаты на боковой панели
@@ -23,6 +23,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
     private readonly bool asHost;
 
     private HashSet<IDisposable> eventTokens = null!;
+    private bool joined;
 
     /// <summary>
     /// Идёт ли сейчас заход в комнату
@@ -94,7 +95,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
             ? DesktopConstants.UndefinedPcName
             : room.Cabinet;
 
-        UpdateStats();
+        ManageConnectButtonAccessability();
         SubscribeToEvents();
     }
 
@@ -123,7 +124,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
 
     private async Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != eventMessage.RoomId)
+        if (eventMessage.RoomId != room.Id)
         {
             return;
         }
@@ -140,7 +141,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
 
         room.ParticipantCount++;
 
-        UpdateStats();
+        ManageConnectButtonAccessability();
     }
 
     private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
@@ -152,7 +153,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
 
         room.ParticipantCount--;
 
-        UpdateStats();
+        ManageConnectButtonAccessability();
     }
 
     private async Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
@@ -167,9 +168,10 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
             Dispose();
             return;
         }
-        room.ParticipantCount--;
 
-        UpdateStats();
+        joined = false;
+        room.ParticipantCount--;
+        ManageConnectButtonAccessability();
     }
 
     private async Task OnRoomJoined(RoomJoinedEvent eventMessage, CancellationToken cancellationToken)
@@ -180,12 +182,13 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
         }
 
         IsConnecting = false;
+        joined = true;
 
         room.Name = eventMessage.RoomInfo.Name;
         room.MaximumParticipants = eventMessage.RoomInfo.MaximumParticipants;
         room.ParticipantCount = eventMessage.RoomInfo.ParticipantCount;
 
-        UpdateStats();
+        ManageConnectButtonAccessability();
     }
 
     private async Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
@@ -199,25 +202,22 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
         room.MaximumParticipants = eventMessage.RoomInfo.MaximumParticipants;
         room.ParticipantCount = eventMessage.RoomInfo.ParticipantCount;
 
-        UpdateStats();
-        await Task.CompletedTask;
-    }
-
-    private void UpdateStats()
-    {
         ManageConnectButtonAccessability();
+        await Task.CompletedTask;
     }
 
     private void ManageConnectButtonAccessability()
     {
         var isFull = room.ParticipantCount >= room.MaximumParticipants;
-        var isNotAccessible = isFull || asHost;
+        var isNotAccessible = isFull || asHost || joined;
 
         IsAccessible = !isNotAccessible;
 
         if (isNotAccessible)
         {
-            ConnectionStatus = isFull ? "Заполнено" : "Твоя комната";
+            ConnectionStatus = asHost ? "Твоя комната"
+                : joined ? "Уже зашёл"
+                : isFull ? "Заполнено" : "Не доступно";
         }
         else
         {
