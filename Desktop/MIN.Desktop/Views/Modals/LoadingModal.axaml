@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MIN.Desktop.ViewModels.Modals"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="300"
+        CanResize="False"
+        SizeToContent="WidthAndHeight"
+        x:Class="MIN.Desktop.Views.Modals.LoadingModal"
+        x:DataType="vm:LoadingViewModel"
+        Title="MIN - Подключение">
+
+    <Interaction.Behaviors>
+        <EventTriggerBehavior EventName="Closing">
+            <InvokeCommandAction Command="{Binding StopLoadingCommand}" />
+        </EventTriggerBehavior>
+    </Interaction.Behaviors>
+
+    <Design.DataContext>
+        <designer:DesignerLoadingViewModel/>
+    </Design.DataContext>
+
+    <DockPanel>
+        <controls:CustomTitleBar CanClose="False" CanMinimize="False" CanMaximize="False" />
+
+        <StackPanel>
+            <StackPanel Classes="form" Margin="24">
+                <Border Classes="card">
+                      <StackPanel
+                          HorizontalAlignment="Center"
+                          Classes="form">
+                        <TextBlock
+                            Text="Подключение . . ." />
+                    <Svg Path="/Assets/Icons/loading.svg" Width="48" Height="48" Classes="rotating"
+                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+            <Border Classes="footer">
+                <Panel>
+                    <Button
+                        Command="{Binding CloseCommand}"
+                        Content="Отмена"
+                        Classes="secondary"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Center"
+                        HotKey="Escape" />
+                </Panel>
+            </Border>
+        </StackPanel>
+    </DockPanel>
+</Window>

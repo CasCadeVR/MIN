@@ -1,134 +1,102 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
-	<SelfContained>true</SelfContained>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
-	<Version>1.3.0.0</Version>
-	<ApplicationIcon>logo.ico</ApplicationIcon>
+    <ApplicationIcon>Assets/Icons/logo.ico</ApplicationIcon>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="logo.ico" />
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.Labs.Gif" />
+    <PackageReference Include="Avalonia.Themes.Simple" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="ServiceScan.SourceGenerator">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Svg.Controls.Skia.Avalonia" />
+    <PackageReference Include="Xaml.Behaviors.Interactions" />
+    <PackageReference Include="Xaml.Behaviors.Interactivity" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\DI\MIN.DI\MIN.DI.csproj" />
   </ItemGroup>
-	
-  <ItemGroup>
-    <Compile Update="Components\Controls\Buttons\InvertedButton.cs">
-      <SubType>Component</SubType>
+
+    <ItemGroup>
+    <Compile Update="Views\Cards\Messages\ChatFileImagePreviewMessageView.axaml.cs">
+      <DependentUpon>ChatFileImagePreviewMessageView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Controls\CheckBoxes\BaseCheckBox.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Cards\Messages\ChatSessionMessageView.axaml.cs">
+      <DependentUpon>ChatSessionMessageView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Controls\CheckBoxes\DefaultCheckBox.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Cards\Messages\ChatTextMessageView.axaml.cs">
+      <DependentUpon>ChatTextMessageView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Controls\ContextMenuStrips\FileMessageContextMenuStrip.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Cards\Messages\ChatFileMessageView.axaml.cs">
+      <DependentUpon>ChatFileMessageView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Controls\ContextMenuStrips\ChatActionContextMenuStrip.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Cards\Messages\SystemChatMessageView.axaml.cs">
+      <DependentUpon>SystemChatMessageView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Controls\DGVs\OneColumnDataGridView.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Windows\NotificationWindow.axaml.cs">
+      <DependentUpon>NotificationWindow.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Controls\ListBoxes\DefaultListBox.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Modals\SessionChoosingModal.axaml.cs">
+      <DependentUpon>SessionChoosingModal.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Controls\PictureBoxes\BasePictureBox.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Modals\ParticipantKickModal.axaml.cs">
+      <DependentUpon>ParticipantKickModal.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Controls\PictureBoxes\DefaultPictureBox.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Modals\LoadingModal.axaml.cs">
+      <DependentUpon>LoadingModal.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Controls\RadioButtons\DefaultRadioButton.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Modals\CreateParticipantModal.axaml.cs">
+      <DependentUpon>CreateParticipantModal.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Labels\PrimaryLabel.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Modals\LogModal.axaml.cs">
+      <DependentUpon>LogModal.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Labels\CaptionLabel.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Modals\DirectConnectModal.axaml.cs">
+      <DependentUpon>DirectConnectModal.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Components\Labels\Heading3Label.cs">
-      <SubType>Component</SubType>
+    <Compile Update="Views\Modals\DialogBoxModal.axaml.cs">
+      <DependentUpon>DialogBoxModal.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Contracts\Views\Forms\StyledForm.cs">
-      <SubType>Form</SubType>
+    <Compile Update="Views\Modals\CreateRoomModal.axaml.cs">
+      <DependentUpon>CreateRoomModal.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Contracts\Views\PanelViews\StyledPanelView.cs">
-      <SubType>UserControl</SubType>
+    <Compile Update="Views\Views\Central\ChatView.axaml.cs">
+      <DependentUpon>ChatView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
+    <Compile Update="Views\Views\Central\DiscoveryView.axaml.cs">
+      <DependentUpon>DiscoveryView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Components\ChatMessages\Files\ChatImagePreviewMessageCard.cs">
-      <SubType>UserControl</SubType>
+    <Compile Update="Views\Views\Left\MainSideBarView.axaml.cs">
+      <DependentUpon>MainSideBarView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Components\ChatMessages\Files\ChatFileMessageCard.cs">
-      <SubType>UserControl</SubType>
+    <Compile Update="Views\Views\Left\SettingsSideBarView.axaml.cs">
+      <DependentUpon>SettingsSideBarView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Components\ChatMessages\Sessions\ChatSessionMessageCard.cs">
-      <SubType>UserControl</SubType>
+    <Compile Update="Views\Views\Right\ChatSideBarView.axaml.cs">
+      <DependentUpon>ChatSideBarView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Components\ParticipantCard.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Views\Components\ChatMessages\ChatTexts\ChatTextMessageCard.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Views\Components\RoomRelated\RecentRoomCard.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Views\Components\SessionRelated\SessionCard.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Views\Forms\HelperForms\LogForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Views\Forms\HelperForms\ParticipantCreateForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Views\Forms\HelperForms\ParticipantKickForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Views\Forms\HelperForms\SessionChoosingForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Views\Forms\HelperForms\TcpDirectConnectForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Views\Forms\HelperForms\RoomCreateForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Views\Panels\PanelViews\ChatPanel\ChatPanelView.Events.UI.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Views\Panels\PanelViews\ChatPanel\ChatPanelView.Services.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Views\Panels\PanelViews\ChatPanel\ChatPanelView.Messages.cs">
-      <SubType>UserControl</SubType>
+    <Compile Update="Views\Windows\MainWindow.axaml.cs">
+      <DependentUpon>MainWindow.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>

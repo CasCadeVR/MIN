@@ -1,0 +1,34 @@
+﻿using MIN.Helpers.Contracts.Interfaces.SettingsServices;
+using MIN.Helpers.Contracts.Models;
+
+namespace MIN.Helpers.Services;
+
+///<inheritdoc cref="ISettingsProvider"/>
+public class SettingsProvider : ISettingsProvider
+{
+    private readonly ISettingsStorage storage;
+    private Settings? cachedSettings;
+
+    /// <inheritdoc />
+    public Action? OnSettingsSaved { get; set; }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="SettingsProvider"/>
+    /// </summary>
+    public SettingsProvider(ISettingsStorage storage)
+    {
+        this.storage = storage;
+    }
+
+    Settings ISettingsProvider.GetSettings()
+    {
+        return cachedSettings ??= storage.Load();
+    }
+
+    void ISettingsProvider.SaveSettings(Settings settings)
+    {
+        cachedSettings = settings;
+        storage.Save(settings);
+        OnSettingsSaved?.Invoke();
+    }
+}

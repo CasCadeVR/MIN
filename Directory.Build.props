@@ -1,18 +1,27 @@
 <Project>
+
+  <!-- Framework properties -->
   <PropertyGroup>
-
-    <Copyright>2026 CasCade</Copyright>
-    <Authors>CasCade Karo4a</Authors>
-
-    <!-- Pack everything with embedded .pdb -->
+    <LangVersion>latest</LangVersion>
+    <Version>2.0.0.0</Version>
     <EmbedAllSources>true</EmbedAllSources>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
-
+    <Prefer32Bit>false</Prefer32Bit>
+    <Nullable>annotations</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <LangVersion>latest</LangVersion>
+    <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
+    <CETCompat>false</CETCompat>
   </PropertyGroup>
+
+  <!-- MIN specific properties -->
+  <PropertyGroup>
+    <Copyright>2026 CasCade</Copyright>
+    <Authors>CasCade Karo4a</Authors>
+    <Company>MIN-Corp</Company>
+  </PropertyGroup>
+
   <ItemGroup Condition=" $(MSBuildProjectName.EndsWith('.Tests')) ">
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />

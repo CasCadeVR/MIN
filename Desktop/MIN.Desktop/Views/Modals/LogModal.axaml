@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MIN.Desktop.ViewModels.Modals"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+        xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+        xmlns:behaviors="using:MIN.Desktop.Infrastructure.Behaviors.ScrollViewers"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="700"
+        d:DesignHeight="330"
+        Width="700"
+        Height="330"
+        x:Class="MIN.Desktop.Views.Modals.LogModal"
+        x:DataType="vm:LogViewModel"
+        Title="MIN - Логи">
+
+    <Interaction.Behaviors>
+        <EventTriggerBehavior EventName="Closing">
+            <InvokeCommandAction Command="{Binding UnsubscribeCommand}" />
+        </EventTriggerBehavior>
+        <EventTriggerBehavior EventName="Loaded">
+            <InvokeCommandAction Command="{Binding LoadLogsCommand}" />
+        </EventTriggerBehavior>
+    </Interaction.Behaviors>
+
+    <Design.DataContext>
+        <designer:DesignerLogViewModel/>
+    </Design.DataContext>
+
+    <DockPanel>
+        <controls:CustomTitleBar />
+
+        <Border Padding="{DynamicResource PaddingCard}">
+            <DockPanel>
+                <!-- Helper buttons -->
+                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right">
+                     <Button Command="{Binding ScrollUpCommand}"
+                         ToolTip.Tip="Пролистать вверх"
+                         Classes="icon">
+                         <Svg Path="/Assets/Icons/arrow-up.svg"/>
+                     </Button>
+                       <Button Command="{Binding LoadMoreCommand}"
+                           ToolTip.Tip="Пролистать вниз + подгрузить"
+                           Classes="icon">
+                         <Svg Path="/Assets/Icons/arrow-down.svg"/>
+                     </Button>
+                </StackPanel>
+
+                <ScrollViewer Classes="main"
+                    behaviors:AutoScrollToBottomBehavior.AutoScrollUp="{Binding AutoScrollTop}"
+                    behaviors:AutoScrollToBottomBehavior.AutoScrollBottom="{Binding AutoScrollBottom}">
+                    <StackPanel Spacing="4" Margin="0,8,0,0">
+                        <ItemsControl ItemsSource="{Binding LogItems}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="log"
+                                            Cursor="Hand"
+                                            Margin="0,0,0,8"
+                                            Background="{Binding LogItem.LogLevel,
+                                            Converter={converters:LogLevelToBrushConverter}}">
+                                        <TextBlock
+                                            Foreground="{DynamicResource TextOnPrimary}"
+                                            Margin="4,0,0,0"
+                                            Text="{Binding LogItem.Message}" />
+                                        <Interaction.Behaviors>
+                                            <EventTriggerBehavior EventName="PointerPressed">
+                                                 <InvokeCommandAction
+                                                    Command="{Binding CopyToClipBoardCommand}"
+                                                    CommandParameter="{Binding LogItem.Message}" />
+                                            </EventTriggerBehavior>
+                                        </Interaction.Behaviors>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </DockPanel>
+</Window>

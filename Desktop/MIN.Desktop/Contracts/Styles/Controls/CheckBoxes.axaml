@@ -1,0 +1,39 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+        <StackPanel>
+            <StackPanel.Styles>
+                <Style Selector="CheckBox">
+                    <Setter Property="Margin" Value="5"></Setter>
+                </Style>
+            </StackPanel.Styles>
+
+            <CheckBox Classes="secondary">Поставь пжпж</CheckBox>
+        </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+    <Style Selector="CheckBox">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Primary}"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                <BrushTransition Property="Background" Duration="0:0:0.15"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="CheckBox:pointerover /template/ Border#border">
+        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHover}"/>
+    </Style>
+
+    <Style Selector="CheckBox:checked /template/ Path">
+        <Setter Property="Fill" Value="{DynamicResource TextOnPrimary}"/>
+    </Style>
+
+    <Style Selector="CheckBox:checked /template/ Border#border">
+        <Setter Property="Background" Value="{DynamicResource Primary}"/>
+    </Style>
+</Styles>

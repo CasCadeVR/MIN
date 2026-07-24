@@ -1,0 +1,70 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+      <Border>
+            <Border Classes="sidebar">
+               <StackPanel>
+            <StackPanel.Styles>
+                <Style Selector="TextBox">
+                    <Setter Property="Margin" Value="0,5,0,0"></Setter>
+                </Style>
+            </StackPanel.Styles>
+
+            <TextBox>Я что то написал</TextBox>
+            <TextBox Classes="secondary">Я что то написал</TextBox>
+        </StackPanel>
+            </Border>
+        </Border>
+  </Design.PreviewWith>
+
+    <Style Selector="TextBox">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+        <Setter Property="Padding" Value="{DynamicResource PaddingInput}" />
+        <Setter Property="Background" Value="{DynamicResource SurfaceInput}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Primary}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+
+        <Style Selector="^ /template/ Border">
+            <Setter Property="Background" Value="{TemplateBinding Background}" />
+            <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+            <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness}" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Duration="0:0:0.15" Property="Opacity" />
+                </Transitions>
+            </Setter>
+
+            <Style Selector="^:pointerover">
+                <Setter Property="Background" Value="{TemplateBinding Background}" />
+                <Setter Property="Opacity" Value=".75" />
+            </Style>
+
+            <Style Selector="^:focus">
+                <Setter Property="Background" Value="{TemplateBinding Background}" />
+            </Style>
+        </Style>
+
+        <!--  Remove base border (which removes default Avalonia border brush styles)  -->
+        <Style Selector="^ /template/ Border#PART_BorderElement">
+            <Setter Property="Opacity" Value="0" />
+        </Style>
+
+        <!--  Watermark foreground dimming  -->
+        <Style Selector="^ /template/ TextBlock#PART_PlaceholderText">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Duration="0:0:0.15" Property="Foreground" />
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!--  Disabled Style  -->
+        <Style Selector="^:disabled">
+            <Style Selector="^ /template/ Border">
+                <Setter Property="Background" Value="{TemplateBinding Background}" />
+            </Style>
+        </Style>
+    </Style>
+</Styles>

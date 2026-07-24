@@ -96,6 +96,6 @@ public class Session
     /// <summary>
     /// Получить путь к программе клиента сессии
     /// </summary>
-    public string GeThumbnailPath()
+    public string GetThumbnailPath()
         => Path.Combine(SessionDirectory, ThumbnailFileName ?? string.Empty);
 }

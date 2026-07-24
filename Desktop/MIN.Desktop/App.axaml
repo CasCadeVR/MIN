@@ -1,0 +1,25 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MIN.Desktop.App"
+             RequestedThemeVariant="Dark">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/TemplatedControls/CustomTitleBar.axaml" />
+                <ResourceInclude Source="/Contracts/Styles/Windows/CustomWindows.axaml" />
+                <ResourceInclude Source="/Contracts/Schemes/FontScheme.axaml"/>
+                <ResourceInclude Source="/Contracts/Schemes/ColorScheme.axaml"/>
+                <ResourceInclude Source="/Contracts/Schemes/SizeScheme.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+
+    </Application.Resources>
+
+    <Application.Styles>
+        <SimpleTheme />
+        <StyleInclude Source="/Contracts/Styles/MIN.axaml"/>
+    </Application.Styles>
+
+</Application>

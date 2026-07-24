@@ -11,6 +11,11 @@ public class Settings
     public string DefaultParticipantName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Включена ли светлая тема
+    /// </summary>
+    public bool LightThemeEnabled { get; set; }
+
+    /// <summary>
     /// Время ожидания поиска комнаты
     /// </summary>
     public int DiscoveryTimeout { get; set; } = 1500;

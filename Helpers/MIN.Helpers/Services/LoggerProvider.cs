@@ -1,16 +1,17 @@
-﻿using MIN.Helpers.Contracts.Interfaces;
+﻿using System.Text;
+using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models;
 using MIN.Helpers.Contracts.Models.Enums;
-using System.Text;
 
 namespace MIN.Helpers.Services;
 
 /// <inheritdoc cref="ILoggerProvider"/>
 public class LoggerProvider : ILoggerProvider
 {
-    private readonly List<string> messages = [];
+    private readonly List<LogItem> messages = [];
 
     ///<inheritdoc cref="ILoggerProvider.OnLogReceived"/>
-    public event EventHandler<string>? OnLogReceived;
+    public event EventHandler<LogItem>? OnLogReceived;
 
     void ILoggerProvider.Log(string message, LogLevel level)
     {
@@ -21,11 +22,14 @@ public class LoggerProvider : ILoggerProvider
         formatted.Append(" - ");
         formatted.Append(message);
         var result = formatted.ToString();
-        messages.Add(result);
-        OnLogReceived?.Invoke(this, result);
+
+        var item = new LogItem(result, level);
+
+        messages.Add(item);
+        OnLogReceived?.Invoke(this, item);
     }
 
-    IEnumerable<string> ILoggerProvider.GetRecentLogHistory(int? page, int? pageSize)
+    IEnumerable<LogItem> ILoggerProvider.GetRecentLogHistory(int? page, int? pageSize)
     {
         if (page.HasValue && pageSize.HasValue)
         {

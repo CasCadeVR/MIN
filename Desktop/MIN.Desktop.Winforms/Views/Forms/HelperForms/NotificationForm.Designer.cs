@@ -1,0 +1,177 @@
+﻿using MIN.Desktop.Winforms.Properties;
+
+namespace MIN.Desktop.Views.Forms.HelperForms
+{
+    partial class NotificationForm
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            tableLayoutPanel = new TableLayoutPanel();
+            notificationTurnOff = new MIN.Desktop.Components.Labels.CaptionLabel();
+            logoName = new MIN.Desktop.Components.Labels.CaptionLabel();
+            roomNameLabel = new MIN.Desktop.Components.Labels.PrimaryLabel();
+            logo = new PictureBox();
+            closeButton = new MIN.Desktop.Components.Labels.CaptionLabel();
+            senderAndContent = new MIN.Desktop.Components.Labels.PrimaryLabel();
+            tableLayoutPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)logo).BeginInit();
+            SuspendLayout();
+            // 
+            // tableLayoutPanel
+            // 
+            tableLayoutPanel.ColumnCount = 3;
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96F));
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
+            tableLayoutPanel.Controls.Add(notificationTurnOff, 1, 0);
+            tableLayoutPanel.Controls.Add(logoName, 0, 0);
+            tableLayoutPanel.Controls.Add(roomNameLabel, 0, 1);
+            tableLayoutPanel.Controls.Add(logo, 2, 2);
+            tableLayoutPanel.Controls.Add(closeButton, 2, 0);
+            tableLayoutPanel.Controls.Add(senderAndContent, 0, 2);
+            tableLayoutPanel.Cursor = Cursors.Hand;
+            tableLayoutPanel.Dock = DockStyle.Fill;
+            tableLayoutPanel.Location = new Point(0, 0);
+            tableLayoutPanel.Name = "tableLayoutPanel";
+            tableLayoutPanel.RowCount = 3;
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel.Size = new Size(281, 77);
+            tableLayoutPanel.TabIndex = 0;
+            // 
+            // notificationTurnOff
+            // 
+            notificationTurnOff.Anchor = AnchorStyles.Right;
+            notificationTurnOff.AutoSize = true;
+            notificationTurnOff.Cursor = Cursors.Hand;
+            notificationTurnOff.Font = new Font("Segoe UI", 8F);
+            notificationTurnOff.ForeColor = Color.FromArgb(64, 64, 64);
+            notificationTurnOff.Location = new Point(162, 1);
+            notificationTurnOff.Name = "notificationTurnOff";
+            notificationTurnOff.Size = new Size(68, 13);
+            notificationTurnOff.TabIndex = 5;
+            notificationTurnOff.Text = "Отписаться";
+            notificationTurnOff.Click += notificationTurnOff_Click;
+            // 
+            // logoName
+            // 
+            logoName.AutoSize = true;
+            logoName.Font = new Font("Segoe UI", 8F);
+            logoName.ForeColor = Color.FromArgb(64, 64, 64);
+            logoName.Location = new Point(3, 0);
+            logoName.Name = "logoName";
+            logoName.Size = new Size(28, 13);
+            logoName.TabIndex = 0;
+            logoName.Text = "MIN";
+            // 
+            // roomNameLabel
+            // 
+            roomNameLabel.AutoEllipsis = true;
+            roomNameLabel.AutoSize = true;
+            tableLayoutPanel.SetColumnSpan(roomNameLabel, 2);
+            roomNameLabel.Cursor = Cursors.Hand;
+            roomNameLabel.Dock = DockStyle.Fill;
+            roomNameLabel.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            roomNameLabel.ForeColor = Color.FromArgb(45, 43, 58);
+            roomNameLabel.Location = new Point(3, 15);
+            roomNameLabel.Name = "roomNameLabel";
+            roomNameLabel.Size = new Size(227, 15);
+            roomNameLabel.TabIndex = 2;
+            roomNameLabel.Text = "Загрузка...";
+            // 
+            // logo
+            // 
+            logo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            logo.BackgroundImage = Resources.logoImage;
+            logo.BackgroundImageLayout = ImageLayout.Zoom;
+            logo.Location = new Point(236, 33);
+            logo.Name = "logo";
+            logo.Size = new Size(42, 41);
+            logo.TabIndex = 0;
+            logo.TabStop = false;
+            // 
+            // closeButton
+            // 
+            closeButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            closeButton.AutoSize = true;
+            closeButton.BorderStyle = BorderStyle.FixedSingle;
+            closeButton.Cursor = Cursors.Hand;
+            closeButton.FlatStyle = FlatStyle.Flat;
+            closeButton.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            closeButton.ForeColor = Color.FromArgb(64, 64, 64);
+            closeButton.Location = new Point(260, 3);
+            closeButton.Margin = new Padding(3);
+            closeButton.Name = "closeButton";
+            tableLayoutPanel.SetRowSpan(closeButton, 2);
+            closeButton.Size = new Size(18, 19);
+            closeButton.TabIndex = 4;
+            closeButton.Text = "X";
+            closeButton.Click += closeButton_Click;
+            // 
+            // senderAndContent
+            // 
+            senderAndContent.AutoEllipsis = true;
+            senderAndContent.AutoSize = true;
+            tableLayoutPanel.SetColumnSpan(senderAndContent, 2);
+            senderAndContent.Dock = DockStyle.Fill;
+            senderAndContent.Font = new Font("Segoe UI", 9.75F);
+            senderAndContent.ForeColor = Color.FromArgb(45, 43, 58);
+            senderAndContent.Location = new Point(3, 30);
+            senderAndContent.Name = "senderAndContent";
+            senderAndContent.Size = new Size(227, 47);
+            senderAndContent.TabIndex = 6;
+            senderAndContent.Text = "Загрузка...";
+            senderAndContent.UseMnemonic = false;
+            // 
+            // NotificationForm
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(281, 77);
+            Controls.Add(tableLayoutPanel);
+            FormBorderStyle = FormBorderStyle.None;
+            Name = "NotificationForm";
+            Text = "NotificationForm";
+            tableLayoutPanel.ResumeLayout(false);
+            tableLayoutPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)logo).EndInit();
+            ResumeLayout(false);
+        }
+
+        #endregion
+
+        private TableLayoutPanel tableLayoutPanel;
+        private PictureBox logo;
+        private Desktop.Components.Labels.CaptionLabel logoName;
+        private Desktop.Components.Labels.PrimaryLabel roomNameLabel;
+        private Desktop.Components.Labels.CaptionLabel closeButton;
+        private Desktop.Components.Labels.CaptionLabel notificationTurnOff;
+        private Desktop.Components.Labels.PrimaryLabel senderAndContent;
+    }
+}

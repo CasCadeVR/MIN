@@ -1,0 +1,101 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+        <StackPanel>
+            <StackPanel.Styles>
+                <Style Selector="TextBlock">
+                    <Setter Property="Margin" Value="5"></Setter>
+                </Style>
+            </StackPanel.Styles>
+
+            <TextBlock Classes="header1">MiN</TextBlock>
+            <TextBlock Classes="inverted header1" Background="{DynamicResource TextPrimary}">MiN</TextBlock>
+            <TextBlock Classes="header2">Заголовок 2</TextBlock>
+            <TextBlock Classes="header3">Заголовок 3</TextBlock>
+            <TextBlock Classes="header4">Заголовок 4</TextBlock>
+            <TextBlock Classes="header5">Заголовок 5</TextBlock>
+            <TextBlock>Обычный текст</TextBlock>
+            <TextBlock Classes="small">подзаголовок</TextBlock>
+            <TextBlock Classes="caption">подзаголовок</TextBlock>
+            <SelectableTextBlock>Выделяемое поле</SelectableTextBlock>
+            <SelectableTextBlock Classes="inverted">Выделяемое поле инвертированное</SelectableTextBlock>
+        </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+    <Style Selector="SelectableTextBlock">
+        <Setter Property="SelectionBrush" Value="{DynamicResource TextSelection}"/>
+        <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextOnPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock, SelectableTextBlock">
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock.header1, SelectableTextBlock.header1">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH1}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock.header2, SelectableTextBlock.header2">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH2}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+        
+    <Style Selector="TextBlock.header3, SelectableTextBlock.header3">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH3}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock.header4, SelectableTextBlock.header4">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH4}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock.header5, SelectableTextBlock.header5">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH5}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <Style Selector="TextBlock.chat, SelectableTextBlock.chat">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeChat}"/>
+    </Style>
+
+    <Style Selector="TextBlock.info, SelectableTextBlock.info">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeInfo}"/>
+        <Setter Property="Opacity" Value="0.7"/>
+    </Style>
+
+    <Style Selector="TextBlock.caption, SelectableTextBlock.caption">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeCaption}"/>
+        <Setter Property="Opacity" Value="0.6"/>
+    </Style>
+
+    <Style Selector="TextBlock.card-text, SelectableTextBlock.card-text">
+        <Setter Property="Foreground" Value="{DynamicResource TextOnCard}" />
+    </Style>
+
+    <Style Selector="TextBlock.card-text-selected, SelectableTextBlock.card-text-selected">
+        <Setter Property="Foreground" Value="{DynamicResource TextOnCardSelected}" />
+    </Style>
+
+    <Style Selector="TextBlock.inverted, SelectableTextBlock.inverted">
+        <Setter Property="Foreground" Value="{DynamicResource TextAccent}"/>
+    </Style>
+
+    <Style Selector="TextBlock.link">
+        <Setter Property="Cursor" Value="Hand" />
+
+         <Style Selector="^:pointerover">
+            <Setter Property="TextDecorations" Value="Underline" />
+        </Style>
+    </Style>
+</Styles>

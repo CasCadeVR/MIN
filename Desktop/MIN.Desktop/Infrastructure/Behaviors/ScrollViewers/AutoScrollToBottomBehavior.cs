@@ -1,0 +1,69 @@
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Xaml.Interactivity;
+
+namespace MIN.Desktop.Infrastructure.Behaviors.ScrollViewers;
+
+/// <summary>
+/// Прокрутка <see cref="ScrollViewer"/> вниз и вверх
+/// </summary>
+public class AutoScrollToBottomBehavior : StyledElementBehavior<ScrollViewer>
+{
+    /// <summary>
+    /// Авто скролл вверх
+    /// </summary>
+    public readonly static AttachedProperty<bool> AutoScrollUpProperty =
+        AvaloniaProperty.RegisterAttached<AutoScrollToBottomBehavior, ScrollViewer, bool>("AutoScrollUp");
+
+    /// <summary>
+    /// Авто скролл вверх
+    /// </summary>
+    public readonly static AttachedProperty<bool> AutoScrollBottomProperty =
+        AvaloniaProperty.RegisterAttached<AutoScrollToBottomBehavior, ScrollViewer, bool>("AutoScrollBottom");
+
+    static AutoScrollToBottomBehavior()
+    {
+        AutoScrollUpProperty.Changed.AddClassHandler<ScrollViewer>(OnAutoScrollUpChanged);
+        AutoScrollBottomProperty.Changed.AddClassHandler<ScrollViewer>(OnAutoScrollBottomChanged);
+    }
+
+    /// <summary>
+    /// Установить авто скролл вверх
+    /// </summary>
+    public static void SetAutoScrollUp(ScrollViewer element, bool value) =>
+        element.SetValue(AutoScrollUpProperty, value);
+
+    /// <summary>
+    /// Получить авто скролл вверх
+    /// </summary>
+    public static bool GetAutoScrollUp(ScrollViewer element) =>
+        element.GetValue(AutoScrollUpProperty);
+
+    /// <summary>
+    /// Установить авто скролл вниз
+    /// </summary>
+    public static void SetAutoScrollBottom(ScrollViewer element, bool value) =>
+        element.SetValue(AutoScrollBottomProperty, value);
+
+    /// <summary>
+    /// Получить авто скролл вниз
+    /// </summary>
+    public static bool GetAutoScrollBottom(ScrollViewer element) =>
+        element.GetValue(AutoScrollBottomProperty);
+
+    private static void OnAutoScrollUpChanged(ScrollViewer sv, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is true)
+        {
+            sv.ScrollToHome();
+        }
+    }
+
+    private static void OnAutoScrollBottomChanged(ScrollViewer sv, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is true)
+        {
+            sv.ScrollToEnd();
+        }
+    }
+}

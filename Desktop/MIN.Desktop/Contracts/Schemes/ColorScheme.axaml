@@ -1,0 +1,245 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:designer="using:MIN.Desktop.Contracts.Designer">
+
+    <Design.PreviewWith>
+        <designer:DesignerControlsTemplates />
+    </Design.PreviewWith>
+
+    <ResourceDictionary.ThemeDictionaries>
+        <!-- DARK THEME -->
+        <ResourceDictionary x:Key="Dark">
+
+            <!-- *************** -->
+            <!-- BRAND / ACCENT  -->
+            <!-- *************** -->
+            <Color x:Key="Primary">#6366F1</Color>          <!-- Main accent (buttons, links, active) -->
+            <Color x:Key="PrimaryHover">#818CF8</Color>      <!-- Hover state -->
+            <Color x:Key="PrimaryPressed">#4F46E5</Color>    <!-- Pressed state -->
+
+            <Color x:Key="SecondaryColor">#EC4899</Color>         <!-- Secondary accent (badges, highlights) -->
+            <Color x:Key="SecondaryColorHover">#F472B6</Color>
+            <Color x:Key="SecondaryColorPressed">#DB2777</Color>
+
+            <!-- *************** -->
+            <!-- SURFACE / BG    -->
+            <!-- *************** -->
+
+            <Color x:Key="SurfaceBackground">#1C1C1E</Color>     <!-- Window / page background -->
+            <Color x:Key="SurfaceDisabled">#101011</Color>            <!-- Disabled -->
+            <Color x:Key="SurfaceCard">#2C2C2E</Color>            <!-- Card, panel, raised surface -->
+            <Color x:Key="SurfaceCardHover">#434343</Color>        <!-- Cards hover -->
+            <Color x:Key="SurfaceCardPressed">#222224</Color>        <!-- Cards pressed -->
+            <Color x:Key="SurfaceElevated">#3A3A3C</Color>        <!-- Modal, dropdown, tooltip -->
+            <Color x:Key="SurfaceInput">#000000</Color>            <!-- TextBox / input background -->
+            <Color x:Key="SurfaceTaskBar">#2C2C2E</Color>            <!-- Taskbar background -->
+
+            <Color x:Key="SurfaceDrag">#A1000000</Color>          <!-- Background when dragging file -->
+
+            <!-- *************** -->
+            <!-- SIDEBAR         -->
+            <!-- *************** -->
+
+            <Color x:Key="SidebarBackground">#2C2C2E</Color>      <!-- Main sidebar -->
+            <Color x:Key="SidebarSecondaryBackground">#151517</Color>      <!-- Extra sidebars -->
+            <Color x:Key="SidebarItemHover">#2C2C2E</Color>
+            <Color x:Key="SidebarItemActive">#6366F120</Color>    <!-- Selected item (accent with alpha) -->
+
+            <!-- *************** -->
+            <!-- TEXT            -->
+            <!-- *************** -->
+
+            <Color x:Key="TextPrimary">#FFFFFF</Color>            <!-- Headers, body text -->
+            <Color x:Key="TextSecondary">#A1A1AA</Color>          <!-- Labels, captions, muted -->
+            <Color x:Key="TextIcon">#595959</Color>          <!-- Icons -->
+            <Color x:Key="TextIconHover">#686868</Color>          <!-- Icons hovered -->
+            <Color x:Key="TextDisabled">#52525B</Color>           <!-- Disabled / placeholder -->
+            <Color x:Key="TextAccent">#6366F1</Color>             <!-- Accent-colored text (links, badges) -->
+            <Color x:Key="TextOnPrimary">#FFFFFF</Color>          <!-- Text ON an accent button -->
+
+            <Color x:Key="TextOnCard">#FFFFFF</Color>          <!-- Text ON cards -->
+            <Color x:Key="TextOnCardSelected">#FFFFFF</Color>          <!-- Text ON selected cards -->
+
+            <Color x:Key="TextBackgroundOnImage">#7A2a2a2a</Color>          <!-- Text background ON Images -->
+
+            <Color x:Key="TextSelection">#3B82F6</Color>          <!-- Selection for SelectableTextBlock -->
+
+            <!-- *************** -->
+            <!-- SCROLL          -->
+            <!-- *************** -->
+
+            <Color x:Key="Scroll">#6366F1</Color>          <!-- Scroll thumb by default -->
+            <Color x:Key="ScrollHover">#818CF8</Color>          <!-- Scroll thumb when pointing over -->
+            <Color x:Key="ScrollPressed">#4F46E5</Color>          <!-- Scroll thumb when dragging -->
+
+            <!-- *************** -->
+            <!-- BORDER          -->
+            <!-- *************** -->
+
+            <Color x:Key="Border">#3F3F46</Color>            <!-- Default border -->
+            <Color x:Key="BorderFocused">#6366F1</Color>     <!-- Focused input border -->
+            <Color x:Key="BorderError">#EF4444</Color>       <!-- Error / validation -->
+
+            <!-- *************** -->
+            <!-- STATUS / ALERT  -->
+            <!-- *************** -->
+
+            <Color x:Key="StatusSuccess">#22C55E</Color>          <!-- Online, success -->
+            <Color x:Key="StatusWarning">#F59E0B</Color>          <!-- Away, warning -->
+            <Color x:Key="StatusError">#EF4444</Color>            <!-- Offline, error, critical -->
+            <Color x:Key="StatusInfo">#3B82F6</Color>             <!-- Info / notification -->
+
+            <!-- *************** -->
+            <!-- CHAT MESSAGES   -->
+            <!-- *************** -->
+
+            <Color x:Key="ChatMessageSelf">#6366F1</Color>         <!-- My message background -->
+            <Color x:Key="ChatMessageSelfHover">#8083ff</Color>         <!-- My message hover background -->
+            <Color x:Key="ChatMessageSelfPressed">#5b5edd</Color>         <!-- My message pressed background -->
+
+            <Color x:Key="ChatMessageTheir">#2C2C2E</Color>        <!-- Their message hover background -->
+            <Color x:Key="ChatMessageTheirHover">#4e4e51</Color>        <!-- Their message pressed background -->
+            <Color x:Key="ChatMessageTheirPressed">#222224</Color>        <!-- Their message background -->
+
+            <Color x:Key="ChatPrivate">#818CF8</Color>           <!-- Private chat background -->
+            <Color x:Key="ChatTimestamp">#71717A</Color>           <!-- Time label -->
+            <Color x:Key="SystemBackground">Transparent</Color>           <!-- Background color on system messages -->
+
+            <!-- *************** -->
+            <!-- SVGS            -->
+            <!-- *************** -->
+
+            <x:String x:Key="SvgDefaultStyle">* { fill: #e9e9e9; stroke: #e9e9e9; }</x:String>
+            <x:String x:Key="SvgAccentStyle">* { fill: #6366F1; stroke: #6366F1; }</x:String>
+            <x:String x:Key="SvgPrimaryStyle">* { fill: #FFFFFF; stroke: #FFFFFF; }</x:String>
+            <x:String x:Key="SvgTextStyle">* { fill: #FFFFFF; stroke: #FFFFFF; }</x:String>
+
+            <!-- *************** -->
+            <!-- Files           -->
+            <!-- *************** -->
+
+            <Color x:Key="FileMessageIconBackground">#3b82f6</Color>           <!-- File Message Icon Background -->
+            <Color x:Key="FileMessageIconBackgroundHover">#689bef</Color>           <!-- File Message Icon hover Background -->
+            <Color x:Key="FileMessageIconBackgroundPressed">#2d6cd3</Color>           <!-- File Message Icon pressed Background -->
+
+        </ResourceDictionary>
+
+        <!-- LIGHT THEME -->
+
+        <ResourceDictionary x:Key="Light">
+            <!-- *************** -->
+            <!-- BRAND / ACCENT  -->
+            <!-- *************** -->
+
+            <Color x:Key="Primary">#6366F1</Color>          <!-- Main accent (buttons, links, active) -->
+            <Color x:Key="PrimaryHover">#818CF8</Color>      <!-- Hover state -->
+            <Color x:Key="PrimaryPressed">#4F46E5</Color>    <!-- Pressed state -->
+
+            <Color x:Key="SecondaryColor">#EC4899</Color>         <!-- Secondary accent (badges, highlights) -->
+            <Color x:Key="SecondaryColorHover">#F472B6</Color>
+            <Color x:Key="SecondaryColorPressed">#DB2777</Color>
+
+            <!-- *************** -->
+            <!-- SURFACE / BG    -->
+            <!-- *************** -->
+
+            <Color x:Key="SurfaceBackground">#bfc5f9</Color>     <!-- Window / page background -->
+            <Color x:Key="SurfaceDisabled">#d5d5d5</Color>            <!-- Disabled -->
+            <Color x:Key="SurfaceCard">#FFFFFF</Color>            <!-- Card, panel, raised surface -->
+            <Color x:Key="SurfaceCardHover">#d3d3d1</Color>        <!-- Cards hover -->
+            <Color x:Key="SurfaceCardPressed">#b8b8b8</Color>        <!-- Cards pressed -->
+            <Color x:Key="SurfaceElevated">#e9e9e8</Color>        <!-- Modal, dropdown, tooltip -->
+            <Color x:Key="SurfaceInput">#e9e9e9</Color>            <!-- TextBox / input background -->
+            <Color x:Key="SurfaceTaskBar">#d3d3d1</Color>            <!-- Taskbar background -->
+
+            <Color x:Key="SurfaceDrag">#A1000000</Color>          <!-- Background when dragging file -->
+
+            <!-- *************** -->
+            <!-- SIDEBAR         -->
+            <!-- *************** -->
+
+            <Color x:Key="SidebarBackground">#FFFFFF</Color>      <!-- Main sidebar -->
+            <Color x:Key="SidebarSecondaryBackground">#F1F1F1</Color>      <!-- Extra sidebars -->
+            <Color x:Key="SidebarItemHover">#d3d3d1</Color>
+            <Color x:Key="SidebarItemActive">#14b835</Color>    <!-- Selected item (accent with alpha) -->
+
+            <!-- *************** -->
+            <!-- TEXT            -->
+            <!-- *************** -->
+
+            <Color x:Key="TextPrimary">#2C2C2E</Color>            <!-- Headers, body text -->
+            <Color x:Key="TextSecondary">#A1A1AA</Color>          <!-- Labels, captions, muted -->
+            <Color x:Key="TextIcon">#e9e9e9</Color>          <!-- Icons -->
+            <Color x:Key="TextIconHover">#dedede</Color>          <!-- Icons hovered -->
+            <Color x:Key="TextDisabled">#52525B</Color>           <!-- Disabled / placeholder -->
+            <Color x:Key="TextAccent">#6366F1</Color>             <!-- Accent-colored text (links, badges) -->
+            <Color x:Key="TextOnPrimary">#FFFFFF</Color>          <!-- Text ON an accent button -->
+
+            <Color x:Key="TextOnCard">#2C2C2E</Color>          <!-- Text ON cards -->
+            <Color x:Key="TextOnCardSelected">#FFFFFF</Color>          <!-- Text ON selected cards -->
+
+            <Color x:Key="TextBackgroundOnImage">#7A2a2a2a</Color>          <!-- Text backgrund ON Images -->
+
+            <Color x:Key="TextSelection">#6366F1</Color>          <!-- Selection for SelectableTextBlock -->
+
+            <!-- *************** -->
+            <!-- SCROLL          -->
+            <!-- *************** -->
+
+            <Color x:Key="Scroll">#6366F1</Color>          <!-- Scroll thumb by default -->
+            <Color x:Key="ScrollHover">#818CF8</Color>          <!-- Scroll thumb when pointing over -->
+            <Color x:Key="ScrollPressed">#4F46E5</Color>          <!-- Scroll thumb when dragging -->
+
+            <!-- *************** -->
+            <!-- BORDER          -->
+            <!-- *************** -->
+
+            <Color x:Key="Border">#3F3F46</Color>            <!-- Default border -->
+            <Color x:Key="BorderFocused">#6366F1</Color>     <!-- Focused input border -->
+            <Color x:Key="BorderError">#EF4444</Color>       <!-- Error / validation -->
+
+            <!-- *************** -->
+            <!-- STATUS / ALERT  -->
+            <!-- *************** -->
+
+            <Color x:Key="StatusSuccess">#22C55E</Color>          <!-- Online, success -->
+            <Color x:Key="StatusWarning">#F59E0B</Color>          <!-- Away, warning -->
+            <Color x:Key="StatusError">#EF4444</Color>            <!-- Offline, error, critical -->
+            <Color x:Key="StatusInfo">#3B82F6</Color>             <!-- Info / notification -->
+
+            <!-- *************** -->
+            <!-- CHAT MESSAGES   -->
+            <!-- *************** -->
+
+            <Color x:Key="ChatMessageSelf">#e2e4f9</Color>         <!-- My message background -->
+            <Color x:Key="ChatMessageSelfHover">#e2e4f9</Color>         <!-- My message hover background -->
+            <Color x:Key="ChatMessageSelfPressed">#dadcef</Color>         <!-- My message pressed background -->
+
+            <Color x:Key="ChatMessageTheir">#efefef</Color>        <!-- Their message hover background -->
+            <Color x:Key="ChatMessageTheirHover">#f7f7f7</Color>        <!-- Their message pressed background -->
+            <Color x:Key="ChatMessageTheirPressed">#dedede</Color>        <!-- Their message background -->
+
+            <Color x:Key="ChatPrivate">#818CF8</Color>           <!-- Private chat background -->
+            <Color x:Key="ChatTimestamp">#71717A</Color>           <!-- Time label -->
+            <Color x:Key="SystemBackground">#CC9ca1c8</Color>           <!-- Background color on system messages -->
+
+            <!-- *************** -->
+            <!-- SVGS            -->
+            <!-- *************** -->
+
+            <x:String x:Key="SvgDefaultStyle">* { fill: #595959; stroke: #595959; }</x:String>
+            <x:String x:Key="SvgAccentStyle">* { fill: #6366F1; stroke: #6366F1; }</x:String>
+            <x:String x:Key="SvgPrimaryStyle">* { fill: #FFFFFF; stroke: #FFFFFF; }</x:String>
+            <x:String x:Key="SvgTextStyle">* { fill: #2C2C2E; stroke: #2C2C2E; }</x:String>
+
+            <!-- *************** -->
+            <!-- Files           -->
+            <!-- *************** -->
+
+            <Color x:Key="FileMessageIconBackground">#3b82f6</Color>           <!-- File Message Icon Background -->
+            <Color x:Key="FileMessageIconBackgroundHover">#689bef</Color>           <!-- File Message Icon hover Background -->
+            <Color x:Key="FileMessageIconBackgroundPressed">#2d6cd3</Color>           <!-- File Message Icon pressed Background -->
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

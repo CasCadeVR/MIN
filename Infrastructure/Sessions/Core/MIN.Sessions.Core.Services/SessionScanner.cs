@@ -72,6 +72,11 @@ public class SessionScanner : ISessionScanner
                     continue;
                 }
 
+                if (session.ThumbnailFileName != null && !Path.Exists(Path.Combine(dir, session.ThumbnailFileName)))
+                {
+                    session.ThumbnailFileName = null;
+                }
+
                 session.SessionDirectory = dir;
                 scanned[session.SessionId] = session;
             }
@@ -97,7 +102,7 @@ public class SessionScanner : ISessionScanner
         }
 
         var path = Path.Combine(
-            sessionsDirectory, session.SessionId, session.GeThumbnailPath());
+            sessionsDirectory, session.SessionId, session.GetThumbnailPath());
         return File.Exists(path) ? File.ReadAllBytes(path) : null;
     }
 }

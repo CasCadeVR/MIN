@@ -7,6 +7,12 @@ namespace MIN.FileTransfer.Services;
 /// <inheritdoc cref="IFileHelperService"/>
 public sealed class FileHelperService : IFileHelperService
 {
+    private readonly static char[] invalidFileNameChars =
+        Path.GetInvalidFileNameChars()
+            .Concat(['\\', '/', ':', '*', '?', '"', '<', '>', '|'])
+            .Distinct()
+            .ToArray();
+
     private const string EmptyFileName = "безымянный_файл";
 
     private readonly static ConcurrentDictionary<string, string> mimeTypes = new(StringComparer.OrdinalIgnoreCase)
@@ -48,7 +54,11 @@ public sealed class FileHelperService : IFileHelperService
     };
 
     private readonly static HashSet<string> blockedExtensions = new(StringComparer.OrdinalIgnoreCase)
-        { ".bat", ".cmd", ".com", ".scr", ".vbs", ".ps1", ".wsf", ".reg", ".inf", };
+    {
+        ".bat", ".cmd", ".com", ".scr", ".vbs", ".ps1", ".wsf", ".reg", ".inf",
+        ".sh", ".bash", ".zsh", ".fish",  // Linux
+        ".command", ".sh", // macOS
+    };
 
     private readonly static HashSet<string> imageExtensions = new(StringComparer.OrdinalIgnoreCase)
         { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".ico", ".jfif"};
@@ -89,9 +99,8 @@ public sealed class FileHelperService : IFileHelperService
 
     string IFileHelperService.SanitizeFileName(string fileName)
     {
-        var invalidChars = Path.GetInvalidFileNameChars();
         var sanitized = new string(fileName
-            .Where(c => !invalidChars.Contains(c))
+            .Where(c => !invalidFileNameChars.Contains(c))
             .ToArray())
             .Trim();
 

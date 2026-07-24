@@ -1,0 +1,225 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:enums="using:MIN.Desktop.Contracts.Enums"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+             xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="720"
+             x:DataType="vm:DiscoveryViewModel"
+             Padding="{DynamicResource PaddingPage}"
+             x:Class="MIN.Desktop.Views.Central.DiscoveryView">
+
+    <Design.DataContext>
+        <designer:DesignerDiscoveryViewModel/>
+    </Design.DataContext>
+
+    <Border Classes="appear-from-top">
+        <DockPanel VerticalSpacing="10" >
+            <Border DockPanel.Dock="Top"
+                    Margin="0,0,0,16"
+                    Background="{DynamicResource SidebarBackground}"
+                    Padding="{DynamicResource PaddingTopBar}"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}">
+                <DockPanel HorizontalSpacing="8" >
+                    <Button Command="{Binding ShowLeftSideBarCommand}"
+                        DockPanel.Dock="Left"
+                        ToolTip.Tip="Меню"
+                        IsVisible="{Binding CurrentLayout,
+                            Converter={converters:EqualityConverter},
+                            ConverterParameter={x:Static enums:WindowLayout.Narrow}}"
+                        Classes="icon">
+                        <Svg Path="/Assets/Icons/arrow-left.svg" />
+                    </Button>
+
+                    <Button
+                        Command="{Binding CreateRoomCommand}"
+                        DockPanel.Dock="Left"
+                        ToolTip.Tip="Создать комнату"
+                        Classes="icon">
+                        <Svg Path="/Assets/Icons/plus.svg" />
+                    </Button>
+
+                    <Button
+                        DockPanel.Dock="Right"
+                        Command="{Binding DiscoverRoomsCommand}">
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Foreground="{DynamicResource TextOnPrimary}"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding !isDiscovering}"
+                                Text="Найти комнаты" />
+
+                            <TextBlock
+                                Foreground="{DynamicResource TextOnPrimary}"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding isDiscovering}"
+                                Text="Остановить поиск" />
+
+                            <Svg
+                                Height="18"
+                                Margin="16,0,0,0"
+                                Path="/Assets/Icons/loading.svg"
+                                Classes="primary rotating"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding isDiscovering}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button
+                        Command="{Binding ConnectDirectlyCommand}"
+                        DockPanel.Dock="Right"
+                        IsVisible="{Binding CurrentLayout,
+                            Converter={converters:EqualityConverter},
+                            ConverterParameter={x:Static enums:WindowLayout.ThreeColumns}}">
+                       Подключиться напрямую
+                    </Button>
+
+                    <Button
+                        Classes="icon"
+                        ToolTip.Tip="Подключиться напрямую"
+                        Command="{Binding ConnectDirectlyCommand}"
+                        DockPanel.Dock="Right"
+                        IsVisible="{Binding CurrentLayout,
+                            Converter={converters:NonEqualityConverter},
+                            ConverterParameter={x:Static enums:WindowLayout.ThreeColumns}}">
+                       <Svg Path="/Assets/Icons/connect.svg"/>
+                    </Button>
+
+                    <Rectangle />
+                </DockPanel>
+             </Border>
+
+             <Border DockPanel.Dock="Bottom"
+                    Background="{DynamicResource SidebarBackground}"
+                    Padding="{DynamicResource PaddingTopBar}"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}">
+                <StackPanel Orientation="Horizontal" Spacing="8" >
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        DockPanel.Dock="Right"
+                        IsVisible="{Binding isDiscovering}"
+                        Text="Поиск комнат..." />
+
+                    <TextBlock
+                        Margin="6,0,0,0"
+                        DockPanel.Dock="Right"
+                        IsVisible="{Binding !isDiscovering}"
+                        Text="Всего нашлось комнат: " />
+
+                    <TextBlock
+                        IsVisible="{Binding !isDiscovering}"
+                        Text="{Binding DiscoveredRooms.Count}"
+                        DockPanel.Dock="Right" />
+                </StackPanel>
+            </Border>
+
+            <!-- Discovered rooms -->
+            <ScrollViewer Classes="main">
+                <ItemsControl ItemsSource="{Binding DiscoveredRooms}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel
+                                Orientation="Horizontal"
+                                ItemSpacing="13"
+                                LineSpacing="13" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Classes="card appear-from-top"
+                                    Width="256">
+                                <StackPanel Spacing="8">
+                                    <TextBlock HorizontalAlignment="Center"
+                                        Text="Комната " />
+
+                                    <SelectableTextBlock HorizontalAlignment="Center"
+                                        Classes="header4"
+                                        Text="{Binding Room.Name,
+                                            Converter={converters:TruncateWithEllipsisConverter},
+                                            ConverterParameter=15}" />
+
+                                    <StackPanel Spacing="8"
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock
+                                            Text="Создатель: " />
+                                        <TextBlock Text="{Binding Room.HostParticipant.Name,
+                                                Converter={converters:TruncateWithEllipsisConverter},
+                                                ConverterParameter=20}" />
+                                    </StackPanel>
+
+                                    <!-- Room create time -->
+
+                                    <StackPanel Spacing="8"
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock Text="Создана: " />
+                                        <TextBlock Text="{Binding Room.CreatedAt,
+                                            Converter={converters:DateConverter},
+                                            ConverterParameter={x:Static converters:DateMode.Short}}" />
+                                    </StackPanel>
+
+                                    <!-- Cabinet -->
+
+                                    <StackPanel Spacing="8"
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock Text="Кабинет: " />
+                                        <TextBlock Text="{Binding Cabinet}" />
+                                    </StackPanel>
+
+                                    <!-- Computer -->
+
+                                        <StackPanel Spacing="8"
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock Text="№ Компьютера: " />
+                                        <TextBlock Text="{Binding Room.PcNumber}" />
+                                    </StackPanel>
+
+                                    <!-- IP Address -->
+
+                                    <StackPanel Spacing="8"
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock Text="Адрес: " />
+                                        <SelectableTextBlock Text="{Binding IpAddress}" />
+                                    </StackPanel>
+
+
+                                    <!-- Port -->
+
+                                    <StackPanel Spacing="8"
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock Text="Порт: " />
+                                        <SelectableTextBlock Text="{Binding Port}" />
+                                    </StackPanel>
+
+                                    <!-- Online -->
+
+                                    <StackPanel
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock Margin="0,0,8,0" Text="Подключено: " />
+                                        <TextBlock Text="{Binding Room.ParticipantCount}" />
+                                        <TextBlock Text="/" />
+                                        <TextBlock Text="{Binding Room.MaximumParticipants}" />
+                                    </StackPanel>
+
+                                    <Button
+                                        Command="{Binding JoinRoomCommand}"
+                                        IsEnabled="{Binding IsAccessible}"
+                                        Content="{Binding ConnectionStatus}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>

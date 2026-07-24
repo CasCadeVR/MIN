@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="20"
+             x:DataType="vm:ChatTextMessageViewModel"
+             x:Class="MIN.Desktop.Views.Cards.Messages.ChatTextMessageView">
+
+    <Design.DataContext>
+        <vm:ChatTextMessageViewModel/>
+    </Design.DataContext>
+
+   <Border Classes="message-row"
+        Margin="{Binding TimePadding}"
+        Classes.private="{Binding IsPrivate}"
+        Classes.selected="{Binding IsSelected}">
+
+        <Border Classes="message"
+            Padding="{DynamicResource PaddingMedium}"
+            Classes.self="{Binding IsLocal}">
+            <Border.ContextFlyout>
+                <Flyout Placement="Right">
+                    <StackPanel>
+                        <Button
+                            Command="{Binding CopyToClipboardCommand}"
+                            Classes="no-background"
+                            HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="8" Orientation="Horizontal" >
+                                <Svg Path="/Assets/Icons/copy.svg" />
+                                <TextBlock VerticalAlignment="Center"
+                                    Text="Скопировать текст" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Flyout>
+            </Border.ContextFlyout>
+
+            <StackPanel Spacing="8">
+                <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
+                    <TextBlock
+                        FontWeight="Bold"
+                        Text="{Binding SenderName}" />
+
+                    <TextBlock
+                        IsVisible="{Binding IsHost}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Text="Хост"
+                        DockPanel.Dock="Right" />
+                </DockPanel>
+
+                <DockPanel HorizontalSpacing="8">
+                    <TextBlock
+                        DockPanel.Dock="Right"
+                        Classes="info"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Text="{Binding Timestamp}" />
+
+                    <SelectableTextBlock
+                        Classes="chat"
+                        Text="{Binding ChatMessage.Content}" />
+                </DockPanel>
+            </StackPanel>
+        </Border>
+    </Border>
+</UserControl>

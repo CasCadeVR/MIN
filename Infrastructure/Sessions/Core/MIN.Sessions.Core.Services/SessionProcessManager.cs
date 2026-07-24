@@ -65,12 +65,24 @@ public class SessionProcessManager : ISessionProcessManager
         await processTransport.StartAsync(context.RoomId, cancellationToken);
         var connectionString = processTransport.GetConnectionString();
 
-        var startedProcess = Process.Start(new ProcessStartInfo
+        var psi = new ProcessStartInfo
         {
             FileName = fullPath,
-            ArgumentList = { connectionString },
             UseShellExecute = false,
-        });
+        };
+        psi.ArgumentList.Add(connectionString);
+
+        if (!OperatingSystem.IsWindows())
+        {
+            var mode = File.GetUnixFileMode(fullPath);
+            if ((mode & UnixFileMode.UserExecute) == 0)
+            {
+                psi.FileName = "dotnet";
+                psi.ArgumentList.Insert(0, fullPath); // [fullPath, connectionString]
+            }
+        }
+
+        var startedProcess = Process.Start(psi);
 
         if (startedProcess == null || startedProcess.HasExited)
         {
@@ -98,7 +110,6 @@ public class SessionProcessManager : ISessionProcessManager
         currentExitHandler = async (_, _) => await AnnounceExit(session, context, cancellationToken);
         startedProcess.Exited += currentExitHandler;
 
-
         return true;
     }
 
@@ -124,6 +135,7 @@ public class SessionProcessManager : ISessionProcessManager
                 SubRoomId = context.SubRoomId,
             }, context.RoomId, identityService.SelfParticipant.Id, cancellationToken);
         }
+        runningProcesses.Remove(context);
     }
 
     bool ISessionProcessManager.SessionClientAppExists(Session session)
@@ -135,6 +147,7 @@ public class SessionProcessManager : ISessionProcessManager
         {
             await StopProcessWithTimeOut(context, process, clearAnnounce: false);
         }
+        runningProcesses.Remove(context);
     }
 
     async Task ISessionProcessManager.StopForRoomAsync(Guid roomId)

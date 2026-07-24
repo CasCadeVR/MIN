@@ -1,0 +1,352 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Pages.ChatViewModels"
+             xmlns:enums="using:MIN.Desktop.Contracts.Enums"
+             xmlns:behaviors="using:MIN.Desktop.Infrastructure.Behaviors"
+             xmlns:scrollBehaviors="using:MIN.Desktop.Infrastructure.Behaviors.ScrollViewers"
+             xmlns:messages="using:MIN.Desktop.Views.Cards.Messages"
+             xmlns:messagesVM="using:MIN.Desktop.ViewModels.Cards.Messages"
+             xmlns:messagesVMFiles="using:MIN.Desktop.ViewModels.Cards.Messages.Files"
+             xmlns:sessionFiles="using:MIN.Desktop.ViewModels.Cards.Messages.Sessions"
+             xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="720"
+             x:DataType="vm:ChatViewModel"
+             Padding="{DynamicResource PaddingPage}"
+             MaxWidth="960"
+             MinWidth="300"
+             x:Class="MIN.Desktop.Views.Central.ChatView">
+
+    <Design.DataContext>
+        <designer:DesignerChatViewModel/>
+    </Design.DataContext>
+
+    <Panel
+        DragDrop.AllowDrop="True"
+        DragDrop.DragEnter="Border_DragEnter"
+        DragDrop.DragLeave="Border_DragLeave"
+        DragDrop.DragOver="Border_DragOver"
+        DragDrop.Drop="Border_Drop"
+        behaviors:DropFilesBehavior.DropFilesCommand="{Binding DropFilesCommand}">
+        <Border
+            Classes="appear-from-top"
+            Background="Transparent">
+            <DockPanel VerticalSpacing="10">
+
+                <!-- Topbar -->
+
+                <Border DockPanel.Dock="Top"
+                Background="{DynamicResource SidebarBackground}"
+                Padding="{DynamicResource PaddingTopBar}"
+                CornerRadius="{DynamicResource CornerRadiusLarge}">
+                    <DockPanel>
+                        <Button HorizontalAlignment="Right"
+                        DockPanel.Dock="Right"
+                        ToolTip.Tip="Действия"
+                        Classes="icon">
+                            <Svg Path="/Assets/Icons/about.svg" />
+                            <Button.Flyout>
+                                <Flyout FlyoutPresenterClasses="buttons"
+                                        Placement="BottomEdgeAlignedRight">
+                                        <StackPanel>
+                                            <Button
+                                            Classes="no-background"
+                                            HorizontalContentAlignment="Stretch"
+                                            Command="{Binding LeaveRoomCommand}">
+
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/leave.svg" />
+                                                <TextBlock IsVisible="{Binding !IsHost}"
+                                                    VerticalAlignment="Center"
+                                                    Text="Покинуть комнату"/>
+                                                <TextBlock IsVisible="{Binding IsHost}"
+                                                    VerticalAlignment="Center"
+                                                    Text="Закрыть комнату"/>
+                                            </StackPanel>
+                                        </Button>
+                                   
+                                        <Button
+                                            Command="{Binding EditRoomCommand}"
+                                            Classes="no-background"
+                                            HorizontalContentAlignment="Stretch"
+                                            IsVisible="{Binding IsHost}">
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/edit.svg" />
+                                                <TextBlock VerticalAlignment="Center"
+                                                    Text="Редактировать комнату" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+
+                        <Button Command="{Binding ShowLeftSideBarCommand}"
+                                HorizontalAlignment="Left"
+                                ToolTip.Tip="Меню"
+                                IsVisible="{Binding CurrentLayout,
+                                    Converter={converters:EqualityConverter},
+                                    ConverterParameter={x:Static enums:WindowLayout.Narrow}}"
+                                Classes="icon">
+                            <Svg Path="/Assets/Icons/arrow-left.svg" />
+                        </Button>
+
+                        <Button HorizontalAlignment="Left"
+                            Command="{Binding ToggleRightSideBarCommand}"
+                            Classes="no-background">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Classes="header5"
+                                    Text="Комната " />
+
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Classes="header3"
+                                    Text="{Binding RoomName}" />
+                            </StackPanel>
+                        </Button>
+                    </DockPanel>
+                </Border>
+
+                <!-- TextBox and actions -->
+
+                 <Border DockPanel.Dock="Bottom"
+                        Background="{DynamicResource SidebarBackground}"
+                        Padding="{DynamicResource PaddingTopBar}"
+                        CornerRadius="{DynamicResource CornerRadiusLarge}">
+                    <StackPanel>
+                        <Border IsVisible="{Binding SomeFilesAttached}">
+                            <ScrollViewer Classes="horizontal"
+                                scrollBehaviors:PrimaryScrollWheelBehavior.PrimaryScrollWheelDirection="Horizontal">
+                                <ItemsControl ItemsSource="{Binding AttachedFiles}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel
+                                                Spacing="8"
+                                                Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Classes="card appear-from-left">
+                                                <Panel Height="100" Width="100" >
+                                                    <Svg
+                                                        Opacity="0.2"
+                                                        Height="100" Width="100"
+                                                        Path="/Assets/Icons/file-upload.svg" />
+
+                                                    <TextBlock
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Text="{Binding File.FileName}" />
+
+                                                    <Button
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top"
+                                                        Classes="icon small close"
+                                                        Margin="-6"
+                                                        Command="{Binding DeleteClickCommand}">
+                                                        <Svg Path="/Assets/Icons/close.svg" />
+                                                    </Button>
+                                                </Panel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+
+                        <TextBlock Text="{Binding StatusContent}"
+                            Opacity="0.5"
+                            IsVisible="{Binding ShowStatus}"/>
+
+                        <DockPanel HorizontalSpacing="8" >
+                            <Button
+                                VerticalAlignment="Bottom"
+                                DockPanel.Dock="Left"
+                                ToolTip.Tip="Приложения"
+                                Classes="icon">
+                                <Svg Path="/Assets/Icons/plus.svg" />
+                                <Button.Flyout>
+                                <Flyout FlyoutPresenterClasses="buttons"
+                                    Placement="Top">
+                                    <StackPanel>
+                                         <Button
+                                            Classes="no-background"
+                                            Command="{Binding UploadFileClickCommand}">
+
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/file-upload.svg" />
+                                                <TextBlock VerticalAlignment="Center"
+                                                           Text="Отправить файл" />
+                                            </StackPanel>
+                                        </Button>
+                                   
+                                        <Button
+                                            Classes="no-background"
+                                            Command="{Binding StartSessionClickCommand}">
+
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/rocket.svg" />
+                                                <TextBlock VerticalAlignment="Center"
+                                                    Text="Начать активность" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                            </Button>
+
+                            <Button
+                                Command="{Binding SendMessageCommand}"
+                                VerticalAlignment="Bottom"
+                                ToolTip.Tip="Отправить"
+                                Classes="icon primary"
+                                DockPanel.Dock="Right"
+                                HotKey="Enter">
+                                    <Svg Path="/Assets/Icons/send.svg" />
+                            </Button>
+
+                            <TextBox
+                                TextWrapping="Wrap"
+                                AcceptsReturn="True"
+                                MaxLines="10"
+                                CaretIndex="{Binding CaretIndex, Mode=TwoWay}"
+                                Text="{Binding SendingMessage}"
+                                PlaceholderText="Сообщение">
+
+                                <TextBox.ContextFlyout>
+                                    <Flyout FlyoutPresenterClasses="buttons"
+                                        Placement="Top">
+                                        <Button
+                                            Command="{Binding PasteDataWithTextCommand}"
+                                            Classes="no-background"
+                                            HorizontalContentAlignment="Stretch"
+                                            IsVisible="{Binding IsHost}">
+                                            <StackPanel>
+                                                <Svg Path="/Assets/Icons/paste.svg" />
+                                                <TextBlock VerticalAlignment="Center"
+                                                    Text="Вставить" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Flyout>
+                                </TextBox.ContextFlyout>
+
+                                 <Interaction.Behaviors>
+                                    <EventTriggerBehavior EventName="TextChanged">
+                                        <InvokeCommandAction
+                                            Command="{Binding MessageTextChangedCommand}" />
+                                    </EventTriggerBehavior>
+                                    <EventTriggerBehavior EventName="PastingFromClipboard">
+                                        <InvokeCommandAction
+                                            Command="{Binding PasteDataCommand}" />
+                                    </EventTriggerBehavior>
+                                </Interaction.Behaviors>
+                            </TextBox>
+                        </DockPanel>
+                    </StackPanel>
+                 </Border>
+
+                <!-- Messages -->
+
+                <Panel VerticalAlignment="Bottom" > 
+                    <ScrollViewer
+                        x:Name="MessagesScroller"
+                        ScrollChanged="OnMessagesScrollChanged"
+                        scrollBehaviors:AutoScrollToBottomBehavior.AutoScrollBottom="{Binding AutoScrollBottom}"
+                        Classes="main">
+                        <ItemsControl ItemsSource="{Binding Messages}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <designer:MultiDataTemplate UseCache="False">
+                                    <DataTemplate x:DataType="messagesVM:SystemChatMessageViewModel">
+                                       <messages:SystemChatMessageView />
+                                    </DataTemplate>
+
+                                    <DataTemplate x:DataType="messagesVM:ChatTextMessageViewModel">
+                                       <messages:ChatTextMessageView />
+                                    </DataTemplate>
+
+                                    <DataTemplate x:DataType="messagesVMFiles:ChatFileMessageViewModel">
+                                       <messages:ChatFileMessageView />
+                                    </DataTemplate>
+
+                                    <DataTemplate x:DataType="messagesVMFiles:ChatFileImagePreviewMessageViewModel">
+                                       <messages:ChatFileImagePreviewMessageView />
+                                    </DataTemplate>
+
+                                    <DataTemplate x:DataType="sessionFiles:ChatSessionMessageViewModel">
+                                       <messages:ChatSessionMessageView />
+                                    </DataTemplate>
+                                </designer:MultiDataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <Button Classes="icon"
+                            ToolTip.Tip="Пролистать вниз"
+                            IsVisible="{Binding !IsAtBottom}"
+                            Background="{DynamicResource SurfaceCard}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Command="{Binding ScrollToBottomCommand}">
+                        <Panel>
+                            <Svg Margin="{DynamicResource PaddingCard}"
+                                Path="/Assets/Icons/arrow-down.svg" />
+
+                            <Border
+                                VerticalAlignment="Top"
+                                HorizontalAlignment="Right"
+                                Width="24"
+                                Height="24"
+                                Margin="-6"
+                                IsVisible="{Binding MissedMessagesCount,
+                                    Converter={converters:NumericComparisonConverter},
+                                    ConverterParameter=>0}"
+                                CornerRadius="{DynamicResource CornerRadiusLarge}"
+                                Background="{DynamicResource Primary}">
+                                <TextBlock VerticalAlignment="Center"
+                                           Text="{Binding MissedMessagesCount}"
+                                           TextAlignment="Center" />
+                            </Border>
+                        </Panel>
+                    </Button>
+                </Panel>
+                
+            </DockPanel>
+        </Border>
+
+        <!-- Drag and drop overlay --> 
+
+        <Border
+            Classes="drag"
+            IsVisible="False"
+            x:Name="DragDropBorder">
+            <Border
+                MaxWidth="200"
+                MaxHeight="150"
+                Classes="card">
+                    <StackPanel
+                    VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16">
+                    <Svg Path="/Assets/Icons/file-upload.svg"
+                        Width="48" Height="48" />
+
+                        <StackPanel VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                            <TextBlock MaxWidth="200" TextAlignment="Center" TextWrapping="Wrap">
+                                <TextBlock Text="Перекинуть файлы в комнату " />
+                                <TextBlock Text="{Binding RoomName}" />
+                            </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+    </Panel>
+</UserControl>

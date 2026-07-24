@@ -1,4 +1,6 @@
-﻿namespace MIN.Desktop.Contracts.Interfaces;
+﻿using System.Threading;
+
+namespace MIN.Desktop.Contracts.Interfaces;
 
 /// <summary>
 /// Провайдер Cts для приложения

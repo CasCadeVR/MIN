@@ -1,0 +1,134 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages.Files"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+             xmlns:avagif="using:Avalonia.Labs.Gif"
+             xmlns:modelsEnums="using:MIN.Desktop.Contracts.Models.Enums"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="20"
+             x:DataType="vm:ChatFileImagePreviewMessageViewModel"
+             x:Class="MIN.Desktop.Views.Cards.Messages.ChatFileImagePreviewMessageView">
+
+    <Design.DataContext>
+        <vm:ChatFileImagePreviewMessageViewModel/>
+    </Design.DataContext>
+
+    <Border Classes="message-row"
+        Margin="{Binding TimePadding}"
+        Classes.private="{Binding IsPrivate}"
+        Classes.selected="{Binding IsSelected}">
+
+        <Border Classes="message"
+            MaxWidth="900"
+            Padding="{DynamicResource PaddingMedium}"
+            Classes.self="{Binding IsLocal}">
+            <Border.ContextFlyout>
+                <Flyout FlyoutPresenterClasses="buttons"
+                        Placement="Right">
+                    <StackPanel>
+                        <Button Command="{Binding CopyNameToClipboardCommand}"
+                                Classes="no-background">
+                            <StackPanel>
+                                <Svg Path="/Assets/Icons/copy.svg" />
+                                <TextBlock VerticalAlignment="Center"
+                                    Text="Скопировать имя файла" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding ShowInFolderCommand}"
+                                Classes="no-background">
+                            <StackPanel>
+                                <Svg Path="/Assets/Icons/folder.svg" />
+                                <TextBlock VerticalAlignment="Center"
+                                    Text="Показать в проводнике" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Flyout>
+            </Border.ContextFlyout>
+
+            <StackPanel Spacing="8">
+                <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
+                    <TextBlock
+                        FontWeight="Bold"
+                        Text="{Binding SenderName}" />
+
+                    <TextBlock
+                        IsVisible="{Binding IsHost}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Text="Хост"
+                        DockPanel.Dock="Right" />
+                </DockPanel>
+
+                <Panel>
+                    <StackPanel>
+
+                        <!-- Image area -->
+
+                        <Panel MaxWidth="800">
+
+                            <!-- Layer 0: actual image (downloaded) -->
+
+                            <avagif:GifImage Source="{Binding GifPreviewImage}"
+                                    Stretch="Uniform"
+                                    IsVisible="{Binding FileDownloadState,
+                                        Converter={converters:EqualityConverter},
+                                        ConverterParameter={x:Static modelsEnums:FileDownloadState.Downloaded}}"/>
+
+                            <Image Source="{Binding PreviewImage}"
+                                    Stretch="Uniform"
+                                    IsVisible="{Binding FileDownloadState,
+                                        Converter={converters:EqualityConverter},
+                                        ConverterParameter={x:Static modelsEnums:FileDownloadState.Downloaded}}" />
+
+                            <!-- Layer 1: overlay (not downloaded / downloading) -->
+
+                            <Border
+                                IsVisible="{Binding FileDownloadState,
+                                Converter={converters:EqualityConverter},
+                                ConverterParameter={x:Static modelsEnums:FileDownloadState.NotDownloaded}}"
+                                Padding="{DynamicResource PaddingLarge}">
+                                <StackPanel
+                                    VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+                                    <Button
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        Classes="icon" Command="{Binding InteractionClickCommand}">
+                                        <Svg Path="{Binding FileDownloadState,
+                                                Converter={converters:FileDownloadStateToSvgConverter}}"
+                                            Width="48" Height="48" />
+                                    </Button>
+
+                                    <TextBlock Text="{Binding FileNameAndSize}"
+                                        HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </Panel>
+
+                        <!-- Layer 2: progress bar (during download) -->
+
+                        <ProgressBar
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top"
+                            Value="{Binding DownloadProgress}"
+                            IsVisible="{Binding IsDownloading}"/>
+
+                    </StackPanel>
+
+                    <Border
+                        DockPanel.Dock="Right"
+                        Classes="on-image"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,4,4">
+                        <TextBlock
+                            Classes="info"
+                            Text="{Binding Timestamp}" />
+                    </Border>
+                </Panel>
+            </StackPanel>
+        </Border>
+    </Border>
+</UserControl>

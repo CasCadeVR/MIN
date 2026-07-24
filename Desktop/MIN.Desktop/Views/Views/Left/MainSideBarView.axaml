@@ -1,0 +1,136 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:design="using:MIN.Desktop.Contracts.Designer"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             d:DesignWidth="320" d:DesignHeight="720"
+             x:DataType="vm:MainSideBarViewModel"
+             Padding="{DynamicResource PaddingPage}"
+             DockPanel.Dock="Left"
+             MinWidth="320"
+             MaxWidth="320"
+             x:Class="MIN.Desktop.Views.Left.MainSideBarView">
+
+    <Design.DataContext>
+        <design:DesignerMainSideBarViewModel/>
+    </Design.DataContext>
+         
+    <Border Classes="appear-from-left"
+            Background="{DynamicResource SidebarBackground}"
+            CornerRadius="16"
+            Padding="{DynamicResource PaddingCard}">
+        <DockPanel VerticalSpacing="10" >
+            <DockPanel
+                HorizontalSpacing="4"
+                DockPanel.Dock="Top" >
+                <Button Command="{Binding OpenSettingsViewAsyncCommand}"
+                        DockPanel.Dock="Left"
+                        Padding="8,0"
+                        ToolTip.Tip="Настройки"
+                        Classes="icon">
+                    <Svg Path="/Assets/Icons/gear.svg" />
+                </Button>
+
+                <Button Command="{Binding OpenDiscoveryViewAsyncCommand}"
+                        DockPanel.Dock="Right"
+                        Padding="8,0"
+                        ToolTip.Tip="Найти комнаты"
+                        Classes="icon">
+                    <Svg Path="/Assets/Icons/compass.svg" />
+                </Button>
+
+                <Border Classes="input">
+                    <DockPanel>
+                        <Svg Margin="8,0,0,0"
+                            Path="/Assets/Icons/magnifying-glass.svg" />
+
+                        <TextBox
+                            Text="{Binding SearchTerm}"
+                            PlaceholderText="Поиск" />
+                    </DockPanel>
+                </Border>
+            </DockPanel>
+
+            <!-- Room cards -->
+
+            <ScrollViewer Classes="main">
+                <ItemsControl ItemsSource="{Binding RecentRooms}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Margin="0,-6" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Classes="card appear-from-bottom"
+                                    Classes.selected="{Binding IsSelected}"
+                                    Command="{Binding SelectItemCommand}"
+                                    Margin="0,6">
+                                <StackPanel Spacing="8">
+                                    <DockPanel HorizontalSpacing="8">
+                                        <TextBlock
+                                            Classes="card-text"
+                                            Classes.card-text-selected="{Binding IsSelected}"
+                                            DockPanel.Dock="Right"
+                                            Text="{Binding ParticipantsInfo}" />
+
+                                        <TextBlock
+                                            Classes="card-text"
+                                            Classes.card-text-selected="{Binding IsSelected}"
+                                            DockPanel.Dock="Right"
+                                            Text="{Binding LastMessageReceivedAt,
+                                            Converter={converters:DateConverter},
+                                            ConverterParameter={x:Static converters:DateMode.Short}}" />
+
+                                        <TextBlock
+                                            Classes="header4 card-text"
+                                            Classes.card-text-selected="{Binding IsSelected}"
+                                            Text="{Binding RoomName}" />
+                                    </DockPanel>
+
+                                    <DockPanel>
+                                        <Panel
+                                            DockPanel.Dock="Right"
+                                            IsVisible="{Binding MissedMessagesCount,
+                                                Converter={converters:NumericComparisonConverter},
+                                                ConverterParameter=>0}">
+
+                                            <Border
+                                                Width="24"
+                                                Height="24"
+                                                CornerRadius="{DynamicResource CornerRadiusLarge}"
+                                                Background="{DynamicResource Primary}" />
+
+                                            <Border
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"
+                                                Padding="{DynamicResource PaddingSmall}"
+                                                CornerRadius="{DynamicResource CornerRadiusLarge}"
+                                                Background="{DynamicResource Primary}">
+                                                <TextBlock
+                                                    Classes="header5"
+                                                    Foreground="#FFF"
+                                                    Text="{Binding MissedMessagesCount}" />
+                                            </Border>
+                                        </Panel>
+                                        
+
+                                        <TextBlock
+                                            Classes="card-text"
+                                            HorizontalAlignment="Left"
+                                            Classes.card-text-selected="{Binding IsSelected}"
+                                            VerticalAlignment="Center"
+                                            MaxLines="3"
+                                            MaxWidth="200"
+                                            Text="{Binding LastMessageContent}" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</UserControl>

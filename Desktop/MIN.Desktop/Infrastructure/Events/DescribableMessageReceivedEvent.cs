@@ -1,4 +1,5 @@
-﻿using MIN.Common.Core.Contracts.Interfaces;
+﻿using System;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Events.Contracts;
 
 namespace MIN.Desktop.Infrastructure.Events;

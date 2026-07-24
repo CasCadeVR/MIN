@@ -1,0 +1,128 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MIN.Desktop.ViewModels.Modals"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+        xmlns:gif="using:Avalonia.Labs.Gif"
+        xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        x:Class="MIN.Desktop.Views.Modals.SessionChoosingModal"
+        x:DataType="vm:SessionChoosingViewModel"
+        Title="MIN - Выбор сессии">
+
+    <Design.DataContext>
+        <designer:DesignerSessionChoosingViewModel/>
+    </Design.DataContext>
+
+    <DockPanel>
+        <controls:CustomTitleBar CanMinimize="False" CanMaximize="False" />
+            <DockPanel>
+                <Border DockPanel.Dock="Bottom"
+                        Classes="footer">
+                    <Panel>
+                        <Button
+                            Command="{Binding CloseCommand}"
+                            Content="Отмена"
+                            Classes="secondary"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Left"
+                            HotKey="Escape" />
+                        <Button
+                            Command="{Binding SelectSessionCommand}"
+                            Content="Начать"
+                            HorizontalAlignment="Right"
+                            HotKey="Enter" />
+                    </Panel>
+                </Border>
+
+                <ScrollViewer Classes="main horizontal"
+                      MaxWidth="782"
+                      MaxHeight="780">
+                    <ItemsControl ItemsSource="{Binding AvaibleSessions}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                 <WrapPanel Orientation="Horizontal"
+                                    LineSpacing="8"
+                                    ItemSpacing="8"
+                                    Margin="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="card"
+                                        VerticalContentAlignment="Top"
+                                        Command="{Binding SelectCommand}"
+                                        Classes.selected="{Binding IsSelected}"
+                                        Width="250">
+
+                                    <Grid RowSpacing="8"
+                                        RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+
+                                        <Border Classes="card">
+                                            <Panel Grid.Row="0" Height="226">
+                                                <gif:GifImage Source="{Binding GifSessionImage}"
+                                                    Stretch="Uniform"
+                                                    IsVisible="{Binding SessionImage,
+                                                        Converter={converters:EqualityConverter},
+                                                        ConverterParameter={x:Null}}"/>
+
+                                                <Image Source="{Binding SessionImage}"
+                                                    Stretch="Uniform"
+                                                    IsVisible="{Binding GifSessionImage,
+                                                        Converter={converters:EqualityConverter},
+                                                        ConverterParameter={x:Null}}"/>
+
+                                                <Svg Path="/Assets/Icons/rocket.svg"
+                                                        Width="96"
+                                                        Height="96"
+                                                        IsVisible="{Binding Session.ThumbnailFileName,
+                                                        Converter={converters:EqualityConverter},
+                                                        ConverterParameter={x:Null}}"/>
+                                            </Panel>
+                                        </Border>
+
+                                        <TextBlock Grid.Row="1"
+                                            Classes="header3"
+                                            HorizontalAlignment="Center"
+                                            Text="{Binding Session.Name}" />
+
+                                        <TextBlock Grid.Row="2"
+                                            Classes="small"
+                                            HorizontalAlignment="Center"
+                                            TextWrapping="Wrap"
+                                            Text="{Binding Session.Description}" />
+
+                                        <TextBlock Grid.Row="3"
+                                            HorizontalAlignment="Center"
+                                            Text="{Binding MaximumParticipantInfo}" />
+
+                                        <TextBlock VerticalAlignment="Center" Grid.Row="4">
+                                                <TextBlock VerticalAlignment="Top"
+                                                    Text="Ссылка: " />
+                                                <TextBlock Classes="link"
+                                                HorizontalAlignment="Center"
+                                                Text="{Binding DownloadLink}" />
+                                                <Interaction.Behaviors>
+                                                <EventTriggerBehavior EventName="PointerPressed">
+                                                    <InvokeCommandAction
+                                                        Command="{Binding CopyLinkCommand}" />
+                                                </EventTriggerBehavior>
+                                            </Interaction.Behaviors>
+                                        </TextBlock>
+
+                                        <TextBlock Grid.Row="5"
+                                            HorizontalAlignment="Center"
+                                            Text="{Binding Version}" />
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+    </DockPanel>
+</Window>

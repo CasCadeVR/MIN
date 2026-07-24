@@ -1,0 +1,179 @@
+﻿using MIN.Desktop.Winforms.Properties;
+
+namespace MIN.Desktop.Views.Panels.SidePanelViews
+{
+    partial class MainSidePanelView
+    {
+        /// <summary> 
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary> 
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Component Designer generated code
+
+        /// <summary> 
+        /// Required method for Designer support - do not modify 
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            roomSearchTextBox = new MIN.Desktop.Components.Controls.TextBoxes.DefaultTextBox();
+            searchButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            discoveryButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            settingsButton = new MIN.Desktop.Components.Controls.Buttons.CommonButton();
+            tableLayoutPanelHeader = new TableLayoutPanel();
+            flowLayoutPanelRooms = new MIN.Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView();
+            ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
+            splitContainer.Panel1.SuspendLayout();
+            splitContainer.Panel2.SuspendLayout();
+            splitContainer.SuspendLayout();
+            tableLayoutPanelHeader.SuspendLayout();
+            SuspendLayout();
+            // 
+            // splitContainer
+            // 
+            splitContainer.BackColor = Color.Transparent;
+            splitContainer.ForeColor = Color.FromArgb(45, 43, 58);
+            // 
+            // splitContainer.Panel1
+            // 
+            splitContainer.Panel1.Controls.Add(tableLayoutPanelHeader);
+            // 
+            // splitContainer.Panel2
+            // 
+            splitContainer.Panel2.Controls.Add(flowLayoutPanelRooms);
+            splitContainer.Size = new Size(250, 800);
+            // 
+            // roomSearchTextBox
+            // 
+            roomSearchTextBox.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            roomSearchTextBox.BackColor = Color.FromArgb(248, 249, 255);
+            roomSearchTextBox.BorderStyle = BorderStyle.None;
+            roomSearchTextBox.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            roomSearchTextBox.ForeColor = Color.FromArgb(122, 119, 143);
+            roomSearchTextBox.Location = new Point(51, 11);
+            roomSearchTextBox.Name = "roomSearchTextBox";
+            roomSearchTextBox.PlaceholderText = "Поиск";
+            roomSearchTextBox.Size = new Size(100, 26);
+            roomSearchTextBox.TabIndex = 6;
+            roomSearchTextBox.TextChanged += roomSearchTextBox_TextChanged;
+            // 
+            // searchButton
+            // 
+            searchButton.BackColor = Color.FromArgb(167, 157, 255);
+            searchButton.BackgroundImage = Resources.search;
+            searchButton.BackgroundImageLayout = ImageLayout.Zoom;
+            searchButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            searchButton.FlatStyle = FlatStyle.Flat;
+            searchButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            searchButton.ForeColor = Color.FromArgb(248, 249, 255);
+            searchButton.Location = new Point(157, 3);
+            searchButton.Name = "searchButton";
+            searchButton.Size = new Size(42, 42);
+            searchButton.TabIndex = 5;
+            searchButton.UseVisualStyleBackColor = false;
+            searchButton.Click += searchButton_Click;
+            // 
+            // discoveryButton
+            // 
+            discoveryButton.BackColor = Color.FromArgb(167, 157, 255);
+            discoveryButton.BackgroundImage = Resources.compass;
+            discoveryButton.BackgroundImageLayout = ImageLayout.Zoom;
+            discoveryButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            discoveryButton.FlatStyle = FlatStyle.Flat;
+            discoveryButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            discoveryButton.ForeColor = Color.FromArgb(248, 249, 255);
+            discoveryButton.Location = new Point(205, 3);
+            discoveryButton.Name = "discoveryButton";
+            discoveryButton.Size = new Size(42, 42);
+            discoveryButton.TabIndex = 4;
+            discoveryButton.UseVisualStyleBackColor = false;
+            discoveryButton.Click += discoveryButton_Click;
+            // 
+            // settingsButton
+            // 
+            settingsButton.BackColor = Color.FromArgb(167, 157, 255);
+            settingsButton.BackgroundImage = Resources.settings;
+            settingsButton.BackgroundImageLayout = ImageLayout.Zoom;
+            settingsButton.FlatAppearance.BorderColor = Color.FromArgb(228, 230, 240);
+            settingsButton.FlatStyle = FlatStyle.Flat;
+            settingsButton.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            settingsButton.ForeColor = Color.FromArgb(248, 249, 255);
+            settingsButton.Location = new Point(3, 3);
+            settingsButton.Name = "settingsButton";
+            settingsButton.Size = new Size(42, 42);
+            settingsButton.TabIndex = 3;
+            settingsButton.UseVisualStyleBackColor = false;
+            settingsButton.Click += settingsButton_Click;
+            // 
+            // tableLayoutPanelHeader
+            // 
+            tableLayoutPanelHeader.BackColor = Color.Transparent;
+            tableLayoutPanelHeader.ColumnCount = 4;
+            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelHeader.Controls.Add(settingsButton, 0, 0);
+            tableLayoutPanelHeader.Controls.Add(discoveryButton, 3, 0);
+            tableLayoutPanelHeader.Controls.Add(searchButton, 2, 0);
+            tableLayoutPanelHeader.Controls.Add(roomSearchTextBox, 1, 0);
+            tableLayoutPanelHeader.Dock = DockStyle.Fill;
+            tableLayoutPanelHeader.Location = new Point(0, 0);
+            tableLayoutPanelHeader.Margin = new Padding(0);
+            tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
+            tableLayoutPanelHeader.RowCount = 1;
+            tableLayoutPanelHeader.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+            tableLayoutPanelHeader.Size = new Size(250, 48);
+            tableLayoutPanelHeader.TabIndex = 1;
+            // 
+            // flowLayoutPanelRooms
+            // 
+            flowLayoutPanelRooms.AutoScroll = true;
+            flowLayoutPanelRooms.Dock = DockStyle.Fill;
+            flowLayoutPanelRooms.Location = new Point(0, 0);
+            flowLayoutPanelRooms.Name = "flowLayoutPanelRooms";
+            flowLayoutPanelRooms.Size = new Size(250, 750);
+            flowLayoutPanelRooms.TabIndex = 0;
+            flowLayoutPanelRooms.Resize += flowLayoutPanelRooms_Resize;
+            // 
+            // MainSidePanelView
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            MinimumSize = new Size(250, 195);
+            Name = "MainSidePanelView";
+            Size = new Size(250, 800);
+            Controls.SetChildIndex(splitContainer, 0);
+            splitContainer.Panel1.ResumeLayout(false);
+            splitContainer.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();
+            splitContainer.ResumeLayout(false);
+            tableLayoutPanelHeader.ResumeLayout(false);
+            tableLayoutPanelHeader.PerformLayout();
+            ResumeLayout(false);
+        }
+
+        #endregion
+
+        private TableLayoutPanel tableLayoutPanelHeader;
+        private Desktop.Components.Controls.Buttons.CommonButton settingsButton;
+        private Desktop.Components.Controls.Buttons.CommonButton discoveryButton;
+        private Desktop.Components.Controls.Buttons.CommonButton searchButton;
+        private Desktop.Components.Controls.TextBoxes.DefaultTextBox roomSearchTextBox;
+        private Desktop.Components.Controls.FlowLayoutPanels.NoHorizontalScrollListView flowLayoutPanelRooms;
+    }
+}

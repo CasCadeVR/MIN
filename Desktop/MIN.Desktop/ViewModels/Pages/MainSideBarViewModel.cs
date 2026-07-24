@@ -1,0 +1,199 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Collections;
+using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Events.Events;
+using MIN.Desktop.Contracts.Enums;
+using MIN.Desktop.Contracts.Models.ReferenceCommands;
+using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
+using MIN.Desktop.Infrastructure.Extensions;
+using MIN.Desktop.Infrastructure.Services;
+using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Cards;
+using MIN.Desktop.ViewModels.Pages.ChatViewModels;
+using MIN.DI.FeatureCollection;
+using MIN.Helpers.Contracts.Extensions;
+
+namespace MIN.Desktop.ViewModels.Pages;
+
+/// <summary>
+/// Модель боковой панели
+/// </summary>
+public partial class MainSideBarViewModel : RoutableViewModelBase
+{
+    private readonly IMinFeatureCollection featureCollection;
+    private readonly SettingsSideBarViewModel settingsSideBarViewModel;
+    private readonly DiscoveryViewModel discoveryViewModel;
+    private readonly Dictionary<Guid, ChatViewModel> activeChatViews = [];
+    private readonly List<RecentRoomCardViewModel> allRooms = [];
+    private readonly ParticipantInfo localParticipant = null!;
+    private RecentRoomCardViewModel? selectedRecentRoomCardViewModel;
+
+    /// <summary>
+    /// Последние комнаты
+    /// </summary>
+    [ObservableProperty]
+    public partial AvaloniaList<RecentRoomCardViewModel> RecentRooms { get; set; } = [];
+
+    /// <summary>
+    /// Поле поиска локальных комнат
+    /// </summary>
+    [ObservableProperty]
+    public partial string SearchTerm { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsNavigationMode { get; set; }
+
+    /// <inheritdoc />
+    partial void OnSearchTermChanged(string value) => PerformRecentRoomSearch();
+
+    /// <inheritdoc />
+    public override ViewLayoutType LayoutType => ViewLayoutType.LeftSideBar;
+
+    [ObservableProperty]
+    public partial WindowLayout CurrentLayout { get; private set; }
+
+    private void InitializeLayoutStyles()
+    {
+        this.RegisterMessageListener<LayoutModeChangedReferenceCommand, MainSideBarViewModel>((msg, _) =>
+            CurrentLayout = msg.Layout);
+    }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="MainSideBarViewModel"/>
+    /// </summary>
+    public MainSideBarViewModel(IMinFeatureCollection featureCollection,
+        SettingsSideBarViewModel settingsSideBarViewModel,
+        DiscoveryViewModel discoveryViewModel)
+    {
+        this.featureCollection = featureCollection;
+        this.settingsSideBarViewModel = settingsSideBarViewModel;
+        this.discoveryViewModel = discoveryViewModel;
+
+        if (!Design.IsDesignMode)
+        {
+            localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+
+            this.RegisterMessageListener<RegisterRoomReferenceCommand, MainSideBarViewModel>(static (message, vm)
+               => vm.RegisterChat(message.Room, message.View));
+
+            this.RegisterMessageListener<LayoutModeChangedReferenceCommand, MainSideBarViewModel>((msg, _) =>
+                IsNavigationMode = msg.Layout == WindowLayout.Narrow);
+
+            SubscribeToEvents();
+            InitializeLayoutStyles();
+        }
+    }
+
+    private void SubscribeToEvents()
+    {
+        featureCollection.Core.EventBus.Subscribe<ErrorOccurredEvent>(async (e, _) => InAppNotifier.Error(e.ErrorMessage));
+        featureCollection.Core.EventBus.Subscribe<RoomClosedEvent>(async (e, _) =>
+        UnregisterChat(e.RoomId));
+    }
+
+    /// <summary>
+    /// Открыть настройки
+    /// </summary>
+    [RelayCommand]
+    public void OpenDiscoveryViewAsync()
+    {
+        UnselectRecentRoomCard();
+        ChangeView(discoveryViewModel);
+    }
+
+    /// <summary>
+    /// Открыть настройки
+    /// </summary>
+    [RelayCommand]
+    public void OpenSettingsViewAsync() => ChangeView(settingsSideBarViewModel);
+
+    private void UnselectRecentRoomCard()
+    {
+        if (selectedRecentRoomCardViewModel != null)
+        {
+            selectedRecentRoomCardViewModel.IsSelected = false;
+        }
+
+        selectedRecentRoomCardViewModel = null;
+    }
+
+    private void SelectChatCard(RecentRoomCardViewModel card)
+    {
+        UnselectRecentRoomCard();
+        selectedRecentRoomCardViewModel = card;
+        card.SelectCard();
+    }
+
+    /// <summary>
+    /// Зарегистрировать чат
+    /// </summary>
+    public void RegisterChat(RoomInfo roomInfo, ChatViewModel viewModel)
+    {
+        var roomId = roomInfo.Id;
+        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
+
+        activeChatViews[roomId] = viewModel;
+
+        var card = new RecentRoomCardViewModel(featureCollection.Core.EventBus,
+            context, roomInfo, localParticipant.Id == roomInfo.HostParticipant.Id);
+
+        card.Clicked += () =>
+        {
+            if (IsNavigationMode)
+            {
+                GoBack();
+            }
+
+            if (selectedRecentRoomCardViewModel != card || CurrentLayout == WindowLayout.Narrow)
+            {
+                SelectChatCard(card);
+                ChangeView(viewModel);
+            }
+        };
+
+        allRooms.Add(card);
+        RecentRooms.Add(card);
+        SelectChatCard(card);
+    }
+
+    private void UnregisterChat(Guid roomId)
+    {
+        activeChatViews.Remove(roomId);
+        var room = allRooms.FirstOrDefault(x => x.RoomId == roomId);
+
+        if (room != null)
+        {
+            RecentRooms.Remove(room);
+            allRooms.Remove(room);
+            room.Dispose();
+        }
+    }
+
+    [RelayCommand]
+    private void GoBack()
+    {
+        WeakReferenceMessenger.Default.Send(new RestoreCentralReferenceCommand());
+        IsNavigationMode = false;
+    }
+
+    [RelayCommand]
+    private void PerformRecentRoomSearch()
+    {
+        RecentRooms.Clear();
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            RecentRooms.AddRange(allRooms);
+        }
+        else
+        {
+            RecentRooms.AddRange(allRooms.Where(r =>
+                r.RoomName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)));
+        }
+    }
+}

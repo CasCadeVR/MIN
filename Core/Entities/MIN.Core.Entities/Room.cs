@@ -40,6 +40,15 @@ public class Room : IRoomData
     public string? ConnectionAddress { get; set; }
 
     /// <summary>
+    /// Локальные настройки комнаты
+    /// </summary>
+    /// <remarks>
+    /// Для новых участников всегда будет пустым,
+    /// Нужен для сохранения комнаты на будующее
+    /// </remarks>
+    public LocalRoomSettings LocalRoomSettings { get; set; } = new();
+
+    /// <summary>
     /// Хост комнаты
     /// </summary>
     public ParticipantInfo HostParticipant { get; set; } = null!;

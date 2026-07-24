@@ -1,0 +1,134 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:design="using:MIN.Desktop.Contracts.Constants"
+        xmlns:converters="using:MIN.Desktop.Infrastructure.Converters">
+
+    <Design.PreviewWith>
+        <StackPanel Width="250">
+            <controls:CustomTitleBar
+                Background="IndianRed"
+                CanClose="False"
+                CanMaximize="False"
+                CanMinimize="False" />
+            <controls:CustomTitleBar
+                Background="IndianRed"
+                CanMaximize="False"
+                CanMinimize="False" />
+            <controls:CustomTitleBar
+                Background="ForestGreen"
+                CanMaximize="True"
+                CanMinimize="False" />
+            <controls:CustomTitleBar Background="CornflowerBlue" CanMaximize="False" />
+            <controls:CustomTitleBar Background="Violet" />
+        </StackPanel>
+    </Design.PreviewWith>
+
+    <ControlTheme x:Key="{x:Type controls:CustomTitleBar}" TargetType="controls:CustomTitleBar">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel
+                    WindowDecorationProperties.ElementRole="TitleBar"
+                    Background="Transparent">
+                    <Border
+                        Margin="8,4,0,0"
+                        Padding="10, 0"
+                        HorizontalAlignment="Left"
+                        IsVisible="{TemplateBinding ShowTitle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="/Assets/Images/logoImage.png" />
+                            <TextBlock
+                                Classes="header4"
+                                VerticalAlignment="Center"
+                                Text="{Binding $parent[Window].Title}"
+                                TextAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <StackPanel>
+                        <Button
+                            x:Name="PART_MinimizeButton"
+                            WindowDecorationProperties.ElementRole="MinimizeButton"
+                            Classes.leftOff1="{x:True}"
+                            Classes.leftOff2="{x:True}"
+                            Command="{Binding MinimizeCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                            IsVisible="{TemplateBinding CanMinimize}">
+                            <Svg Classes.primary="{x:True}" Path="/Assets/Icons/minimize.svg" />
+                        </Button>
+                        <Button
+                            x:Name="PART_MaximizeButton"
+                            Classes.leftOff1="{Binding !#PART_MinimizeButton.IsVisible}"
+                            Classes.leftOff2="{x:True}"
+                            WindowDecorationProperties.ElementRole="MaximizeButton"
+                            Command="{Binding MaximizeCommand, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Button.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <TemplateBinding Property="CanMaximize" />
+                                    <Binding Path="$parent[Window].CanResize" />
+                                </MultiBinding>
+                            </Button.IsVisible>
+                            <Svg
+                                Classes.primary="{x:True}"
+                                Classes.maximize="{Binding $parent[Window].WindowState, Converter={converters:EqualityConverter}, ConverterParameter={x:Static WindowState.Normal}}"
+                                Classes.restore="{Binding $parent[Window].WindowState, Converter={converters:EqualityConverter}, ConverterParameter={x:Static WindowState.Maximized}}" />
+                        </Button>
+                        <Button
+                            x:Name="PART_CloseButton"
+                            Classes.leftOff1="{Binding !#PART_MinimizeButton.IsVisible}"
+                            Classes.leftOff2="{Binding !#PART_MaximizeButton.IsVisible}"
+                            Classes="close"
+                            WindowDecorationProperties.ElementRole="CloseButton"
+                            IsVisible="{TemplateBinding CanClose}"
+                            Command="{Binding CloseCommand, RelativeSource={RelativeSource TemplatedParent}}">
+                                <Svg Classes.primary="{x:True}" Path="/Assets/Icons/close.svg" />
+                        </Button>
+                    </StackPanel>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+
+        <!--  Default template values  -->
+        <Setter Property="Background" Value="Black" />
+        <Setter Property="DockPanel.Dock" Value="Top" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="ZIndex" Value="100" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="IsVisible" Value="{Binding $parent[Window].(design:DesignAttachments.UseCustomTitleBar)}" />
+
+        <Style Selector="^ /template/ StackPanel">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+
+            <Style Selector="^ > Button">
+                <Setter Property="Width" Value="32" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Opacity" Value="1" />
+
+                <!--  This selector force overrides button style. TODO: fix ButtonStyle.axaml so this isn't necessary and move setters out of this selector.  -->
+                <Style Selector="^:nth-child(1n)">
+                    <Setter Property="CornerRadius" Value="0" />
+                    <Setter Property="Background" Value="{DynamicResource Primary}" />
+                </Style>
+
+                <!--  Button[IsVisible=True]:nth-child(1) doesn't work to filter only visible buttons. Here, leftOff1 is used to check if previous button is on and leftOff2 is the next one over that.  -->
+                <Style Selector="^.leftOff1.leftOff2">
+                    <Setter Property="CornerRadius" Value="0 0 0 5" />
+                </Style>
+
+                <Style Selector="^ >  :is(Control)">
+                    <Setter Property="Height" Value="11" />
+                    <Setter Property="IsHitTestVisible" Value="False" />
+                    <Setter Property="Opacity" Value="1" />
+                </Style>
+            </Style>
+
+            <Style Selector="^ Svg.maximize">
+                <Setter Property="Path" Value="/Assets/Icons/maximize.svg" />
+            </Style>
+            <Style Selector="^ Svg.restore">
+                <Setter Property="Path" Value="/Assets/Icons/restore.svg" />
+            </Style>
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

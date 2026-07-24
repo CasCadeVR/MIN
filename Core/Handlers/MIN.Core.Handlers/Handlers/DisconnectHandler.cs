@@ -6,6 +6,7 @@ using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless.RoomRelated.Disconnect;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 
@@ -15,6 +16,7 @@ internal sealed class DisconnectHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
+    private readonly IRoomStore roomStore;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -23,11 +25,13 @@ internal sealed class DisconnectHandler : IMessageHandler
     /// </summary>
     public DisconnectHandler(IEventBus eventBus,
         IMessageSender messageSender,
+        IRoomStore roomStore,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
         this.messageSender = messageSender;
+        this.roomStore = roomStore;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -50,7 +54,8 @@ internal sealed class DisconnectHandler : IMessageHandler
                     SenderId = identityService.SelfParticipant.Id,
                 }, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
 
-                var uiToShow = "Хост кикнул тебя" + (reason != string.Empty ? $": {reason}" : string.Empty);
+                var roomName = roomStore.GetRoom(context.RoomContext.RoomId).Name;
+                var uiToShow = "Хост кикнул тебя" + (roomName != null ? $" из комнаты {roomName}" : string.Empty) + (reason != string.Empty ? $": {reason}" : string.Empty);
                 return HandlerResult.Failure(uiToShow, stopPropagation: true, critical: true);
 
             case DisconnectAckMessage disconnectAckMessage:

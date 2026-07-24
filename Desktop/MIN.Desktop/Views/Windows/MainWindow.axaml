@@ -1,0 +1,223 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MIN.Desktop.ViewModels.Windows"
+        xmlns:pagesVm="using:MIN.Desktop.ViewModels.Pages"
+        xmlns:pagesChatPanelVm="using:MIN.Desktop.ViewModels.Pages.ChatViewModels"
+        xmlns:pagesCentral="using:MIN.Desktop.Views.Central"
+        xmlns:pagesLeft="using:MIN.Desktop.Views.Left"
+        xmlns:pagesRight="using:MIN.Desktop.Views.Right"
+        xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="500"
+        Width="1124" Height="500"
+        MinWidth="320" MinHeight="330"
+        SizeChanged="Window_SizeChanged"
+        x:Class="MIN.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="MIN">
+
+    <Design.DataContext>
+        <designer:DesignerMainWindowViewModel/>
+    </Design.DataContext>
+
+    <Window.Styles>
+        <!-- Notifications -->
+
+         <Style Selector=".notifications Border">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Duration="0:0:.2" Property="Opacity" />
+                </Transitions>
+            </Setter>
+            <Style Selector="^.info">
+                <Setter Property="Background" Value="{DynamicResource StatusInfo}" />
+                <Style Selector="^ :is(Svg).icon">
+                    <Setter Property="Path" Value="/Assets/Icons/info.svg" />
+                </Style>
+            </Style>
+            <Style Selector="^.success">
+                <Setter Property="Background" Value="{DynamicResource StatusSuccess}" />
+                <Style Selector="^ :is(Svg).icon">
+                    <Setter Property="Path" Value="/Assets/Icons/success.svg" />
+                </Style>
+            </Style>
+            <Style Selector="^.warning">
+                <Setter Property="Background" Value="{DynamicResource StatusWarning}" />
+                <Style Selector="^ :is(Svg).icon">
+                    <Setter Property="Path" Value="/Assets/Icons/warning.svg" />
+                </Style>
+            </Style>
+            <Style Selector="^.error">
+                <Setter Property="Background" Value="{DynamicResource StatusError}" />
+                <Style Selector="^ :is(Svg).icon">
+                    <Setter Property="Path" Value="/Assets/Icons/error.svg" />
+                </Style>
+            </Style>
+            <Style Selector="^:not(.dismiss)">
+                <Style Selector="^:not(:pointerover)">
+                    <Setter Property="Opacity" Value=".98" />
+                </Style>
+                <Style Selector="^:pointerover">
+                    <Setter Property="Opacity" Value=".9" />
+                </Style>
+                <Style.Animations>
+                    <Animation Duration="0:0:0:.2">
+                        <KeyFrame Cue="0%">
+                            <Setter Property="Opacity" Value="0.0" />
+                            <Setter Property="TranslateTransform.X" Value="280" />
+                        </KeyFrame>
+                        <KeyFrame Cue="100%">
+                            <Setter Property="Opacity" Value="1.0" />
+                            <Setter Property="TranslateTransform.X" Value="0" />
+                        </KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+            <Style Selector="^.dismiss">
+                <Style.Animations>
+                    <Animation Duration="0:0:0:.2" FillMode="Forward">
+                        <KeyFrame Cue="0%">
+                            <Setter Property="Opacity" Value="1.0" />
+                            <Setter Property="TranslateTransform.X" Value="0" />
+                        </KeyFrame>
+                        <KeyFrame Cue="100%">
+                            <Setter Property="Opacity" Value="0.0" />
+                            <Setter Property="TranslateTransform.X" Value="280" />
+                        </KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+         <controls:CustomTitleBar />
+
+        <Grid>
+            <Border Grid.Row="1" >
+                <DockPanel>
+
+                    <!--  Navigated content (left side)  -->
+                    <ContentControl
+                        Content="{Binding LeftSideBarViewModel}"
+                        HorizontalContentAlignment="Stretch"
+                        DockPanel.Dock="Left">
+                        <ContentControl.ContentTemplate>
+                            <designer:MultiDataTemplate UseCache="False">
+                                <!-- Loading view -->
+                                <DataTemplate x:DataType="system:Uri">
+                                    <Svg Path="{Binding AbsolutePath}" Classes="rotating" Height="50"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </DataTemplate>
+                                <DataTemplate x:DataType="pagesVm:MainSideBarViewModel">
+                                    <pagesLeft:MainSideBarView />
+                                </DataTemplate>
+                                <DataTemplate x:DataType="pagesVm:SettingsSideBarViewModel">
+                                    <pagesLeft:SettingsSideBarView />
+                                </DataTemplate>
+                            </designer:MultiDataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+
+                    <!--  Right content (right side bar)  -->
+
+                    <ContentControl
+                        Content="{Binding RightSideBarViewModel}"
+                        HorizontalContentAlignment="Stretch"
+                        DockPanel.Dock="Right">
+                        <ContentControl.ContentTemplate>
+                            <designer:MultiDataTemplate UseCache="False">
+                                <!-- Loading view -->
+                                <DataTemplate x:DataType="system:Uri">
+                                    <Svg Path="{Binding AbsolutePath}" Classes="rotating" Height="50"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </DataTemplate>
+                                 <DataTemplate x:DataType="pagesVm:ChatSideBarViewModel">
+                                    <pagesRight:ChatSideBarView />
+                                </DataTemplate>
+                            </designer:MultiDataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+
+                      <!--  Center content  -->
+
+                    <ContentControl
+                        Content="{Binding CentralViewModel}"
+                        HorizontalContentAlignment="Stretch">
+                        <ContentControl.ContentTemplate>
+                            <designer:MultiDataTemplate UseCache="False">
+                                <!-- Loading view -->
+                                <DataTemplate x:DataType="system:Uri">
+                                    <Svg Path="{Binding AbsolutePath}" Classes="rotating" Height="50"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </DataTemplate>
+                                <DataTemplate x:DataType="pagesVm:DiscoveryViewModel">
+                                    <pagesCentral:DiscoveryView />
+                                </DataTemplate>
+                                <DataTemplate x:DataType="pagesChatPanelVm:ChatViewModel">
+                                    <pagesCentral:ChatView />
+                                </DataTemplate>
+                            </designer:MultiDataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+                </DockPanel>
+            </Border>
+
+            <!--  Notifications  -->
+
+            <Grid Classes="notifications" ColumnDefinitions="*,280">
+                <ItemsControl
+                    Grid.Column="1"
+                    ItemsSource="{Binding Notifications}"
+                    Margin="0,10,10,10"
+                    Opacity="0.95"
+                    VerticalAlignment="Bottom">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Classes.dismiss="{Binding IsDismissed}"
+                                Classes.error="{Binding Type, Converter={converters:EqualityConverter}, ConverterParameter={x:Static NotificationType.Error}}"
+                                Classes.info="{Binding Type, Converter={converters:EqualityConverter}, ConverterParameter={x:Static NotificationType.Information}}"
+                                Classes.success="{Binding Type, Converter={converters:EqualityConverter}, ConverterParameter={x:Static NotificationType.Success}}"
+                                Classes.warning="{Binding Type, Converter={converters:EqualityConverter}, ConverterParameter={x:Static NotificationType.Warning}}"
+                                CornerRadius="5"
+                                Margin="5"
+                                MinHeight="60"
+                                Padding="5,10,10,10">
+                                <Grid ColumnDefinitions="50,*,20">
+                                    <Svg
+                                        Classes="icon"
+                                        Grid.Column="0"
+                                        Margin="0,0,5,0"
+                                        VerticalAlignment="Center"
+                                        Width="25" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Foreground="White"
+                                        Text="{Binding Message}"
+                                        VerticalAlignment="Center" />
+                                    <Button
+                                        Classes="anycontent"
+                                        Command="{Binding CloseCommand}"
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top">
+                                        <Svg
+                                            Classes="icon"
+                                            Path="/Assets/Icons/close.svg"
+                                            VerticalAlignment="Top"
+                                            Width="10" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>

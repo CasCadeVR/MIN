@@ -1,39 +1,48 @@
-﻿using System.Drawing.Drawing2D;
+﻿using System.IO;
+using Avalonia.Media.Imaging;
+using SkiaSharp;
+using Svg.Skia;
 
 namespace MIN.Desktop.Infrastructure.Services;
 
 /// <summary>
-/// Помощник с выгрузкой изображений из файлов
+/// Помошник с изображениями
 /// </summary>
-public static class ImageHelper
+public class ImageHelper
 {
+    private const int SvgDefaultResolution = 100;
+
     /// <summary>
-    /// Получить размеры изображения из файла
+    /// Перевести svg в Bitmap из файла
     /// </summary>
-    public static Size GetDimensions(string filePath)
+    public static Bitmap SvgToBitmap(string svgPath, int width = SvgDefaultResolution, int height = SvgDefaultResolution)
     {
-        using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        using var img = Image.FromStream(fs, false, false);
-        return new Size(img.Width, img.Height);
+        var svg = new SKSvg();
+        return ExtractBitmap(svg, svg.Load(svgPath), width, height);
     }
 
     /// <summary>
-    /// Загрузить изобржание, урезав его по максимальной ширине и сохранив отношение
+    /// Перевести svg в Bitmap из потока
     /// </summary>
-    public static Image LoadScaled(string filePath, int maxWidth)
+    public static Bitmap SvgToBitmap(Stream svgStream, int width = SvgDefaultResolution, int height = SvgDefaultResolution)
     {
-        using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        using var original = Image.FromStream(fs, false, false);
+        var svg = new SKSvg();
+        return ExtractBitmap(svg, svg.Load(svgStream), width, height);
+    }
 
-        var ratio = (double)original.Width / original.Height;
-        var width = Math.Min(maxWidth, original.Width);
-        var height = (int)(width / ratio);
+    private static Bitmap ExtractBitmap(SKSvg svg, SKPicture? sKPicture, int width, int height)
+    {
+        var matrix = SKMatrix.CreateScale(
+            width / sKPicture!.CullRect.Width,
+            height / sKPicture.CullRect.Height);
 
-        var bitmap = new Bitmap(width, height);
-        using var g = Graphics.FromImage(bitmap);
-        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-        g.DrawImage(original, 0, 0, width, height);
+        using var surface = SKSurface.Create(new SKImageInfo(width, height));
+        var canvas = surface.Canvas;
+        canvas.Clear(SKColors.Transparent);
+        canvas.DrawPicture(svg.Picture, in matrix);
+        var image = surface.Snapshot();
+        var data = image.Encode(SKEncodedImageFormat.Png, 100);
 
-        return bitmap;
+        return new Bitmap(data.AsStream());
     }
 }

@@ -1,4 +1,5 @@
-﻿using MIN.Helpers.Contracts.Models.Enums;
+﻿using MIN.Helpers.Contracts.Models;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Helpers.Contracts.Interfaces;
 
@@ -10,7 +11,7 @@ public interface ILoggerProvider
     /// <summary>
     /// Событие на получение лога
     /// </summary>
-    event EventHandler<string>? OnLogReceived;
+    event EventHandler<LogItem>? OnLogReceived;
 
     /// <summary>
     /// Залогировать
@@ -20,5 +21,5 @@ public interface ILoggerProvider
     /// <summary>
     /// Получить историю логов
     /// </summary>
-    IEnumerable<string> GetRecentLogHistory(int? page, int? pageSize);
+    IEnumerable<LogItem> GetRecentLogHistory(int? page, int? pageSize);
 }

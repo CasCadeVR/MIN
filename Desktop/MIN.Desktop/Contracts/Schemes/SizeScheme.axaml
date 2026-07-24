@@ -1,0 +1,34 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime"
+                    xmlns:designer="using:MIN.Desktop.Contracts.Designer">
+
+    <Design.PreviewWith>
+        <designer:DesignerControlsTemplates />
+    </Design.PreviewWith>
+ 
+    <!-- *************** -->
+    <!-- SIZES           -->
+    <!-- *************** -->
+
+    <CornerRadius x:Key="CornerRadiusSmall">6</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusDefault">8</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusMedium">12</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusLarge">16</CornerRadius>
+
+    <Thickness x:Key="PaddingSmall">4</Thickness>
+    <Thickness x:Key="PaddingMedium">6</Thickness>
+    <Thickness x:Key="PaddingButton">16,8</Thickness>
+    <Thickness x:Key="PaddingCard">12</Thickness>
+    <Thickness x:Key="PaddingTopBar">8</Thickness>
+    <Thickness x:Key="PaddingInput">12</Thickness>
+    <Thickness x:Key="PaddingPage">16</Thickness>
+    <Thickness x:Key="PaddingLarge">20</Thickness>
+
+    <system:Double x:Key="IconAverage">24</system:Double>
+    <system:Double x:Key="IconButton">24</system:Double>
+    <system:Double x:Key="IconSmall">20</system:Double>
+
+    <system:Double x:Key="ScrollBarSize">8</system:Double>
+
+</ResourceDictionary>

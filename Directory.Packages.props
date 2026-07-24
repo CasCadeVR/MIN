@@ -8,12 +8,21 @@
     <!-- Явное включение возможности переопределять версии пакетов -->
     <EnablePackageVersionOverride>true</EnablePackageVersionOverride>
   </PropertyGroup>
+  <PropertyGroup>
+    <AvaloniaVersion>12.0.5</AvaloniaVersion>
+    <NetSdkVersion>10.0.7</NetSdkVersion>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+    <PackageVersion Include="AnimatedImage.Avalonia" Version="2.1.4" />
+    <PackageVersion Include="Avalonia.Labs.Gif" Version="12.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="$(NetSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(NetSdkVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(NetSdkVersion)" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="Open.NAT.Core" Version="2.1.0.5" />
-    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="10.0.5" />
+    <PackageVersion Include="ServiceScan.SourceGenerator" Version="3.1.4" />
+    <PackageVersion Include="Xaml.Behaviors.Interactions" Version="12.0.0.1" />
+    <PackageVersion Include="Xaml.Behaviors.Interactivity" Version="12.0.0.1" />
     <PackageVersion Include="xunit" Version="2.7.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
     <PackageVersion Include="FluentAssertions" Version="[7.1.0]" />
@@ -21,5 +30,15 @@
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="Ahatornn.TestGenerator" Version="1.1.29" />
     <PackageVersion Include="Moq" Version="4.20.70" />
+    <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Themes.Simple" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.13" />
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageVersion>
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.1" />
   </ItemGroup>
 </Project>

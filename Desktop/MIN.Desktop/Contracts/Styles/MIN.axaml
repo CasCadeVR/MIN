@@ -1,0 +1,221 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+        xmlns:converters="using:MIN.Desktop.Infrastructure.Converters">
+    <Design.PreviewWith>
+        <designer:DesignerControlsTemplates />
+    </Design.PreviewWith>
+
+    <Style Selector="Window">
+        <Setter Property="Icon" Value="/Assets/Icons/logo.ico" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="WindowStartupLocation" Value="CenterOwner" />
+        <!--  Disables window border but allow resizing  -->
+        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}" />
+        <Setter Property="WindowDecorations">
+            <Setter.Value>
+                <OnPlatform>
+                    <OnPlatform.Default>
+                        <WindowDecorations>None</WindowDecorations>
+                    </OnPlatform.Default>
+                    <On Options="Windows">
+                        <WindowDecorations>Full</WindowDecorations>
+                    </On>
+                </OnPlatform>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
+        <Setter Property="WindowDecorationsTheme" Value="{StaticResource WindowDrawnDecorationsTheme}" />
+    </Style>
+
+    <Style Selector="controls|CustomTitleBar" >
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <Style Selector=":is(Control)">
+        <Setter Property="Opacity" Value="1" />
+
+        <Style Selector="^ /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="{TemplateBinding Opacity}" />
+        </Style>
+
+        <Setter Property="FocusAdorner">
+            <Setter.Value>
+                <FocusAdornerTemplate>
+                    <Border
+                        Name="FocusBorder"
+                        BorderBrush="{DynamicResource StatusInfo}"
+                        CornerRadius="{DynamicResource CornerRadiusDefault}"
+                        BorderThickness="2" />
+                </FocusAdornerTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value=".85" />
+        </Style>
+    </Style>
+    
+    <!-- Animations -->
+
+    <Style Selector=":is(Control).appear-from-top">
+        <Style.Animations>
+            <Animation Duration="0:0:0:0.2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.0" />
+                    <Setter Property="TranslateTransform.Y" Value="-10" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1.0" />
+                    <Setter Property="TranslateTransform.Y" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <Style Selector=":is(Control).appear-from-left">
+        <Style.Animations>
+            <Animation Duration="0:0:0:0.2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.0" />
+                    <Setter Property="TranslateTransform.X" Value="-10" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1.0" />
+                    <Setter Property="TranslateTransform.X" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+        <Style Selector=":is(Control).appear-from-bottom">
+        <Style.Animations>
+            <Animation Duration="0:0:0:0.2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.0" />
+                    <Setter Property="TranslateTransform.Y" Value="10" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1.0" />
+                    <Setter Property="TranslateTransform.Y" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+        <Style Selector=":is(Control).appear-from-right">
+        <Style.Animations>
+            <Animation Duration="0:0:0:0.2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.0" />
+                    <Setter Property="TranslateTransform.X" Value="10" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1.0" />
+                    <Setter Property="TranslateTransform.X" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <Style Selector=".form">
+        <Style Selector="^ >  :is(Layoutable):not(:nth-last-child(1))">
+            <Setter Property="Margin" Value="0 0 0 11" />
+        </Style>
+
+        <Style Selector="^ StackPanel.form >  TextBlock:nth-child(1)">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="700" />
+            <Setter Property="Margin" Value="0 0 0 11" />
+        </Style>
+
+        <Style Selector="^ StackPanel.form >  TextBlock:nth-child(2)">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="500" />
+            <Setter Property="Margin" Value="0 -11 0 11" />
+            <Setter Property="IsVisible" Value="{Binding !$self.Text, Converter={converters:EqualityConverter}}" />
+        </Style>
+    </Style>
+
+    <Style Selector="Image.header">
+        <Setter Property="Width" Value="108" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+    </Style>
+
+    <Style Selector=":is(ContentControl).content">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    </Style>
+
+    <Style Selector="Svg">
+        <Setter Property="Width" Value="{DynamicResource IconAverage}"/>
+        <Setter Property="Height" Value="{DynamicResource IconAverage}"/>
+        <Setter Property="Css" Value="{DynamicResource SvgDefaultStyle}"/>
+
+        <Style Selector="^.accent">
+            <Setter Property="Css" Value="{DynamicResource SvgAccentStyle}"/>
+        </Style>
+
+        <Style Selector="^.primary">
+            <Setter Property="Css" Value="{DynamicResource SvgPrimaryStyle}"/>
+        </Style>
+
+        <Style Selector="^.text">
+            <Setter Property="Css" Value="{DynamicResource SvgTextStyle}"/>
+        </Style>
+
+        <Style Selector="^.rotating">
+            <Setter Property="RenderTransform">
+                 <TransformGroup>
+                    <RotateTransform />
+                </TransformGroup>
+            </Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:.5" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="RotateTransform.Angle" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="RotateTransform.Angle" Value="360" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </Style>
+
+    <Style Selector="ToolTip">
+        <Setter Property="Theme" Value="{x:Null}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextOnPrimary}" />
+        <Setter Property="Background" Value="{DynamicResource Primary}" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="13" />
+
+         <Style.Animations>
+            <Animation Duration="0:0:.2">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1.1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <StyleInclude Source="/Contracts/Styles/Controls/Borders.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/TextBlocks.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/Buttons.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/CheckBoxes.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/Flyouts.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/RadioBoxes.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/ScrollViewers.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/TextBoxes.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/ToggleSwitches.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/Expanders.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/ProgressBars.axaml"/>
+</Styles>

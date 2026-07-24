@@ -1,0 +1,88 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MIN.Desktop.ViewModels.Modals"
+        xmlns:controls="using:MIN.Desktop.TemplatedControls"
+        xmlns:enums="using:MIN.Desktop.Contracts.Enums"
+        xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:designer="using:MIN.Desktop.Contracts.Designer"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="800"
+        x:Class="MIN.Desktop.Views.Modals.DialogBoxView"
+        x:DataType="vm:DialogBoxViewModel"
+        CanResize="False"
+        MaxHeight="1080"
+        MaxWidth="1000"
+        MinWidth="400"
+        SizeToContent="WidthAndHeight"
+        Title="{Binding WindowTitle, TargetNullValue='Dialog Window'}">
+
+    <Design.DataContext>
+        <vm:DialogBoxViewModel Description="Description Text" Title="Title Text" />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <controls:CustomTitleBar
+            CanMinimize="False"
+            Grid.RowSpan="1" />
+
+        <ScrollViewer
+            Grid.Row="1"
+            HorizontalScrollBarVisibility="Disabled"
+            Margin="24,20,10,20">
+            <SelectableTextBlock
+                FontSize="{Binding DescriptionFontSize}"
+                IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Margin="0,0,14,0"
+                Text="{Binding Description, FallbackValue=Dialog Description}" />
+        </ScrollViewer>
+
+        <Border Classes="footer" Grid.Row="2">
+            <Panel>
+
+                <!--  Ok Button Option  -->
+
+                <Button
+                    Command="{Binding CloseCommand}"
+                    Content="ОК"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Right"
+                    HorizontalContentAlignment="Center"
+                    HotKey="{Binding OkHotkey}"
+
+                    IsEnabled="{Binding ButtonOptions, Converter={converters:EqualityConverter},
+                    ConverterParameter={x:Static enums:ButtonOptions.Ok}}"
+
+                    IsVisible="{Binding ButtonOptions, Converter={converters:EqualityConverter},
+                    ConverterParameter={x:Static enums:ButtonOptions.Ok}}"
+                    Width="80" />
+
+                <!--  YesNo Button Option  -->
+
+                <Panel IsEnabled="{Binding ButtonOptions, Converter={converters:EqualityConverter},
+                    ConverterParameter={x:Static enums:ButtonOptions.YesNo}}"
+                    IsVisible="{Binding ButtonOptions,
+                    Converter={converters:EqualityConverter},
+                    ConverterParameter={x:Static enums:ButtonOptions.YesNo}}">
+                    <!--  The yes button doesn't have a hotkey to prevent accidental confirmation.  -->
+                    <Button
+                        Command="{Binding CloseCommand}"
+                        CommandParameter="{x:Static enums:ButtonOptions.Yes}"
+                        Content="Да"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left"
+                        HorizontalContentAlignment="Center"
+                        Width="80" />
+                    <Button
+                        Command="{Binding CloseCommand}"
+                        CommandParameter="{x:Static enums:ButtonOptions.No}"
+                        Content="Нет"
+                        HorizontalAlignment="Right"
+                        HorizontalContentAlignment="Center"
+                        HotKey="{Binding NoHotkey}"
+                        Width="80" />
+                </Panel>
+            </Panel>
+        </Border>
+    </Grid>
+</Window>

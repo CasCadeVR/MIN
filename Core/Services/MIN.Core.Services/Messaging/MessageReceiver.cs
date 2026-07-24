@@ -32,6 +32,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     private readonly IStreamManager streamManager;
     private readonly ILoggerProvider logger;
     private CancellationTokenSource cts = null!;
+    private bool disposed;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="MessageReceiver"/>
@@ -173,8 +174,14 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         roomHoster.RawMessageReceived -= OnRawMessageReceived;
         roomConnector.RawMessageReceived -= OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
-        cts.Cancel();
-        cts.Dispose();
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        cts?.Cancel();
+        cts?.Dispose();
         await Task.CompletedTask;
     }
 
