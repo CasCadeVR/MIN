@@ -1,6 +1,6 @@
 # MIN - Local Messenger
 
-![Logo](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Resources/logo.png)
+![Logo](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Assets/Images/logoImage.png)
 
 > **Secure local messenger with end-to-end encryption for local network**
 
@@ -44,7 +44,7 @@
 | **Text Messages** | Sending and receiving messages in real time |
 | **Rooms** | Creating and joining chat rooms |
 | **Multiplayer Sessions** | Download and run game sessions from other resources |
-| **Desktop UI** | Intuitive interface using WinForms |
+| **Desktop UI** | Intuitive interface using Avalonia |
 
 > [!IMPORTANT]
 > MIN works **without a server** in your local network. No internet connection required!
@@ -62,7 +62,7 @@ flowchart TB
     classDef component fill:#ffffff,stroke:#c7d2fe,stroke-width:1.5px,color:#312e81
     classDef highlight fill:#c7d2fe,stroke:#4f46e5,stroke-width:3px,color:#312e81
     
-    subgraph UI["UI Layer (WinForms)"]
+    subgraph UI["UI Layer (Avalonia)"]
         direction TB
         A["ChatPanel<br>Messages and rooms"]
         B["DiscoveryPanel<br>Room discovery"]
@@ -130,7 +130,7 @@ flowchart TB
 #### Desktop (UI)
 | Module | Purpose |
 |--------|---------|
-| `MIN.Desktop` | WinForms application |
+| `MIN.Desktop` | Avalonia desktop application |
 
 #### Cross-Cutting
 | Module | Purpose |
@@ -147,7 +147,7 @@ flowchart TB
 |----------|------------|-------------|
 | Language | C# | Modern object-oriented language |
 | Platform | .NET 8.0 | Cross-platform framework |
-| UI | WinForms | Windows desktop interface |
+| UI | Avalonia | Cross-platform desktop interface |
 | DI | Microsoft.Extensions.DependencyInjection | Dependency injection |
 | Security | System.Security.Cryptography.ProtectedData | Windows DPAPI |
 | Transport | TCP / UDP / Named Pipes | Network communication |

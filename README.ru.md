@@ -1,6 +1,6 @@
 # MIN - Local Messenger
 
-![Logo](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Resources/logo.png)
+![Logo](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Assets/Images/logoImage.png)
 
 > **Безопасный локальный мессенджер с end-to-end шифрованием для локальной сети**
 
@@ -44,7 +44,7 @@
 | **Текстовые сообщения** | Отправка и получение сообщений в реальном времени |
 | **Комнаты** | Создание и присоединение к чат-комнатам |
 | **Мультиплеерные сессии** | Скачивание и запуск игровых сессий из других ресурсов |
-| **Desktop UI** | Интуитивный интерфейс на WinForms |
+| **Desktop UI** | Интуитивный интерфейс на Avalonia |
 
 > [!IMPORTANT]
 > MIN работает **без сервера** в вашей локальной сети. Не требуется подключение к интернету!
@@ -62,7 +62,7 @@ flowchart TB
     classDef component fill:#ffffff,stroke:#c7d2fe,stroke-width:1.5px,color:#312e81
     classDef highlight fill:#c7d2fe,stroke:#4f46e5,stroke-width:3px,color:#312e81
     
-    subgraph UI["UI Layer (WinForms)"]
+    subgraph UI["UI Layer (Avalonia)"]
         direction TB
         A["ChatPanel<br>Сообщения и комнаты"]
         B["DiscoveryPanel<br>Обнаружение комнат"]
@@ -130,7 +130,7 @@ flowchart TB
 #### Desktop (UI)
 | Модуль | Назначение |
 |--------|------------|
-| `MIN.Desktop` | WinForms приложение |
+| `MIN.Desktop` | Avalonia десктопное приложение |
 
 #### Cross-Cutting (Сквозные)
 | Модуль | Назначение |
@@ -147,7 +147,7 @@ flowchart TB
 |-----------|------------|----------|
 | Язык | C# | Современный объектно-ориентированный язык |
 | Платформа | .NET 8.0 | Кроссплатформенный фреймворк |
-| UI | WinForms | Настольный интерфейс Windows |
+| UI | Avalonia | Кроссплатформенный интерфейс |
 | DI | Microsoft.Extensions.DependencyInjection | Внедрение зависимостей |
 | Защита | System.Security.Cryptography.ProtectedData | Windows DPAPI |
 | Транспорт | TCP / UDP / Named Pipes | Сетевое взаимодействие |
