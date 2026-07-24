@@ -90,7 +90,7 @@
                         </Button>
 
                         <Button HorizontalAlignment="Left"
-                            Command="{Binding ToggleRightSideBar}"
+                            Command="{Binding ToggleRightSideBarCommand}"
                             Classes="no-background">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock
@@ -231,6 +231,10 @@
                                 </TextBox.ContextFlyout>
 
                                  <Interaction.Behaviors>
+                                    <EventTriggerBehavior EventName="TextChanged">
+                                        <InvokeCommandAction
+                                            Command="{Binding MessageTextChangedCommand}" />
+                                    </EventTriggerBehavior>
                                     <EventTriggerBehavior EventName="PastingFromClipboard">
                                         <InvokeCommandAction
                                             Command="{Binding PasteDataCommand}" />

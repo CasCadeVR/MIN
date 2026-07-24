@@ -19,7 +19,7 @@ public static class ReferenceCommandReceiverExtensions
         {
             WeakReferenceMessenger.Default.Unregister<T>(receiver);
         }
-        WeakReferenceMessenger.Default.Register<T>(receiver, (_, message) => asyncFunc(message, receiver));
+        WeakReferenceMessenger.Default.Register<T>(receiver, async (_, message) => await asyncFunc(message, receiver));
     }
 
     /// <summary>

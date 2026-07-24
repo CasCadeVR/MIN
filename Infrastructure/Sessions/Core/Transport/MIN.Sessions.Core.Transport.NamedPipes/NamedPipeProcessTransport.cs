@@ -25,6 +25,7 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         return Task.CompletedTask;
     }
 
+
     string ISessionProcessTransport.GetConnectionString() =>
         JsonSerializer.Serialize(new ConnectionInfo
         {
@@ -34,16 +35,11 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
 
     async Task ISessionProcessTransport.WaitForConnectionAsync(ProcessContext context, int timeOutMs, CancellationToken cancellationToken)
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            throw new InvalidOperationException("Windows only");
-        }
-
         var server = new NamedPipeServerStream(
             pipeName,
             PipeDirection.InOut,
             NamedPipeServerStream.MaxAllowedServerInstances,
-            PipeTransmissionMode.Message,
+            PipeTransmissionMode.Byte,
             options: PipeOptions.Asynchronous);
 
         var connectionCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

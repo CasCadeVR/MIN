@@ -10,17 +10,17 @@
   </PropertyGroup>
   <PropertyGroup>
     <AvaloniaVersion>12.0.5</AvaloniaVersion>
-    <NetSdkVersion>10.0.5</NetSdkVersion>
+    <NetSdkVersion>10.0.7</NetSdkVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AnimatedImage.Avalonia" Version="2.1.4" />
     <PackageVersion Include="Avalonia.Labs.Gif" Version="12.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="$(NetSdkVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(NetSdkVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(NetSdkVersion)" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="Open.NAT.Core" Version="2.1.0.5" />
     <PackageVersion Include="ServiceScan.SourceGenerator" Version="3.1.4" />
-    <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="$(NetSdkVersion)" />
     <PackageVersion Include="Xaml.Behaviors.Interactions" Version="12.0.0.1" />
     <PackageVersion Include="Xaml.Behaviors.Interactivity" Version="12.0.0.1" />
     <PackageVersion Include="xunit" Version="2.7.0" />

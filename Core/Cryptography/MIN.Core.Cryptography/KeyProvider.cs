@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.DataProtection;
 using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Cryptography.Contracts.Models;
 
@@ -9,6 +10,7 @@ namespace MIN.Core.Cryptography;
 public sealed class KeyProvider : IKeyProvider, IDisposable
 {
     private readonly IKeyStorage storage;
+    private readonly IDataProtector protector;
     private KeyPair? cachedKeys;
     private readonly SemaphoreSlim cacheLock = new(1, 1);
     private bool disposed;
@@ -16,9 +18,10 @@ public sealed class KeyProvider : IKeyProvider, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="KeyProvider"/>
     /// </summary>
-    public KeyProvider(IKeyStorage storage)
+    public KeyProvider(IKeyStorage storage, IDataProtectionProvider dataProtection)
     {
         this.storage = storage;
+        protector = dataProtection.CreateProtector("MIN.Core.Cryptography.KeyProtection");
     }
 
     /// <inheritdoc />
@@ -110,34 +113,17 @@ public sealed class KeyProvider : IKeyProvider, IDisposable
         };
     }
 
-    private static string Protect(string plainText)
+    private string Protect(string plainText)
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            throw new PlatformNotSupportedException("К сожалению, пока только на Windows");
-        }
-
         var bytes = Encoding.UTF8.GetBytes(plainText);
-        var protectedBytes = ProtectedData.Protect(
-            bytes,
-            null,
-            DataProtectionScope.CurrentUser);
+        var protectedBytes = protector.Protect(bytes);
         return Convert.ToBase64String(protectedBytes);
     }
 
-    private static string Unprotect(string protectedBase64)
+    private string Unprotect(string protectedBase64)
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            throw new PlatformNotSupportedException("К сожалению, пока только на Windows");
-        }
-
         var protectedBytes = Convert.FromBase64String(protectedBase64);
-        var bytes = ProtectedData.Unprotect(
-            protectedBytes,
-            null,
-            DataProtectionScope.CurrentUser);
-
+        var bytes = protector.Unprotect(protectedBytes);
         return Encoding.UTF8.GetString(bytes);
     }
 

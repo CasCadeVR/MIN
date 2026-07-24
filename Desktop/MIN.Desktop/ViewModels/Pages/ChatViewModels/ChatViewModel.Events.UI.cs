@@ -50,11 +50,8 @@ public partial class ChatViewModel : RoutableViewModelBase
             CurrentLayout = msg.Layout);
     }
 
-    /// <summary>
-    /// Открыть боковую панель
-    /// </summary>
     [RelayCommand]
-    public void ToggleRightSideBar()
+    private void ToggleRightSideBar()
     {
         if (!chatSideBarViewModel.IsOpened)
         {
@@ -163,7 +160,8 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     #region MesssageTextBox events
 
-    private void messageTextBox_TextChanged(object sender, EventArgs e)
+    [RelayCommand]
+    private void MessageTextChanged()
     {
         if (string.IsNullOrEmpty(SendingMessage))
         {
@@ -260,7 +258,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             var timestamp = DateTime.Now.ToString("yyyy-dd-MM-HH-mm-ss-fffff");
             var tempPath = Path.Combine(Path.GetTempPath(), $"clipboard_{timestamp}.png");
-            bitmap.Save(tempPath); // Avalonia 12: Bitmap.Save(string)
+            bitmap.Save(tempPath);
             UploadFile(tempPath);
         }
     }

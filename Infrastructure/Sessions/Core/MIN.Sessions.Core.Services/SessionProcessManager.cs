@@ -65,12 +65,24 @@ public class SessionProcessManager : ISessionProcessManager
         await processTransport.StartAsync(context.RoomId, cancellationToken);
         var connectionString = processTransport.GetConnectionString();
 
-        var startedProcess = Process.Start(new ProcessStartInfo
+        var psi = new ProcessStartInfo
         {
             FileName = fullPath,
-            ArgumentList = { connectionString },
             UseShellExecute = false,
-        });
+        };
+        psi.ArgumentList.Add(connectionString);
+
+        if (!OperatingSystem.IsWindows())
+        {
+            var mode = File.GetUnixFileMode(fullPath);
+            if ((mode & UnixFileMode.UserExecute) == 0)
+            {
+                psi.FileName = "dotnet";
+                psi.ArgumentList.Insert(0, fullPath); // [fullPath, connectionString]
+            }
+        }
+
+        var startedProcess = Process.Start(psi);
 
         if (startedProcess == null || startedProcess.HasExited)
         {

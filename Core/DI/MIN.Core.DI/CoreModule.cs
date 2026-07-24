@@ -36,6 +36,8 @@ public class CoreModule : Module
         // Global
         services.RegisterAsImplementedInterfaces<JsonMessageSerializer>(ServiceLifetime.Singleton);
 
+        services.AddDataProtection();
+
         services.RegisterAsImplementedInterfaces<KeyProvider>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<FileSystemKeyStorage>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);

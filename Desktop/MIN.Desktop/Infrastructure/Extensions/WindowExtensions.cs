@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using MIN.Desktop.Contracts.Constants;
@@ -11,8 +10,6 @@ namespace MIN.Desktop.Infrastructure.Extensions;
 /// </summary>
 public static class WindowExtensions
 {
-    private readonly static Dictionary<Window, bool> isClosingByUser = [];
-
     /// <summary>
     /// Получить контекст окна
     /// </summary>
@@ -23,6 +20,11 @@ public static class WindowExtensions
     /// </summary>
     public static void ApplyPlatformWindowStyle(this Window window)
     {
+        if (window == null)
+        {
+            return;
+        }
+
         if (OperatingSystem.IsLinux())
         {
             // On Linux systems, Avalonia has trouble allowing windows to resize without "decorations". So we enable it in full, but hide the custom titlebar as it'll look bad.
@@ -37,14 +39,6 @@ public static class WindowExtensions
             window.ExtendClientAreaTitleBarHeightHint = -1;
             DesignAttachments.SetUseCustomTitleBar(window, false);
         }
-        else if (OperatingSystem.IsWindows())
-        {
-            var windowHandle = window.TryGetPlatformHandle()?.Handle;
-            if (!windowHandle.HasValue)
-            {
-                return;
-            }
-        }
     }
 
     /// <summary>
@@ -57,7 +51,6 @@ public static class WindowExtensions
             return;
         }
         window.Closed += WindowOnClosed;
-        isClosingByUser[window] = true;
         window.Close(dialogResult);
 
         static void WindowOnClosed(object? sender, EventArgs e)
@@ -67,7 +60,6 @@ public static class WindowExtensions
                 return;
             }
             window.Closed -= WindowOnClosed;
-            isClosingByUser.Remove(window);
         }
     }
 
@@ -80,23 +72,6 @@ public static class WindowExtensions
         {
             return;
         }
-        isClosingByUser[window] = false;
         window.Close(dialogResult);
-    }
-
-    /// <summary>
-    /// Закрывается ли окно пользователем
-    /// </summary>
-    public static bool IsClosingByUser(this Window? closingWindow, WindowClosingEventArgs? closingArgs = null)
-    {
-        if (closingWindow is not null && isClosingByUser.TryGetValue(closingWindow, out var isByUser))
-        {
-            return isByUser;
-        }
-        if (closingArgs is { IsProgrammatic: false })
-        {
-            return true;
-        }
-        return false;
     }
 }
