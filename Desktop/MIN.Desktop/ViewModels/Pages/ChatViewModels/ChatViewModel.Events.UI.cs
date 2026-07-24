@@ -134,6 +134,28 @@ public partial class ChatViewModel : RoutableViewModelBase
     #region Button event attachment
 
     [RelayCommand]
+    private async Task LeaveRoom()
+    {
+        if (IsHost && room.ParticipantCount > 1)
+        {
+            bool confirmation = await dialogService.ShowDialogAsync<DialogBoxViewModel>(model =>
+            {
+                model.Title = $"Закрытие комнаты {room.Name}";
+                model.Description = "Вы точно хотите закрыть комнату? "
+                + "\nПоскольку вы - хост, вы остановите комнату для всех участников.";
+                model.ButtonOptions = ButtonOptions.YesNo;
+            });
+
+            if (!confirmation)
+            {
+                return;
+            }
+        }
+
+        await Disconnect();
+    }
+
+    [RelayCommand]
     private async Task EditRoom()
     {
         var editForm = await dialogService.ShowDialogAsync<CreateRoomViewModel>(vm =>

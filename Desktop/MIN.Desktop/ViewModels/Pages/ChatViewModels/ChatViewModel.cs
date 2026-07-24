@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Desktop.Contracts.Enums;
@@ -154,11 +153,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
-    /// <summary>
-    /// Выйти из комнаты
-    /// </summary>
-    [RelayCommand]
-    public async Task Disconnect()
+    private async Task Disconnect()
     {
         await DisposeAsync();
         ChangeView(discoveryViewModel);

@@ -54,12 +54,16 @@
                                             <Button
                                             Classes="no-background"
                                             HorizontalContentAlignment="Stretch"
-                                            Command="{Binding DisconnectCommand}">
+                                            Command="{Binding LeaveRoomCommand}">
 
                                             <StackPanel>
                                                 <Svg Path="/Assets/Icons/leave.svg" />
-                                                <TextBlock VerticalAlignment="Center"
+                                                <TextBlock IsVisible="{Binding !IsHost}"
+                                                    VerticalAlignment="Center"
                                                     Text="Покинуть комнату"/>
+                                                <TextBlock IsVisible="{Binding IsHost}"
+                                                    VerticalAlignment="Center"
+                                                    Text="Закрыть комнату"/>
                                             </StackPanel>
                                         </Button>
                                    
