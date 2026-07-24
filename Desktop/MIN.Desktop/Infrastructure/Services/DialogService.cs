@@ -57,10 +57,10 @@ public sealed class DialogService : IDialogService
                 return viewModel;
             });
         }
-        catch
+        catch (Exception ex)
         {
             logger.Log($"Failed to show dialog for ViewModel {typeof(TViewModel).FullName}", LogLevel.Error);
-            //LauncherNotifier.Error(ex.Message);
+            InAppNotifier.Error(ex.Message);
             return null;
         }
     }
@@ -86,10 +86,10 @@ public sealed class DialogService : IDialogService
                 return dialog.ShowDialog<TViewModel>(dialogOwnerProvider());
             });
         }
-        catch
+        catch (Exception ex)
         {
             logger.Log($"Failed to show dialog for ViewModel {typeof(TViewModel).FullName}", LogLevel.Error);
-            //LauncherNotifier.Error(ex.Message);
+            InAppNotifier.Error(ex.Message);
             return null;
         }
     }

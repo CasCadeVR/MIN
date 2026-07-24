@@ -24,7 +24,7 @@ public abstract partial class ModalViewModelBase : ValidatingViewModelBase
     /// <summary>
     /// Переопределение преобразования в тип bool
     /// </summary>
-    public static implicit operator bool(ModalViewModelBase self)
+    public static implicit operator bool(ModalViewModelBase? self)
         => self is { HasErrors: false } and not { SelectedOption: null or ButtonOptions.No };
 
     /// <summary>

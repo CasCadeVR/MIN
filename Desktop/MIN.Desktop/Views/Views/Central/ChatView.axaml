@@ -115,7 +115,8 @@
                         CornerRadius="{DynamicResource CornerRadiusLarge}">
                     <StackPanel>
                         <Border IsVisible="{Binding SomeFilesAttached}">
-                            <ScrollViewer Classes="horizontal">
+                            <ScrollViewer Classes="horizontal"
+                                scrollBehaviors:PrimaryScrollWheelBehavior.PrimaryScrollWheelDirection="Horizontal">
                                 <ItemsControl ItemsSource="{Binding AttachedFiles}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>

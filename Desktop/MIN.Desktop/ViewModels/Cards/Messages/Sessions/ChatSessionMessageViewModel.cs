@@ -171,9 +171,9 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
 
         var isFull = maximumParticipants.HasValue && currentAmount >= maximumParticipants.Value;
 
-        JoinButtonStateText = !asDownloaded
+        JoinButtonStateText = (!asDownloaded
             ? "Скачать сессию"
-            : (isFull ? "Заполнено" : "Присоединиться") + $" (Учавствуют: {participantsRatio})";
+            : isFull ? "Заполнено" : "Присоединиться") + $" (Учавствуют: {participantsRatio})";
 
         CanJoin = !maximumParticipants.HasValue || !isFull;
         IsNotAvailable = currentAmount <= 0 || isFull;
@@ -188,7 +188,7 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
             return;
         }
 
-        var confirmation = await dialogService.ShowAsync<DialogBoxViewModel>(model =>
+        bool confirmation = await dialogService.ShowDialogAsync<DialogBoxViewModel>(model =>
         {
             model.Title = "Скачивание сессии";
             model.Description = $"Хотите скачать сессию {SessionMessage.Session.Name}?\n" +
@@ -196,7 +196,7 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
             model.ButtonOptions = ButtonOptions.YesNo;
         });
 
-        if (confirmation!)
+        if (confirmation)
         {
             Process.Start(new ProcessStartInfo
             {

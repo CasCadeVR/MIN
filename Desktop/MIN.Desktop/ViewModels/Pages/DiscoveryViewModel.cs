@@ -150,6 +150,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         catch (Exception ex)
         {
             InAppNotifier.Error($"Не удалось создать комнату: {ex.Message}");
+            ChangeView(this);
         }
     }
 
