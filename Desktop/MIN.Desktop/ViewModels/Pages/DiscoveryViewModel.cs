@@ -139,7 +139,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
             var chatViewModel = chatViewModelFactory.Create();
             ChangeView(chatViewModel);
 
-            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, createViewModelResult.RoomAutoPortForward, lifeTimeCts.Token);
+            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, createViewModelResult.NetworkOptions, lifeTimeCts.Token);
             await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
 
             await chatViewModel.LoadRoomDataAndRefresh(room, CoreRegistryConstants.LocalConnectionId);

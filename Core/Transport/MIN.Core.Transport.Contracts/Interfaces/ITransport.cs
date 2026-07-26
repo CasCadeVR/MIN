@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Transport.Contracts.Events;
+using MIN.Core.Transport.Contracts.Models;
 
 namespace MIN.Core.Transport.Contracts.Interfaces;
 
@@ -33,12 +34,12 @@ public interface ITransport
     /// <summary>
     /// Запустить сервер подключений
     /// </summary>
-    Task<Guid> StartHostingAsync(bool withPortForwarding, CancellationToken cancellationToken = default);
+    Task<Guid> StartHostingAsync(NetworkOptions networkOptions, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Получить точку подключения
+    /// Получить все точки подключения
     /// </summary>
-    IEndpoint GetEndpoint(Guid connectionId);
+    Task<IEnumerable<IEndpoint>> GetEndpoints(Guid connectionId);
 
     /// <summary>
     /// Прекратить сервер для указанного соединения

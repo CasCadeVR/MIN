@@ -15,7 +15,7 @@ using MIN.Helpers.Contracts.Interfaces;
 namespace MIN.Discovery.Services;
 
 /// <summary>
-/// <inheritdoc cref="UdpDiscoveryService"/> на базе UDP
+/// <inheritdoc cref="IDiscoveryService"/> на базе UDP Broadcast
 /// </summary>
 public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
 {
@@ -149,10 +149,12 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
 
                 var connectionId = roomHoster.GetConnectionIdByRoomId(roomId);
 
+                var connectionEndpoints = await transport.GetEndpoints(connectionId);
+
                 discoveryResponse.RoomDiscoveryInfos.Add(new RoomDiscoveryInfo()
                 {
                     Room = new RoomInfo(room),
-                    Endpoint = transport.GetEndpoint(connectionId),
+                    Endpoint = connectionEndpoints.First(),
                 });
             }
 

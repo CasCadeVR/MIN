@@ -37,7 +37,7 @@ public class Room : IRoomData
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     /// <inheritdoc />
-    public string? ConnectionAddress { get; set; }
+    public IEnumerable<string> ConnectionAddresses { get; set; } = [];
 
     /// <summary>
     /// Локальные настройки комнаты
@@ -106,6 +106,6 @@ public class Room : IRoomData
         MaximumParticipants = roomData.MaximumParticipants;
         IsActive = roomData.IsActive;
         CreatedAt = roomData.CreatedAt;
-        ConnectionAddress = roomData.ConnectionAddress;
+        ConnectionAddresses = roomData.ConnectionAddresses;
     }
 }

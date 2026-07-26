@@ -58,7 +58,7 @@ public interface IRoomData
     DateTime CreatedAt { get; }
 
     /// <summary>
-    /// Адрес комнаты
+    /// Адреса комнаты
     /// </summary>
-    string? ConnectionAddress { get; set; }
+    IEnumerable<string> ConnectionAddresses { get; }
 }

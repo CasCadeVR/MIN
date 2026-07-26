@@ -6,7 +6,7 @@
 public static class DiscoveryConstants
 {
     /// <summary>
-    /// Размер буффера
+    /// Размер буффера UDP, чтобы не превысить
     /// </summary>
-    public const int DiscoveryBufferSize = 1024 * 4;
+    public const int UdpDiscoveryBufferSize = 1432;
 }

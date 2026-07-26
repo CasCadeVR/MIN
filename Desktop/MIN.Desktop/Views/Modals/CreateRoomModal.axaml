@@ -47,27 +47,86 @@
                         <TextBox
                             MaxLength="120"
                             MaxWidth="400"
-                            Text="{Binding RoomMaxPlayers}"
+                            Text="{Binding RoomMaxPlayers, Converter={converters:IntToStringConverter}}"
                             PlaceholderText="Введите количество участников...">
                         </TextBox>
                     </StackPanel>
                 </Border>
 
                 <Border Classes="card">
-                    <StackPanel Classes="form">
-                        <TextBlock Text="Проброска порта" />
-                        <ToggleSwitch
-                            IsChecked="{Binding RoomAutoPortForward}">
-                        </ToggleSwitch>
+                    <!-- <Expander Classes="roomGroup" Header="Настройка сети" IsExpanded="False"> -->
+                        <StackPanel Margin="0,8,0,0" Classes="form">
+                            <TextBlock Text="Настройка сети" />
 
-                        <TextBlock MaxWidth="300.0" Classes="small">
-                            Попытается автоматически пробросить порт, если у вашего маршрутизатора включен UPnP
-                        </TextBlock>
-                    </StackPanel>
+                            <Separator  />  <!-- LAN Udp Broadcast -->
+
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Text="Локальное обнаружение" />
+                                    <ToggleSwitch Margin="8,0,0,0"
+                                        IsChecked="{Binding EnableLocalDiscovery}">
+                                    </ToggleSwitch>
+                                </StackPanel>
+
+                                <TextBlock MaxWidth="300.0" Classes="info">
+                                    Включает UDP Broadcast обнаружение комнаты в вашей локальной сети (LAN).
+                                    Может запросить права доступа
+                                </TextBlock>
+                            </StackPanel>
+                           
+                            <Separator /> <!-- UPnP -->
+
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Text="Проброска порта" />
+                                    <ToggleSwitch Margin="8,0,0,0"
+                                        IsChecked="{Binding EnablePortForwarding}">
+                                    </ToggleSwitch>
+                                </StackPanel>
+
+                                <TextBlock MaxWidth="300.0" Classes="info">
+                                    Попытается автоматически пробросить порт,
+                                    если у вашего маршрутизатора включен UPnP протокол
+                                </TextBlock>
+                            </StackPanel>
+
+                            <Separator /> <!-- Radmin -->
+
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Text="Radmin VPN" />
+                                    <ToggleSwitch Margin="8,0,0,0"
+                                        IsChecked="{Binding EnableRadmin}">
+                                    </ToggleSwitch>
+                                </StackPanel>
+
+                                <TextBlock MaxWidth="300.0" Classes="info">
+                                    У вас обнаружен активный Radmin VPN, комнату можно создать на ней
+                                </TextBlock>
+                            </StackPanel>
+
+                            <Separator /> <!-- Web -->
+
+                            <StackPanel IsEnabled="False">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Text="Выложить в Web" />
+                                    <ToggleSwitch Margin="8,0,0,0"
+                                        OnContent=""
+                                        IsChecked="{Binding EnableWeb}">
+                                    </ToggleSwitch>
+                                </StackPanel>
+
+                                <TextBlock MaxWidth="300.0" Classes="info">
+                                     (В РАЗРАБОТКЕ) Оппубликует комнату в Web, где каждый может увидеть
+                                    комнату в глобальном списке.
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+                    <!-- </Expander> -->
                 </Border>
             </StackPanel>
             <Border Classes="footer">
-                <Panel >
+                <Panel>
                     <Button
                         Command="{Binding CloseCommand}"
                         Content="Отмена"

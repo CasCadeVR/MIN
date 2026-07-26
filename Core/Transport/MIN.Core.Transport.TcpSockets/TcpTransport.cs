@@ -1,10 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Core.Transport.Contracts.Events;
+using MIN.Core.Transport.Contracts.Helpers;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Models;
 using MIN.Core.Transport.TcpSockets.Client;
 using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Core.Transport.TcpSockets.Server;
-using MIN.Core.Transport.TcpSockets.Services;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 
@@ -18,7 +19,8 @@ public class TcpTransport : ITransport
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, TcpSocketServer> servers = new();
     private readonly ConcurrentDictionary<Guid, TcpSocketClient> clients = new();
-    private readonly RoomPortManager portManager = new();
+
+    private IEnumerable<MachineKnownIp>? machineKnownIpsCache = [];
 
     /// <inheritdoc />
     public event EventHandler<RawMessageReceivedEventArgs>? RawMessageReceived;
@@ -34,10 +36,10 @@ public class TcpTransport : ITransport
         this.logger = logger;
     }
 
-    async Task<Guid> ITransport.StartHostingAsync(bool withPortForwarding, CancellationToken cancellationToken)
+    async Task<Guid> ITransport.StartHostingAsync(NetworkOptions networkOptions, CancellationToken cancellationToken)
     {
         var connectionId = Guid.NewGuid();
-        var port = portManager.AllocatePort();
+        var port = PortProvider.AllocatePort();
         var server = new TcpSocketServer(logger, port);
 
         server.OnMessageReceived += (TcpSocketServer server, (TcpSocketConnection conn, byte[] msg) eventArgs) =>
@@ -61,7 +63,7 @@ public class TcpTransport : ITransport
             ConnectionStateChanged?.Invoke(this, args);
         };
 
-        await server.StartAsync(withPortForwarding, cancellationToken);
+        await server.StartAsync(networkOptions, cancellationToken);
         servers.TryAdd(connectionId, server);
 
         return connectionId;
@@ -72,7 +74,7 @@ public class TcpTransport : ITransport
         if (servers.TryRemove(connectionId, out var server))
         {
             await server.DisposeAsync();
-            portManager.ReleasePort(server.Port);
+            PortProvider.ReleasePort(server.Port);
         }
     }
 
@@ -135,14 +137,29 @@ public class TcpTransport : ITransport
         }
     }
 
-    IEndpoint ITransport.GetEndpoint(Guid connectionId)
+    async Task<IEnumerable<IEndpoint>> ITransport.GetEndpoints(Guid connectionId)
     {
         if (!servers.TryGetValue(connectionId, out var server))
         {
             throw new InvalidOperationException($"Connection {connectionId} is not hosted locally");
         }
 
-        return new TcpEndpoint { IPAddress = server.IpAddress.ToString(), Port = server.Port };
+        var result = new List<TcpEndpoint>();
+
+        machineKnownIpsCache ??= await NetworkHelper.GetAllKnownIpsAsync();
+
+        foreach (var ip in machineKnownIpsCache)
+        {
+            result.Add(new TcpEndpoint
+            {
+                IpOrigin = ip.Origin,
+                IPAddress = ip.ToString(),
+                NetworkName = ip.NetworkName,
+                Port = server.Port
+            });
+        }
+
+        return result;
     }
 
     /// <inheritdoc />
@@ -177,7 +194,5 @@ public class TcpTransport : ITransport
         {
             await client.DisposeAsync();
         }
-
-        portManager.Dispose();
     }
 }

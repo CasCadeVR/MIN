@@ -41,7 +41,7 @@ public static class IpAddressParser
     /// </summary>
     public static string ValidateIP(string ipAddress)
     {
-        if (!IPAddress.TryParse(ipAddress, out _))
+        if (!TryParseIpAddress(ipAddress, out _, out _))
         {
             try
             {

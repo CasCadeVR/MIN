@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:designer="using:MIN.Desktop.Contracts.Designer"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -60,7 +61,8 @@
                             Время поиска комнат (в мс.)
                         </TextBlock>
 
-                        <TextBox Text="{Binding DiscoveryTimeout}"
+                        <TextBox Text="{Binding DiscoveryTimeout,
+                            Converter={converters:IntToStringConverter}}"
                             MaxWidth="120"
                             Grid.Column="1"/>
                     </Grid>
@@ -71,7 +73,8 @@
                             UDP Порт комнат (Лучше не менять, по умолчанию 42069)
                         </TextBlock>
 
-                        <TextBox Text="{Binding DiscoveryPort}"
+                        <TextBox Text="{Binding DiscoveryPort,
+                            Converter={converters:IntToStringConverter}}"
                             MaxWidth="120"
                             Grid.Column="1"/>
                     </Grid>

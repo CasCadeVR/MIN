@@ -55,7 +55,8 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     /// Время ожидания поиска комнаты
     /// </summary>
     [ObservableProperty]
-    [Range(1, DesktopConstants.RoomConnectionTimeoutMs)]
+    [IntValue]
+    [Range(100, DesktopConstants.RoomConnectionTimeoutMs, ErrorMessage = "Время ожидания поиска комнаты должно быть от 100 до 10000 миллисекунд")]
     [NotifyDataErrorInfo]
     public partial int DiscoveryTimeout { get; set; }
 
@@ -63,7 +64,8 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     /// Порт для обнаружения в сети
     /// </summary>
     [ObservableProperty]
-    [Range(1, 65536)]
+    [IntValue]
+    [Range(ushort.MinValue, ushort.MaxValue, ErrorMessage = "Порт должен быть от 0 до 65535")]
     [NotifyDataErrorInfo]
     public partial int DiscoveryPort { get; set; }
 

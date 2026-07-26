@@ -38,7 +38,7 @@ public record RoomInfo : IRoomData
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     /// <inheritdoc />
-    public string? ConnectionAddress { get; set; }
+    public IEnumerable<string> ConnectionAddresses { get; set; } = [];
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomInfo"/>
@@ -55,7 +55,7 @@ public record RoomInfo : IRoomData
         MaximumParticipants = room.MaximumParticipants;
         IsActive = room.IsActive;
         CreatedAt = room.CreatedAt;
-        ConnectionAddress = room.ConnectionAddress;
+        ConnectionAddresses = room.ConnectionAddresses;
     }
 
     /// <summary>

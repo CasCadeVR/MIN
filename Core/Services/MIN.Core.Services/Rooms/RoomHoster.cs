@@ -13,6 +13,7 @@ using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Models;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -118,7 +119,7 @@ public sealed class RoomHoster : IRoomHoster
         RawMessageReceived?.Invoke(this, args);
     }
 
-    async Task<Room> IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
+    async Task<Room> IRoomHoster.StartHostingAsync(RoomInfo roomInfo, NetworkOptions networkOptions, CancellationToken cancellationToken)
     {
         if (activeRooms.Count + 1 > ServicesConstants.MaximumRoomHosts)
         {
@@ -155,16 +156,16 @@ public sealed class RoomHoster : IRoomHoster
             Participant = new Participant(localParticipant)
         });
 
-        var connectionId = await transport.StartHostingAsync(withPortForwarding, cancellationToken);
+        var connectionId = await transport.StartHostingAsync(networkOptions, cancellationToken);
 
-        var endpoint = transport.GetEndpoint(connectionId);
+        var endpoints = await transport.GetEndpoints(connectionId);
 
-        roomInfo.ConnectionAddress = endpoint.ToString();
-        room.ConnectionAddress = endpoint.ToString();
+        roomInfo.ConnectionAddresses = endpoints.Select(x => x.ToString());
+        room.ConnectionAddresses = endpoints.Select(x => x.ToString());
 
         context.Participants.AddParticipant(new Participant(localParticipant));
 
-        logger.Log($"Комната создана: {endpoint} ({roomInfo.Name})");
+        logger.Log($"Комната создана: {string.Join(',', room.ConnectionAddresses)} ({roomInfo.Name})");
 
         activeRooms[roomId] = connectionId;
         activeConnections[connectionId] = roomInfo.Id;

@@ -8,7 +8,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-        <PackageReference Include="Open.NAT.Core" />
     </ItemGroup>
     
   <ItemGroup>

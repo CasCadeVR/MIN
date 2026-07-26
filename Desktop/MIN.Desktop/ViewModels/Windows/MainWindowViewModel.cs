@@ -9,12 +9,14 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using MIN.Core.Transport.Contracts.Helpers;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Models.ReferenceCommands;
 using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 using MIN.Desktop.Infrastructure.Extensions;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Base.Interfaces;
 using MIN.Desktop.ViewModels.Pages;
@@ -130,6 +132,17 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
             // Это костыль, потому что discovery не может сослаться на mainSideBarViewModel
             await this.ShowAsync(mainSideBarViewModel);
         });
+
+        if (!Design.IsDesignMode)
+        {
+            Task.Run(async () =>
+            {
+                if (!NetworkHelper.HasInternetConnectivity())
+                {
+                    InAppNotifier.Warning("Launcher may not be connected to internet");
+                }
+            });
+        }
 
         _ = this.ShowAsync(mainSideBarViewModel);
         _ = this.ShowAsync(discoveryViewModel);

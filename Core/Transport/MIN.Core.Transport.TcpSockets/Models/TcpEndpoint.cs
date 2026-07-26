@@ -12,9 +12,19 @@ public sealed class TcpEndpoint : IEndpoint
     public TransportType Type => TransportType.Tcp;
 
     /// <summary>
+    /// Происходждения IP
+    /// </summary>
+    public IpOrigin IpOrigin { get; set; }
+
+    /// <summary>
     /// IP Адрес
     /// </summary>
     public string IPAddress { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Имя сети (если есть)
+    /// </summary>
+    public string? NetworkName { get; set; }
 
     /// <summary>
     /// Динамически созданный порт
@@ -27,5 +37,5 @@ public sealed class TcpEndpoint : IEndpoint
     public TcpEndpoint() { }
 
     /// <inheritdoc />
-    public override string ToString() => $"{IPAddress}:{Port}";
+    public override string ToString() => $"{IpOrigin} {IPAddress}:{Port}";
 }

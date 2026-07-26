@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Desktop.Infrastructure.Services;
+using MIN.Desktop.Infrastructure.Validators;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.ViewModels.Modals;
@@ -20,14 +21,14 @@ public partial class DirectConnectViewModel : ModalViewModelBase
     [ObservableProperty]
     [NotifyDataErrorInfo]
     [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
-    [Required]
-    public partial string IpAddress { get; set; } = "";
+    [Required(ErrorMessage = "Введите IP адрес")]
+    public partial string IpAddress { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
-    [Required]
-    [Range(0, 65535)]
     [NotifyDataErrorInfo]
+    [IntValue]
+    [Range(ushort.MinValue, ushort.MaxValue, ErrorMessage = "Порт должен быть от 0 до 65535")]
     public partial int Port { get; set; }
 
     [ObservableProperty]

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Desktop.Contracts.Constants;
+using MIN.Core.Transport.Contracts.Models;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Infrastructure.Validators;
 using MIN.Desktop.ViewModels.Base;
@@ -27,17 +27,43 @@ public partial class CreateRoomViewModel : ModalViewModelBase
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
-    [Range(1, DesktopConstants.MaximumParticipantsInRoom)]
     [NotifyDataErrorInfo]
+    [RoomCapacity]
     public partial int RoomMaxPlayers { get; set; } = 8;
 
+    /// <summary>
+    /// Локальное обнаружение
+    /// </summary>
     [ObservableProperty]
-    public partial bool RoomAutoPortForward { get; set; }
+    public partial bool EnableLocalDiscovery { get; set; }
+
+    /// <summary>
+    /// Проброска порта
+    /// </summary>
+    [ObservableProperty]
+    public partial bool EnablePortForwarding { get; set; }
+
+    /// <summary>
+    /// Radmin
+    /// </summary>
+    [ObservableProperty]
+    public partial bool EnableRadmin { get; set; }
+
+    /// <summary>
+    /// Публикация в web
+    /// </summary>
+    [ObservableProperty]
+    public partial bool EnableWeb { get; set; }
 
     /// <summary>
     /// Настраиваемая комната
     /// </summary>
     public RoomInfo Room { get; set; } = new RoomInfo();
+
+    /// <summary>
+    /// Настройки глобальности сети
+    /// </summary>
+    public NetworkOptions NetworkOptions { get; set; }
 
     /// <summary>
     /// Инициализироовать с уже созданной комнатой
@@ -47,6 +73,22 @@ public partial class CreateRoomViewModel : ModalViewModelBase
         Room = room;
         Name = room.Name;
         RoomMaxPlayers = room.MaximumParticipants;
+    }
+
+    partial void OnEnableRadminChanged(bool value)
+    {
+        if (EnablePortForwarding && value)
+        {
+            EnablePortForwarding = false;
+        }
+    }
+
+    partial void OnEnablePortForwardingChanged(bool value)
+    {
+        if (EnableRadmin && value)
+        {
+            EnableRadmin = false;
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanCreate))]
@@ -61,6 +103,14 @@ public partial class CreateRoomViewModel : ModalViewModelBase
         }
 
         Room.MaximumParticipants = RoomMaxPlayers;
+
+        NetworkOptions = new()
+        {
+            EnableLocalDiscovery = EnableLocalDiscovery,
+            EnablePortForwarding = EnablePortForwarding,
+            EnableRadmin = EnableRadmin,
+            EnableWeb = EnableWeb,
+        };
 
         Close(ButtonOptions.Ok);
     }
