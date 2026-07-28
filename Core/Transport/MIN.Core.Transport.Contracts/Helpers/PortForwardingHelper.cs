@@ -65,7 +65,15 @@ public static class PortForwardingHelper
         {
             if (await device.GetSpecificMappingAsync(protocol, port) != null)
             {
-                return ResultCodes.CONFLICT_IN_MAPPING_ENTRY;
+                try
+                {
+                    mappedPorts.Remove(port);
+                    await device.DeletePortMapAsync(new Mapping(Protocol.Tcp, port, port));
+                }
+                catch
+                {
+                    return ResultCodes.CONFLICT_IN_MAPPING_ENTRY;
+                }
             }
 
             // 2. Создаём
@@ -85,6 +93,11 @@ public static class PortForwardingHelper
     /// </summary>
     public static async Task<bool> UnmapPortAsync(ushort port, Protocol protocol, CancellationToken cancellationToken = default)
     {
+        if (!mappedPorts.Remove(port))
+        {
+            return false;
+        }
+
         var tries = 3;
         while (tries-- >= 0)
         {
@@ -107,7 +120,6 @@ public static class PortForwardingHelper
             try
             {
                 await device.DeletePortMapAsync(new Mapping(Protocol.Tcp, port, port));
-                mappedPorts.Remove(port);
                 return true;
             }
             catch (MappingException)

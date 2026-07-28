@@ -3,10 +3,8 @@ using System.Net;
 using System.Net.Sockets;
 using MIN.Core.Transport.Contracts.Constants;
 using MIN.Core.Transport.Contracts.Helpers;
-using MIN.Core.Transport.Contracts.Models;
 using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Models.Enums;
 using Open.Nat;
 
 namespace MIN.Core.Transport.TcpSockets.Server;
@@ -29,11 +27,6 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     /// Порт подключения
     /// </summary>
     public ushort Port => (ushort)((IPEndPoint)listener.LocalEndpoint).Port;
-
-    /// <summary>
-    /// Настройки сети
-    /// </summary>
-    public NetworkOptions NetworkOptions { get; private set; }
 
     /// <summary>
     /// Текущие соединения
@@ -68,35 +61,12 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     /// <summary>
     /// Запустить сервер
     /// </summary>
-    public async Task StartAsync(NetworkOptions networkOptions, CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        NetworkOptions = networkOptions;
         listener.Start();
         acceptLoop = Task.Run(AcceptLoopAsync, cancellationToken);
         logger.Log($"Стартанул сервер на порту: {Port}");
-
-        if (networkOptions.EnablePortForwarding)
-        {
-            var result = await PortForwardingHelper.MapPortAsync(Port, Protocol.Tcp, cancellationToken, $"Room {Port}");
-
-            switch (result)
-            {
-                case ResultCodes.SUCCESS:
-                    logger.Log($"Порт проброшен. Публичный порт: {Port}");
-                    break;
-
-                case ResultCodes.CONFLICT_IN_MAPPING_ENTRY:
-                    var conflictMessage = "UPnP конфликтует с текущим портом. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную.";
-                    logger.Log(conflictMessage, LogLevel.Error);
-                    throw new InvalidOperationException(conflictMessage);
-
-                case ResultCodes.UNKNOWN_ERROR:
-                    var message = "UPnP не доступен. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную. Либо ну удалось получить публичный адрес.";
-                    logger.Log(message, LogLevel.Error);
-                    throw new InvalidOperationException(message);
-            }
-        }
     }
 
     private async Task AcceptLoopAsync()

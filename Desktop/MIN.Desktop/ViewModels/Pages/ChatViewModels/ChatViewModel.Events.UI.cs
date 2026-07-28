@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
@@ -27,12 +27,24 @@ namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 /// </summary>
 public partial class ChatViewModel : RoutableViewModelBase
 {
-    private readonly Timer typingTimer = new() { Interval = 3000 };
+    private readonly System.Timers.Timer typingTimer = new() { Interval = 3000 };
+
 
     private bool isParentWindowActive = true;
 
     [ObservableProperty]
     public partial int CaretIndex { get; set; }
+
+    // Updating
+
+    [ObservableProperty]
+    public partial bool IsUpdatingNetwork { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsCancelingUpdatingNetwork { get; set; }
+
+    private CancellationTokenSource? updatingRoomCts;
+
 
     #region Layouting
 
@@ -158,23 +170,55 @@ public partial class ChatViewModel : RoutableViewModelBase
     [RelayCommand]
     private async Task EditRoom()
     {
-        var editForm = await dialogService.ShowDialogAsync<CreateRoomViewModel>(vm =>
+        var editFormResult = await dialogService.ShowDialogAsync<CreateRoomViewModel>(vm =>
         {
-            vm.InitializeWithRoom(new RoomInfo(room));
+            vm.InitializeWithRoom(new RoomInfo(room), room.LocalRoomSettings.NetworkOptions);
         });
 
-        if ((editForm! == true && editForm != null)
-            && (editForm.Room.Name != room.Name
-            || editForm.Room.MaximumParticipants != room.MaximumParticipants))
+        if (editFormResult == true)
         {
+            IsUpdatingNetwork = true;
+            updatingRoomCts = CancellationTokenSource.CreateLinkedTokenSource(formCts.Token);
+
             try
             {
-                await featureCollection.Chat.ChatRoomService.SendUpdatedRoomInfoAsync(editForm.Room, formCts.Token);
+                await featureCollection.Chat.ChatRoomService.UpdateNetworkOutOfSettings(editFormResult.Room,
+                    room.ConnectionAddresses, editFormResult.NetworkOptions, room.LocalRoomSettings.NetworkOptions, updatingRoomCts.Token);
+
+                if (editFormResult.Room.Name != room.Name || editFormResult.Room.MaximumParticipants != room.MaximumParticipants)
+                {
+                    await featureCollection.Chat.ChatRoomService.SendUpdatedRoomInfoAsync(editFormResult.Room, updatingRoomCts.Token);
+                }
+
+                chatSideBarViewModel.UpdateStats(room);
+
+                InAppNotifier.Success("Комната успешно была обновлена!");
+            }
+            catch (OperationCanceledException)
+            {
+                InAppNotifier.Info("Обновление комнаты было отменено");
             }
             catch (Exception ex)
             {
                 InAppNotifier.Error(ex.Message);
             }
+            finally
+            {
+                IsUpdatingNetwork = false;
+                IsCancelingUpdatingNetwork = false;
+                updatingRoomCts = null;
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task CancelRoomUpdate()
+    {
+        IsCancelingUpdatingNetwork = true;
+
+        if (updatingRoomCts != null)
+        {
+            await updatingRoomCts.CancelAsync();
         }
     }
 

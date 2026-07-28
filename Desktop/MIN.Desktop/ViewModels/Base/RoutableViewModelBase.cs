@@ -26,9 +26,9 @@ public abstract class RoutableViewModelBase : ViewModelBase, IRoutableViewModel
     public virtual EventHandler? OnNavigatedFrom { get; }
 
     /// <inheritdoc />
-    public void ChangeView<TViewModel>(TViewModel viewModel) where TViewModel : IRoutableViewModel
+    public void ChangeView<TViewModel>(TViewModel viewModel, CancellationToken cancellationToken = default) where TViewModel : IRoutableViewModel
     {
-        WeakReferenceMessenger.Default.Send(new ShowViewReferenceCommand(viewModel));
+        WeakReferenceMessenger.Default.Send(new ShowViewReferenceCommand(viewModel, cancellationToken));
     }
 
     /// <inheritdoc />

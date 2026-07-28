@@ -43,10 +43,31 @@
                 CornerRadius="{DynamicResource CornerRadiusLarge}">
                     <DockPanel>
                         <Button HorizontalAlignment="Right"
-                        DockPanel.Dock="Right"
-                        ToolTip.Tip="Действия"
-                        Classes="icon">
-                            <Svg Path="/Assets/Icons/about.svg" />
+                            DockPanel.Dock="Right"
+                            IsEnabled="{Binding !IsCancelingUpdatingNetwork}"
+                            ToolTip.Tip="Действия"
+                            Classes="icon">
+                            <StackPanel Orientation="Horizontal">
+                                <Svg IsVisible="{Binding !IsUpdatingNetwork}"
+                                    Path="/Assets/Icons/about.svg" />
+
+                                <Button IsVisible="{Binding IsUpdatingNetwork}"
+                                    IsEnabled="{Binding !IsCancelingUpdatingNetwork}"
+                                    Command="{Binding CancelRoomUpdateCommand}"
+                                    Classes="no-background">
+                                    <Panel>
+                                        <TextBlock IsVisible="{Binding !IsCancelingUpdatingNetwork}"
+                                                   Text="Отмена" />
+                                        <TextBlock IsVisible="{Binding IsCancelingUpdatingNetwork}"
+                                                   Text="Идёт отмена..." />
+                                    </Panel>
+                                </Button>
+
+                                <Svg IsVisible="{Binding IsUpdatingNetwork}"
+                                    Path="/Assets/Icons/loading.svg"
+                                    Classes="rotating" />
+                            </StackPanel>
+
                             <Button.Flyout>
                                 <Flyout FlyoutPresenterClasses="buttons"
                                         Placement="BottomEdgeAlignedRight">
@@ -78,6 +99,8 @@
                                                     Text="Редактировать комнату" />
                                             </StackPanel>
                                         </Button>
+
+                                        
                                     </StackPanel>
                                 </Flyout>
                             </Button.Flyout>

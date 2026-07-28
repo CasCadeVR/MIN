@@ -13,7 +13,9 @@
         SizeToContent="WidthAndHeight"
         x:Class="MIN.Desktop.Views.Modals.CreateRoomModal"
         x:DataType="vm:CreateRoomViewModel"
-        Title="MIN - Новая комната">
+        Title="{Binding Title,
+            Converter={converters:TruncateWithEllipsisConverter},
+            ConverterParameter=30}">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -137,6 +139,13 @@
                     <Button
                         Command="{Binding CreateCommand}"
                         Content="Создать"
+                        IsVisible="{Binding IsNew}"
+                        HorizontalAlignment="Right"
+                        HotKey="Enter" />
+                    <Button
+                        Command="{Binding CreateCommand}"
+                        Content="Сохранить"
+                        IsVisible="{Binding !IsNew}"
                         HorizontalAlignment="Right"
                         HotKey="Enter" />
                 </Panel>

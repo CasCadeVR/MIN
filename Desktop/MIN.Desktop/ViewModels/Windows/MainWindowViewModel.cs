@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -28,6 +29,14 @@ namespace MIN.Desktop.ViewModels.Windows;
 /// </summary>
 public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
 {
+    /// <summary>
+    /// Поступил сигнал отмены при переходе
+    /// </summary>
+    public Action? RoutingCancellationRequested { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsCancellingRouting { get; set; }
+
     [ObservableProperty]
     public partial WindowLayout LayoutMode { get; set; } = WindowLayout.ThreeColumns;
 
@@ -86,8 +95,17 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     /// </summary>
     public MainWindowViewModel(MainSideBarViewModel mainSideBarViewModel, DiscoveryViewModel discoveryViewModel)
     {
-        this.RegisterMessageListener<ShowViewReferenceCommand, MainWindowViewModel>(static (message, vm)
-            => vm.ShowAsync(message.ViewModel));
+        this.RegisterMessageListener<ShowViewReferenceCommand, MainWindowViewModel>(async (message, vm) =>
+        {
+            try
+            {
+                await vm.ShowAsync(message.ViewModel, message.CancellationToken);
+            }
+            finally
+            {
+                IsCancellingRouting = false;
+            }
+        });
         this.RegisterMessageListener<CloseViewReferenceCommand, MainWindowViewModel>(static (message, vm)
             => vm.CloseAsync(message.LayoutType));
         this.RegisterMessageListener<ShowPreviousViewReferenceCommand, MainWindowViewModel>(async (message, vm)
@@ -146,6 +164,13 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
 
         _ = this.ShowAsync(mainSideBarViewModel);
         _ = this.ShowAsync(discoveryViewModel);
+    }
+
+    [RelayCommand]
+    private void CancelRouting()
+    {
+        IsCancellingRouting = true;
+        RoutingCancellationRequested?.Invoke();
     }
 
     [RelayCommand]

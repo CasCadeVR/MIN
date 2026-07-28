@@ -8,6 +8,7 @@ using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Core.Transport.TcpSockets.Server;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
+using Open.Nat;
 
 namespace MIN.Core.Transport.TcpSockets;
 
@@ -19,8 +20,6 @@ public class TcpTransport : ITransport
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, TcpSocketServer> servers = new();
     private readonly ConcurrentDictionary<Guid, TcpSocketClient> clients = new();
-
-    private IEnumerable<MachineKnownIp>? machineKnownIpsCache = [];
 
     /// <inheritdoc />
     public event EventHandler<RawMessageReceivedEventArgs>? RawMessageReceived;
@@ -36,7 +35,7 @@ public class TcpTransport : ITransport
         this.logger = logger;
     }
 
-    async Task<Guid> ITransport.StartHostingAsync(NetworkOptions networkOptions, CancellationToken cancellationToken)
+    async Task<Guid> ITransport.StartHostingAsync(CancellationToken cancellationToken)
     {
         var connectionId = Guid.NewGuid();
         var port = PortProvider.AllocatePort();
@@ -63,7 +62,7 @@ public class TcpTransport : ITransport
             ConnectionStateChanged?.Invoke(this, args);
         };
 
-        await server.StartAsync(networkOptions, cancellationToken);
+        await server.StartAsync(cancellationToken);
         servers.TryAdd(connectionId, server);
 
         return connectionId;
@@ -137,29 +136,76 @@ public class TcpTransport : ITransport
         }
     }
 
-    async Task<IEnumerable<IEndpoint>> ITransport.GetEndpoints(Guid connectionId)
+    async Task<IEnumerable<IEndpoint>> ITransport.SetUpAndGetEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
     {
         if (!servers.TryGetValue(connectionId, out var server))
         {
             throw new InvalidOperationException($"Connection {connectionId} is not hosted locally");
         }
 
-        var result = new List<TcpEndpoint>();
+        var includeWan = false;
 
-        machineKnownIpsCache ??= await NetworkHelper.GetAllKnownIpsAsync();
-
-        foreach (var ip in machineKnownIpsCache)
+        if ((oldNetworkOptions == null && networkOptions.EnablePortForwarding)
+            || (oldNetworkOptions.HasValue && networkOptions.EnablePortForwarding && !oldNetworkOptions.Value.EnablePortForwarding))
         {
-            result.Add(new TcpEndpoint
+            includeWan = true;
+
+            var result = await PortForwardingHelper.MapPortAsync(server.Port, Protocol.Tcp, cancellationToken, $"Room {server.Port}");
+
+            switch (result)
             {
-                IpOrigin = ip.Origin,
-                IPAddress = ip.ToString(),
+                case ResultCodes.SUCCESS:
+                    logger.Log($"Порт проброшен. Публичный порт: {server.Port}");
+                    break;
+
+                case ResultCodes.CONFLICT_IN_MAPPING_ENTRY:
+                    var conflictMessage = "UPnP конфликтует с текущим портом. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную.";
+                    logger.Log(conflictMessage, LogLevel.Error);
+                    throw new InvalidOperationException(conflictMessage);
+
+                case ResultCodes.UNKNOWN_ERROR:
+                    var message = "UPnP не доступен. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную. Либо ну удалось получить публичный адрес.";
+                    logger.Log(message, LogLevel.Error);
+                    throw new InvalidOperationException(message);
+            }
+        }
+        else if (oldNetworkOptions.HasValue && !networkOptions.EnablePortForwarding && oldNetworkOptions.Value.EnablePortForwarding)
+        {
+            await PortForwardingHelper.UnmapPortAsync(server.Port, Protocol.Tcp, cancellationToken);
+        }
+
+        var includeVpns = oldNetworkOptions == null && networkOptions.EnableRadmin
+            || oldNetworkOptions.HasValue && networkOptions.EnableRadmin && !oldNetworkOptions.Value.EnableRadmin;
+
+        IEnumerable<MachineKnownIp> knownIps = [];
+
+        try
+        {
+            knownIps = await NetworkHelper.GetAllKnownIpsAsync(includeWan, includeVpns, cancellationToken);
+        }
+        catch
+        {
+            if ((oldNetworkOptions == null && networkOptions.EnablePortForwarding)
+                || (oldNetworkOptions.HasValue && networkOptions.EnablePortForwarding && !oldNetworkOptions.Value.EnablePortForwarding))
+            {
+                await PortForwardingHelper.UnmapPortAsync(server.Port, Protocol.Tcp, cancellationToken);
+            }
+        }
+
+        var endpoints = new List<TcpEndpoint>();
+
+        foreach (var ip in knownIps)
+        {
+            endpoints.Add(new TcpEndpoint
+            {
+                Origin = ip.Origin,
+                IPAddress = ip.Address.ToString(),
                 NetworkName = ip.NetworkName,
                 Port = server.Port
             });
         }
 
-        return result;
+        return endpoints;
     }
 
     /// <inheritdoc />

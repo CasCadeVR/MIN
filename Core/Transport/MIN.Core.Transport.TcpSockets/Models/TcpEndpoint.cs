@@ -1,4 +1,5 @@
-﻿using MIN.Core.Transport.Contracts.Enum;
+﻿using System.Text;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Transport.TcpSockets.Models;
@@ -11,10 +12,8 @@ public sealed class TcpEndpoint : IEndpoint
     /// <inheritdoc />
     public TransportType Type => TransportType.Tcp;
 
-    /// <summary>
-    /// Происходждения IP
-    /// </summary>
-    public IpOrigin IpOrigin { get; set; }
+    /// <inheritdoc />
+    public AddressOrigin Origin { get; set; }
 
     /// <summary>
     /// IP Адрес
@@ -37,5 +36,22 @@ public sealed class TcpEndpoint : IEndpoint
     public TcpEndpoint() { }
 
     /// <inheritdoc />
-    public override string ToString() => $"{IpOrigin} {IPAddress}:{Port}";
+    public override string ToString()
+    {
+        var tostringSb = new StringBuilder();
+        tostringSb.Append(Origin);
+        tostringSb.Append(' ');
+
+        if (NetworkName != null)
+        {
+            tostringSb.Append(NetworkName);
+            tostringSb.Append(' ');
+        }
+
+        tostringSb.Append(IPAddress);
+        tostringSb.Append(':');
+        tostringSb.Append(Port);
+
+        return tostringSb.ToString();
+    }
 }

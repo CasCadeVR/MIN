@@ -1,9 +1,9 @@
 ﻿namespace MIN.Core.Transport.Contracts.Enum;
 
 /// <summary>
-/// Откуда был получен IP
+/// Откуда был получен адрес
 /// </summary>
-public enum IpOrigin
+public enum AddressOrigin
 {
     /// <summary>
     /// Из локальной сети

@@ -56,6 +56,18 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     public partial bool EnableWeb { get; set; }
 
     /// <summary>
+    /// Создание или редактирование комнаты
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsNew { get; set; } = true;
+
+    /// <summary>
+    /// Название окна
+    /// </summary>
+    [ObservableProperty]
+    public partial string Title { get; set; } = "MIN - Создание комнаты";
+
+    /// <summary>
     /// Настраиваемая комната
     /// </summary>
     public RoomInfo Room { get; set; } = new RoomInfo();
@@ -68,11 +80,20 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     /// <summary>
     /// Инициализироовать с уже созданной комнатой
     /// </summary>
-    public void InitializeWithRoom(RoomInfo room)
+    public void InitializeWithRoom(RoomInfo room, NetworkOptions networkOptions)
     {
+        Title = $"Редактирование комнаты {room.Name}";
+
+        IsNew = false;
         Room = room;
         Name = room.Name;
         RoomMaxPlayers = room.MaximumParticipants;
+        NetworkOptions = networkOptions;
+
+        EnableLocalDiscovery = NetworkOptions.EnableLocalDiscovery;
+        EnablePortForwarding = NetworkOptions.EnablePortForwarding;
+        EnableRadmin = NetworkOptions.EnableRadmin;
+        EnableWeb = NetworkOptions.EnableWeb;
     }
 
     partial void OnEnableRadminChanged(bool value)

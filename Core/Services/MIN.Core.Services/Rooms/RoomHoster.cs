@@ -156,12 +156,9 @@ public sealed class RoomHoster : IRoomHoster
             Participant = new Participant(localParticipant)
         });
 
-        var connectionId = await transport.StartHostingAsync(networkOptions, cancellationToken);
-
-        var endpoints = await transport.GetEndpoints(connectionId);
-
-        roomInfo.ConnectionAddresses = endpoints.Select(x => x.ToString());
-        room.ConnectionAddresses = endpoints.Select(x => x.ToString());
+        var connectionId = await transport.StartHostingAsync(cancellationToken);
+        room.ConnectionAddresses = await transport.SetUpAndGetEndpoints(connectionId, networkOptions, cancellationToken: cancellationToken);
+        room.LocalRoomSettings.NetworkOptions = networkOptions;
 
         context.Participants.AddParticipant(new Participant(localParticipant));
 
@@ -174,11 +171,21 @@ public sealed class RoomHoster : IRoomHoster
         return roomStore.GetRoom(roomId);
     }
 
-    Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
-        => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
+    async Task<IEnumerable<IEndpoint>> IRoomHoster.UpdateNetworkOptions(Guid roomId, NetworkOptions newNetworkOptions, CancellationToken cancellationToken)
+    {
+        var room = roomStore.GetRoom(roomId);
 
-    Guid IRoomConnectionRelated.GetRoomIdByConnectionId(Guid connectionId)
-        => activeConnections.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
+        if (!activeRooms.TryGetValue(roomId, out var connectionId))
+        {
+            return room.ConnectionAddresses;
+        }
+
+        var newEndpoints = await transport.SetUpAndGetEndpoints(connectionId, newNetworkOptions, room.LocalRoomSettings.NetworkOptions, cancellationToken);
+        room.ConnectionAddresses = newEndpoints;
+        room.LocalRoomSettings.NetworkOptions = newNetworkOptions;
+
+        return room.ConnectionAddresses;
+    }
 
     async Task IRoomHoster.StopHostingAsync(Guid roomId)
     {
@@ -205,6 +212,12 @@ public sealed class RoomHoster : IRoomHoster
 
         await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
     }
+
+    Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
+        => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
+
+    Guid IRoomConnectionRelated.GetRoomIdByConnectionId(Guid connectionId)
+        => activeConnections.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
 
     bool IRoomHoster.IsHosting(Guid roomId)
         => activeRooms.ContainsKey(roomId);

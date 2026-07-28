@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.ViewModels.Base.Interfaces;
@@ -40,6 +41,11 @@ public interface IMultiRoutingWindow
     /// Правая страница
     /// </summary>
     object? RightSideBarViewModel { get; set; }
+
+    /// <summary>
+    /// Поступил сигнал отмены при переходе
+    /// </summary>
+    Action? RoutingCancellationRequested { get; set; }
 
     /// <summary>
     /// Получить переменную view model из типа layout

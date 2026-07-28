@@ -10,6 +10,9 @@ public interface IEndpoint
     /// <inheritdoc cref="TransportType"/>
     TransportType Type { get; }
 
+    /// <inheritdoc cref="AddressOrigin"/>
+    AddressOrigin Origin { get; }
+
     /// <summary>
     /// Получить строковое представление адреса
     /// </summary>

@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Collections;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
+using MIN.Core.Transport.Contracts.Enum;
+using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Constants;
-using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.ViewModels.Cards;
@@ -44,16 +47,10 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
     public partial RoomInfo Room { get; set; }
 
     /// <summary>
-    /// IP Адрес
+    /// Адрес соединения
     /// </summary>
     [ObservableProperty]
-    public partial string IpAddress { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Порт
-    /// </summary>
-    [ObservableProperty]
-    public partial string Port { get; set; } = string.Empty;
+    public partial AvaloniaList<ConnectionAddressViewModel> ConnectionAddresses { get; set; } = [];
 
     /// <summary>
     /// Кабинет
@@ -68,16 +65,18 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
     public partial string ConnectionStatus { get; set; } = string.Empty;
 
     /// <summary>
-    /// Событие по нажатию на саму карточку
+    /// Событие по нажатию на присоединения, выбрав способ
     /// </summary>
-    public Action? Clicked { get; set; }
+    public Action<AddressOrigin>? Clicked { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="DiscoveredRoomCardViewModel"/>
     /// </summary>
     public DiscoveredRoomCardViewModel(IEventBus eventBus,
         RoomInfo room,
-        bool asHost)
+        IEnumerable<IEndpoint> endpoints,
+        bool asHost,
+        IClipboard? clipboard)
     {
         this.eventBus = eventBus;
         this.asHost = asHost;
@@ -85,10 +84,9 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
 
         Room = room;
 
-        if (IpAddressParser.TryParseIpAddress(room.ConnectionAddress, out var gottenIpAddress, out var port))
+        foreach (var endpoint in endpoints)
         {
-            Port = port.ToString();
-            IpAddress = gottenIpAddress;
+            ConnectionAddresses.Add(new ConnectionAddressViewModel(endpoint, clipboard));
         }
 
         Cabinet = string.IsNullOrEmpty(room.Cabinet)
@@ -106,7 +104,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
     public void JoinRoom()
     {
         IsConnecting = true;
-        Clicked?.Invoke();
+        Clicked?.Invoke(AddressOrigin.LAN);
     }
 
     private void SubscribeToEvents()

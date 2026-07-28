@@ -1,4 +1,6 @@
-﻿namespace MIN.Core.Entities;
+﻿using MIN.Core.Transport.Contracts.Models;
+
+namespace MIN.Core.Entities;
 
 /// <summary>
 /// Локальные настройки комнаты
@@ -9,4 +11,9 @@ public record LocalRoomSettings
     /// Включены ли уведомления
     /// </summary>
     public bool NotificationsEnabled { get; set; }
+
+    /// <summary>
+    /// Настройки глобальности сети
+    /// </summary>
+    public NetworkOptions NetworkOptions { get; set; }
 }

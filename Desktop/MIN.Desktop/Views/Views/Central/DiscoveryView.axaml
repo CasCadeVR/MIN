@@ -34,7 +34,7 @@
                     </Button>
 
                     <Button
-                        Command="{Binding CreateRoomCommand}"
+                        Command="{Binding CreateRoomUICommand}"
                         DockPanel.Dock="Left"
                         ToolTip.Tip="Создать комнату"
                         Classes="icon">
@@ -173,33 +173,14 @@
 
                                     <!-- Computer -->
 
-                                        <StackPanel Spacing="8"
+                                    <StackPanel Spacing="8"
                                         HorizontalAlignment="Center"
                                         Orientation="Horizontal">
                                         <TextBlock Text="№ Компьютера: " />
                                         <TextBlock Text="{Binding Room.PcNumber}" />
                                     </StackPanel>
 
-                                    <!-- IP Address -->
-
-                                    <StackPanel Spacing="8"
-                                        HorizontalAlignment="Center"
-                                        Orientation="Horizontal">
-                                        <TextBlock Text="Адрес: " />
-                                        <SelectableTextBlock Text="{Binding IpAddress}" />
-                                    </StackPanel>
-
-
-                                    <!-- Port -->
-
-                                    <StackPanel Spacing="8"
-                                        HorizontalAlignment="Center"
-                                        Orientation="Horizontal">
-                                        <TextBlock Text="Порт: " />
-                                        <SelectableTextBlock Text="{Binding Port}" />
-                                    </StackPanel>
-
-                                    <!-- Online -->
+                                    <!-- Connected -->
 
                                     <StackPanel
                                         HorizontalAlignment="Center"
@@ -209,6 +190,36 @@
                                         <TextBlock Text="/" />
                                         <TextBlock Text="{Binding Room.MaximumParticipants}" />
                                     </StackPanel>
+
+
+                                    <!-- Addresses -->
+
+                                    <TextBlock Classes="header5"
+                                        HorizontalAlignment="Center"
+                                        Text="Адреса: " />
+
+                                    <ScrollViewer VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        Classes="main">
+                                        <ItemsControl ItemsSource="{Binding ConnectionAddresses}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <VirtualizingStackPanel />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <SelectableTextBlock VerticalAlignment="Center"
+                                                                HorizontalAlignment="Center"
+                                                                Text="{Binding Address}" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
 
                                     <Button
                                         Command="{Binding JoinRoomCommand}"

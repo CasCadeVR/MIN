@@ -34,12 +34,15 @@ public interface ITransport
     /// <summary>
     /// Запустить сервер подключений
     /// </summary>
-    Task<Guid> StartHostingAsync(NetworkOptions networkOptions, CancellationToken cancellationToken = default);
+    Task<Guid> StartHostingAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Получить все точки подключения
+    /// Настроить доступ и получить все точки подключения
     /// </summary>
-    Task<IEnumerable<IEndpoint>> GetEndpoints(Guid connectionId);
+    /// <remarks>
+    /// Настраивает только PortForwarding и vpn
+    /// </remarks>
+    Task<IEnumerable<IEndpoint>> SetUpAndGetEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Прекратить сервер для указанного соединения

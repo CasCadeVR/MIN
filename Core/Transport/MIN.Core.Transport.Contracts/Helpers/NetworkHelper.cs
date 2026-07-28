@@ -87,7 +87,7 @@ public static partial class NetworkHelper
     /// <summary>
     /// Получить публичный IP адрес
     /// </summary>
-    public static async Task<IPAddress?> GetWanIpAsync()
+    public static async Task<IPAddress?> GetWanIpAsync(CancellationToken cancellationToken)
     {
         lock (wanIpLock)
         {
@@ -107,8 +107,8 @@ public static partial class NetworkHelper
             {
                 try
                 {
-                    using var response = await client.GetAsync(site);
-                    var content = await response.Content.ReadAsStringAsync();
+                    using var response = await client.GetAsync(site, cancellationToken);
+                    var content = await response.Content.ReadAsStringAsync(cancellationToken);
                     ip = IPAddress.Parse(regex.Match(content).Value);
                     if (ip.IsPrivate())
                     {
@@ -165,39 +165,58 @@ public static partial class NetworkHelper
     /// <summary>
     /// Получить список всех доступых Ip адресов
     /// </summary>
-    public static async Task<IEnumerable<MachineKnownIp>> GetAllKnownIpsAsync()
+    public static async Task<IEnumerable<MachineKnownIp>> GetAllKnownIpsAsync(bool includeWan = true, bool includeVpns = true, CancellationToken cancellationToken = default)
     {
-        var machineKnownIps = Task.Run(() => GetLocalMachineAttachedIpAddresses().ToArray());
-        var wanIp = GetWanIpAsync();
-        var vpnIps = Task.Run(GetVpnIps);
+        var wantedIps = new List<Task>();
 
-        await Task.WhenAll(machineKnownIps, wanIp, vpnIps);
+        var machineKnownIps = Task.Run(() => GetLocalMachineAttachedIpAddresses().ToArray(), cancellationToken);
+        var wanIp = GetWanIpAsync(cancellationToken);
+
+        if (includeWan)
+        {
+            wantedIps.Add(wanIp);
+        }
+
+        var vpnIps = Task.Run(GetVpnIps, cancellationToken);
+
+        if (includeVpns)
+        {
+            wantedIps.Add(vpnIps);
+        }
+
+        await Task.WhenAll(wantedIps);
 
         List<MachineKnownIp> knownIps = [];
         foreach (var knownIp in await machineKnownIps)
         {
             if (knownIp.Address.IsPrivate())
             {
-                knownIps.Add(new MachineKnownIp(knownIp.Address.TryExtractMappedIPv4(), IpOrigin.LAN, knownIp.NetworkName));
+                knownIps.Add(new MachineKnownIp(knownIp.Address.TryExtractMappedIPv4(), AddressOrigin.LAN, knownIp.NetworkName));
             }
         }
-        if (await wanIp is { } wanAddress && !wanAddress.IsPrivate())
+        if (includeWan)
         {
-            knownIps.Add(new MachineKnownIp(wanAddress, IpOrigin.WAN));
-        }
-        foreach ((var vpnAddress, var vpnName) in await vpnIps)
-        {
-            if (vpnAddress == null)
+            if (await wanIp is { } wanAddress && !wanAddress.IsPrivate())
             {
-                continue;
+                knownIps.Add(new MachineKnownIp(wanAddress, AddressOrigin.WAN));
             }
-            knownIps.Add(new MachineKnownIp(vpnAddress.TryExtractMappedIPv4(), IpOrigin.VPN, vpnName));
+        }
+        if (includeVpns)
+        {
+            foreach ((var vpnAddress, var vpnName) in await vpnIps)
+            {
+                if (vpnAddress == null)
+                {
+                    continue;
+                }
+                knownIps.Add(new MachineKnownIp(vpnAddress.TryExtractMappedIPv4(), AddressOrigin.VPN, vpnName));
+            }
         }
         foreach (var knownIp in await machineKnownIps)
         {
-            if (!knownIp.Address.IsPrivate())
+            if (!knownIp.Address.IsPrivate() && !SupportedVpnNames.Where(x => x.Contains(knownIp.NetworkName ?? string.Empty)).Any())
             {
-                knownIps.Add(new MachineKnownIp(knownIp.Address.TryExtractMappedIPv4(), IpOrigin.WAN, knownIp.NetworkName));
+                knownIps.Add(new MachineKnownIp(knownIp.Address.TryExtractMappedIPv4(), AddressOrigin.WAN, knownIp.NetworkName));
             }
         }
         return knownIps;
@@ -252,7 +271,7 @@ public static partial class NetworkHelper
                     continue;
                 }
 
-                yield return new MachineKnownIp(address, address.IsPrivate() ? IpOrigin.LAN : IpOrigin.WAN, networkInterface.Name);
+                yield return new MachineKnownIp(address, address.IsPrivate() ? AddressOrigin.LAN : AddressOrigin.WAN, networkInterface.Name);
             }
         }
 
