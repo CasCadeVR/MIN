@@ -43,6 +43,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
     private readonly CancellationTokenSource lifeTimeCts = null!;
     private readonly ParticipantInfo localParticipant = null!;
     private CancellationTokenSource? discoveryCts;
+    private CancellationTokenSource? createRoomCts;
     private IClipboard? clipboard;
 
     private Settings Settings => featureCollection.Helper.SettingsProvider.GetSettings();
@@ -83,6 +84,11 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
             lifeTimeCts = ctsProvider.AppCts;
             SubscribeToEvents();
             InitializeLayoutStyles();
+
+            this.RegisterMessageListener<CancelRoutingOperationReferenceCommand, DiscoveryViewModel>((vm, _) =>
+            {
+                createRoomCts?.Cancel();
+            });
         }
     }
 
@@ -149,7 +155,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         var roomInfo = createViewModelResult!.Room;
         var roomId = roomInfo.Id;
 
-        var createRoomCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
+        createRoomCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
 
         try
         {
@@ -178,6 +184,10 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
             InAppNotifier.Error($"Не удалось создать комнату: {ex.Message}");
             ChangeView(this);
             await CreateRoom(createViewModelResult.Room, createViewModelResult.NetworkOptions);
+        }
+        finally
+        {
+            createRoomCts = null;
         }
     }
 

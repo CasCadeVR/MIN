@@ -97,7 +97,7 @@ public static partial class NetworkHelper
             }
         }
 
-        var ip = await PortForwardingHelper.GetExternalIpAsync();
+        var ip = await PortForwardingHelper.GetExternalIpAsync(cancellationToken);
 
         if (ip == null || ip.IsPrivate())
         {
@@ -219,7 +219,7 @@ public static partial class NetworkHelper
                 knownIps.Add(new MachineKnownIp(knownIp.Address.TryExtractMappedIPv4(), AddressOrigin.WAN, knownIp.NetworkName));
             }
         }
-        return knownIps;
+        return knownIps.Where(ip => ip.Address.AddressFamily == AddressFamily.InterNetwork);
     }
 
     /// <summary>

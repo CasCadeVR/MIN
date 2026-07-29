@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Transport.TcpSockets.Models;
@@ -25,11 +26,15 @@ public partial class DirectConnectViewModel : ModalViewModelBase
     public partial string IpAddress { get; set; } = string.Empty;
 
     [ObservableProperty]
+    public partial string? ErrorMessage { get; set; }
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
     [NotifyDataErrorInfo]
     [IntValue]
-    [Range(ushort.MinValue, ushort.MaxValue, ErrorMessage = "Порт должен быть от 0 до 65535")]
-    public partial int Port { get; set; }
+    [Range(1, ushort.MaxValue, ErrorMessage = "Порт должен быть от 1 до 65535")]
+    [Required(ErrorMessage = "Введите порт")]
+    public partial int Port { get; set; } = 1;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
@@ -70,22 +75,35 @@ public partial class DirectConnectViewModel : ModalViewModelBase
     }
 
     [RelayCommand]
-    private void TryParsePortAndValidate()
+    private async Task TryParsePortAndValidate()
     {
         if (IpAddressParser.TryParseIpAddress(IpAddress, out var gottenIpAddress, out var port))
         {
-            Port = port;
-            IpAddress = gottenIpAddress;
+            try
+            {
+                var validatedIp = await IpAddressParser.ValidateIP(gottenIpAddress);
+                Port = port;
+                IpAddress = validatedIp;
+                ErrorMessage = null;
+                IsEditing = false;
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = ex.Message;
+                IsEditing = true;
+            }
         }
         else
         {
             try
             {
-                IpAddress = IpAddressParser.ValidateIP(IpAddress);
+                IpAddress = await IpAddressParser.ValidateIP(IpAddress);
+                ErrorMessage = null;
                 IsEditing = false;
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorMessage = ex.Message;
                 IsEditing = true;
             }
         }

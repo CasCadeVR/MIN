@@ -44,6 +44,11 @@
                                 </EventTriggerBehavior>
                             </Interaction.Behaviors>
                         </TextBox>
+                        <TextBlock IsVisible="{Binding ErrorMessage,
+                            Converter={converters:NonEqualityConverter},
+                            ConverterParameter={x:Null}}"
+                            Foreground="{DynamicResource StatusError}"
+                            Text="{Binding ErrorMessage}"/>
                     </StackPanel>
                 </Border>
 

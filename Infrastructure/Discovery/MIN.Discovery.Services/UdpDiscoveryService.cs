@@ -22,7 +22,6 @@ namespace MIN.Discovery.Services;
 /// </summary>
 public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
 {
-    private readonly ITransport transport;
     private readonly IRoomHoster roomHoster;
     private readonly IDiscoveryTransport discoveryTransport;
     private readonly IMessageSerializer serializer;
@@ -38,7 +37,6 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
     /// Инициализирует новый экземпляр <see cref="UdpDiscoveryService"/>
     /// </summary>
     public UdpDiscoveryService(
-        ITransport transport,
         IRoomHoster roomHoster,
         IDiscoveryTransport discoveryTransport,
         IMessageSerializer serializer,
@@ -46,7 +44,6 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
         IEventBus eventBus,
         ILoggerProvider logger)
     {
-        this.transport = transport;
         this.roomHoster = roomHoster;
         this.discoveryTransport = discoveryTransport;
         this.serializer = serializer;
@@ -65,11 +62,15 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
         var lan = endpoints.FirstOrDefault(x => x.Origin == AddressOrigin.LAN)
             ?? throw new OverflowException("должен быть указан LAN для локального обнаружения");
 
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(new RoomDiscoveryInfo()
-        {
-            Room = room,
-            Endpoints = [lan]
-        });
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(
+            new DiscoveryResponseMessage()
+            {
+                RoomDiscoveryInfos = [new RoomDiscoveryInfo()
+                {
+                    Room = room,
+                    Endpoints = [lan]
+                }]
+            });
 
         if (activeRoomsSizeById.Sum(x => x.Value) + bytes.Length >= 1500)
         {

@@ -29,6 +29,20 @@ namespace MIN.Desktop.ViewModels.Windows;
 /// </summary>
 public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
 {
+    private readonly Dictionary<ViewLayoutType, List<IRoutableViewModel>> navigationStack = new()
+    {
+        { ViewLayoutType.LeftSideBar, [] },
+        { ViewLayoutType.Central, [] },
+        { ViewLayoutType.RightSideBar, [] },
+    };
+
+    private readonly Dictionary<ViewLayoutType, CancellationTokenSource?> viewChangeBusyCtsByLayout = new()
+    {
+        { ViewLayoutType.LeftSideBar, null },
+        { ViewLayoutType.Central, null },
+        { ViewLayoutType.RightSideBar, null },
+    };
+
     /// <summary>
     /// Поступил сигнал отмены при переходе
     /// </summary>
@@ -51,20 +65,6 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     /// <inheritdoc />
     [ObservableProperty]
     public partial object? RightSideBarViewModel { get; set; }
-
-    private readonly Dictionary<ViewLayoutType, List<IRoutableViewModel>> navigationStack = new()
-    {
-        { ViewLayoutType.LeftSideBar, [] },
-        { ViewLayoutType.Central, [] },
-        { ViewLayoutType.RightSideBar, [] },
-    };
-
-    private readonly Dictionary<ViewLayoutType, CancellationTokenSource?> viewChangeBusyCtsByLayout = new()
-    {
-        { ViewLayoutType.LeftSideBar, null },
-        { ViewLayoutType.Central, null },
-        { ViewLayoutType.RightSideBar, null },
-    };
 
     /// <inheritdoc />
     public Dictionary<ViewLayoutType, List<IRoutableViewModel>> NavigationStack => navigationStack;
@@ -171,6 +171,7 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     {
         IsCancellingRouting = true;
         RoutingCancellationRequested?.Invoke();
+        WeakReferenceMessenger.Default.Send(new CancelRoutingOperationReferenceCommand());
     }
 
     [RelayCommand]

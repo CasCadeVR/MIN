@@ -29,14 +29,14 @@ public enum ResultCodes
 /// </summary>
 public static class PortForwardingHelper
 {
-    private static readonly List<ushort> mappedPorts = [];
+    private readonly static List<ushort> mappedPorts = [];
 
     /// <summary>
     /// Получить внешний IP адрес от устройства
     /// </summary>
-    public static async Task<IPAddress?> GetExternalIpAsync()
+    public static async Task<IPAddress?> GetExternalIpAsync(CancellationToken cancellationToken)
     {
-        var device = await OpenNatHelper.GetDeviceAsync();
+        var device = await OpenNatHelper.GetDeviceAsync(cancellationToken: cancellationToken);
         if (device == null)
         {
             return null;
@@ -55,7 +55,7 @@ public static class PortForwardingHelper
     /// <returns>Код результата</returns>
     public static async Task<ResultCodes?> MapPortAsync(ushort port, Protocol protocol, CancellationToken cancellationToken, string description = "MIN Room")
     {
-        var device = await OpenNatHelper.GetDeviceAsync();
+        var device = await OpenNatHelper.GetDeviceAsync(cancellationToken: cancellationToken);
         if (device == null)
         {
             return ResultCodes.UNKNOWN_ERROR;
@@ -109,9 +109,9 @@ public static class PortForwardingHelper
         }
         return false;
 
-        static async Task<bool> TryRemoveAsync(ushort port, Protocol protocol, CancellationToken ct)
+        static async Task<bool> TryRemoveAsync(ushort port, Protocol protocol, CancellationToken cancellationToken)
         {
-            var device = await OpenNatHelper.GetDeviceAsync();
+            var device = await OpenNatHelper.GetDeviceAsync(cancellationToken: cancellationToken);
             if (device == null)
             {
                 return false;

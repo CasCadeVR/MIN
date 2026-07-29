@@ -7,8 +7,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        d:DesignWidth="300"
-        MinWidth="300"
+        d:DesignWidth="350"
+        MinWidth="350"
         CanResize="False"
         SizeToContent="WidthAndHeight"
         x:Class="MIN.Desktop.Views.Modals.CreateRoomModal"
@@ -18,8 +18,6 @@
             ConverterParameter=30}">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:CreateRoomViewModel/>
     </Design.DataContext>
 
@@ -56,11 +54,9 @@
                 </Border>
 
                 <Border Classes="card">
-                    <!-- <Expander Classes="roomGroup" Header="Настройка сети" IsExpanded="False"> -->
+                    <Expander Classes="roomGroup" Header="Настройка сети" IsExpanded="False">
                         <StackPanel Margin="0,8,0,0" Classes="form">
-                            <TextBlock Text="Настройка сети" />
-
-                            <Separator  />  <!-- LAN Udp Broadcast -->
+                            <!-- LAN Udp Broadcast -->
 
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
@@ -92,9 +88,9 @@
                                 </TextBlock>
                             </StackPanel>
 
-                            <Separator /> <!-- Radmin -->
+                            <Separator IsVisible="{Binding RadminInstalled}" /> <!-- Radmin -->
 
-                            <StackPanel>
+                            <StackPanel IsVisible="{Binding RadminInstalled}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock VerticalAlignment="Center" Text="Radmin VPN" />
                                     <ToggleSwitch Margin="8,0,0,0"
@@ -104,6 +100,21 @@
 
                                 <TextBlock MaxWidth="300.0" Classes="info">
                                     У вас обнаружен активный Radmin VPN, комнату можно создать на ней
+                                </TextBlock>
+                            </StackPanel>
+
+                            <Separator IsVisible="{Binding HamachiInstalled}" /> <!-- Hamachi -->
+
+                            <StackPanel  IsVisible="{Binding HamachiInstalled}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" Text="Hamachi VPN" />
+                                    <ToggleSwitch Margin="8,0,0,0"
+                                        IsChecked="{Binding EnableRadmin}">
+                                    </ToggleSwitch>
+                                </StackPanel>
+
+                                <TextBlock MaxWidth="300.0" Classes="info">
+                                    У вас обнаружен активный Hamachi VPN, комнату можно создать на ней
                                 </TextBlock>
                             </StackPanel>
 
@@ -124,7 +135,7 @@
                                 </TextBlock>
                             </StackPanel>
                         </StackPanel>
-                    <!-- </Expander> -->
+                    </Expander>
                 </Border>
             </StackPanel>
             <Border Classes="footer">

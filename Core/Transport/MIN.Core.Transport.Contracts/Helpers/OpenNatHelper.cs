@@ -12,14 +12,15 @@ public static class OpenNatHelper
     /// <summary>
     /// Получить первый рабочий Device чтобы на нём можно было развернуть UPnP
     /// </summary>
-    public static async Task<NatDevice?> GetDeviceAsync(int timeoutMs = 5000)
+    public static async Task<NatDevice?> GetDeviceAsync(int timeoutMs = 5000, CancellationToken cancellationToken = default)
     {
         if (device != null)
         {
             return device;
         }
 
-        using var cts = new CancellationTokenSource(timeoutMs);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(timeoutMs);
         var devices = await new NatDiscoverer().DiscoverDevicesAsync(PortMapper.Upnp, cts);
 
         // Trying to get working external IP

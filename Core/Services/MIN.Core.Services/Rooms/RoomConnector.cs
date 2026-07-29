@@ -122,7 +122,7 @@ public sealed class RoomConnector : IRoomConnector
                 throw new InvalidOperationException(result.ErrorMessage);
             }
 
-            if (activeRooms.ContainsKey(result.RoomInfo.Id))
+            if (roomStore.RoomExists(result.RoomInfo.Id))
             {
                 throw new InvalidOperationException("Вы уже подключены к этой комнате");
             }

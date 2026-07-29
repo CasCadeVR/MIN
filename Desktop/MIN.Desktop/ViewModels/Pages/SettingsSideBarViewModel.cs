@@ -65,7 +65,7 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     /// </summary>
     [ObservableProperty]
     [IntValue]
-    [Range(ushort.MinValue, ushort.MaxValue, ErrorMessage = "Порт должен быть от 0 до 65535")]
+    [Range(1, ushort.MaxValue, ErrorMessage = "Порт должен быть от 1 до 65535")]
     [NotifyDataErrorInfo]
     public partial int DiscoveryPort { get; set; }
 

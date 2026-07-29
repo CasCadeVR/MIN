@@ -150,7 +150,15 @@ public class TcpTransport : ITransport
         {
             includeWan = true;
 
-            var result = await PortForwardingHelper.MapPortAsync(server.Port, Protocol.Tcp, cancellationToken, $"Room {server.Port}");
+            ResultCodes? result = ResultCodes.UNKNOWN_ERROR;
+            try
+            {
+                result = await PortForwardingHelper.MapPortAsync(server.Port, Protocol.Tcp, cancellationToken, $"Room {server.Port}");
+            }
+            catch
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+            }
 
             switch (result)
             {
@@ -159,7 +167,7 @@ public class TcpTransport : ITransport
                     break;
 
                 case ResultCodes.CONFLICT_IN_MAPPING_ENTRY:
-                    var conflictMessage = "UPnP конфликтует с текущим портом. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную.";
+                    var conflictMessage = "UPnP конфликтует с текущим портом. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную. Попробуйте повторить попытку";
                     logger.Log(conflictMessage, LogLevel.Error);
                     throw new InvalidOperationException(conflictMessage);
 
@@ -190,6 +198,7 @@ public class TcpTransport : ITransport
             {
                 await PortForwardingHelper.UnmapPortAsync(server.Port, Protocol.Tcp, cancellationToken);
             }
+            cancellationToken.ThrowIfCancellationRequested();
         }
 
         var endpoints = new List<TcpEndpoint>();

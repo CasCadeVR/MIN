@@ -1,8 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Transport.Contracts.Helpers;
 using MIN.Core.Transport.Contracts.Models;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Infrastructure.Validators;
@@ -62,6 +64,18 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     public partial bool IsNew { get; set; } = true;
 
     /// <summary>
+    /// Обнаружен Radmin
+    /// </summary>
+    [ObservableProperty]
+    public partial bool RadminInstalled { get; set; }
+
+    /// <summary>
+    /// Обнаружен Hamachi
+    /// </summary>
+    [ObservableProperty]
+    public partial bool HamachiInstalled { get; set; }
+
+    /// <summary>
     /// Название окна
     /// </summary>
     [ObservableProperty]
@@ -76,6 +90,24 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     /// Настройки глобальности сети
     /// </summary>
     public NetworkOptions NetworkOptions { get; set; }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="CreateRoomViewModel"/>
+    /// </summary>
+    public CreateRoomViewModel()
+    {
+        var installedVpns = NetworkHelper.GetVpnIps();
+
+        if (installedVpns.Any(x => x.NetworkName.Contains("Radmin")))
+        {
+            RadminInstalled = true;
+        }
+
+        if (installedVpns.Any(x => x.NetworkName.Contains("Hamachi")))
+        {
+            HamachiInstalled = true;
+        }
+    }
 
     /// <summary>
     /// Инициализироовать с уже созданной комнатой
@@ -94,22 +126,6 @@ public partial class CreateRoomViewModel : ModalViewModelBase
         EnablePortForwarding = NetworkOptions.EnablePortForwarding;
         EnableRadmin = NetworkOptions.EnableRadmin;
         EnableWeb = NetworkOptions.EnableWeb;
-    }
-
-    partial void OnEnableRadminChanged(bool value)
-    {
-        if (EnablePortForwarding && value)
-        {
-            EnablePortForwarding = false;
-        }
-    }
-
-    partial void OnEnablePortForwardingChanged(bool value)
-    {
-        if (EnableRadmin && value)
-        {
-            EnableRadmin = false;
-        }
     }
 
     [RelayCommand(CanExecute = nameof(CanCreate))]
