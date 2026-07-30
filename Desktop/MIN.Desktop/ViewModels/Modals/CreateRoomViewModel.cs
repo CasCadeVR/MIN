@@ -1,9 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Desktop.Contracts.Constants;
+using MIN.Core.Transport.Contracts.Helpers;
+using MIN.Core.Transport.Contracts.Models;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Infrastructure.Validators;
 using MIN.Desktop.ViewModels.Base;
@@ -27,12 +29,57 @@ public partial class CreateRoomViewModel : ModalViewModelBase
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
-    [Range(1, DesktopConstants.MaximumParticipantsInRoom)]
     [NotifyDataErrorInfo]
+    [RoomCapacity]
     public partial int RoomMaxPlayers { get; set; } = 8;
 
+    /// <summary>
+    /// Локальное обнаружение
+    /// </summary>
     [ObservableProperty]
-    public partial bool RoomAutoPortForward { get; set; }
+    public partial bool EnableLocalDiscovery { get; set; } = true;
+
+    /// <summary>
+    /// Проброска порта
+    /// </summary>
+    [ObservableProperty]
+    public partial bool EnablePortForwarding { get; set; }
+
+    /// <summary>
+    /// Radmin
+    /// </summary>
+    [ObservableProperty]
+    public partial bool EnableRadmin { get; set; }
+
+    /// <summary>
+    /// Публикация в web
+    /// </summary>
+    [ObservableProperty]
+    public partial bool EnableWeb { get; set; }
+
+    /// <summary>
+    /// Создание или редактирование комнаты
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsNew { get; set; } = true;
+
+    /// <summary>
+    /// Обнаружен Radmin
+    /// </summary>
+    [ObservableProperty]
+    public partial bool RadminInstalled { get; set; }
+
+    /// <summary>
+    /// Обнаружен Hamachi
+    /// </summary>
+    [ObservableProperty]
+    public partial bool HamachiInstalled { get; set; }
+
+    /// <summary>
+    /// Название окна
+    /// </summary>
+    [ObservableProperty]
+    public partial string Title { get; set; } = "MIN - Создание комнаты";
 
     /// <summary>
     /// Настраиваемая комната
@@ -40,13 +87,45 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     public RoomInfo Room { get; set; } = new RoomInfo();
 
     /// <summary>
+    /// Настройки глобальности сети
+    /// </summary>
+    public NetworkOptions NetworkOptions { get; set; }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="CreateRoomViewModel"/>
+    /// </summary>
+    public CreateRoomViewModel()
+    {
+        var installedVpns = NetworkHelper.GetVpnIps();
+
+        if (installedVpns.Any(x => x.NetworkName.Contains("Radmin")))
+        {
+            RadminInstalled = true;
+        }
+
+        if (installedVpns.Any(x => x.NetworkName.Contains("Hamachi")))
+        {
+            HamachiInstalled = true;
+        }
+    }
+
+    /// <summary>
     /// Инициализироовать с уже созданной комнатой
     /// </summary>
-    public void InitializeWithRoom(RoomInfo room)
+    public void InitializeWithRoom(RoomInfo room, NetworkOptions networkOptions)
     {
+        Title = $"Редактирование комнаты {room.Name}";
+
+        IsNew = false;
         Room = room;
         Name = room.Name;
         RoomMaxPlayers = room.MaximumParticipants;
+        NetworkOptions = networkOptions;
+
+        EnableLocalDiscovery = NetworkOptions.EnableLocalDiscovery;
+        EnablePortForwarding = NetworkOptions.EnablePortForwarding;
+        EnableRadmin = NetworkOptions.EnableRadmin;
+        EnableWeb = NetworkOptions.EnableWeb;
     }
 
     [RelayCommand(CanExecute = nameof(CanCreate))]
@@ -61,6 +140,14 @@ public partial class CreateRoomViewModel : ModalViewModelBase
         }
 
         Room.MaximumParticipants = RoomMaxPlayers;
+
+        NetworkOptions = new()
+        {
+            EnableLocalDiscovery = EnableLocalDiscovery,
+            EnablePortForwarding = EnablePortForwarding,
+            EnableRadmin = EnableRadmin,
+            EnableWeb = EnableWeb,
+        };
 
         Close(ButtonOptions.Ok);
     }

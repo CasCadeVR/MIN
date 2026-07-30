@@ -31,7 +31,7 @@ public interface IRoutableViewModel
     /// <summary>
     /// Обновляет текущий контейнер представления, чтобы отобразить другое представление, как это определено типом TViewModel.
     /// </summary>
-    void ChangeView<TViewModel>(TViewModel viewModel) where TViewModel : IRoutableViewModel;
+    void ChangeView<TViewModel>(TViewModel viewModel, CancellationToken cancellationToken = default) where TViewModel : IRoutableViewModel;
 
     /// <summary>
     /// Закрывает View, используя свой layout как параметр

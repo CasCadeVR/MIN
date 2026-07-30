@@ -1,4 +1,5 @@
-﻿using MIN.Core.Transport.Contracts.Enum;
+﻿using System.Text;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Transport.TcpSockets.Models;
@@ -11,10 +12,18 @@ public sealed class TcpEndpoint : IEndpoint
     /// <inheritdoc />
     public TransportType Type => TransportType.Tcp;
 
+    /// <inheritdoc />
+    public AddressOrigin Origin { get; set; }
+
     /// <summary>
     /// IP Адрес
     /// </summary>
     public string IPAddress { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Имя сети (если есть)
+    /// </summary>
+    public string? NetworkName { get; set; }
 
     /// <summary>
     /// Динамически созданный порт
@@ -27,5 +36,46 @@ public sealed class TcpEndpoint : IEndpoint
     public TcpEndpoint() { }
 
     /// <inheritdoc />
-    public override string ToString() => $"{IPAddress}:{Port}";
+    public override string ToString()
+    {
+        var tostringSb = new StringBuilder();
+        tostringSb.Append(Origin);
+        tostringSb.Append(' ');
+
+        if (NetworkName != null)
+        {
+            tostringSb.Append(NetworkName);
+            tostringSb.Append(' ');
+        }
+
+        tostringSb.Append(IPAddress);
+        tostringSb.Append(':');
+        tostringSb.Append(Port);
+
+        return tostringSb.ToString();
+    }
+
+    string IEndpoint.GetOrigin()
+    {
+        var tostringSb = new StringBuilder();
+        tostringSb.Append(Origin);
+        tostringSb.Append(' ');
+
+        if (NetworkName != null)
+        {
+            tostringSb.Append(NetworkName);
+        }
+
+        return tostringSb.ToString();
+    }
+
+    string IEndpoint.GetAddress()
+    {
+        var tostringSb = new StringBuilder();
+        tostringSb.Append(IPAddress);
+        tostringSb.Append(':');
+        tostringSb.Append(Port);
+
+        return tostringSb.ToString();
+    }
 }

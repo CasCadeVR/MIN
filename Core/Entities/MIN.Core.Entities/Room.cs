@@ -1,6 +1,7 @@
 ﻿using MIN.Core.Entities.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Entities;
 
@@ -37,7 +38,7 @@ public class Room : IRoomData
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     /// <inheritdoc />
-    public string? ConnectionAddress { get; set; }
+    public IEnumerable<IEndpoint> ConnectionAddresses { get; set; } = [];
 
     /// <summary>
     /// Локальные настройки комнаты
@@ -106,6 +107,5 @@ public class Room : IRoomData
         MaximumParticipants = roomData.MaximumParticipants;
         IsActive = roomData.IsActive;
         CreatedAt = roomData.CreatedAt;
-        ConnectionAddress = roomData.ConnectionAddress;
     }
 }

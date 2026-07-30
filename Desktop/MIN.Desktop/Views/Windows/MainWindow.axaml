@@ -110,8 +110,22 @@
                             <designer:MultiDataTemplate UseCache="False">
                                 <!-- Loading view -->
                                 <DataTemplate x:DataType="system:Uri">
-                                    <Svg Path="{Binding AbsolutePath}" Classes="rotating" Height="50"
-                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Svg Path="{Binding AbsolutePath}"
+                                             Classes="rotating"
+                                             Height="50" />
+                                        <Button IsEnabled="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                            Classes="no-background"
+                                            Command="{Binding $parent[Window].DataContext.CancelRoutingCommand}">
+                                             <StackPanel>
+                                                <TextBlock IsVisible="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                                    Text="Отменить" />
+                                                <TextBlock IsVisible="{Binding $parent[Window].DataContext.IsCancellingRouting}"
+                                                    Text="Идёт отмена..." />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+
                                 </DataTemplate>
                                 <DataTemplate x:DataType="pagesVm:MainSideBarViewModel">
                                     <pagesLeft:MainSideBarView />
@@ -133,8 +147,22 @@
                             <designer:MultiDataTemplate UseCache="False">
                                 <!-- Loading view -->
                                 <DataTemplate x:DataType="system:Uri">
-                                    <Svg Path="{Binding AbsolutePath}" Classes="rotating" Height="50"
-                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Svg Path="{Binding AbsolutePath}"
+                                             Classes="rotating"
+                                             Height="50" />
+                                        <Button IsEnabled="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                            Classes="no-background"
+                                            Command="{Binding $parent[Window].DataContext.CancelRoutingCommand}">
+                                             <StackPanel>
+                                                <TextBlock IsVisible="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                                    Text="Отменить" />
+                                                <TextBlock IsVisible="{Binding $parent[Window].DataContext.IsCancellingRouting}"
+                                                    Text="Идёт отмена..." />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+
                                 </DataTemplate>
                                  <DataTemplate x:DataType="pagesVm:ChatSideBarViewModel">
                                     <pagesRight:ChatSideBarView />
@@ -152,8 +180,22 @@
                             <designer:MultiDataTemplate UseCache="False">
                                 <!-- Loading view -->
                                 <DataTemplate x:DataType="system:Uri">
-                                    <Svg Path="{Binding AbsolutePath}" Classes="rotating" Height="50"
-                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Svg Path="{Binding AbsolutePath}"
+                                             Classes="rotating"
+                                             Height="50" />
+                                        <Button IsEnabled="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                            Classes="no-background"
+                                            Command="{Binding $parent[Window].DataContext.CancelRoutingCommand}">
+                                             <StackPanel>
+                                                <TextBlock IsVisible="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                                    Text="Отменить" />
+                                                <TextBlock IsVisible="{Binding $parent[Window].DataContext.IsCancellingRouting}"
+                                                    Text="Идёт отмена..." />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+
                                 </DataTemplate>
                                 <DataTemplate x:DataType="pagesVm:DiscoveryViewModel">
                                     <pagesCentral:DiscoveryView />

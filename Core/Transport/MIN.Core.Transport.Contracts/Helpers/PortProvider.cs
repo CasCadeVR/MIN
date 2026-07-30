@@ -1,19 +1,22 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace MIN.Core.Transport.TcpSockets.Services;
+namespace MIN.Core.Transport.Contracts.Helpers;
 
-internal sealed class RoomPortManager : IDisposable
+/// <summary>
+/// Помошник в выделении порта
+/// </summary>
+public static class PortProvider
 {
-    private readonly int minPort = 49152;
-    private readonly int maxPort = 65535;
-    private readonly HashSet<int> reserved = [];
-    private readonly Random random = new();
+    private readonly static int minPort = 49152;
+    private readonly static int maxPort = 65535;
+    private readonly static HashSet<int> reserved = [];
+    private readonly static Random random = new();
 
     /// <summary>
     /// Получить свободный порт
     /// </summary>
-    public int AllocatePort()
+    public static int AllocatePort()
     {
         for (var i = 0; i < 50; i++)
         {
@@ -30,7 +33,7 @@ internal sealed class RoomPortManager : IDisposable
     /// <summary>
     /// Отпустить порт
     /// </summary>
-    public void ReleasePort(int port) => reserved.Remove(port);
+    public static void ReleasePort(int port) => reserved.Remove(port);
 
     private static bool IsPortFree(int port)
     {
@@ -46,7 +49,4 @@ internal sealed class RoomPortManager : IDisposable
             return false;
         }
     }
-
-    /// <inheritdoc cref="IDisposable.Dispose"/>
-    public void Dispose() => reserved.Clear();
 }

@@ -14,7 +14,7 @@ public sealed class RoomDiscoveryInfo
     public RoomInfo Room { get; set; } = null!;
 
     /// <summary>
-    /// Точка подключения к комнате
+    /// Точки подключения к комнате
     /// </summary>
-    public IEndpoint Endpoint { get; set; } = null!;
+    public IEnumerable<IEndpoint> Endpoints { get; set; } = null!;
 }

@@ -6,6 +6,9 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Models;
+using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Services;
@@ -17,6 +20,7 @@ public sealed class ChatRoomService : IChatRoomService
     private readonly IRoomFactory roomFactory;
     private readonly IRoomHoster roomHoster;
     private readonly INetworkErrorHandler networkErrorHandler;
+    private readonly IDiscoveryService discoveryService;
     private readonly IIdentityService identityService;
 
     /// <summary>
@@ -26,12 +30,14 @@ public sealed class ChatRoomService : IChatRoomService
         IRoomFactory roomFactory,
         IRoomHoster roomHoster,
         INetworkErrorHandler networkErrorHandler,
+        IDiscoveryService discoveryService,
         IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
         this.roomFactory = roomFactory;
         this.roomHoster = roomHoster;
         this.networkErrorHandler = networkErrorHandler;
+        this.discoveryService = discoveryService;
         this.identityService = identityService;
     }
 
@@ -48,8 +54,6 @@ public sealed class ChatRoomService : IChatRoomService
         {
             throw new InvalidOperationException("Ты не являешся хостом для этой комнаты");
         }
-
-        var kickingParticipantConnectionId = context.Connections.GetConnectionIdFromParticipantId(participantId);
 
         await networkErrorHandler.SendErrorAsync(reason, participantId, roomId, critical: true);
     }
@@ -78,5 +82,29 @@ public sealed class ChatRoomService : IChatRoomService
         {
             Room = updatedRoomInfo
         }, roomId, identityService.SelfParticipant.Id, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task ManageDiscoveryOutOfSettings(RoomInfo room, IEnumerable<IEndpoint> endpoints, NetworkOptions newNetworkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
+    {
+        // ON
+        if ((oldNetworkOptions == null && newNetworkOptions.EnableLocalDiscovery)
+            || (oldNetworkOptions.HasValue && newNetworkOptions.EnableLocalDiscovery && !oldNetworkOptions.Value.EnableLocalDiscovery))
+        {
+            await discoveryService.StartDiscoveryAsync(room, endpoints, cancellationToken);
+        }
+        // OFF
+        else if (oldNetworkOptions.HasValue && !newNetworkOptions.EnableLocalDiscovery && oldNetworkOptions.Value.EnableLocalDiscovery)
+        {
+            await discoveryService.StopDiscoveryAsync(room.Id);
+        }
+
+        // TODO: Make discovery type of web and lan
+    }
+
+    async Task IChatRoomService.UpdateNetworkOutOfSettings(RoomInfo room, IEnumerable<IEndpoint> endpoints, NetworkOptions newNetworkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
+    {
+        await ManageDiscoveryOutOfSettings(room, endpoints, newNetworkOptions, oldNetworkOptions, cancellationToken);
+        await roomHoster.UpdateNetworkOptions(room.Id, newNetworkOptions, cancellationToken);
     }
 }

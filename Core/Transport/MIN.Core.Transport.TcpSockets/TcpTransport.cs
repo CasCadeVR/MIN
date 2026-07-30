@@ -1,12 +1,14 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Core.Transport.Contracts.Events;
+using MIN.Core.Transport.Contracts.Helpers;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Models;
 using MIN.Core.Transport.TcpSockets.Client;
 using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Core.Transport.TcpSockets.Server;
-using MIN.Core.Transport.TcpSockets.Services;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
+using Open.Nat;
 
 namespace MIN.Core.Transport.TcpSockets;
 
@@ -18,7 +20,6 @@ public class TcpTransport : ITransport
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, TcpSocketServer> servers = new();
     private readonly ConcurrentDictionary<Guid, TcpSocketClient> clients = new();
-    private readonly RoomPortManager portManager = new();
 
     /// <inheritdoc />
     public event EventHandler<RawMessageReceivedEventArgs>? RawMessageReceived;
@@ -34,10 +35,10 @@ public class TcpTransport : ITransport
         this.logger = logger;
     }
 
-    async Task<Guid> ITransport.StartHostingAsync(bool withPortForwarding, CancellationToken cancellationToken)
+    async Task<Guid> ITransport.StartHostingAsync(CancellationToken cancellationToken)
     {
         var connectionId = Guid.NewGuid();
-        var port = portManager.AllocatePort();
+        var port = PortProvider.AllocatePort();
         var server = new TcpSocketServer(logger, port);
 
         server.OnMessageReceived += (TcpSocketServer server, (TcpSocketConnection conn, byte[] msg) eventArgs) =>
@@ -61,7 +62,7 @@ public class TcpTransport : ITransport
             ConnectionStateChanged?.Invoke(this, args);
         };
 
-        await server.StartAsync(withPortForwarding, cancellationToken);
+        await server.StartAsync(cancellationToken);
         servers.TryAdd(connectionId, server);
 
         return connectionId;
@@ -72,7 +73,7 @@ public class TcpTransport : ITransport
         if (servers.TryRemove(connectionId, out var server))
         {
             await server.DisposeAsync();
-            portManager.ReleasePort(server.Port);
+            PortProvider.ReleasePort(server.Port);
         }
     }
 
@@ -135,14 +136,85 @@ public class TcpTransport : ITransport
         }
     }
 
-    IEndpoint ITransport.GetEndpoint(Guid connectionId)
+    async Task<IEnumerable<IEndpoint>> ITransport.SetUpAndGetEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
     {
         if (!servers.TryGetValue(connectionId, out var server))
         {
             throw new InvalidOperationException($"Connection {connectionId} is not hosted locally");
         }
 
-        return new TcpEndpoint { IPAddress = server.IpAddress.ToString(), Port = server.Port };
+        var includeWan = false;
+
+        if ((oldNetworkOptions == null && networkOptions.EnablePortForwarding)
+            || (oldNetworkOptions.HasValue && networkOptions.EnablePortForwarding && !oldNetworkOptions.Value.EnablePortForwarding))
+        {
+            includeWan = true;
+
+            ResultCodes? result = ResultCodes.UNKNOWN_ERROR;
+            try
+            {
+                result = await PortForwardingHelper.MapPortAsync(server.Port, Protocol.Tcp, cancellationToken, $"Room {server.Port}");
+            }
+            catch
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            switch (result)
+            {
+                case ResultCodes.SUCCESS:
+                    logger.Log($"Порт проброшен. Публичный порт: {server.Port}");
+                    break;
+
+                case ResultCodes.CONFLICT_IN_MAPPING_ENTRY:
+                    var conflictMessage = "UPnP конфликтует с текущим портом. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную. Попробуйте повторить попытку";
+                    logger.Log(conflictMessage, LogLevel.Error);
+                    throw new InvalidOperationException(conflictMessage);
+
+                case ResultCodes.UNKNOWN_ERROR:
+                    var message = "UPnP не доступен. Клиенты из Интернета не могут подключиться, если порт не проброшен вручную. Либо ну удалось получить публичный адрес.";
+                    logger.Log(message, LogLevel.Error);
+                    throw new InvalidOperationException(message);
+            }
+        }
+        else if (oldNetworkOptions.HasValue && !networkOptions.EnablePortForwarding && oldNetworkOptions.Value.EnablePortForwarding)
+        {
+            await PortForwardingHelper.UnmapPortAsync(server.Port, Protocol.Tcp, cancellationToken);
+        }
+
+        var includeVpns = oldNetworkOptions == null && networkOptions.EnableRadmin
+            || oldNetworkOptions.HasValue && networkOptions.EnableRadmin && !oldNetworkOptions.Value.EnableRadmin;
+
+        IEnumerable<MachineKnownIp> knownIps = [];
+
+        try
+        {
+            knownIps = await NetworkHelper.GetAllKnownIpsAsync(includeWan, includeVpns, cancellationToken);
+        }
+        catch
+        {
+            if ((oldNetworkOptions == null && networkOptions.EnablePortForwarding)
+                || (oldNetworkOptions.HasValue && networkOptions.EnablePortForwarding && !oldNetworkOptions.Value.EnablePortForwarding))
+            {
+                await PortForwardingHelper.UnmapPortAsync(server.Port, Protocol.Tcp, cancellationToken);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        var endpoints = new List<TcpEndpoint>();
+
+        foreach (var ip in knownIps)
+        {
+            endpoints.Add(new TcpEndpoint
+            {
+                Origin = ip.Origin,
+                IPAddress = ip.Address.ToString(),
+                NetworkName = ip.NetworkName,
+                Port = server.Port
+            });
+        }
+
+        return endpoints;
     }
 
     /// <inheritdoc />
@@ -177,7 +249,5 @@ public class TcpTransport : ITransport
         {
             await client.DisposeAsync();
         }
-
-        portManager.Dispose();
     }
 }

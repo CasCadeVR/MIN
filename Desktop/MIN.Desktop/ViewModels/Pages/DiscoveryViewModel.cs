@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -10,6 +12,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Models;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
@@ -21,8 +24,10 @@ using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Cards;
 using MIN.Desktop.ViewModels.Modals;
 using MIN.Desktop.ViewModels.Pages.ChatViewModels;
+using MIN.Desktop.ViewModels.Windows;
 using MIN.DI.FeatureCollection;
 using MIN.Discovery.Events;
+using MIN.Discovery.Services.Contracts.Enums;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Models;
 
@@ -39,6 +44,8 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
     private readonly CancellationTokenSource lifeTimeCts = null!;
     private readonly ParticipantInfo localParticipant = null!;
     private CancellationTokenSource? discoveryCts;
+    private CancellationTokenSource? createRoomCts;
+    private IClipboard? clipboard;
 
     private Settings Settings => featureCollection.Helper.SettingsProvider.GetSettings();
 
@@ -50,6 +57,12 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
     /// </summary>
     [ObservableProperty]
     public partial bool isDiscovering { get; set; }
+
+    /// <summary>
+    /// Выбранный метод
+    /// </summary>
+    [ObservableProperty]
+    public partial DiscoveryMethod ChosenMethod { get; set; }
 
     /// <summary>
     /// Обнаруженные комнаты
@@ -75,10 +88,14 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         if (!Design.IsDesignMode)
         {
             localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
-
             lifeTimeCts = ctsProvider.AppCts;
             SubscribeToEvents();
             InitializeLayoutStyles();
+
+            this.RegisterMessageListener<CancelRoutingOperationReferenceCommand, DiscoveryViewModel>((vm, _) =>
+            {
+                createRoomCts?.Cancel();
+            });
         }
     }
 
@@ -118,9 +135,20 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
     /// Обработчик создания комнаты
     /// </summary>
     [RelayCommand]
-    public async Task CreateRoom()
+    public async Task CreateRoomUI()
     {
-        var createViewModelResult = await dialogService.ShowDialogAsync<CreateRoomViewModel>();
+        await CreateRoom();
+    }
+
+    private async Task CreateRoom(RoomInfo? loopRoom = null, NetworkOptions? loopNetworkOptions = null)
+    {
+        var createViewModelResult = await dialogService.ShowDialogAsync<CreateRoomViewModel>(vm =>
+        {
+            if (loopRoom != null && loopNetworkOptions != null)
+            {
+                vm.InitializeWithRoom(loopRoom, loopNetworkOptions.Value);
+            }
+        });
         if (createViewModelResult! == false)
         {
             return;
@@ -134,29 +162,54 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         var roomInfo = createViewModelResult!.Room;
         var roomId = roomInfo.Id;
 
+        createRoomCts = CancellationTokenSource.CreateLinkedTokenSource(lifeTimeCts.Token);
+
         try
         {
             var chatViewModel = chatViewModelFactory.Create();
-            ChangeView(chatViewModel);
+            ChangeView(chatViewModel, createRoomCts.Token);
 
-            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, createViewModelResult.RoomAutoPortForward, lifeTimeCts.Token);
-            await featureCollection.Discovery.DiscoveryService.StartDiscoveryAsync(roomId, lifeTimeCts.Token);
+            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, createViewModelResult.NetworkOptions, createRoomCts.Token);
+            await featureCollection.Chat.ChatRoomService.ManageDiscoveryOutOfSettings(roomInfo,
+                room.ConnectionAddresses, createViewModelResult.NetworkOptions, cancellationToken: createRoomCts.Token);
 
             await chatViewModel.LoadRoomDataAndRefresh(room, CoreRegistryConstants.LocalConnectionId);
             RegisterRoom(roomInfo, chatViewModel);
 
             InAppNotifier.Success($"Комната {room.Name} успешно создана!");
         }
+        catch (OperationCanceledException)
+        {
+            await featureCollection.Core.RoomHoster.StopHostingAsync(roomInfo.Id);
+            InAppNotifier.Info("Создание комнаты было отменено");
+            ChangeView(this);
+            await CreateRoom(createViewModelResult.Room, createViewModelResult.NetworkOptions);
+        }
         catch (Exception ex)
         {
+            await featureCollection.Core.RoomHoster.StopHostingAsync(roomInfo.Id);
             InAppNotifier.Error($"Не удалось создать комнату: {ex.Message}");
             ChangeView(this);
+            await CreateRoom(createViewModelResult.Room, createViewModelResult.NetworkOptions);
+        }
+        finally
+        {
+            createRoomCts = null;
         }
     }
 
     private static void RegisterRoom(RoomInfo roomInfo, ChatViewModel chatViewModel)
     {
         WeakReferenceMessenger.Default.Send(new RegisterRoomReferenceCommand(roomInfo, chatViewModel));
+    }
+
+    /// <summary>
+    /// Обработчик обнаружения комнат
+    /// </summary>
+    [RelayCommand]
+    public void ChoseMethod(DiscoveryMethod discoveryMethod)
+    {
+        ChosenMethod = discoveryMethod;
     }
 
     /// <summary>
@@ -198,13 +251,17 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
 
     private async Task OnRoomDiscovered(RoomDiscoveredEvent e, CancellationToken cancellationToken)
     {
+        clipboard ??= MainWindowViewModel.GetWindow()?.Clipboard;
+
         foreach (var discoveryInfo in e.RoomDiscoveryInfos)
         {
             var card = new DiscoveredRoomCardViewModel(featureCollection.Core.EventBus,
                 discoveryInfo.Room,
-                localParticipant.Id == discoveryInfo.Room.HostParticipant.Id);
+                discoveryInfo.Endpoints,
+                localParticipant.Id == discoveryInfo.Room.HostParticipant.Id,
+                clipboard);
 
-            card.Clicked += async () => await OnRoomJoin(discoveryInfo.Endpoint, discoveryInfo.Room, card);
+            card.Clicked += async (origin) => await OnRoomJoin(discoveryInfo.Endpoints.First(x => x.Origin == origin), discoveryInfo.Room, card);
 
             DiscoveredRooms.Add(card);
         }
@@ -242,7 +299,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
                         var newRoomInfo = new RoomInfo(room);
 
                         var chatViewModel = chatViewModelFactory.Create();
-                        ChangeView(chatViewModel);
+                        ChangeView(chatViewModel, connectCts.Token);
 
                         await chatViewModel.LoadRoomDataAndRefresh(room, connectionResult.ConnectionId);
                         RegisterRoom(newRoomInfo, chatViewModel);

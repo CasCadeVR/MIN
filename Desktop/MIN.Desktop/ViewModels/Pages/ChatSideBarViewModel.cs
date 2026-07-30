@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities;
@@ -16,6 +17,7 @@ using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Cards;
 using MIN.Desktop.ViewModels.Modals;
 using MIN.Desktop.ViewModels.Pages.ChatViewModels;
+using MIN.Desktop.ViewModels.Windows;
 using MIN.DI.FeatureCollection;
 
 namespace MIN.Desktop.ViewModels.Pages;
@@ -28,6 +30,7 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     private readonly IMinFeatureCollection featureCollection;
     private readonly IDialogService dialogService;
     private readonly CancellationTokenSource appCts = null!;
+    private IClipboard? clipboard;
 
     private ParticipantInfo localParticipant = null!;
     private Guid roomId;
@@ -63,16 +66,10 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     public partial string HostName { get; set; } = string.Empty;
 
     /// <summary>
-    /// IP Адрес
+    /// Адреса соединения
     /// </summary>
     [ObservableProperty]
-    public partial string IpAddress { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Порт
-    /// </summary>
-    [ObservableProperty]
-    public partial string Port { get; set; } = string.Empty;
+    public partial AvaloniaList<ConnectionAddressViewModel> ConnectionAddresses { get; set; } = [];
 
     /// <summary>
     /// Кабинет
@@ -149,10 +146,13 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
         IsHost = room.HostParticipant?.Id == localParticipant.Id;
         HostName = IsHost ? "Ты" : room.HostParticipant?.Name ?? "Неизвестно";
 
-        if (IpAddressParser.TryParseIpAddress(room.ConnectionAddress, out var gottenIpAddress, out var port))
+        ConnectionAddresses.Clear();
+
+        clipboard ??= MainWindowViewModel.GetWindow()?.Clipboard;
+
+        foreach (var address in room.ConnectionAddresses)
         {
-            Port = port.ToString();
-            IpAddress = gottenIpAddress;
+            ConnectionAddresses.Add(new ConnectionAddressViewModel(address, clipboard));
         }
 
         Classroom = string.IsNullOrEmpty(room.Cabinet) ? DesktopConstants.UndefinedPcName : room.Cabinet;

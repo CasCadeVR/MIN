@@ -1,25 +1,28 @@
+using System.Text.Json;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Discovery.Events;
 using MIN.Discovery.Messaging;
+using MIN.Discovery.Services.Contracts.Enums;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Discovery.Services.Contracts.Models;
 using MIN.Discovery.Transport.Contracts;
 using MIN.Discovery.Transport.Contracts.Events;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Discovery.Services;
 
 /// <summary>
-/// <inheritdoc cref="UdpDiscoveryService"/> на базе UDP
+/// <inheritdoc cref="IDiscoveryService"/> на базе UDP Broadcast
 /// </summary>
 public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
 {
-    private readonly ITransport transport;
     private readonly IRoomHoster roomHoster;
     private readonly IDiscoveryTransport discoveryTransport;
     private readonly IMessageSerializer serializer;
@@ -29,12 +32,14 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
     private readonly HashSet<Guid> activeRoomIds = [];
     private readonly HashSet<Guid> discoveredRoomIds = [];
     private readonly CancellationTokenSource serviceCts;
+    private readonly Dictionary<Guid, int> activeRoomsSizeById = [];
+
+    DiscoveryMethod IDiscoveryService.DiscoveryMethod => DiscoveryMethod.Local;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="UdpDiscoveryService"/>
     /// </summary>
     public UdpDiscoveryService(
-        ITransport transport,
         IRoomHoster roomHoster,
         IDiscoveryTransport discoveryTransport,
         IMessageSerializer serializer,
@@ -42,7 +47,6 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
         IEventBus eventBus,
         ILoggerProvider logger)
     {
-        this.transport = transport;
         this.roomHoster = roomHoster;
         this.discoveryTransport = discoveryTransport;
         this.serializer = serializer;
@@ -54,8 +58,29 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
         discoveryTransport.MessageReceived += OnRequestReceived;
     }
 
-    async Task IDiscoveryService.StartDiscoveryAsync(Guid roomId, CancellationToken cancellationToken)
+    async Task IDiscoveryService.StartDiscoveryAsync(RoomInfo room, IEnumerable<IEndpoint> endpoints, CancellationToken cancellationToken)
     {
+        var roomId = room.Id;
+
+        var lan = endpoints.FirstOrDefault(x => x.Origin == AddressOrigin.LAN)
+            ?? throw new OverflowException("должен быть указан LAN для локального обнаружения");
+
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(
+            new DiscoveryResponseMessage()
+            {
+                RoomDiscoveryInfos = [new RoomDiscoveryInfo()
+                {
+                    Room = room,
+                    Endpoints = [lan]
+                }]
+            });
+
+        if (activeRoomsSizeById.Sum(x => x.Value) + bytes.Length >= 1500)
+        {
+            throw new OverflowException("достигнут лимита комнат по локальному обнаружению");
+        }
+
+        activeRoomsSizeById[roomId] = bytes.Length;
         activeRoomIds.Add(roomId);
         await discoveryTransport.StartListeningAsync(serviceCts.Token);
     }
@@ -63,6 +88,7 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
     /// <inheritdoc />
     public async Task StopDiscoveryAsync(Guid roomId)
     {
+        activeRoomsSizeById.Remove(roomId);
         activeRoomIds.Remove(roomId);
 
         if (activeRoomIds.Count == 0)
@@ -143,7 +169,7 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
 
                 if (room == null)
                 {
-                    logger.Log("Получил запрос на обнаружение, но комната не была установлена");
+                    logger.Log("Получил запрос на обнаружение, но комната не была установлена", LogLevel.Warning);
                     return;
                 }
 
@@ -152,7 +178,7 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
                 discoveryResponse.RoomDiscoveryInfos.Add(new RoomDiscoveryInfo()
                 {
                     Room = new RoomInfo(room),
-                    Endpoint = transport.GetEndpoint(connectionId),
+                    Endpoints = room.ConnectionAddresses.Where(x => x.Origin == AddressOrigin.LAN), // Должен быть, так как был настроен на это
                 });
             }
 
@@ -166,8 +192,6 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
-    public async ValueTask DisposeAsync()
-    {
-        await discoveryTransport.StopListeningAsync();
-    }
+    async ValueTask IAsyncDisposable.DisposeAsync()
+        => await discoveryTransport.StopListeningAsync();
 }

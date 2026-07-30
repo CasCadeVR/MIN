@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -9,12 +10,14 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using MIN.Core.Transport.Contracts.Helpers;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models;
 using MIN.Desktop.Contracts.Models.ReferenceCommands;
 using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 using MIN.Desktop.Infrastructure.Extensions;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Base.Interfaces;
 using MIN.Desktop.ViewModels.Pages;
@@ -26,6 +29,28 @@ namespace MIN.Desktop.ViewModels.Windows;
 /// </summary>
 public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
 {
+    private readonly Dictionary<ViewLayoutType, List<IRoutableViewModel>> navigationStack = new()
+    {
+        { ViewLayoutType.LeftSideBar, [] },
+        { ViewLayoutType.Central, [] },
+        { ViewLayoutType.RightSideBar, [] },
+    };
+
+    private readonly Dictionary<ViewLayoutType, CancellationTokenSource?> viewChangeBusyCtsByLayout = new()
+    {
+        { ViewLayoutType.LeftSideBar, null },
+        { ViewLayoutType.Central, null },
+        { ViewLayoutType.RightSideBar, null },
+    };
+
+    /// <summary>
+    /// Поступил сигнал отмены при переходе
+    /// </summary>
+    public Action? RoutingCancellationRequested { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsCancellingRouting { get; set; }
+
     [ObservableProperty]
     public partial WindowLayout LayoutMode { get; set; } = WindowLayout.ThreeColumns;
 
@@ -40,20 +65,6 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     /// <inheritdoc />
     [ObservableProperty]
     public partial object? RightSideBarViewModel { get; set; }
-
-    private readonly Dictionary<ViewLayoutType, List<IRoutableViewModel>> navigationStack = new()
-    {
-        { ViewLayoutType.LeftSideBar, [] },
-        { ViewLayoutType.Central, [] },
-        { ViewLayoutType.RightSideBar, [] },
-    };
-
-    private readonly Dictionary<ViewLayoutType, CancellationTokenSource?> viewChangeBusyCtsByLayout = new()
-    {
-        { ViewLayoutType.LeftSideBar, null },
-        { ViewLayoutType.Central, null },
-        { ViewLayoutType.RightSideBar, null },
-    };
 
     /// <inheritdoc />
     public Dictionary<ViewLayoutType, List<IRoutableViewModel>> NavigationStack => navigationStack;
@@ -84,8 +95,17 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
     /// </summary>
     public MainWindowViewModel(MainSideBarViewModel mainSideBarViewModel, DiscoveryViewModel discoveryViewModel)
     {
-        this.RegisterMessageListener<ShowViewReferenceCommand, MainWindowViewModel>(static (message, vm)
-            => vm.ShowAsync(message.ViewModel));
+        this.RegisterMessageListener<ShowViewReferenceCommand, MainWindowViewModel>(async (message, vm) =>
+        {
+            try
+            {
+                await vm.ShowAsync(message.ViewModel, message.CancellationToken);
+            }
+            finally
+            {
+                IsCancellingRouting = false;
+            }
+        });
         this.RegisterMessageListener<CloseViewReferenceCommand, MainWindowViewModel>(static (message, vm)
             => vm.CloseAsync(message.LayoutType));
         this.RegisterMessageListener<ShowPreviousViewReferenceCommand, MainWindowViewModel>(async (message, vm)
@@ -131,8 +151,27 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
             await this.ShowAsync(mainSideBarViewModel);
         });
 
+        if (!Design.IsDesignMode)
+        {
+            Task.Run(async () =>
+            {
+                if (!NetworkHelper.HasInternetConnectivity())
+                {
+                    InAppNotifier.Warning("Launcher may not be connected to internet");
+                }
+            });
+        }
+
         _ = this.ShowAsync(mainSideBarViewModel);
         _ = this.ShowAsync(discoveryViewModel);
+    }
+
+    [RelayCommand]
+    private void CancelRouting()
+    {
+        IsCancellingRouting = true;
+        RoutingCancellationRequested?.Invoke();
+        WeakReferenceMessenger.Default.Send(new CancelRoutingOperationReferenceCommand());
     }
 
     [RelayCommand]

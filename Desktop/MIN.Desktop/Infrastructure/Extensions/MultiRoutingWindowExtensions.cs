@@ -27,8 +27,9 @@ public static class MultiRoutingWindowExtensions
     /// </summary>
     /// <param name="screen">Экран, используемый для отображения изображения.</param>
     /// <param name="routableViewModel">ViewModel, которую следует отобразить</param>
+    /// <param name="cancellationToken">Токен отмены, в случае отмены перехода</param>
     /// <typeparam name="TViewModel">Тип модели представления для отображения</typeparam>
-    public static async Task ShowAsync<TViewModel>(this IMultiRoutingWindow? screen, TViewModel routableViewModel) where TViewModel : IRoutableViewModel
+    public static async Task ShowAsync<TViewModel>(this IMultiRoutingWindow? screen, TViewModel routableViewModel, CancellationToken cancellationToken = default) where TViewModel : IRoutableViewModel
     {
         if (screen == null)
         {
@@ -37,14 +38,14 @@ public static class MultiRoutingWindowExtensions
 
         var contextViewModel = screen.GetViewModelOutOfLayoutType(routableViewModel.LayoutType);
 
-        CancellationToken ctsToken;
+        CancellationTokenSource routingCts;
         if (screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType] != null)
         {
             screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType]!.Cancel();
             screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType]!.Dispose();
         }
-        screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType] = new CancellationTokenSource();
-        ctsToken = screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType]!.Token;
+        screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType] = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        routingCts = screen.ViewChangeBusyCtsByLayout[routableViewModel.LayoutType]!;
 
         if (routableViewModel.LayoutType == ViewLayoutType.LeftSideBar
             && screen.LeftSideBarViewModel is IRoutableViewModel leftPriorViewModel)
@@ -86,16 +87,18 @@ public static class MultiRoutingWindowExtensions
 
         try
         {
-            ctsToken.ThrowIfCancellationRequested();
+            screen.RoutingCancellationRequested += CancelToken;
+            var token = routingCts.Token;
+            token.ThrowIfCancellationRequested();
             var sw = Stopwatch.StartNew();
-            var contentLoadTask = routableViewModel.ViewContentLoadAsync(ctsToken);
+            var contentLoadTask = routableViewModel.ViewContentLoadAsync(token);
             if (contextViewModel != null)
             {
                 // Only show loading screen if page isn't loading super quickly.
-                await Task.Delay(LoadingAssetMinWaitMs, ctsToken);
+                await Task.Delay(LoadingAssetMinWaitMs, token);
                 if (!contentLoadTask.IsCompleted)
                 {
-                    ctsToken.ThrowIfCancellationRequested();
+                    token.ThrowIfCancellationRequested();
                     var loadingAsset = AssetHelper.GetFullAssetPath("/Assets/Icons/loading.svg");
                     switch (routableViewModel.LayoutType)
                     {
@@ -112,11 +115,11 @@ public static class MultiRoutingWindowExtensions
                             break;
                     }
 
-                    await Task.Delay((int)Math.Max(0, LoadingAssetMaximumWaitMs - sw.Elapsed.TotalMilliseconds), ctsToken);
+                    await Task.Delay((int)Math.Max(0, LoadingAssetMaximumWaitMs - sw.Elapsed.TotalMilliseconds), token);
                 }
             }
             await contentLoadTask;
-            ctsToken.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested();
             switch (routableViewModel.LayoutType)
             {
                 case ViewLayoutType.LeftSideBar:
@@ -180,6 +183,15 @@ public static class MultiRoutingWindowExtensions
             {
                 screen.NavigationStack[routableViewModel.LayoutType].Remove(screen.NavigationStack[routableViewModel.LayoutType][^1]);
             }
+        }
+        finally
+        {
+            screen.RoutingCancellationRequested -= CancelToken;
+        }
+
+        async void CancelToken()
+        {
+            await routingCts.CancelAsync();
         }
     }
 

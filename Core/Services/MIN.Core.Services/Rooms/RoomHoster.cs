@@ -13,6 +13,7 @@ using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Models;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -118,7 +119,7 @@ public sealed class RoomHoster : IRoomHoster
         RawMessageReceived?.Invoke(this, args);
     }
 
-    async Task<Room> IRoomHoster.StartHostingAsync(RoomInfo roomInfo, bool withPortForwarding, CancellationToken cancellationToken)
+    async Task<Room> IRoomHoster.StartHostingAsync(RoomInfo roomInfo, NetworkOptions networkOptions, CancellationToken cancellationToken)
     {
         if (activeRooms.Count + 1 > ServicesConstants.MaximumRoomHosts)
         {
@@ -155,16 +156,13 @@ public sealed class RoomHoster : IRoomHoster
             Participant = new Participant(localParticipant)
         });
 
-        var connectionId = await transport.StartHostingAsync(withPortForwarding, cancellationToken);
-
-        var endpoint = transport.GetEndpoint(connectionId);
-
-        roomInfo.ConnectionAddress = endpoint.ToString();
-        room.ConnectionAddress = endpoint.ToString();
+        var connectionId = await transport.StartHostingAsync(cancellationToken);
+        room.ConnectionAddresses = await transport.SetUpAndGetEndpoints(connectionId, networkOptions, cancellationToken: cancellationToken);
+        room.LocalRoomSettings.NetworkOptions = networkOptions;
 
         context.Participants.AddParticipant(new Participant(localParticipant));
 
-        logger.Log($"Комната создана: {endpoint} ({roomInfo.Name})");
+        logger.Log($"Комната создана: {string.Join(',', room.ConnectionAddresses)} ({roomInfo.Name})");
 
         activeRooms[roomId] = connectionId;
         activeConnections[connectionId] = roomInfo.Id;
@@ -173,11 +171,21 @@ public sealed class RoomHoster : IRoomHoster
         return roomStore.GetRoom(roomId);
     }
 
-    Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
-        => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
+    async Task<IEnumerable<IEndpoint>> IRoomHoster.UpdateNetworkOptions(Guid roomId, NetworkOptions newNetworkOptions, CancellationToken cancellationToken)
+    {
+        var room = roomStore.GetRoom(roomId);
 
-    Guid IRoomConnectionRelated.GetRoomIdByConnectionId(Guid connectionId)
-        => activeConnections.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
+        if (!activeRooms.TryGetValue(roomId, out var connectionId))
+        {
+            return room.ConnectionAddresses;
+        }
+
+        var newEndpoints = await transport.SetUpAndGetEndpoints(connectionId, newNetworkOptions, room.LocalRoomSettings.NetworkOptions, cancellationToken);
+        room.ConnectionAddresses = newEndpoints;
+        room.LocalRoomSettings.NetworkOptions = newNetworkOptions;
+
+        return room.ConnectionAddresses;
+    }
 
     async Task IRoomHoster.StopHostingAsync(Guid roomId)
     {
@@ -201,9 +209,16 @@ public sealed class RoomHoster : IRoomHoster
         readyRoomInfos.TryRemove(roomId, out _);
 
         roomStore.Remove(roomId);
+        roomFactory.DestroyContext(roomId);
 
         await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
     }
+
+    Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
+        => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
+
+    Guid IRoomConnectionRelated.GetRoomIdByConnectionId(Guid connectionId)
+        => activeConnections.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
 
     bool IRoomHoster.IsHosting(Guid roomId)
         => activeRooms.ContainsKey(roomId);

@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Transport.Contracts.Events;
+using MIN.Core.Transport.Contracts.Models;
 
 namespace MIN.Core.Transport.Contracts.Interfaces;
 
@@ -33,12 +34,15 @@ public interface ITransport
     /// <summary>
     /// Запустить сервер подключений
     /// </summary>
-    Task<Guid> StartHostingAsync(bool withPortForwarding, CancellationToken cancellationToken = default);
+    Task<Guid> StartHostingAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Получить точку подключения
+    /// Настроить доступ и получить все точки подключения
     /// </summary>
-    IEndpoint GetEndpoint(Guid connectionId);
+    /// <remarks>
+    /// Настраивает только PortForwarding и vpn
+    /// </remarks>
+    Task<IEnumerable<IEndpoint>> SetUpAndGetEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Прекратить сервер для указанного соединения
