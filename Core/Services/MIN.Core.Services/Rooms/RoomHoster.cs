@@ -209,6 +209,7 @@ public sealed class RoomHoster : IRoomHoster
         readyRoomInfos.TryRemove(roomId, out _);
 
         roomStore.Remove(roomId);
+        roomFactory.DestroyContext(roomId);
 
         await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
     }

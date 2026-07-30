@@ -16,7 +16,12 @@ public partial class ConnectionAddressViewModel : CardViewModelBase, IDisposable
     private readonly IClipboard? clipboard;
 
     /// <summary>
-    /// Сообщение
+    /// Место получения адреса
+    /// </summary>
+    public string Origin { get; }
+
+    /// <summary>
+    /// Адрес
     /// </summary>
     public string Address { get; }
 
@@ -25,7 +30,8 @@ public partial class ConnectionAddressViewModel : CardViewModelBase, IDisposable
     /// </summary>
     public ConnectionAddressViewModel(IEndpoint address, IClipboard? clipboard)
     {
-        Address = address.ToString();
+        Origin = address.GetOrigin();
+        Address = address.GetAddress();
         this.clipboard = clipboard;
     }
 

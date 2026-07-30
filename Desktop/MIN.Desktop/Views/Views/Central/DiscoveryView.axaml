@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Pages"
              xmlns:enums="using:MIN.Desktop.Contracts.Enums"
+             xmlns:discoveryEnums="using:MIN.Discovery.Services.Contracts.Enums"
              xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:designer="using:MIN.Desktop.Contracts.Designer"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -41,16 +42,27 @@
                         <Svg Path="/Assets/Icons/plus.svg" />
                     </Button>
 
-                    <Button
-                        DockPanel.Dock="Right"
-                        Command="{Binding DiscoverRoomsCommand}">
-
+                    <SplitButton
+                        Command="{Binding DiscoverRoomsCommand}"
+                        DockPanel.Dock="Right">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock
                                 Foreground="{DynamicResource TextOnPrimary}"
                                 VerticalAlignment="Center"
-                                IsVisible="{Binding !isDiscovering}"
-                                Text="Найти комнаты" />
+                                IsVisible="{Binding !isDiscovering}">
+
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Найти комнаты" />
+
+                                    <TextBlock Text=" локально"
+                                                IsVisible="{Binding ChosenMethod, Converter={converters:EqualityConverter},
+                                                ConverterParameter={x:Static discoveryEnums:DiscoveryMethod.Local}}" />
+
+                                    <TextBlock Text=" в web"
+                                                IsVisible="{Binding ChosenMethod, Converter={converters:EqualityConverter},
+                                                ConverterParameter={x:Static discoveryEnums:DiscoveryMethod.Web}}" />
+                                </StackPanel>
+                            </TextBlock>
 
                             <TextBlock
                                 Foreground="{DynamicResource TextOnPrimary}"
@@ -66,7 +78,28 @@
                                 VerticalAlignment="Center"
                                 IsVisible="{Binding isDiscovering}"/>
                         </StackPanel>
-                    </Button>
+
+                        <SplitButton.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <MenuItem Header="Найти комнаты в локальной сети"
+                                        Command="{Binding ChoseMethodCommand}"
+                                        CommandParameter="{x:Static discoveryEnums:DiscoveryMethod.Local}">
+                                    <MenuItem.Icon>
+                                        <Svg Path="/Assets/Icons/network.svg" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem IsEnabled="False"
+                                    Header="Найти комнаты в web"
+                                    Command="{Binding ChoseMethodCommand}"
+                                    CommandParameter="{x:Static discoveryEnums:DiscoveryMethod.Web}">
+                                    <MenuItem.Icon>
+                                        <Svg Path="/Assets/Icons/globe.svg" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </MenuFlyout>
+                        </SplitButton.Flyout>
+
+                    </SplitButton>
 
                     <Button
                         Command="{Binding ConnectDirectlyCommand}"
@@ -199,7 +232,7 @@
                                         Text="Адреса: " />
 
                                     <ScrollViewer VerticalAlignment="Center"
-                                        HorizontalAlignment="Center"
+                                        HorizontalAlignment="Stretch"
                                         Classes="main">
                                         <ItemsControl ItemsSource="{Binding ConnectionAddresses}">
                                             <ItemsControl.ItemsPanel>
@@ -209,12 +242,17 @@
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <SelectableTextBlock VerticalAlignment="Center"
-                                                                HorizontalAlignment="Center"
+                                                    <Border Padding="0,4,0,0">
+                                                        <DockPanel>
+                                                            <Border DockPanel.Dock="Left" Classes="status-info">
+                                                                <TextBlock Text="{Binding Origin}" />
+                                                            </Border>
+
+                                                            <SelectableTextBlock
+                                                                VerticalAlignment="Center"
+                                                                HorizontalAlignment="Right"
                                                                 Text="{Binding Address}" />
-                                                        </StackPanel>
+                                                        </DockPanel>
                                                     </Border>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>

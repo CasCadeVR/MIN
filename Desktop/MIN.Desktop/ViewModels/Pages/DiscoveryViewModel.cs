@@ -27,6 +27,7 @@ using MIN.Desktop.ViewModels.Pages.ChatViewModels;
 using MIN.Desktop.ViewModels.Windows;
 using MIN.DI.FeatureCollection;
 using MIN.Discovery.Events;
+using MIN.Discovery.Services.Contracts.Enums;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Models;
 
@@ -56,6 +57,12 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
     /// </summary>
     [ObservableProperty]
     public partial bool isDiscovering { get; set; }
+
+    /// <summary>
+    /// Выбранный метод
+    /// </summary>
+    [ObservableProperty]
+    public partial DiscoveryMethod ChosenMethod { get; set; }
 
     /// <summary>
     /// Обнаруженные комнаты
@@ -194,6 +201,15 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
     private static void RegisterRoom(RoomInfo roomInfo, ChatViewModel chatViewModel)
     {
         WeakReferenceMessenger.Default.Send(new RegisterRoomReferenceCommand(roomInfo, chatViewModel));
+    }
+
+    /// <summary>
+    /// Обработчик обнаружения комнат
+    /// </summary>
+    [RelayCommand]
+    public void ChoseMethod(DiscoveryMethod discoveryMethod)
+    {
+        ChosenMethod = discoveryMethod;
     }
 
     /// <summary>

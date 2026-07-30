@@ -37,7 +37,7 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     /// Локальное обнаружение
     /// </summary>
     [ObservableProperty]
-    public partial bool EnableLocalDiscovery { get; set; }
+    public partial bool EnableLocalDiscovery { get; set; } = true;
 
     /// <summary>
     /// Проброска порта

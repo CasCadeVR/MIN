@@ -130,5 +130,17 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceInput}" />
             <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
         </Style>
+
+          <Style Selector="^.status-info">
+            <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
+            <Setter Property="Background" Value="{DynamicResource StatusInfo}" />
+            <Setter Property="Padding" Value="{DynamicResource PaddingSmall}" />
+
+            <Style Selector="^ > TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimary}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+            </Style>
+        </Style>
     </Style>
 </Styles>

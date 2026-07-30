@@ -1,5 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              x:Class="MIN.Desktop.App"
              RequestedThemeVariant="Dark">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
@@ -13,6 +14,7 @@
                 <ResourceInclude Source="/Contracts/Schemes/ColorScheme.axaml"/>
                 <ResourceInclude Source="/Contracts/Schemes/SizeScheme.axaml"/>
             </ResourceDictionary.MergedDictionaries>
+                <converters:AndMultiConverter x:Key="AndMultiConverter" />
         </ResourceDictionary>
 
     </Application.Resources>

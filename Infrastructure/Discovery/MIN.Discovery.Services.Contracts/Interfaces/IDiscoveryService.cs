@@ -1,20 +1,26 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
+using MIN.Discovery.Services.Contracts.Enums;
 
 namespace MIN.Discovery.Services.Contracts.Interfaces;
 
 /// <summary>
-/// Сервис обнаружения комнат в сети
+/// Сервис обнаружения комнат
 /// </summary>
 public interface IDiscoveryService
 {
     /// <summary>
-    /// Запустить процесс обнаружения своей комнаты в сети
+    /// По какому методу будет поиск
+    /// </summary>
+    DiscoveryMethod DiscoveryMethod { get; }
+
+    /// <summary>
+    /// Запустить процесс обнаружения своей комнаты
     /// </summary>
     Task StartDiscoveryAsync(RoomInfo room, IEnumerable<IEndpoint> endpoints, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Остановить процесс обнаружения своей комнаты в сети
+    /// Остановить процесс обнаружения своей комнаты
     /// </summary>
     Task StopDiscoveryAsync(Guid roomId);
 

@@ -8,6 +8,7 @@ using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Discovery.Events;
 using MIN.Discovery.Messaging;
+using MIN.Discovery.Services.Contracts.Enums;
 using MIN.Discovery.Services.Contracts.Interfaces;
 using MIN.Discovery.Services.Contracts.Models;
 using MIN.Discovery.Transport.Contracts;
@@ -32,6 +33,8 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
     private readonly HashSet<Guid> discoveredRoomIds = [];
     private readonly CancellationTokenSource serviceCts;
     private readonly Dictionary<Guid, int> activeRoomsSizeById = [];
+
+    DiscoveryMethod IDiscoveryService.DiscoveryMethod => DiscoveryMethod.Local;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="UdpDiscoveryService"/>

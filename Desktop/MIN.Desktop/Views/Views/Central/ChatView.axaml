@@ -69,40 +69,28 @@
                             </StackPanel>
 
                             <Button.Flyout>
-                                <Flyout FlyoutPresenterClasses="buttons"
-                                        Placement="BottomEdgeAlignedRight">
-                                        <StackPanel>
-                                            <Button
-                                            Classes="no-background"
-                                            HorizontalContentAlignment="Stretch"
+                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                    <MenuItem IsVisible="{Binding !IsHost}"
+                                              Header="Покинуть комнату"
                                             Command="{Binding LeaveRoomCommand}">
-
-                                            <StackPanel>
-                                                <Svg Path="/Assets/Icons/leave.svg" />
-                                                <TextBlock IsVisible="{Binding !IsHost}"
-                                                    VerticalAlignment="Center"
-                                                    Text="Покинуть комнату"/>
-                                                <TextBlock IsVisible="{Binding IsHost}"
-                                                    VerticalAlignment="Center"
-                                                    Text="Закрыть комнату"/>
-                                            </StackPanel>
-                                        </Button>
-                                   
-                                        <Button
-                                            Command="{Binding EditRoomCommand}"
-                                            Classes="no-background"
-                                            HorizontalContentAlignment="Stretch"
-                                            IsVisible="{Binding IsHost}">
-                                            <StackPanel>
-                                                <Svg Path="/Assets/Icons/edit.svg" />
-                                                <TextBlock VerticalAlignment="Center"
-                                                    Text="Редактировать комнату" />
-                                            </StackPanel>
-                                        </Button>
-
-                                        
-                                    </StackPanel>
-                                </Flyout>
+                                        <MenuItem.Icon>
+                                            <Svg Path="/Assets/Icons/leave.svg" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                      <MenuItem IsVisible="{Binding IsHost}"
+                                              Header="Закрыть комнату"
+                                            Command="{Binding LeaveRoomCommand}">
+                                        <MenuItem.Icon>
+                                            <Svg Path="/Assets/Icons/leave.svg" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Редактировать комнату"
+                                            Command="{Binding EditRoomCommand}">
+                                        <MenuItem.Icon>
+                                            <Svg Path="/Assets/Icons/edit.svg" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                </MenuFlyout>
                             </Button.Flyout>
                         </Button>
 
@@ -194,33 +182,21 @@
                                 Classes="icon">
                                 <Svg Path="/Assets/Icons/plus.svg" />
                                 <Button.Flyout>
-                                <Flyout FlyoutPresenterClasses="buttons"
-                                    Placement="Top">
-                                    <StackPanel>
-                                         <Button
-                                            Classes="no-background"
-                                            Command="{Binding UploadFileClickCommand}">
-
-                                            <StackPanel>
+                                    <MenuFlyout Placement="TopEdgeAlignedLeft">
+                                        <MenuItem Header="Отправить файл"
+                                                Command="{Binding UploadFileClickCommand}">
+                                            <MenuItem.Icon>
                                                 <Svg Path="/Assets/Icons/file-upload.svg" />
-                                                <TextBlock VerticalAlignment="Center"
-                                                           Text="Отправить файл" />
-                                            </StackPanel>
-                                        </Button>
-                                   
-                                        <Button
-                                            Classes="no-background"
-                                            Command="{Binding StartSessionClickCommand}">
-
-                                            <StackPanel>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Начать активность"
+                                                Command="{Binding StartSessionClickCommand}">
+                                            <MenuItem.Icon>
                                                 <Svg Path="/Assets/Icons/rocket.svg" />
-                                                <TextBlock VerticalAlignment="Center"
-                                                    Text="Начать активность" />
-                                            </StackPanel>
-                                        </Button>
-                                    </StackPanel>
-                                </Flyout>
-                            </Button.Flyout>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                    </MenuFlyout>
+                                </Button.Flyout>
                             </Button>
 
                             <Button
@@ -313,9 +289,20 @@
                         </ItemsControl>
                     </ScrollViewer>
 
+                    <Panel.Styles>
+                        <Style Selector="Button.icon">
+                            <Setter Property="Transitions">
+                                <Transitions>
+                                    <DoubleTransition Duration="0:0:.2" Property="Opacity" />
+                                </Transitions>
+                            </Setter>
+                        </Style>
+                    </Panel.Styles>
+
                     <Button Classes="icon"
                             ToolTip.Tip="Пролистать вниз"
-                            IsVisible="{Binding !IsAtBottom}"
+                            Opacity="{Binding !IsAtBottom,
+                                Converter={converters:BoolToOpacityConverter}}"
                             Background="{DynamicResource SurfaceCard}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Bottom"
@@ -342,7 +329,6 @@
                         </Panel>
                     </Button>
                 </Panel>
-                
             </DockPanel>
         </Border>
 

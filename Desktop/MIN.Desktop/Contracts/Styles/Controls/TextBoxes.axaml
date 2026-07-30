@@ -25,6 +25,8 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CaretBrush" Value="{DynamicResource Primary}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource TextSelection}"/>
+        <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextOnPrimary}"/>
 
         <Style Selector="^ /template/ Border">
             <Setter Property="Background" Value="{TemplateBinding Background}" />

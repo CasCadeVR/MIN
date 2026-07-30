@@ -103,17 +103,22 @@
                         <ItemsControl ItemsSource="{Binding ConnectionAddresses}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <VirtualizingStackPanel />
+                                    <VirtualizingStackPanel  />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border>
-                                        <StackPanel Orientation="Horizontal">
-                                            <SelectableTextBlock VerticalAlignment="Center"
-                                                HorizontalAlignment="Center"
+                                    <Border Padding="0,4,0,0">
+                                        <DockPanel>
+                                            <Border DockPanel.Dock="Left" Classes="status-info">
+                                                <TextBlock Text="{Binding Origin}" />
+                                            </Border>
+
+                                            <SelectableTextBlock
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Right"
                                                 Text="{Binding Address}" />
-                                        </StackPanel>
+                                        </DockPanel>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -149,41 +154,39 @@
                                                             IsVisible="{Binding CanInteract}" >
                                                         <Svg Path="/Assets/Icons/about-card.svg" />
                                                          <Button.Flyout>
-                                                            <Flyout FlyoutPresenterClasses="buttons"
-                                                                    Placement="Bottom">
-                                                                 <StackPanel>
-                                                                     <Button
-                                                                        Classes="no-background"
-                                                                        HorizontalContentAlignment="Stretch"
-                                                                        IsVisible="{Binding CanStartPrivateChat}"
-                                                                        Command="{Binding TogglePrivateChatCommand}">
-
-                                                                        <StackPanel>
-                                                                            <Svg Path="/Assets/Icons/private-chat.svg" />
-
-                                                                            <TextBlock VerticalAlignment="Center"
-                                                                                IsVisible="{Binding IsSelected}"
-                                                                                Text="Прекратить приватное общение" />
-
-                                                                            <TextBlock VerticalAlignment="Center"
-                                                                                 IsVisible="{Binding !IsSelected}"
-                                                                                Text="Начать приватное общение" />
-                                                                        </StackPanel>
-                                                                    </Button>
-                                   
-                                                                    <Button
-                                                                        Command="{Binding KickParticipantCommand}"
-                                                                        Classes="no-background"
-                                                                        HorizontalContentAlignment="Stretch"
-                                                                        IsVisible="{Binding CanKick}">
-                                                                        <StackPanel>
-                                                                            <Svg Path="/Assets/Icons/close.svg" />
-                                                                            <TextBlock VerticalAlignment="Center"
-                                                                                       Text="Кикнуть участника" />
-                                                                        </StackPanel>
-                                                                    </Button>
-                                                                </StackPanel>
-                                                            </Flyout>
+                                                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                                <MenuItem Header="Прекратить приватное общение"
+                                                                    Command="{Binding TogglePrivateChatCommand}">
+                                                                    <MenuItem.IsVisible>
+                                                                    <MultiBinding Converter="{StaticResource AndMultiConverter}">
+                                                                            <Binding Path="CanStartPrivateChat" />
+                                                                            <Binding Path="IsSelected" />
+                                                                        </MultiBinding>
+                                                                    </MenuItem.IsVisible>
+                                                                    <MenuItem.Icon>
+                                                                        <Svg Path="/Assets/Icons/private-chat.svg" />
+                                                                    </MenuItem.Icon>
+                                                                </MenuItem>
+                                                                <MenuItem Header="Начать приватное общение"
+                                                                    Command="{Binding TogglePrivateChatCommand}">
+                                                                     <MenuItem.IsVisible>
+                                                                    <MultiBinding Converter="{StaticResource AndMultiConverter}">
+                                                                            <Binding Path="CanStartPrivateChat" />
+                                                                            <Binding Path="!IsSelected" />
+                                                                        </MultiBinding>
+                                                                    </MenuItem.IsVisible>
+                                                                    <MenuItem.Icon>
+                                                                        <Svg Path="/Assets/Icons/private-chat.svg" />
+                                                                    </MenuItem.Icon>
+                                                                </MenuItem>
+                                                                <MenuItem Header="Кикнуть участника"
+                                                                    IsVisible="{Binding CanKick}"
+                                                                    Command="{Binding KickParticipantCommand}">
+                                                                    <MenuItem.Icon>
+                                                                        <Svg Path="/Assets/Icons/close.svg" />
+                                                                    </MenuItem.Icon>
+                                                                </MenuItem>
+                                                            </MenuFlyout>
                                                         </Button.Flyout>
                                                     </Button>
 

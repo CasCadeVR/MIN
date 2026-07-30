@@ -54,4 +54,28 @@ public sealed class TcpEndpoint : IEndpoint
 
         return tostringSb.ToString();
     }
+
+    string IEndpoint.GetOrigin()
+    {
+        var tostringSb = new StringBuilder();
+        tostringSb.Append(Origin);
+        tostringSb.Append(' ');
+
+        if (NetworkName != null)
+        {
+            tostringSb.Append(NetworkName);
+        }
+
+        return tostringSb.ToString();
+    }
+
+    string IEndpoint.GetAddress()
+    {
+        var tostringSb = new StringBuilder();
+        tostringSb.Append(IPAddress);
+        tostringSb.Append(':');
+        tostringSb.Append(Port);
+
+        return tostringSb.ToString();
+    }
 }
