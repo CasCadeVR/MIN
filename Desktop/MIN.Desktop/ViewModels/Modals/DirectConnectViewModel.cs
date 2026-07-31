@@ -28,12 +28,12 @@ public partial class DirectConnectViewModel : ModalViewModelBase
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
 
+    [IntValue]
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
     [NotifyDataErrorInfo]
-    [IntValue]
-    [Range(1, ushort.MaxValue, ErrorMessage = "Порт должен быть от 1 до 65535")]
     [Required(ErrorMessage = "Введите порт")]
+    [Range(1, ushort.MaxValue, ErrorMessage = "Порт должен быть от 1 до 65535")]
     public partial int Port { get; set; } = 1;
 
     [ObservableProperty]

@@ -58,7 +58,7 @@
                         <TextBox
                             MaxLength="120"
                             MaxWidth="400"
-                            Text="{Binding Port}"
+                            Text="{Binding Port, Converter={converters:IntToStringConverter}}"
                             PlaceholderText="Введите порт...">
                         </TextBox>
                     </StackPanel>

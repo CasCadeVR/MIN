@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
@@ -28,6 +29,7 @@ public sealed class RoomHoster : IRoomHoster
     private readonly IRoomStore roomStore;
     private readonly IEventBus eventBus;
     private readonly ISubRoomManager subRoomManager;
+    private readonly IPingService pingService;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
     private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
@@ -51,6 +53,7 @@ public sealed class RoomHoster : IRoomHoster
         IRoomStore roomStore,
         IEventBus eventBus,
         ISubRoomManager subRoomManager,
+        IPingService pingService,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
@@ -60,6 +63,7 @@ public sealed class RoomHoster : IRoomHoster
         this.roomStore = roomStore;
         this.eventBus = eventBus;
         this.subRoomManager = subRoomManager;
+        this.pingService = pingService;
         this.identityService = identityService;
         this.logger = logger;
 
@@ -97,6 +101,9 @@ public sealed class RoomHoster : IRoomHoster
 
             protocolPhase.Remove(e.ConnectionId);
             logger.Log($"Клиент {e.RemoteEndPoint} прошёл протокол для комнаты {roomId}");
+
+            await pingService.RegisterHeartbeatSession(Role.Host, roomId, e.ConnectionId);
+            pingService.OnConnectionTimeout += async (_, _) => await transport.DisconnectClientAsync(e.ConnectionId, e.ServerConnectionId);
         }
 
         var args = new RoomConnectionStateChangedEventArgs(roomId, e);

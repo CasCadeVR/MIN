@@ -3,30 +3,36 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Desktop.Infrastructure.Converters;
 
 /// <summary>
-/// Конвертор для выделения карточки логов
+/// Конвертор для выделения числа пинга
 /// </summary>
-public class LogLevelToBrushConverter : Converter<LogLevelToBrushConverter>
+public class PingToBrushConverter : Converter<PingToBrushConverter>
 {
     ///<inheritdoc />
     public override object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is not LogLevel logLevel)
+        if (value is not int ping)
         {
             return Brushes.Transparent;
         }
 
-        var key = logLevel switch
+        string? key;
+
+        if (ping >= 0 && ping < 300)
         {
-            LogLevel.Information => "StatusInfo",
-            LogLevel.Warning => "StatusWarning",
-            LogLevel.Error => "StatusError",
-            _ => throw new NotSupportedException()
-        };
+            key = "StatusSuccess";
+        }
+        else if (ping >= 300 && ping < 1000)
+        {
+            key = "StatusWarning";
+        }
+        else
+        {
+            key = "StatusError";
+        }
 
         var app = Application.Current;
         var theme = app?.ActualThemeVariant;

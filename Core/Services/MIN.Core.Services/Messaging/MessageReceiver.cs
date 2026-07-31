@@ -1,5 +1,6 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
@@ -78,6 +79,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         await dispatcher.DispatchAsync(e.Message,
             new MessageContext(context,
             CoreRegistryConstants.LocalConnectionId,
+            roomHoster.IsHosting(e.RoomId) ? Role.Host : Role.Client,
             cancellationToken), e.BroadcastExcludeIds);
     }
 
@@ -105,6 +107,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
             var message = serializer.Deserialize(e.Data!); // Потому-что это не RawPayload
             await dispatcher.DispatchAsync(message, new MessageContext(context,
                 e.ConnectionId,
+                roomHoster.IsHosting(roomId.Value) ? Role.Host : Role.Client,
                 cts.Token));
         }
         catch (Exception ex)
@@ -155,7 +158,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 
             try
             {
-                await dispatcher.DispatchAsync(message, new MessageContext(context, e.ConnectionId, cts.Token));
+                await dispatcher.DispatchAsync(message, new MessageContext(context, e.ConnectionId, roomHoster.IsHosting(context.RoomId) ? Role.Host : Role.Client, cts.Token));
             }
             catch (Exception ex)
             {

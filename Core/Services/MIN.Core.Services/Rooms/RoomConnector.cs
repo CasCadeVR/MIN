@@ -1,14 +1,16 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts;
-using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Stateless;
+using MIN.Core.Messaging.Stateless.RoomRelated.Ping;
 using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
@@ -29,6 +31,7 @@ public sealed class RoomConnector : IRoomConnector
     private readonly IEventBus eventBus;
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
+    private readonly IPingService pingService;
     private readonly IVersionProvider versionProvider;
     private readonly ILoggerProvider logger;
     private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
@@ -50,6 +53,7 @@ public sealed class RoomConnector : IRoomConnector
         IMessageSender messageSender,
         IEventBus eventBus,
         IIdentityService identityService,
+        IPingService pingService,
         IMessageEncryptor encryptor,
         IVersionProvider versionProvider,
         ILoggerProvider logger)
@@ -61,6 +65,7 @@ public sealed class RoomConnector : IRoomConnector
         this.messageSender = messageSender;
         this.eventBus = eventBus;
         this.identityService = identityService;
+        this.pingService = pingService;
         this.encryptor = encryptor;
         this.versionProvider = versionProvider;
         this.logger = logger;
@@ -74,7 +79,7 @@ public sealed class RoomConnector : IRoomConnector
         transport.ConnectionStateChanged += Transport_ConnectionStateChanged;
     }
 
-    private async void Transport_ConnectionStateChanged(object? sender, Transport.Contracts.Events.ConnectionStateChangedEventArgs e)
+    private async void Transport_ConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
     {
         if (!activeConnections.TryGetValue(e.ConnectionId, out var roomId))
         {
@@ -92,7 +97,7 @@ public sealed class RoomConnector : IRoomConnector
         ConnectionStateChanged?.Invoke(this, args);
     }
 
-    private void Transport_RawMessageReceived(object? sender, Transport.Contracts.Events.RawMessageReceivedEventArgs e)
+    private void Transport_RawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
     {
         if (!activeConnections.TryGetValue(e.ConnectionId, out var roomId))
         {
@@ -130,6 +135,10 @@ public sealed class RoomConnector : IRoomConnector
             connectionResult.RoomId = result.RoomInfo.Id;
             logger.Log($"Протокол успешен, комната {connectionResult.RoomId}");
 
+            await pingService.RegisterHeartbeatSession(Role.Client, connectionResult.RoomId, connectionResult.ConnectionId);
+            pingService.OnConnectionTimeout += PingService_OnConnectionTimeout;
+            pingService.OnPingRequested += PingService_OnPingRequested;
+
             var selfParticipant = identityService.SelfParticipant.ToParticipantInfo();
 
             roomFactory.GetOrCreateContext(connectionResult.RoomId)
@@ -165,13 +174,11 @@ public sealed class RoomConnector : IRoomConnector
         }
     }
 
-    Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
-           => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
+    private async Task PingService_OnPingRequested(Guid roomId, Guid connectionId) => await messageSender.SendAsync(new PingMessage(), roomId, connectionId);
+    private async Task PingService_OnConnectionTimeout(Guid roomId, Guid connectionId) => await DisconnectAsync(roomId, connectionId);
 
-    Guid IRoomConnectionRelated.GetRoomIdByConnectionId(Guid connectionId)
-        => activeConnections.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
-
-    async Task IRoomConnector.DisconnectAsync(Guid roomId, Guid connectionId)
+    /// <inheritdoc />
+    public async Task DisconnectAsync(Guid roomId, Guid connectionId)
     {
         if (!activeRooms.ContainsKey(roomId))
         {
@@ -180,15 +187,24 @@ public sealed class RoomConnector : IRoomConnector
 
         logger.Log($"Я сам иницирую отключение от комнаты с id {roomId} с соединением {connectionId}");
 
+        pingService.OnConnectionTimeout -= PingService_OnConnectionTimeout;
+        await pingService.UnregisterHeartbeatSession(Role.Client, roomId, connectionId);
+
         activeRooms.Remove(roomId);
         activeConnections.Remove(connectionId);
 
         await transport.DisconnectAsync(connectionId);
 
-        roomStore.Remove(roomId);
-        roomFactory.DestroyContext(roomId);
-        await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
+        //roomStore.Remove(roomId);
+        //roomFactory.DestroyContext(roomId);
+        //await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
     }
+
+    Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
+         => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
+
+    Guid IRoomConnectionRelated.GetRoomIdByConnectionId(Guid connectionId)
+        => activeConnections.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
 
     bool IRoomConnector.IsConnected(Guid roomId) => activeRooms.ContainsKey(roomId);
 }

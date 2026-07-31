@@ -84,6 +84,12 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     public partial string ParticipantsInfo { get; set; } = string.Empty;
 
     /// <summary>
+    /// Пинг
+    /// </summary>
+    [ObservableProperty]
+    public partial int Ping { get; set; }
+
+    /// <summary>
     /// Являяется локальный пользователь хостом
     /// </summary>
     [ObservableProperty]
@@ -156,6 +162,14 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
         }
 
         Classroom = string.IsNullOrEmpty(room.Cabinet) ? DesktopConstants.UndefinedPcName : room.Cabinet;
+    }
+
+    /// <summary>
+    /// Обновить пинг
+    /// </summary>
+    public void UpdatePing(int pingMs)
+    {
+        Ping = pingMs;
     }
 
     /// <summary>

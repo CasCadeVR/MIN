@@ -100,29 +100,44 @@
 
                 <Border Classes="card">
                     <Expander Classes="roomGroup" Header="Сеть" IsExpanded="False">
-                        <ItemsControl ItemsSource="{Binding ConnectionAddresses}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <VirtualizingStackPanel  />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Padding="0,4,0,0">
-                                        <DockPanel>
-                                            <Border DockPanel.Dock="Left" Classes="status-info">
-                                                <TextBlock Text="{Binding Origin}" />
-                                            </Border>
+                        <StackPanel>
+                            <TextBlock HorizontalAlignment="Center" IsVisible="{Binding !IsHost}">
+                                <TextBlock VerticalAlignment="Center" Text="Связь: "/>
 
-                                            <SelectableTextBlock
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Right"
-                                                Text="{Binding Address}" />
-                                        </DockPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                <TextBlock VerticalAlignment="Center"
+                                        Foreground="{Binding Ping,
+                                            Converter={converters:PingToBrushConverter}}"
+                                        Text="{Binding Ping}" />
+                                <TextBlock VerticalAlignment="Center"
+                                        Foreground="{Binding Ping,
+                                            Converter={converters:PingToBrushConverter}}"
+                                        Text=" мс" />
+                            </TextBlock>
+                             
+                            <ItemsControl ItemsSource="{Binding ConnectionAddresses}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel  />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="0,4,0,0">
+                                            <DockPanel>
+                                                <Border DockPanel.Dock="Left" Classes="status-info">
+                                                    <TextBlock Text="{Binding Origin}" />
+                                                </Border>
+
+                                                <SelectableTextBlock
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Right"
+                                                    Text="{Binding Address}" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                     </Expander>
                 </Border>
             </StackPanel>

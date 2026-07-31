@@ -140,9 +140,9 @@ public partial class ChatViewModel : RoutableViewModelBase
         loadingTcs.SetResult();
     }
 
-    private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)
+    private async Task CleanUpAsync(Guid roomId, Guid connectionId)
     {
-        if (isHost)
+        if (localParticipant.Id == room.HostParticipant.Id)
         {
             await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
             await featureCollection.Core.RoomHoster.StopHostingAsync(roomId);
@@ -170,6 +170,6 @@ public partial class ChatViewModel : RoutableViewModelBase
         typingTimer.Dispose();
         formCts.Cancel();
         formCts.Dispose();
-        await CleanUpAsync(roomId, connectionId, isHost: localParticipant.Id == room.HostParticipant.Id);
+        await CleanUpAsync(roomId, connectionId);
     }
 }

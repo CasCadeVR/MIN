@@ -36,6 +36,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             eventBus.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed),
             eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated),
             eventBus.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated),
+            eventBus.Subscribe<PingMeasuredEvent>(OnPingMeasured),
             eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
             eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
             eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
@@ -216,6 +217,14 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (loadedPage * StoreConstants.MessagesPageSize < room.TotalMessageCount)
         {
             ShowLoadMoreLabel();
+        }
+    }
+
+    private async Task OnPingMeasured(PingMeasuredEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.RoomId == roomId)
+        {
+            chatSideBarViewModel.UpdatePing(eventMessage.PingMs);
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
@@ -24,6 +25,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     private readonly IRoomStore roomStore;
     private readonly IRoomFactory roomFactory;
     private readonly INetworkErrorHandler networkErrorHandler;
+    private readonly IPingService pingService;
     private readonly ILoggerProvider logger;
 
     private CancellationTokenSource cts = null!;
@@ -38,6 +40,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         IRoomStore roomStore,
         IRoomFactory roomFactory,
         INetworkErrorHandler networkErrorHandler,
+        IPingService pingService,
         ILoggerProvider logger)
     {
         this.roomConnector = roomConnector;
@@ -47,6 +50,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         this.roomStore = roomStore;
         this.roomFactory = roomFactory;
         this.networkErrorHandler = networkErrorHandler;
+        this.pingService = pingService;
         this.logger = logger;
     }
 
@@ -81,20 +85,23 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
                 }
 
                 var hostParticipantId = roomStore.GetRoomHostParticipantId(roomId);
-                var isHostLeaving = hostParticipantId == leavingParticipant.Id;
+                var isHostLeaving = hostParticipantId == leavingParticipant.Id; // Для клиента всегда true т.к. он подключен к хосту
 
                 needToDisconnect = isHostLeaving;
 
                 if (isHostLeaving)
                 {
-                    leavingMessage = !string.IsNullOrEmpty(e.LeavingMessage) ? leavingMessage : "Хост остановил комнату";
+                    await pingService.UnregisterHeartbeatSession(Role.Client, e.RoomId, e.ConnectionId);
+                    leavingMessage = !string.IsNullOrEmpty(e.LeavingMessage)
+                        ? e.LeavingMessage
+                        : "Хост остановил комнату";
                     roomStore.Remove(roomId);
                     roomFactory.DestroyContext(roomId);
                     await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
                 }
                 else if (context.Participants.TryGetParticipantById(leavingParticipant.Id, out _))
                 {
-                    await HandleConnectionLoss(context, e, hostParticipantId, leavingParticipant);
+                    await HandleConnectionLossAsHost(context, e, hostParticipantId, leavingParticipant);
                 }
             }
 
@@ -113,9 +120,11 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         }
     }
 
-    private async Task HandleConnectionLoss(RoomContext context, RoomConnectionStateChangedEventArgs e,
+    private async Task HandleConnectionLossAsHost(RoomContext context, RoomConnectionStateChangedEventArgs e,
         Guid hostParticipantId, ParticipantInfo leavingParticipant)
     {
+        await pingService.UnregisterHeartbeatSession(Role.Host, e.RoomId, e.ConnectionId);
+
         context.Connections.Unregister(e.ConnectionId);
         var participantLeftMessage = new ParticipantLeftMessage()
         {

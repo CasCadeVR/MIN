@@ -61,6 +61,7 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<ParticipantStore>(ServiceLifetime.Transient);
 
         services.RegisterAsImplementedInterfaces<RoomStore>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<PingService>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<SubRoomManager>(ServiceLifetime.Singleton);
 
