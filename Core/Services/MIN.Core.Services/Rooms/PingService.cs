@@ -11,7 +11,7 @@ namespace MIN.Core.Services.Rooms;
 /// <inheritdoc cref="IPingService"/>
 public class PingService : IPingService, IDisposable
 {
-    private const int ConnectionTimeoutSeconds = 10;
+    private const int ConnectionTimeoutSeconds = 60;
     private const int PingIntervalMs = 3_000;
 
     private readonly ConcurrentDictionary<PingContext, DateTime> lastPingSeen = new(); // pingContext / missed pong count
