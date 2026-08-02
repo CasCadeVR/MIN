@@ -12,6 +12,7 @@ using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.SubRooms.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Models;
@@ -95,14 +96,15 @@ public sealed class RoomHoster : IRoomHoster
             if (!result.IsSuccess)
             {
                 logger.Log($"Клиент {e.RemoteEndPoint} не прошёл протокол: {result.ErrorMessage}");
-                await transport.DisconnectClientAsync(e.ConnectionId, e.ServerConnectionId);
+                await transport.DisconnectClientAsync(e.ConnectionId, e.ServerConnectionId, DisconnectReason.ProtocolError);
                 return;
             }
 
             protocolPhase.Remove(e.ConnectionId);
             logger.Log($"Клиент {e.RemoteEndPoint} прошёл протокол для комнаты {roomId}");
 
-            pingService.OnConnectionTimeout += async (_, _) => await transport.DisconnectClientAsync(e.ConnectionId, e.ServerConnectionId);
+            await pingService.RegisterHeartbeatSession(Role.Host, roomId, e.ConnectionId);
+            pingService.OnConnectionTimeout += async (_, _) => await transport.DisconnectClientAsync(e.ConnectionId, e.ServerConnectionId, DisconnectReason.Timeout);
         }
         else
         {

@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Base;
@@ -149,7 +150,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
         else
         {
-            await featureCollection.Core.RoomConnector.DisconnectAsync(roomId, connectionId);
+            await featureCollection.Core.RoomConnector.DisconnectAsync(roomId, connectionId, DisconnectReason.None);
         }
     }
 

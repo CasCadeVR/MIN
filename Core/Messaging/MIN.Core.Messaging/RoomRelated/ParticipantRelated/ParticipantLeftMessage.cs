@@ -2,6 +2,7 @@
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
+using MIN.Core.Transport.Contracts.Enum;
 
 namespace MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 
@@ -22,11 +23,13 @@ public sealed class ParticipantLeftMessage : BaseMessage, IDescribable
     public ParticipantInfo Participant { get; set; } = null!;
 
     /// <summary>
-    /// Был ли участник кикнут или он добровольно вышел
+    /// Причина выхода
     /// </summary>
-    public bool WasKicked { get; set; }
+    public DisconnectReason Reason { get; set; }
 
-    string IDescribable.GetDescription() => WasKicked
+    string IDescribable.GetDescription() => Reason == DisconnectReason.Kick
         ? $"Хост кикнул {Participant.Name}"
+        : Reason == DisconnectReason.Timeout
+        ? $"У участника {Participant.Name} пропала связь"
         : $"Участник {Participant.Name} покинул комнату";
 }

@@ -1,4 +1,6 @@
-﻿namespace MIN.Core.Transport.Contracts.Events;
+﻿using MIN.Core.Transport.Contracts.Enum;
+
+namespace MIN.Core.Transport.Contracts.Events;
 
 /// <summary>
 /// Аргументы события изменения состояния соединения
@@ -23,7 +25,7 @@ public class ConnectionStateChangedEventArgs : EventArgs
     /// <summary>
     /// Сообщение об отключении
     /// </summary>
-    public string? LeavingMessage { get; init; }
+    public DisconnectReason DisconnectReason { get; init; }
 
     /// <summary>
     /// Удалённая точка подключения
@@ -33,11 +35,11 @@ public class ConnectionStateChangedEventArgs : EventArgs
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ConnectionStateChangedEventArgs"/>
     /// </summary>
-    public ConnectionStateChangedEventArgs(Guid сonnectionId, bool isConnected, string? reason = null, Guid? serverConnectionId = null)
+    public ConnectionStateChangedEventArgs(Guid сonnectionId, bool isConnected, DisconnectReason reason = DisconnectReason.None, Guid? serverConnectionId = null)
     {
         ConnectionId = сonnectionId;
         IsConnected = isConnected;
-        LeavingMessage = reason;
+        DisconnectReason = reason;
         ServerConnectionId = serverConnectionId;
     }
 }

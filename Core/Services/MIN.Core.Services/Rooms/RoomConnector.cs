@@ -10,6 +10,7 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Extensions;
@@ -128,7 +129,7 @@ public sealed class RoomConnector : IRoomConnector
             if (!result.IsSuccess)
             {
                 logger.Log($"Протокол не пройден для {endpoint}: {result.ErrorMessage}", LogLevel.Error);
-                await transport.DisconnectAsync(connectionResult.ConnectionId);
+                await transport.DisconnectAsync(connectionResult.ConnectionId, DisconnectReason.ProtocolError);
                 throw new InvalidOperationException(result.ErrorMessage);
             }
 
@@ -180,20 +181,20 @@ public sealed class RoomConnector : IRoomConnector
     }
 
     private async Task PingService_OnPingRequested(Guid roomId, Guid connectionId) => await messageSender.SendAsync(new PingMessage(), roomId, connectionId);
-    private async Task PingService_OnConnectionTimeout(Guid roomId, Guid connectionId) => await DisconnectAsync(roomId, connectionId);
+    private async Task PingService_OnConnectionTimeout(Guid roomId, Guid connectionId) => await DisconnectAsync(roomId, connectionId, DisconnectReason.Timeout);
 
     /// <inheritdoc />
-    public async Task DisconnectAsync(Guid roomId, Guid connectionId)
+    public async Task DisconnectAsync(Guid roomId, Guid connectionId, DisconnectReason reason)
     {
         if (!activeRooms.ContainsKey(roomId))
         {
             return;
         }
 
-        logger.Log($"Я сам иницирую отключение от комнаты с id {roomId} с соединением {connectionId}");
+        logger.Log($"Я сам иницирую отключение от комнаты с id {roomId} с соединением {connectionId}: {reason}");
 
         // Transport will fire event, where it would cleanup further
-        await transport.DisconnectAsync(connectionId);
+        await transport.DisconnectAsync(connectionId, reason);
     }
 
     Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)

@@ -1,4 +1,5 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Common.Core.Extensions;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
@@ -69,7 +70,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
                 return;
             }
 
-            var leavingMessage = e.LeavingMessage;
             var needToDisconnect = false;
 
             if (!e.IsConnected)
@@ -87,9 +87,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
 
                 if (isHostLeaving)
                 {
-                    leavingMessage = !string.IsNullOrEmpty(e.LeavingMessage)
-                        ? e.LeavingMessage
-                        : "Хост остановил комнату";
                     roomStore.Remove(roomId);
                     roomFactory.DestroyContext(roomId);
                     await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
@@ -104,7 +101,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
             {
                 RoomId = roomId,
                 ConnectionId = e.ConnectionId,
-                LeavingMessage = leavingMessage,
+                LeavingMessage = e.DisconnectReason.GetDescription(),
                 NeedToDisconnect = needToDisconnect,
                 IsConnected = e.IsConnected
             }, cts.Token);
@@ -122,7 +119,7 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         var participantLeftMessage = new ParticipantLeftMessage()
         {
             Participant = leavingParticipant,
-            WasKicked = networkErrorHandler.GetDisconnectDetailsFor(leavingParticipant.Id, e.RoomId) != null
+            Reason = e.DisconnectReason,
         };
 
         await messageRouter.RouteAsync(participantLeftMessage, e.RoomId, hostParticipantId, cts.Token);

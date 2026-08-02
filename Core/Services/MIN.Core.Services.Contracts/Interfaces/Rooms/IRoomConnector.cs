@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Models;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
@@ -27,7 +28,7 @@ public interface IRoomConnector : IRoomConnectionRelated
     /// <summary>
     /// Отключиться от удалённой комнаты
     /// </summary>
-    Task DisconnectAsync(Guid roomId, Guid connectionId);
+    Task DisconnectAsync(Guid roomId, Guid connectionId, DisconnectReason reason);
 
     /// <summary>
     /// Подключен ли к указанной комнате

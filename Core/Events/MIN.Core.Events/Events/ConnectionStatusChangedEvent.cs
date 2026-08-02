@@ -28,7 +28,7 @@ public sealed class ConnectionStatusChangedEvent : BaseEvent
     public bool NeedToDisconnect { get; init; }
 
     /// <summary>
-    /// Сообщение об ошибке при отключении
+    /// Какое сообщение показать при отключении
     /// </summary>
     public string? LeavingMessage { get; init; }
 }

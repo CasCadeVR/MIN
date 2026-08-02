@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Helpers;
 using MIN.Core.Transport.Contracts.Interfaces;
@@ -56,7 +57,7 @@ public class TcpTransport : ITransport
             ConnectionStateChanged?.Invoke(this, args);
         };
 
-        server.ConnectionDisconnected += (TcpSocketServer server, (TcpSocketConnection conn, string? reason) eventArgs) =>
+        server.ConnectionDisconnected += (TcpSocketServer server, (TcpSocketConnection conn, DisconnectReason reason) eventArgs) =>
         {
             var args = new ConnectionStateChangedEventArgs(eventArgs.conn.Id, false, eventArgs.reason, connectionId);
             ConnectionStateChanged?.Invoke(this, args);
@@ -84,7 +85,7 @@ public class TcpTransport : ITransport
             throw new ArgumentException("Endpoint must be TcpEndpoint");
         }
 
-        var client = new TcpSocketClient();
+        var client = new TcpSocketClient(logger);
         client.OnMessageReceived += msg =>
         {
             var args = new RawMessageReceivedEventArgs(msg, client.ConnectionId);
@@ -218,24 +219,24 @@ public class TcpTransport : ITransport
     }
 
     /// <inheritdoc />
-    public async Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId)
+    public async Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId, DisconnectReason reason = DisconnectReason.None)
     {
         logger.Log($"Отключаю соединения с id {clientConnectionId}");
         if (servers.TryGetValue(serverConnectionId ?? Guid.Empty, out var server) &&
             server.Connections.TryGetValue(clientConnectionId, out var conn))
         {
-            await conn.DisposeAsync();
+            await conn.StopAsync(reason);
         }
         else if (clients.TryGetValue(clientConnectionId, out var client))
         {
-            await client.DisposeAsync();
+            await client.StopAsync(reason);
             clients.TryRemove(clientConnectionId, out _);
         }
     }
 
-    async Task ITransport.DisconnectAsync(Guid connectionId)
+    async Task ITransport.DisconnectAsync(Guid connectionId, DisconnectReason reason)
     {
-        await DisconnectClientAsync(connectionId, null);
+        await DisconnectClientAsync(connectionId, null, reason);
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

@@ -1,4 +1,5 @@
-﻿using MIN.Core.Transport.Contracts.Events;
+﻿using MIN.Core.Transport.Contracts.Enum;
+using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Models;
 
 namespace MIN.Core.Transport.Contracts.Interfaces;
@@ -57,10 +58,10 @@ public interface ITransport
     /// <summary>
     /// Разорвать соединение с указанным соединением
     /// </summary>
-    Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId);
+    Task DisconnectClientAsync(Guid clientConnectionId, Guid? serverConnectionId, DisconnectReason reason = DisconnectReason.None);
 
     /// <summary>
     /// Отключиться
     /// </summary>
-    Task DisconnectAsync(Guid connectionId);
+    Task DisconnectAsync(Guid connectionId, DisconnectReason reason = DisconnectReason.None);
 }
