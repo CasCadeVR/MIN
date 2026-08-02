@@ -80,6 +80,26 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         await transport.SendAsync(dataToSend, recipientConnectionId, serverConnectionId, cancellationToken);
     }
 
+    async Task IMessageSender.SendStreamAsync(Stream messageStream, Guid? streamId, Guid roomId, Guid recipientConnectionId, CancellationToken cancellationToken)
+    {
+        var options = new StreamOptions
+        {
+            RequiresAcks = true,
+            RequiresEncryption = true,
+            StreamId = streamId,
+            IsRawPayload = true,
+        };
+
+        Guid? serverConnectionId = null;
+
+        if (roomHoster.IsHosting(roomId))
+        {
+            serverConnectionId = roomHoster.GetConnectionIdByRoomId(roomId);
+        }
+
+        await streamManager.SendAsync(messageStream, options, roomId, recipientConnectionId, serverConnectionId, cancellationToken);
+    }
+
     async Task IMessageSender.BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken)
     {
         if (message is IMessageWithSecuredFields messageWithSecured)

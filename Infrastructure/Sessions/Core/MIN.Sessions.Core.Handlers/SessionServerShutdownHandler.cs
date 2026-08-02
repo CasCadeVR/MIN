@@ -1,4 +1,5 @@
-﻿using MIN.Core.Handlers.Contracts;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -18,7 +19,6 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
     private readonly ISubRoomManager subRoomManager;
     private readonly ISessionProcessManager sessionProcessManager;
     private readonly IMessageSender messageSender;
-    private readonly IRoomHoster roomHoster;
     private readonly INetworkErrorHandler networkErrorHandler;
     private readonly ILoggerProvider logger;
 
@@ -28,14 +28,12 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
     public SessionServerShutdownHandler(ISubRoomManager subRoomManager,
         ISessionProcessManager sessionProcessManager,
         IMessageSender messageSender,
-        IRoomHoster roomHoster,
         INetworkErrorHandler networkErrorHandler,
         ILoggerProvider logger)
     {
         this.subRoomManager = subRoomManager;
         this.sessionProcessManager = sessionProcessManager;
         this.messageSender = messageSender;
-        this.roomHoster = roomHoster;
         this.networkErrorHandler = networkErrorHandler;
         this.logger = logger;
     }
@@ -57,7 +55,7 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
 
         await sessionProcessManager.StopAsync(new ProcessContext(roomId, subRoomId, SessionProcessRole.Client));
 
-        if (roomHoster.IsHosting(roomId))
+        if (context.Role == Role.Host)
         {
             var outOfSubRoomParticipants = context.RoomContext.Participants.GetParticipants()
                 .Select(x => x.Id).Except(subRoomManager.GetParticipantIds(roomId, subRoomId)).ToList();

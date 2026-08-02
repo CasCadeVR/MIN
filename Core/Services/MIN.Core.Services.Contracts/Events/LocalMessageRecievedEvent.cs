@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Contracts.Events;
@@ -19,6 +20,11 @@ public sealed class LocalMessageRecievedEvent : BaseEvent
     public Guid RoomId { get; }
 
     /// <summary>
+    /// Роль пользователя
+    /// </summary>
+    public Role Role { get; }
+
+    /// <summary>
     /// Список исключённых из Broadcast для сервера
     /// </summary>
     public IEnumerable<Guid>? BroadcastExcludeIds { get; }
@@ -26,10 +32,11 @@ public sealed class LocalMessageRecievedEvent : BaseEvent
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="LocalMessageRecievedEvent"/>
     /// </summary>
-    public LocalMessageRecievedEvent(IMessage message, Guid roomId, IEnumerable<Guid>? broadcastExcludeIds = null)
+    public LocalMessageRecievedEvent(IMessage message, Guid roomId, Role role, IEnumerable<Guid>? broadcastExcludeIds = null)
     {
         Message = message;
         RoomId = roomId;
+        Role = role;
         BroadcastExcludeIds = broadcastExcludeIds;
     }
 }

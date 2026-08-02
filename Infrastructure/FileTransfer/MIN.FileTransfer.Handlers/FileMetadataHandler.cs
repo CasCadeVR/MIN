@@ -1,10 +1,10 @@
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
@@ -19,21 +19,18 @@ internal sealed class FileMetadataHandler : IMessageHandler
     private readonly IFileTransferService fileTransferService;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
-    private readonly IRoomHoster roomHoster;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     public FileMetadataHandler(IFileTransferService fileTransferService,
         IEventBus eventBus,
         IMessageRouter messageRouter,
-        IRoomHoster roomHoster,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.fileTransferService = fileTransferService;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
-        this.roomHoster = roomHoster;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -69,7 +66,7 @@ internal sealed class FileMetadataHandler : IMessageHandler
 
         var roomId = context.RoomContext.RoomId;
 
-        var isHosting = roomHoster.IsHosting(roomId);
+        var isHosting = context.Role == Role.Host;
         var selfId = identityService.SelfParticipant.Id;
         var isSelf = message.SenderId == selfId;
 

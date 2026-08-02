@@ -13,6 +13,7 @@ using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Services.Messaging;
 
@@ -78,8 +79,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         var context = roomFactory.GetOrCreateContext(e.RoomId);
         await dispatcher.DispatchAsync(e.Message,
             new MessageContext(context,
-            CoreRegistryConstants.LocalConnectionId,
-            roomHoster.IsHosting(e.RoomId) ? Role.Host : Role.Client,
+            CoreRegistryConstants.LocalConnectionId, e.Role,
             cancellationToken), e.BroadcastExcludeIds);
     }
 
@@ -162,12 +162,12 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
             }
             catch (Exception ex)
             {
-                logger.Log($"Произошла ошибка во время обработки raw message: {ex.Message}");
+                logger.Log($"Произошла ошибка во время обработки raw message: {ex.Message}", LogLevel.Error);
             }
         }
         catch (Exception ex)
         {
-            logger.Log($"Произошла ошибка во время обработки raw message: {ex.Message}");
+            logger.Log($"Произошла ошибка во время обработки raw message: {ex.Message}", LogLevel.Error);
         }
     }
 

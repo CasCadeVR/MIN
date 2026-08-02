@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Events.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
@@ -36,7 +37,9 @@ public sealed class MessageRouter : IMessageRouter
     {
         message.SenderId = senderId;
 
-        if (roomHoster.IsHosting(roomId))
+        var role = roomHoster.IsHosting(roomId) ? Role.Host : Role.Client;
+
+        if (role == Role.Host)
         {
             // Server
 
@@ -44,7 +47,7 @@ public sealed class MessageRouter : IMessageRouter
             // Regardless of recipient - they had to put recipientId and public = false if they wanted it to be private
             // So basically dispatcher will handle all of it
 
-            await PublishLocally(message, roomId, broadcastExcludeIds, cancellationToken);
+            await PublishLocally(message, roomId, role, broadcastExcludeIds, cancellationToken);
         }
         else
         {
@@ -52,7 +55,7 @@ public sealed class MessageRouter : IMessageRouter
 
             if (message.RequiresLocalDuplication)
             {
-                await PublishLocally(message, roomId, null, cancellationToken); // клиенту broadcast не нужен
+                await PublishLocally(message, roomId, role, null, cancellationToken); // клиенту broadcast не нужен
             }
 
             var hostId = roomStore.GetRoomHostParticipantId(roomId);
@@ -61,8 +64,8 @@ public sealed class MessageRouter : IMessageRouter
         }
     }
 
-    private async Task PublishLocally(IMessage message, Guid roomId, IEnumerable<Guid>? broadcastExcludeIds, CancellationToken cancellationToken)
-        => await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId, broadcastExcludeIds), cancellationToken);
+    private async Task PublishLocally(IMessage message, Guid roomId, Role role, IEnumerable<Guid>? broadcastExcludeIds, CancellationToken cancellationToken)
+        => await eventBus.PublishAsync(new LocalMessageRecievedEvent(message, roomId, role, broadcastExcludeIds), cancellationToken);
 
     private Guid GetHostConnectionId(Guid roomId, Guid hostId)
     {

@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
@@ -17,7 +18,6 @@ namespace MIN.Core.Handlers.Handlers;
 internal sealed class ParticipantJoinHandler : IMessageHandler
 {
     private readonly IRoomStore roomStore;
-    private readonly IRoomHoster roomHoster;
     private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
@@ -28,14 +28,12 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
     /// </summary>
     public ParticipantJoinHandler(
         IRoomStore roomStore,
-        IRoomHoster roomHoster,
         INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
         IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.roomStore = roomStore;
-        this.roomHoster = roomHoster;
         this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
         this.eventBus = eventBus;
@@ -84,7 +82,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
                     Message = participantJoinedMessage,
                 }, context.CancellationToken);
 
-                if (roomHoster.IsHosting(context.RoomContext.RoomId))
+                if (context.Role == Role.Host)
                 {
                     return HandlerResult.WithResponse(new ParticipantAcceptedMessage());
                 }
