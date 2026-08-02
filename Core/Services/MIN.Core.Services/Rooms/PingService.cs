@@ -53,20 +53,31 @@ public class PingService : IPingService, IDisposable
             }
             else if (context.Role == Role.Client)
             {
-                var stopwatchPing = new Stopwatch();
-                stopwatchPing.Start();
-                pingTravel[context] = stopwatchPing;
-                OnPingRequested?.Invoke(context.RoomId, context.ConnectionId);
+                if (pingTravel.TryGetValue(context, out var elapsedStopwatch))
+                {
+                    await eventBus.PublishAsync(new PingMeasuredEvent()
+                    {
+                        RoomId = context.RoomId,
+                        PingMs = (int)elapsedStopwatch.ElapsedMilliseconds,
+                    });
+                }
+                else
+                {
+                    var stopwatchPing = new Stopwatch();
+                    stopwatchPing.Start();
+                    pingTravel[context] = stopwatchPing;
+                    OnPingRequested?.Invoke(context.RoomId, context.ConnectionId);
+                }
             }
         }
     }
 
     private void SubscribeToEvents()
     {
-        eventBus.Subscribe<PingPongReceivedEvent>(OnPongAckReceived);
+        eventBus.Subscribe<PingPongReceivedEvent>(OnPingPongReceived);
     }
 
-    private async Task OnPongAckReceived(PingPongReceivedEvent e, CancellationToken cancellationToken)
+    private async Task OnPingPongReceived(PingPongReceivedEvent e, CancellationToken cancellationToken)
     {
         var context = new PingContext(e.Role, e.RoomId, e.ConnectionId);
 

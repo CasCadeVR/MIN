@@ -88,12 +88,17 @@ public sealed class RoomConnector : IRoomConnector
 
         if (!e.IsConnected)
         {
+            // Here we are cleaning for this service specifically
+            pingService.OnConnectionTimeout -= PingService_OnConnectionTimeout;
+            await pingService.UnregisterHeartbeatSession(Role.Client, roomId, e.ConnectionId);
             activeRooms.Remove(roomId);
             activeConnections.Remove(e.ConnectionId);
+
             logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {e.ConnectionId}");
         }
 
         var args = new RoomConnectionStateChangedEventArgs(roomId, e);
+        // ConnectionMonitor will clean the rest of a room
         ConnectionStateChanged?.Invoke(this, args);
     }
 
@@ -187,17 +192,8 @@ public sealed class RoomConnector : IRoomConnector
 
         logger.Log($"Я сам иницирую отключение от комнаты с id {roomId} с соединением {connectionId}");
 
-        pingService.OnConnectionTimeout -= PingService_OnConnectionTimeout;
-        await pingService.UnregisterHeartbeatSession(Role.Client, roomId, connectionId);
-
-        activeRooms.Remove(roomId);
-        activeConnections.Remove(connectionId);
-
+        // Transport will fire event, where it would cleanup further
         await transport.DisconnectAsync(connectionId);
-
-        //roomStore.Remove(roomId);
-        //roomFactory.DestroyContext(roomId);
-        //await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
     }
 
     Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)

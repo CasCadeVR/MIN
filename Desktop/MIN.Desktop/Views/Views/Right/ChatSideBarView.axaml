@@ -123,16 +123,18 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Padding="0,4,0,0">
-                                            <DockPanel>
-                                                <Border DockPanel.Dock="Left" Classes="status-info">
-                                                    <TextBlock Text="{Binding Origin}" />
+                                            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="4">
+                                                <Border Grid.Column="0" Classes="status-info">
+                                                    <TextBlock Text="{Binding Origin,
+                                                        Converter={converters:TruncateWithEllipsisConverter},
+                                                        ConverterParameter=15}" />
                                                 </Border>
 
-                                                <SelectableTextBlock
+                                                <SelectableTextBlock Grid.Column="1"
                                                     VerticalAlignment="Center"
                                                     HorizontalAlignment="Right"
                                                     Text="{Binding Address}" />
-                                            </DockPanel>
+                                            </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

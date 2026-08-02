@@ -1,5 +1,4 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts;
 using MIN.Core.Events.Events;
@@ -25,7 +24,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     private readonly IRoomStore roomStore;
     private readonly IRoomFactory roomFactory;
     private readonly INetworkErrorHandler networkErrorHandler;
-    private readonly IPingService pingService;
     private readonly ILoggerProvider logger;
 
     private CancellationTokenSource cts = null!;
@@ -40,7 +38,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         IRoomStore roomStore,
         IRoomFactory roomFactory,
         INetworkErrorHandler networkErrorHandler,
-        IPingService pingService,
         ILoggerProvider logger)
     {
         this.roomConnector = roomConnector;
@@ -50,7 +47,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         this.roomStore = roomStore;
         this.roomFactory = roomFactory;
         this.networkErrorHandler = networkErrorHandler;
-        this.pingService = pingService;
         this.logger = logger;
     }
 
@@ -91,7 +87,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
 
                 if (isHostLeaving)
                 {
-                    await pingService.UnregisterHeartbeatSession(Role.Client, e.RoomId, e.ConnectionId);
                     leavingMessage = !string.IsNullOrEmpty(e.LeavingMessage)
                         ? e.LeavingMessage
                         : "Хост остановил комнату";
@@ -123,8 +118,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     private async Task HandleConnectionLossAsHost(RoomContext context, RoomConnectionStateChangedEventArgs e,
         Guid hostParticipantId, ParticipantInfo leavingParticipant)
     {
-        await pingService.UnregisterHeartbeatSession(Role.Host, e.RoomId, e.ConnectionId);
-
         context.Connections.Unregister(e.ConnectionId);
         var participantLeftMessage = new ParticipantLeftMessage()
         {

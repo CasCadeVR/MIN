@@ -102,8 +102,11 @@ public sealed class RoomHoster : IRoomHoster
             protocolPhase.Remove(e.ConnectionId);
             logger.Log($"Клиент {e.RemoteEndPoint} прошёл протокол для комнаты {roomId}");
 
-            await pingService.RegisterHeartbeatSession(Role.Host, roomId, e.ConnectionId);
             pingService.OnConnectionTimeout += async (_, _) => await transport.DisconnectClientAsync(e.ConnectionId, e.ServerConnectionId);
+        }
+        else
+        {
+            await pingService.UnregisterHeartbeatSession(Role.Host, roomId, e.ConnectionId);
         }
 
         var args = new RoomConnectionStateChangedEventArgs(roomId, e);
