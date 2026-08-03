@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Infrastructure.Services;
@@ -24,7 +23,8 @@ public partial class LoadingViewModel : ModalViewModelBase
     private Action<Room?> onRoomReady = null!;
     private CancellationTokenSource cts = null!;
 
-    private HashSet<IDisposable> eventTokens = null!;
+    private IDisposable roomStateToken = null!;
+    private IDisposable errorToken = null!;
     private bool gotRoom;
 
     /// <summary>
@@ -77,10 +77,8 @@ public partial class LoadingViewModel : ModalViewModelBase
 
     private void SubscribeToEvents()
     {
-        eventTokens = [
-            eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived),
-            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
-        ];
+        roomStateToken = eventBus.Subscribe<RoomStateChangedEvent>(OnRoomStateChangedEventReceived);
+        errorToken = eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
     }
 
     private async Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
@@ -120,10 +118,8 @@ public partial class LoadingViewModel : ModalViewModelBase
     [RelayCommand]
     public void StopLoading()
     {
-        foreach (var token in eventTokens)
-        {
-            token.Dispose();
-        }
+        roomStateToken.Dispose();
+        errorToken.Dispose();
 
         if (!gotRoom)
         {

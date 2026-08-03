@@ -1,16 +1,15 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.Core.Events.Events;
 
 /// <summary>
 /// Событие, возникающее при заходе в комнату как клиент, получив всю необходимую для показа информацию
 /// </summary>
-public sealed class RoomJoinedEvent : BaseEvent
+public sealed record RoomJoinedEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

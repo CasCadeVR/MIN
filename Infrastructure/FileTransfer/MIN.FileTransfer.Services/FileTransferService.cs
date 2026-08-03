@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Messaging.Stateless.RoomRelated.Disconnect;
@@ -23,7 +23,6 @@ public class NetworkErrorHandler : INetworkErrorHandler
     private readonly IEventBus eventBus;
     private readonly IIdentityService identityService;
     private readonly ConcurrentDictionary<Guid, Timer> rejectAckTimers = new(); // participantId / timer
-    private readonly ConcurrentDictionary<Guid, string> kickHistory = new(); // participantId / reason
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NetworkErrorHandler"/>
@@ -50,21 +49,6 @@ public class NetworkErrorHandler : INetworkErrorHandler
         eventBus.Subscribe<DisconnectAckReceived>(OnDisconnectAckReceived);
     }
 
-    string? INetworkErrorHandler.GetDisconnectDetailsFor(Guid paritipantId, Guid roomId)
-    {
-        kickHistory.TryGetValue(paritipantId, out var reason);
-
-        if (reason != null)
-        {
-            kickHistory.TryRemove(paritipantId, out _);
-            return reason;
-        }
-        else
-        {
-            return null;
-        }
-    }
-
     async Task INetworkErrorHandler.SendErrorAsync(string message, Guid recipientId, Guid roomId, bool critical, int timeoutMs)
     {
         var selfId = identityService.SelfParticipant.Id;
@@ -84,8 +68,6 @@ public class NetworkErrorHandler : INetworkErrorHandler
             Reason = message,
             RecipientId = recipientId,
         };
-
-        kickHistory.TryAdd(recipientId, message);
 
         await messageRouter.RouteAsync(disconnectMessage, roomId, selfId,
             CancellationToken.None, broadcastExcludeIds: [identityService.SelfParticipant.Id]);

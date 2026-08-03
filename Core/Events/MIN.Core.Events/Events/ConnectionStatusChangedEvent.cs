@@ -1,15 +1,14 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.Core.Events.Events;
 
 /// <summary>
 /// Событие, возникающее при изменении статуса подключения к комнате
 /// </summary>
-public sealed class ConnectionStatusChangedEvent : BaseEvent
+public sealed record ConnectionStatusChangedEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

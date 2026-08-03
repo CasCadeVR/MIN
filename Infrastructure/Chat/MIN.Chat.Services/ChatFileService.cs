@@ -1,5 +1,5 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.FileTransfer.DI.FeatureCollection;

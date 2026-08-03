@@ -4,7 +4,7 @@ using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.Cryptography;
 using MIN.Core.DI.FeatureCollection;
-using MIN.Core.Events;
+using MIN.Core.Events.Services;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Dispatcher;
 using MIN.Core.Handlers.Handlers;

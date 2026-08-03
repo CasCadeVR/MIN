@@ -1,16 +1,15 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.Sessions.Core.Events;
 
 /// <summary>
 /// События выхода участника из сессии
 /// </summary>
-public sealed class SessionParticipantLeftEvent : BaseEvent
+public sealed record SessionParticipantLeftEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

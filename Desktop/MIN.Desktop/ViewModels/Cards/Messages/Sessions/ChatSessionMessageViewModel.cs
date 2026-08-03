@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -9,7 +8,7 @@ using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Modals;
@@ -24,11 +23,9 @@ namespace MIN.Desktop.ViewModels.Cards.Messages.Sessions;
 /// </summary>
 public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDisposable
 {
-    private readonly IEventBus eventBus = null!;
     private readonly IDialogService dialogService = null!;
     private readonly int? maximumParticipants;
-    private readonly Guid roomId;
-    private HashSet<IDisposable> eventTokens = null!;
+    private IDisposable rescanToken = null!;
     private bool asDownloaded;
     private int currentAmount;
 
@@ -75,9 +72,9 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
     /// Инициализирует новый экземпляр <see cref="ChatSessionMessageViewModel"/>
     /// </summary>
     public ChatSessionMessageViewModel(ISessionFeatureCollection sessionFeatureCollection,
+        IEventScope roomScope,
         IEventBus eventBus,
         IDialogService dialogService,
-        Guid roomId,
         SessionReadyMessage sessionReadyMessage,
         ParticipantInfo localParticipant,
         Thickness timePadding,
@@ -92,9 +89,7 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
             sessionReadyMessage.RecipientId != null)
     {
 
-        this.eventBus = eventBus;
         this.dialogService = dialogService;
-        this.roomId = roomId;
         SessionMessage = sessionReadyMessage;
 
         currentAmount = sessionReadyMessage.CurrentParticipantAmount;
@@ -102,17 +97,14 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
         asDownloaded = sessionFeatureCollection.SessionScanner.DownloadedSessions.ContainsKey(sessionReadyMessage.Session.SessionId);
 
         FillLabels();
-        SubscribeToEvents();
+        SubscribeToEvents(roomScope, eventBus);
     }
 
-    private void SubscribeToEvents()
+    private void SubscribeToEvents(IEventScope roomScope, IEventBus eventBus)
     {
-        eventTokens =
-        [
-            eventBus.Subscribe<SessionRescanCompletedEvent>(OnSessionRescanCompletedEvent),
-            eventBus.Subscribe<SessionParticipantJoinedEvent>(OnSessionParticipantJoined),
-            eventBus.Subscribe<SessionParticipantLeftEvent>(OnSessionParticipantLeft)
-        ];
+        rescanToken = eventBus.Subscribe<SessionRescanCompletedEvent>(OnSessionRescanCompletedEvent);
+        roomScope.Subscribe<SessionParticipantJoinedEvent>(OnSessionParticipantJoined);
+        roomScope.Subscribe<SessionParticipantLeftEvent>(OnSessionParticipantLeft);
     }
 
     private async Task OnSessionRescanCompletedEvent(SessionRescanCompletedEvent eventMessage, CancellationToken cancellationToken)
@@ -125,8 +117,7 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
 
     private async Task OnSessionParticipantJoined(SessionParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId
-            || eventMessage.SubRoomId != SessionMessage.SubRoomId)
+        if (eventMessage.SubRoomId != SessionMessage.SubRoomId)
         {
             return;
         }
@@ -139,8 +130,7 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
 
     private async Task OnSessionParticipantLeft(SessionParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId
-            || eventMessage.SubRoomId != SessionMessage.SubRoomId)
+        if (eventMessage.SubRoomId != SessionMessage.SubRoomId)
         {
             return;
         }
@@ -209,9 +199,6 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
     /// <inheritdoc cref="IDisposable.Dispose"/>
     void IDisposable.Dispose()
     {
-        foreach (var token in eventTokens)
-        {
-            token.Dispose();
-        }
+        rescanToken.Dispose();
     }
 }

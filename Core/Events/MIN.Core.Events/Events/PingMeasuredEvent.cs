@@ -1,16 +1,15 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.Core.Events.Events;
 
 /// <summary>
 /// Событие, возникающее при измерения нового значения пинга
 /// </summary>
-public sealed class PingMeasuredEvent : BaseEvent
+public sealed record PingMeasuredEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
-    public Guid RoomId { get; set; }
+    /// <inheritdoc />
+    public Guid RoomId { get; init; }
 
     /// <summary>
     /// Измеренный пинг (мс)

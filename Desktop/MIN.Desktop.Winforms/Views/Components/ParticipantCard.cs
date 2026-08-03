@@ -1,7 +1,7 @@
 ﻿using MIN.Chat.Events;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.Components.Controls.ContextMenuStrips;
 using MIN.Desktop.Contracts.Schemes;
 

@@ -1,6 +1,6 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Stores.Contracts.Models;
 using MIN.Desktop.Contracts.Schemes;

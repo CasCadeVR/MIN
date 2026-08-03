@@ -1,7 +1,7 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Headers.Contracts.Interfaces;
@@ -34,6 +34,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     private readonly IStreamManager streamManager;
     private readonly ILoggerProvider logger;
     private CancellationTokenSource cts = null!;
+    private IDisposable localMessageToken = null!;
     private bool disposed;
 
     /// <summary>
@@ -70,7 +71,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         roomHoster.RawMessageReceived += OnRawMessageReceived;
         roomConnector.RawMessageReceived += OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
-        eventBus.Subscribe<LocalMessageRecievedEvent>(OnLocalMessageRecieved);
+        localMessageToken = eventBus.Subscribe<LocalMessageRecievedEvent>(OnLocalMessageRecieved);
         await Task.CompletedTask;
     }
 
@@ -182,6 +183,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
             return;
         }
 
+        localMessageToken.Dispose();
         disposed = true;
         cts?.Cancel();
         cts?.Dispose();

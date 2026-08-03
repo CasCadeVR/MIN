@@ -198,7 +198,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
         var card = new ChatFileMessageViewModel(featureCollection.FileTransfer,
-            featureCollection.Core.EventBus, msg, timePadding,
+            roomScope, msg, timePadding,
             localParticipant, isHost, removeHeaders, parentWindow.Clipboard);
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
@@ -220,7 +220,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
         var card = new ChatSessionMessageViewModel(featureCollection.Sessions,
-            featureCollection.Core.EventBus, dialogService, roomId,
+            roomScope, featureCollection.Core.EventBus, dialogService,
             msg, localParticipant, timePadding, isHost, removeHeaders);
         card.OnJoinRequested += () => OnSessionJoinRequested(msg);
 
@@ -240,7 +240,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
         var card = new ChatFileImagePreviewMessageViewModel(featureCollection.FileTransfer,
-            featureCollection.Core.EventBus, msg, timePadding,
+            roomScope, msg, timePadding,
             localParticipant, isHost, removeHeaders, parentWindow.Clipboard);
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);

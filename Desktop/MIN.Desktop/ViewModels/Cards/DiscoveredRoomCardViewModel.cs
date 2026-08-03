@@ -7,7 +7,7 @@ using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Interfaces;
@@ -19,13 +19,12 @@ namespace MIN.Desktop.ViewModels.Cards;
 /// <summary>
 /// Модель карточки комнаты на боковой панели
 /// </summary>
-public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposable
+public partial class DiscoveredRoomCardViewModel : CardViewModelBase
 {
-    private readonly IEventBus eventBus;
     private readonly RoomInfo room;
     private readonly bool asHost;
 
-    private HashSet<IDisposable> eventTokens = null!;
+    private IDisposable errorToken = null!;
     private bool joined;
 
     /// <summary>
@@ -78,7 +77,6 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
         bool asHost,
         IClipboard? clipboard)
     {
-        this.eventBus = eventBus;
         this.asHost = asHost;
         this.room = room;
 
@@ -94,7 +92,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
             : room.Cabinet;
 
         ManageConnectButtonAccessability();
-        SubscribeToEvents();
+        SubscribeToEvents(eventBus);
     }
 
     /// <summary>
@@ -107,17 +105,15 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
         Clicked?.Invoke(AddressOrigin.LAN);
     }
 
-    private void SubscribeToEvents()
+    private void SubscribeToEvents(IEventBus eventBus)
     {
-        eventTokens =
-        [
-            eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
-            eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
-            eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent),
-            eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
-            eventBus.Subscribe<RoomJoinedEvent>(OnRoomJoined),
-            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
-        ];
+        var roomScope = eventBus.CreateScope(room.Id);
+        roomScope.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
+        roomScope.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
+        roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent);
+        roomScope.Subscribe<RoomClosedEvent>(OnRoomLeft);
+        roomScope.Subscribe<RoomJoinedEvent>(OnRoomJoined);
+        errorToken = eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
     }
 
     private async Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
@@ -132,35 +128,18 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != room.Id)
-        {
-            return;
-        }
-
         room.ParticipantCount++;
-
         ManageConnectButtonAccessability();
     }
 
     private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != room.Id)
-        {
-            return;
-        }
-
         room.ParticipantCount--;
-
         ManageConnectButtonAccessability();
     }
 
     private async Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != room.Id)
-        {
-            return;
-        }
-
         if (asHost)
         {
             Dispose();
@@ -174,11 +153,6 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
 
     private async Task OnRoomJoined(RoomJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != room.Id)
-        {
-            return;
-        }
-
         IsConnecting = false;
         joined = true;
 
@@ -224,11 +198,9 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase, IDisposabl
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
-    void IDisposable.Dispose()
+    public override void Dispose()
     {
-        foreach (var token in eventTokens)
-        {
-            token.Dispose();
-        }
+        errorToken.Dispose();
+        base.Dispose();
     }
 }

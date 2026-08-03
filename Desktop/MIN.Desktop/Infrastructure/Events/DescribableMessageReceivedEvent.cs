@@ -1,17 +1,16 @@
 ﻿using System;
 using MIN.Common.Core.Contracts.Interfaces;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.Desktop.Infrastructure.Events;
 
 /// <summary>
 /// Событие, возникающее при получении описаемого сообщения в комнате
 /// </summary>
-public sealed class DescribableMessageReceivedEvent : BaseEvent
+public sealed record DescribableMessageReceivedEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

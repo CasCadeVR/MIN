@@ -1,6 +1,6 @@
 ﻿using MIN.Chat.Events;
 using MIN.Chat.Messaging;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;

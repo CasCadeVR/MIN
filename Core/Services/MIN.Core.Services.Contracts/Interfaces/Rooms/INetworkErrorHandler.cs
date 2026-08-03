@@ -6,14 +6,6 @@
 public interface INetworkErrorHandler
 {
     /// <summary>
-    /// Получить причину отключения
-    /// </summary>
-    /// <remarks>
-    /// null, если учатсник вышел добровольно
-    /// </remarks>
-    string? GetDisconnectDetailsFor(Guid participantId, Guid roomId);
-
-    /// <summary>
     /// Отключить клиента, указав причину
     /// </summary>
     /// <remarks>

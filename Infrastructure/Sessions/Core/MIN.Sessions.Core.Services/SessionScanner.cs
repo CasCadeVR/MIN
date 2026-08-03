@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;

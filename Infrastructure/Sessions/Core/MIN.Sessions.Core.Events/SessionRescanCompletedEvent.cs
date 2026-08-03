@@ -1,4 +1,4 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Models;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Sessions.Core.Events;
@@ -6,7 +6,7 @@ namespace MIN.Sessions.Core.Events;
 /// <summary>
 /// События пересканирования папок скаченных сессий
 /// </summary>
-public sealed class SessionRescanCompletedEvent : BaseEvent
+public sealed record SessionRescanCompletedEvent : BaseEvent
 {
     /// <summary>
     /// Список скаченных сессий

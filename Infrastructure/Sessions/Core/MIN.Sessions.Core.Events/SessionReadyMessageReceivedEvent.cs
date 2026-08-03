@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Sessions.Core.Events;
@@ -6,11 +7,9 @@ namespace MIN.Sessions.Core.Events;
 /// <summary>
 /// Получена информация о готовой сессии в комнате
 /// </summary>
-public sealed class SessionReadyMessageReceivedEvent : BaseEvent
+public sealed record SessionReadyMessageReceivedEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

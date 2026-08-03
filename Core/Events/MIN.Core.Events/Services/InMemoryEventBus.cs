@@ -1,10 +1,10 @@
 ﻿using System.Collections.Concurrent;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 
-namespace MIN.Core.Events;
+namespace MIN.Core.Events.Services;
 
 /// <inheritdoc cref="IEventBus"/>
 public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
@@ -60,29 +60,13 @@ public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
         return new SubscriptionToken(() => Unsubscribe(eventType, wrappedHandler));
     }
 
-    IDisposable IEventBus.Subscribe<T>(Func<T, bool> filter, Func<T, CancellationToken, Task> handler)
-    {
-        var eventType = typeof(T);
-        var handlers = this.handlers.GetOrAdd(eventType, _ => []);
+    /// <summary>
+    /// Создать Scope и сгруппировать под события по идентификатору
+    /// </summary>
+    IEventScope IEventBus.CreateScope(Guid roomId)
+        => new RoomEventScope(this, roomId);
 
-        Func<object, CancellationToken, Task> wrappedHandler = async (eventObj, ct) =>
-        {
-            var typedEvent = (T)eventObj;
-            if (filter(typedEvent))
-            {
-                await handler(typedEvent, ct);
-            }
-        };
-
-        lock (handlers)
-        {
-            handlers.Add(wrappedHandler);
-        }
-
-        return new SubscriptionToken(() => Unsubscribe(eventType, wrappedHandler));
-    }
-
-    private async Task SafeExecuteHandler(Func<object, CancellationToken, Task> handler, IEvent eventMessage, CancellationToken cancellationToken)
+    private async Task SafeExecuteHandler(Func<object, CancellationToken, Task> handler, BaseEvent eventMessage, CancellationToken cancellationToken)
     {
         try
         {

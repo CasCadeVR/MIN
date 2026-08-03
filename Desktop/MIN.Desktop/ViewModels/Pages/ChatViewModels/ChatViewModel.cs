@@ -82,7 +82,6 @@ public partial class ChatViewModel : RoutableViewModelBase
             OnNavigatedTo = ActionOnNavigatedTo;
             OnNavigatedFrom = ActionOnNavigatedFrom;
 
-            SubscribeToEvents(featureCollection.Core.EventBus);
             InitializeNotifications();
             InitializeTypingTimer();
             InitializeLayoutStyles();
@@ -136,12 +135,13 @@ public partial class ChatViewModel : RoutableViewModelBase
         IsHost = localParticipant.Id == room.HostParticipant.Id;
         this.connectionId = connectionId;
         roomId = room.Id;
+        SubscribeToEvents(featureCollection.Core.EventBus);
 
         await UpdateChatFlow();
         loadingTcs.SetResult();
     }
 
-    private async Task CleanUpAsync(Guid roomId, Guid connectionId)
+    private async Task CleanUpServicesAsync(Guid roomId, Guid connectionId)
     {
         if (localParticipant.Id == room.HostParticipant.Id)
         {
@@ -164,13 +164,11 @@ public partial class ChatViewModel : RoutableViewModelBase
     public async ValueTask DisposeAsync()
     {
         ClearParentFormEvents();
-        foreach (var token in eventTokens)
-        {
-            token.Dispose();
-        }
+        roomScope.Dispose();
+        errorToken.Dispose();
         typingTimer.Dispose();
         formCts.Cancel();
         formCts.Dispose();
-        await CleanUpAsync(roomId, connectionId);
+        await CleanUpServicesAsync(roomId, connectionId);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.Components.Controls.ContextMenuStrips;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Views.Components.ChatMessages;

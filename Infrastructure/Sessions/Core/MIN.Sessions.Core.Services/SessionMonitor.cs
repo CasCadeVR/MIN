@@ -1,5 +1,5 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.SubRooms.Contracts.Interfaces;
@@ -52,6 +52,7 @@ public class SessionMonitor : IHostedService
     {
         await sessionScanner.ScanAsync(cancellationToken);
         await sessionProcessBridge.StartListeningAsync(cancellationToken);
+
         eventBus.Subscribe<RoomClosedEvent>(OnRoomClosed);
         eventBus.Subscribe<SessionJoinResponseReceivedEvent>(OnJoinResponseReceived);
         eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);

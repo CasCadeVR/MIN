@@ -1,5 +1,5 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Models;
 using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Contracts.Events;
@@ -7,7 +7,7 @@ namespace MIN.Core.Services.Contracts.Events;
 /// <summary>
 /// Аргументы события получения сообщения внутри программы
 /// </summary>
-public sealed class LocalMessageRecievedEvent : BaseEvent
+public sealed record LocalMessageRecievedEvent : BaseEvent
 {
     /// <summary>
     /// Полученное сообщение

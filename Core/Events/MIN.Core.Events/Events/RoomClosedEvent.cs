@@ -1,14 +1,13 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.Core.Events.Events;
 
 /// <summary>
 /// Событие, возникающее при закрытии комнаты
 /// </summary>
-public sealed class RoomClosedEvent : BaseEvent
+public sealed record RoomClosedEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 }

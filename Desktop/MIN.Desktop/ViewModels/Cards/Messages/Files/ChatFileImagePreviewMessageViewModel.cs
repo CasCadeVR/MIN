@@ -6,7 +6,7 @@ using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.FileTransfer.Messaging;
@@ -45,14 +45,14 @@ public partial class ChatFileImagePreviewMessageViewModel : ChatFileBaseMessageV
     /// Инициализирует новый экземпляр <see cref="ChatFileImagePreviewMessageViewModel"/>
     /// </summary>
     public ChatFileImagePreviewMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
-        IEventBus eventBus,
+        IEventScope roomScope,
         FileMetadataMessage fileMetadataMessage,
         Thickness timePadding,
         ParticipantInfo localParticipant,
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(fileTransferFeatureCollection, eventBus, fileMetadataMessage, timePadding,
+        : base(fileTransferFeatureCollection, roomScope, fileMetadataMessage, timePadding,
             localParticipant, isHostMessage, removeHeaders, clipboard)
     { }
 
