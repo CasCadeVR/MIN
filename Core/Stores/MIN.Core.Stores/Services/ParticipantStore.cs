@@ -6,7 +6,15 @@ namespace MIN.Core.Stores.Services;
 /// <inheritdoc cref="IParticipantStore"/>
 public sealed class ParticipantStore : IParticipantStore
 {
-    private readonly List<Participant> participants = [];
+    private List<Participant> participants = [];
+
+    void IParticipantStore.Bind(List<Participant> participants)
+    {
+        lock (this.participants)
+        {
+            this.participants = participants;
+        }
+    }
 
     void IParticipantStore.AddParticipant(Participant participant)
     {
@@ -23,10 +31,10 @@ public sealed class ParticipantStore : IParticipantStore
     {
         lock (participants)
         {
-            var existing = participants.FirstOrDefault(p => p.Id == id);
-            if (existing != null)
+            var index = participants.FindIndex(p => p.Id == id);
+            if (index >= 0)
             {
-                existing = participant;
+                participants[index] = participant;
             }
         }
     }

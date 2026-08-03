@@ -14,9 +14,6 @@ internal sealed class PingHandler : IMessageHandler
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="PingHandler"/>
-    /// </summary>
     public PingHandler(IEventBus eventBus, IMessageSender messageSender)
     {
         this.eventBus = eventBus;

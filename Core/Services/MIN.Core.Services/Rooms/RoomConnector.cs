@@ -1,7 +1,6 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Messaging.Stateless.RoomRelated.Ping;
 using MIN.Core.Protocol.Contracts.Interfaces;
@@ -29,7 +28,6 @@ public sealed class RoomConnector : IRoomConnector
     private readonly IRoomStore roomStore;
     private readonly IRoomFactory roomFactory;
     private readonly IMessageSender messageSender;
-    private readonly IEventBus eventBus;
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
     private readonly IPingService pingService;
@@ -52,7 +50,6 @@ public sealed class RoomConnector : IRoomConnector
         IRoomStore roomStore,
         IRoomFactory roomFactory,
         IMessageSender messageSender,
-        IEventBus eventBus,
         IIdentityService identityService,
         IPingService pingService,
         IMessageEncryptor encryptor,
@@ -64,7 +61,6 @@ public sealed class RoomConnector : IRoomConnector
         this.roomStore = roomStore;
         this.roomFactory = roomFactory;
         this.messageSender = messageSender;
-        this.eventBus = eventBus;
         this.identityService = identityService;
         this.pingService = pingService;
         this.encryptor = encryptor;
@@ -164,6 +160,7 @@ public sealed class RoomConnector : IRoomConnector
             await messageSender.SendAsync(selfHandshake, connectionResult.RoomId, connectionResult.ConnectionId, cancellationToken);
             activeRooms[connectionResult.RoomId] = connectionResult.ConnectionId;
             activeConnections[connectionResult.ConnectionId] = connectionResult.RoomId;
+
             return connectionResult;
         }
         catch (TimeoutException) { return connectionResult; }

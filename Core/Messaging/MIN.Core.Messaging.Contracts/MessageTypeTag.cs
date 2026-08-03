@@ -132,7 +132,6 @@ public enum MessageTypeTag : byte
     /// </summary>
     SessionServerShutdown = 56,
 
-
     // ===== Сообщения чата (64-95) =====
 
     /// <summary>

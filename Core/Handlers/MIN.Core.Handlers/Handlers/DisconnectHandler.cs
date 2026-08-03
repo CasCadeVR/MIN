@@ -20,9 +20,6 @@ internal sealed class DisconnectHandler : IMessageHandler
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="DisconnectHandler"/>
-    /// </summary>
     public DisconnectHandler(IEventBus eventBus,
         IMessageSender messageSender,
         IRoomStore roomStore,

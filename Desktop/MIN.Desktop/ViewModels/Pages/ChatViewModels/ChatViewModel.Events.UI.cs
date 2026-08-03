@@ -178,7 +178,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (editFormResult == true)
         {
             IsUpdatingNetwork = true;
-            updatingRoomCts = CancellationTokenSource.CreateLinkedTokenSource(formCts.Token);
+            updatingRoomCts = CancellationTokenSource.CreateLinkedTokenSource(appCts.Token);
 
             try
             {

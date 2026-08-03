@@ -11,9 +11,6 @@ internal sealed class ErrorHandler : IMessageHandler
 {
     private readonly ILoggerProvider logger;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
-    /// </summary>
     public ErrorHandler(ILoggerProvider logger)
     {
         this.logger = logger;

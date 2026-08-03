@@ -24,7 +24,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
     private readonly IMessageRouter messageRouter;
     private readonly IRoomStore roomStore;
     private readonly IRoomFactory roomFactory;
-    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly ILoggerProvider logger;
 
     private CancellationTokenSource cts = null!;
@@ -38,7 +37,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         IMessageRouter messageRouter,
         IRoomStore roomStore,
         IRoomFactory roomFactory,
-        INetworkErrorHandler networkErrorHandler,
         ILoggerProvider logger)
     {
         this.roomConnector = roomConnector;
@@ -47,7 +45,6 @@ public sealed class ConnectionMonitor : IHostedService, IAsyncDisposable
         this.messageRouter = messageRouter;
         this.roomStore = roomStore;
         this.roomFactory = roomFactory;
-        this.networkErrorHandler = networkErrorHandler;
         this.logger = logger;
     }
 

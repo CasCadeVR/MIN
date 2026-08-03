@@ -70,7 +70,9 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         Messages.Clear();
 
-        var messages = room.ChatHistory;
+        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
+        var messages = context.Messages.GetHistory().ToList();
+
         await RenderMessages(messages);
 
         if (room.TotalMessageCount > StoreConstants.MessagesPageSize)

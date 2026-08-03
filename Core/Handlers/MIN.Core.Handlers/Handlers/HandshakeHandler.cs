@@ -19,9 +19,6 @@ internal sealed class HandshakeHandler : IMessageHandler
     private readonly ILoggerProvider logger;
     private readonly IVersionProvider versionProvider;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
-    /// </summary>
     public HandshakeHandler(IMessageEncryptor encryptor,
         INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,

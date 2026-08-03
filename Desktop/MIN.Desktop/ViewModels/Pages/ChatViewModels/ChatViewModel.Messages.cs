@@ -8,7 +8,6 @@ using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Stores.Contracts.Constants;
-using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Cards.Messages;
 using MIN.Desktop.ViewModels.Cards.Messages.Files;
@@ -134,7 +133,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (memoryCount < room.TotalMessageCount)
         {
-            await featureCollection.Chat.ChatRoomService.SendChatHistoryRequest(roomId, loadedPage + 1, formCts.Token);
+            await featureCollection.Chat.ChatRoomService.SendChatHistoryRequest(roomId, loadedPage + 1, appCts.Token);
         }
         else
         {
@@ -298,11 +297,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (needsToNotify)
         {
-            await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-            {
-                RoomId = roomId,
-                DescribableMessage = systemMessage,
-            });
+            await PublishNewDescribable(systemMessage, appCts.Token);
             NotifyIfNeeded(systemMessage);
         }
     }

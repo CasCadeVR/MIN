@@ -75,6 +75,7 @@ public sealed class RoomHoster : IRoomHoster
     {
         transport.RawMessageReceived += Transport_RawMessageReceived;
         transport.ConnectionStateChanged += Transport_ConnectionStateChanged;
+        pingService.OnConnectionTimeout += PingService_OnConnectionTimeout;
     }
 
     private async void Transport_ConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
@@ -104,7 +105,6 @@ public sealed class RoomHoster : IRoomHoster
             logger.Log($"Клиент {e.RemoteEndPoint} прошёл протокол для комнаты {roomId}");
 
             await pingService.RegisterHeartbeatSession(Role.Host, roomId, e.ConnectionId);
-            pingService.OnConnectionTimeout += async (_, _) => await transport.DisconnectClientAsync(e.ConnectionId, e.ServerConnectionId, DisconnectReason.Timeout);
         }
         else
         {
@@ -113,6 +113,16 @@ public sealed class RoomHoster : IRoomHoster
 
         var args = new RoomConnectionStateChangedEventArgs(roomId, e);
         ConnectionStateChanged?.Invoke(this, args);
+    }
+
+    private async Task PingService_OnConnectionTimeout(Guid roomId, Guid connectionId)
+    {
+        if (!activeRooms.TryGetValue(roomId, out var serverConnectionId))
+        {
+            return;
+        }
+
+        await transport.DisconnectClientAsync(connectionId, serverConnectionId, DisconnectReason.Timeout);
     }
 
     private void Transport_RawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
@@ -167,6 +177,8 @@ public sealed class RoomHoster : IRoomHoster
         {
             Participant = new Participant(localParticipant)
         });
+
+        room.TotalMessageCount = context.Messages.GetMessageCount();
 
         var connectionId = await transport.StartHostingAsync(cancellationToken);
         room.ConnectionAddresses = await transport.SetUpAndGetEndpoints(connectionId, networkOptions, cancellationToken: cancellationToken);

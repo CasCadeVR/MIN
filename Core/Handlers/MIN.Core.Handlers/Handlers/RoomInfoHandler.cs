@@ -17,9 +17,6 @@ internal sealed class RoomInfoHandler : IMessageHandler
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
-    /// </summary>
     public RoomInfoHandler(IRoomStore roomStore,
         IEventBus eventBus,
         ILoggerProvider logger)
@@ -54,11 +51,6 @@ internal sealed class RoomInfoHandler : IMessageHandler
             foreach (var roomMessage in history)
             {
                 context.RoomContext.Messages.AddMessage(roomMessage);
-            }
-
-            foreach (var roomParticipant in roomInfoResponse.Room.CurrentParticipants)
-            {
-                context.RoomContext.Participants.AddParticipant(roomParticipant);
             }
 
             logger.Log($"Получил информацию о комнате с id {roomInfoResponse.Room.Id} сообщений {roomInfoResponse.Room.TotalMessageCount}");

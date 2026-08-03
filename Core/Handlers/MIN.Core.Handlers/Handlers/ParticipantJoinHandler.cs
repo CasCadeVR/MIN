@@ -23,9 +23,6 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="ParticipantJoinHandler"/>
-    /// </summary>
     public ParticipantJoinHandler(
         IRoomStore roomStore,
         INetworkErrorHandler networkErrorHandler,
@@ -73,7 +70,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
             case ParticipantJoinedMessage participantJoinedMessage:
                 logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomContext.RoomId}");
 
-                context.RoomContext.Participants.AddParticipant(new Participant(participantJoinedMessage.Participant));
+                context.RoomContext.Participants.AddParticipant(participantJoinedMessage.Participant);
                 context.RoomContext.Messages.AddMessage(message);
 
                 await eventBus.PublishAsync(new ParticipantJoinedEvent()

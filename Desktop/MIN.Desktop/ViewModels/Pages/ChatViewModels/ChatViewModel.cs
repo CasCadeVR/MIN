@@ -26,7 +26,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     private readonly IDialogService dialogService;
 
     private readonly IMinFeatureCollection featureCollection;
-    private readonly CancellationTokenSource formCts = new();
+    private readonly CancellationTokenSource appCts = new();
     private readonly TaskCompletionSource loadingTcs = new();
 
     private readonly ParticipantInfo localParticipant = null!;
@@ -167,8 +167,8 @@ public partial class ChatViewModel : RoutableViewModelBase
         roomScope.Dispose();
         errorToken.Dispose();
         typingTimer.Dispose();
-        formCts.Cancel();
-        formCts.Dispose();
+        appCts.Cancel();
+        appCts.Dispose();
         await CleanUpServicesAsync(roomId, connectionId);
     }
 }

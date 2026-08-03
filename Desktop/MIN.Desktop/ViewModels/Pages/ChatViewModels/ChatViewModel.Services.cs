@@ -66,7 +66,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         await featureCollection.Chat.ChatFileService.RequestFileDownloadAsync(roomId,
             fileMetadata,
-            formCts.Token
+            appCts.Token
         );
     }
 
@@ -76,7 +76,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             await featureCollection.Chat.ChatSessionService.SendSessionJoinRequest(roomId,
                 sessionReadyMessage,
-                formCts.Token
+                appCts.Token
             );
         }
         catch (DirectoryNotFoundException e)
@@ -89,7 +89,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
             fileMetadata,
-            formCts.Token
+            appCts.Token
         );
     }
 
@@ -104,7 +104,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             await featureCollection.Chat.ChatStatusService.SendSelfOnlineStatusChangedAsync(roomId,
                 newStatus,
-                formCts.Token
+                appCts.Token
             );
         }
         catch { }
@@ -115,7 +115,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         try
         {
-            await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, formCts.Token);
+            await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, appCts.Token);
         }
         catch (DirectoryNotFoundException e)
         {
@@ -133,7 +133,7 @@ public partial class ChatViewModel : RoutableViewModelBase
                 await featureCollection.Chat.ChatTextService.SendMessageAsync(roomId,
                     SendingMessage.Trim(),
                     chatSideBarViewModel.PrivateChatParticipantId,
-                    formCts.Token
+                    appCts.Token
                 );
             }
 
@@ -163,7 +163,7 @@ public partial class ChatViewModel : RoutableViewModelBase
                    fileAttachement.File.FileName,
                    fileAttachement.File.FilePath,
                    chatSideBarViewModel.PrivateChatParticipantId,
-                   formCts.Token
+                   appCts.Token
                );
             }
 
