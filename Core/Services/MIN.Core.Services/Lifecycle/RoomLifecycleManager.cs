@@ -20,7 +20,7 @@ using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 
-namespace MIN.Core.Services.Rooms;
+namespace MIN.Core.Services.Lifecycle;
 
 /// <inheritdoc cref="IRoomLifecycleManager"/>
 public sealed class RoomLifecycleManager : IRoomLifecycleManager

@@ -8,7 +8,7 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
 
-namespace MIN.Core.Services.Rooms;
+namespace MIN.Core.Services.Lifecycle;
 
 /// <inheritdoc cref="IPingService"/>
 public class PingService : IPingService, IDisposable

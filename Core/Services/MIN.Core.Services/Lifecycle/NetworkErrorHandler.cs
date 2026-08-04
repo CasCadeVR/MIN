@@ -9,7 +9,7 @@ using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Helpers.Contracts.Interfaces;
 
-namespace MIN.Core.Services.Rooms;
+namespace MIN.Core.Services.Lifecycle;
 
 /// <inheritdoc cref="INetworkErrorHandler"/>
 public class NetworkErrorHandler : INetworkErrorHandler

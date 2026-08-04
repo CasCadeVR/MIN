@@ -14,8 +14,9 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Protocol.Services;
 using MIN.Core.Serialization.Json;
 using MIN.Core.Serialization.Json.Services;
+using MIN.Core.Services.Lifecycle;
 using MIN.Core.Services.Messaging;
-using MIN.Core.Services.Rooms;
+using MIN.Core.Services.Pipeline;
 using MIN.Core.Stores.Factories;
 using MIN.Core.Stores.Registries;
 using MIN.Core.Stores.Services;
@@ -71,6 +72,10 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<ChunkBufferAssembler>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<StreamManager>(ServiceLifetime.Singleton);
 
+        services.RegisterAsImplementedInterfaces<RawMessageHandler>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<AckHandler>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<StreamChunkHandler>(ServiceLifetime.Singleton);
+
         services.RegisterAsImplementedInterfaces<InMemoryEventBus>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<MessageDispatcher>(ServiceLifetime.Singleton);
 
@@ -78,7 +83,7 @@ public class CoreModule : Module
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, ICoreMessagingAnchor>(ServiceLifetime.Singleton);
 
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, JsonOptionsInitializer>(ServiceLifetime.Singleton);
-        services.RegisterMultipleInterfacesAssignableTo<IHostedService, MessageReceiver>(ServiceLifetime.Singleton);
+        services.RegisterMultipleInterfacesAssignableTo<IHostedService, InboundMessagePipeline>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<CoreFeatureCollection>(ServiceLifetime.Singleton);
     }

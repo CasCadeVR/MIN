@@ -1,0 +1,144 @@
+﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Handlers.Contracts.Dispatcher;
+using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Services.Contracts.Events;
+using MIN.Core.Services.Contracts.Interfaces.Pipeline;
+using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Models;
+using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
+
+namespace MIN.Core.Services.Pipeline;
+
+/// <summary>
+/// Конвейер обработки входящих по сети сообщений
+/// </summary>
+public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
+{
+    private readonly IRoomLifecycleManager lifecycle;
+    private readonly IChunkBufferAssembler chunkBufferAssembler;
+    private readonly IEventBus eventBus;
+    private readonly IRoomFactory roomFactory;
+    private readonly IMessageDispatcher dispatcher;
+    private readonly IAckHandler ackHandler;
+    private readonly IStreamChunkHandler streamChunkHandler;
+    private readonly IRawMessageHandler messageHandler;
+    private readonly ILoggerProvider logger;
+
+    private CancellationTokenSource cts = null!;
+    private IDisposable localMessageToken = null!;
+    private bool disposed;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="InboundMessagePipeline"/>
+    /// </summary>
+    public InboundMessagePipeline(IRoomLifecycleManager lifecycle,
+        IChunkBufferAssembler chunkBufferAssembler,
+        IEventBus eventBus,
+        IRoomFactory roomFactory,
+        IMessageDispatcher dispatcher,
+        IAckHandler ackHandler,
+        IStreamChunkHandler streamChunkHandler,
+        IRawMessageHandler messageHandler,
+        ILoggerProvider logger)
+    {
+        this.lifecycle = lifecycle;
+        this.chunkBufferAssembler = chunkBufferAssembler;
+        this.eventBus = eventBus;
+        this.roomFactory = roomFactory;
+        this.dispatcher = dispatcher;
+        this.ackHandler = ackHandler;
+        this.streamChunkHandler = streamChunkHandler;
+        this.messageHandler = messageHandler;
+        this.logger = logger;
+    }
+
+    async Task IHostedService.StartAsync(CancellationToken cancellationToken)
+    {
+        cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        lifecycle.RawMessageReceived += OnRawMessageReceived;
+        chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
+        localMessageToken = eventBus.Subscribe<LocalMessageRecievedEvent>(OnLocalMessageRecieved);
+        await Task.CompletedTask;
+    }
+
+    private async Task OnLocalMessageRecieved(LocalMessageRecievedEvent e, CancellationToken cancellationToken)
+    {
+        var context = roomFactory.GetOrCreateContext(e.RoomId);
+        await dispatcher.DispatchAsync(e.Message,
+            new MessageContext(context, CoreRegistryConstants.LocalConnectionId, e.Role, cancellationToken),
+            e.BroadcastExcludeIds);
+    }
+
+    private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
+    {
+        try
+        {
+            if (e.IsRawPayload)
+            {
+                return;
+            }
+
+            await messageHandler.HandleAssembledAsync(e, cts.Token);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Ошибка при обработке собранного с потока сообщения: {ex.Message}");
+        }
+    }
+
+    private async void OnRawMessageReceived(object? sender, RoomRawMessageReceivedEventArgs e)
+    {
+        try
+        {
+            if (ackHandler.CanHandle(e.Data))
+            {
+                ackHandler.Handle(e.Data);
+                return;
+            }
+
+            var plainData = messageHandler.TryDecrypt(e);
+            if (plainData == null)
+            {
+                return;
+            }
+
+            if (streamChunkHandler.CanHandle(plainData))
+            {
+                await streamChunkHandler.HandleAsync(plainData, e, cts.Token);
+                return;
+            }
+
+            await messageHandler.HandleRawAsync(e, plainData, cts.Token);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Произошла ошибка во время обработки raw message: {ex.Message}", LogLevel.Error);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task StopAsync(CancellationToken cancellationToken = default)
+    {
+        lifecycle.RawMessageReceived -= OnRawMessageReceived;
+        chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
+
+        if (disposed)
+        {
+            return;
+        }
+
+        localMessageToken.Dispose();
+        disposed = true;
+        cts?.Cancel();
+        cts?.Dispose();
+        await Task.CompletedTask;
+    }
+
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
+    public async ValueTask DisposeAsync() => await StopAsync();
+}
