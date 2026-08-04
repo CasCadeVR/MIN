@@ -259,8 +259,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
                 discoveryInfo.Room,
                 discoveryInfo.Endpoints,
                 localParticipant.Id == discoveryInfo.Room.HostParticipant.Id,
-                featureCollection.Core.Registry.IsConnected(discoveryInfo.Room.Id)
-                 || featureCollection.Core.Registry.IsHosting(discoveryInfo.Room.Id),
+                featureCollection.Core.Registry.IsConnected(discoveryInfo.Room.Id),
                 clipboard);
 
             card.Clicked += async (origin) =>

@@ -1,6 +1,7 @@
 ﻿using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 
 namespace MIN.Core.DI.FeatureCollection;
 

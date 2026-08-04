@@ -1,9 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Services.Contracts.Exceptions;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 
-namespace MIN.Core.Services.Rooms;
+namespace MIN.Core.Stores.Registries;
 
 /// <inheritdoc cref="IRoomConnectionRegistry"/>
 public class RoomConnectionRegistry : IRoomConnectionRegistry
@@ -37,8 +37,7 @@ public class RoomConnectionRegistry : IRoomConnectionRegistry
     Guid IRoomConnectionRegistry.GetServerConnectionIdByRoomId(Guid roomId)
         => hostedRooms.TryGetValue(roomId, out var id) ? id : throw new RoomNotRegistredException(roomId);
 
-    /// <inheritdoc />
-    public Guid GetRoomIdByServerConnectionId(Guid serverConnectionId)
+    Guid IRoomConnectionRegistry.GetRoomIdByServerConnectionId(Guid serverConnectionId)
         => roomsByServerConnection.TryGetValue(serverConnectionId, out var roomId)
             ? roomId : throw new ConnectionNotRegistredException(serverConnectionId);
 
@@ -67,8 +66,7 @@ public class RoomConnectionRegistry : IRoomConnectionRegistry
     Guid IRoomConnectionRegistry.GetClientConnectionIdByRoomId(Guid roomId)
         => connectedRooms.TryGetValue(roomId, out var id) ? id : throw new RoomNotRegistredException(roomId);
 
-    /// <inheritdoc />
-    public Guid GetRoomIdByClientConnectionId(Guid connectionId)
+    Guid IRoomConnectionRegistry.GetRoomIdByClientConnectionId(Guid connectionId)
         => roomsByClientConnection.TryGetValue(connectionId, out var roomId) ? roomId : throw new ConnectionNotRegistredException(connectionId);
 
     bool IRoomConnectionRegistry.TryGetClientConnectionIdByRoomId(Guid? roomId, out Guid connectionId)
@@ -78,9 +76,4 @@ public class RoomConnectionRegistry : IRoomConnectionRegistry
         => roomsByClientConnection.TryGetValue(connectionId ?? Guid.Empty, out roomId);
 
     int IRoomConnectionRegistry.GetClientConnectionCount() => connectedRooms.Count;
-
-    Guid IRoomConnectionRegistry.ResolveRoomId(Guid connectionId, Guid? serverConnectionId)
-        => serverConnectionId != null
-        ? GetRoomIdByServerConnectionId(serverConnectionId.Value)
-        : GetRoomIdByClientConnectionId(connectionId);
 }

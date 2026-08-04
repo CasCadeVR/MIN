@@ -21,11 +21,6 @@ public sealed class MessageAssembledEventArgs : EventArgs
     public required Guid ConnectionId { get; init; }
 
     /// <summary>
-    /// Идентификатор соединения сервера
-    /// </summary>
-    public required Guid? ServerConnectionId { get; init; }
-
-    /// <summary>
     /// Собранные данные (для не-raw потоков)
     /// </summary>
     public byte[]? Data { get; init; }

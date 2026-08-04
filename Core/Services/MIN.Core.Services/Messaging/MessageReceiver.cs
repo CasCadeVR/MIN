@@ -8,6 +8,7 @@ using MIN.Core.Serialization.Contracts;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Streaming.Contracts.Events;
 using MIN.Core.Streaming.Contracts.Interfaces;
@@ -95,11 +96,10 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
                 return;
             }
 
-            var roomId = registry.ResolveRoomId(e.ConnectionId, e.ServerConnectionId);
-            var context = roomFactory.GetOrCreateContext(roomId);
+            var context = roomFactory.GetOrCreateContext(e.RoomId);
             var message = serializer.Deserialize(e.Data!); // Потому-что это не RawPayload
             await dispatcher.DispatchAsync(message, new MessageContext(context,
-                e.ConnectionId, registry.GetRole(roomId), cts.Token));
+                e.ConnectionId, registry.GetRole(e.RoomId), cts.Token));
         }
         catch (Exception ex)
         {

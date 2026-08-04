@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
 
-namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
+namespace MIN.Core.Stores.Contracts.Registries.Interfaces;
 
 /// <summary>
 /// Единый источник правды о комнатах: роль и связь комнаты с соединениями
@@ -95,9 +95,4 @@ public interface IRoomConnectionRegistry
     /// Получить число клиентских комнат
     /// </summary>
     int GetClientConnectionCount();
-
-    /// <summary>
-    /// Универсальный резолв: на хосте по serverConnectionId, у клиента по connectionId
-    /// </summary>
-    Guid ResolveRoomId(Guid connectionId, Guid? serverConnectionId);
 }
