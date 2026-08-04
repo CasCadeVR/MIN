@@ -10,11 +10,8 @@ namespace MIN.Core.DI.FeatureCollection;
 /// </summary>
 public interface ICoreFeatureCollection
 {
-    /// <inheritdoc cref="IRoomConnector"/>
-    IRoomConnector RoomConnector { get; }
-
-    /// <inheritdoc cref="IRoomHoster"/>
-    IRoomHoster RoomHoster { get; }
+    /// <inheritdoc cref="IRoomLifecycleManager"/>
+    IRoomLifecycleManager Lifecycle { get; }
 
     /// <inheritdoc cref="IRoomFactory"/>
     IRoomFactory RoomFactory { get; }

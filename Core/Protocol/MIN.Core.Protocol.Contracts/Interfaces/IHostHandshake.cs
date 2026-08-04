@@ -4,17 +4,12 @@ using MIN.Core.Protocol.Contracts.Models;
 namespace MIN.Core.Protocol.Contracts.Interfaces;
 
 /// <summary>
-/// Обработчик протокола общения
+/// Preamble-протокол со стороны хоста
 /// </summary>
-public interface IProtocolHandler
+public interface IHostHandshake
 {
     /// <summary>
-    /// Обработать сервер
+    /// Выполнить handshake со стороны хоста
     /// </summary>
     Task<PreambleResult> HandleServerAsync(Guid serverConnectionId, Guid clientConnectionId, RoomInfo roomInfo, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Обработать клиента
-    /// </summary>
-    Task<PreambleResult> HandleClientAsync(Guid connectionId, CancellationToken cancellationToken = default);
 }

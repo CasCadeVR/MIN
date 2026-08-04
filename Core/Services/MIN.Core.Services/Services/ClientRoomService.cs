@@ -1,10 +1,10 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Stateless;
-using MIN.Core.Messaging.Stateless.RoomRelated.Ping;
 using MIN.Core.Protocol.Contracts.Interfaces;
-using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
@@ -17,15 +17,12 @@ using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 
-namespace MIN.Core.Services.Rooms;
+namespace MIN.Core.Services.Services;
 
-/// <summary>
-/// <inheritdoc cref="IRoomConnector"/>
-/// </summary>
-public sealed class RoomConnector : IRoomConnector
+internal sealed class ClientRoomService
 {
     private readonly ITransport transport;
-    private readonly IProtocolHandler protocolHandler;
+    private readonly IClientHandshake clientHandshake;
     private readonly IRoomStore roomStore;
     private readonly IRoomFactory roomFactory;
     private readonly IMessageSender messageSender;
@@ -34,83 +31,43 @@ public sealed class RoomConnector : IRoomConnector
     private readonly IPingService pingService;
     private readonly IRoomConnectionRegistry registry;
     private readonly IVersionProvider versionProvider;
+    private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
-    /// <inheritdoc />
-    public event EventHandler<RoomRawMessageReceivedEventArgs>? RawMessageReceived;
-
-    /// <inheritdoc />
-    public event EventHandler<RoomConnectionStateChangedEventArgs>? ConnectionStateChanged;
-
-    /// <summary>
-    /// Инициализирует новый экземпляр <see cref="RoomConnector"/>
-    /// </summary>
-    public RoomConnector(ITransport transport,
-        IProtocolHandler protocolHandler,
+    public ClientRoomService(ITransport transport,
+        IClientHandshake clientHandshake,
         IRoomStore roomStore,
         IRoomFactory roomFactory,
         IMessageSender messageSender,
         IIdentityService identityService,
-        IPingService pingService,
         IMessageEncryptor encryptor,
+        IPingService pingService,
         IRoomConnectionRegistry registry,
         IVersionProvider versionProvider,
+        IEventBus eventBus,
         ILoggerProvider logger)
     {
         this.transport = transport;
-        this.protocolHandler = protocolHandler;
+        this.clientHandshake = clientHandshake;
         this.roomStore = roomStore;
         this.roomFactory = roomFactory;
         this.messageSender = messageSender;
         this.identityService = identityService;
-        this.pingService = pingService;
         this.encryptor = encryptor;
+        this.pingService = pingService;
         this.registry = registry;
         this.versionProvider = versionProvider;
+        this.eventBus = eventBus;
         this.logger = logger;
-
-        SubscribeToEvents();
     }
 
-    private void SubscribeToEvents()
-    {
-        transport.RawMessageReceived += Transport_RawMessageReceived;
-        transport.ConnectionStateChanged += Transport_ConnectionStateChanged;
-    }
+    public bool TryResolveRoom(ConnectionStateChangedEventArgs e, out Guid roomId)
+        => registry.TryGetRoomIdByClientConnectionId(e.ConnectionId, out roomId);
 
-    private async void Transport_ConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
-    {
-        if (!registry.TryGetRoomIdByClientConnectionId(e.ConnectionId, out var roomId))
-        {
-            return;
-        }
+    public bool TryResolveRoom(RawMessageReceivedEventArgs e, out Guid roomId)
+        => registry.TryGetRoomIdByClientConnectionId(e.ConnectionId, out roomId);
 
-        if (!e.IsConnected)
-        {
-            // Here we are cleaning for this service specifically
-            pingService.OnConnectionTimeout -= PingService_OnConnectionTimeout;
-            await pingService.UnregisterHeartbeatSession(Role.Client, roomId, e.ConnectionId);
-            registry.UnregisterServerConnection(roomId);
-            logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {e.ConnectionId}");
-        }
-
-        var args = new RoomConnectionStateChangedEventArgs(roomId, e);
-        // ConnectionMonitor will clean the rest of a room
-        ConnectionStateChanged?.Invoke(this, args);
-    }
-
-    private void Transport_RawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
-    {
-        if (!registry.TryGetRoomIdByClientConnectionId(e.ConnectionId, out var roomId))
-        {
-            return;
-        }
-
-        var args = new RoomRawMessageReceivedEventArgs(roomId, e);
-        RawMessageReceived?.Invoke(this, args);
-    }
-
-    async Task<ConnectionResult> IRoomConnector.ConnectAsync(IEndpoint endpoint, CancellationToken cancellationToken)
+    public async Task<ConnectionResult> ConnectAsync(IEndpoint endpoint, CancellationToken cancellationToken)
     {
         var connectionResult = new ConnectionResult();
 
@@ -120,7 +77,7 @@ public sealed class RoomConnector : IRoomConnector
 
             connectionResult.ConnectionId = await transport.ConnectAsync(endpoint, cancellationToken);
 
-            var result = await protocolHandler.HandleClientAsync(connectionResult.ConnectionId, cancellationToken);
+            var result = await clientHandshake.HandleClientAsync(connectionResult.ConnectionId, cancellationToken);
 
             if (!result.IsSuccess)
             {
@@ -138,8 +95,6 @@ public sealed class RoomConnector : IRoomConnector
             logger.Log($"Протокол успешен, комната {connectionResult.RoomId}");
 
             await pingService.RegisterHeartbeatSession(Role.Client, connectionResult.RoomId, connectionResult.ConnectionId);
-            pingService.OnConnectionTimeout += PingService_OnConnectionTimeout;
-            pingService.OnPingRequested += PingService_OnPingRequested;
 
             var selfParticipant = identityService.SelfParticipant.ToParticipantInfo();
 
@@ -176,10 +131,6 @@ public sealed class RoomConnector : IRoomConnector
         }
     }
 
-    private async Task PingService_OnPingRequested(Guid roomId, Guid connectionId) => await messageSender.SendAsync(new PingMessage(), roomId, connectionId);
-    private async Task PingService_OnConnectionTimeout(Guid roomId, Guid connectionId) => await DisconnectAsync(roomId, connectionId, DisconnectReason.Timeout);
-
-    /// <inheritdoc />
     public async Task DisconnectAsync(Guid roomId, Guid connectionId, DisconnectReason reason)
     {
         if (!registry.IsConnected(roomId))
@@ -187,9 +138,46 @@ public sealed class RoomConnector : IRoomConnector
             return;
         }
 
-        logger.Log($"Я сам иницирую отключение от комнаты с id {roomId} с соединением {connectionId}: {reason}");
+        logger.Log($"Я сам инициирую отключение от комнаты с id {roomId} с соединением {connectionId}: {reason}");
 
         // Transport will fire event, where it would cleanup further
         await transport.DisconnectAsync(connectionId, reason);
+    }
+
+    public async Task<bool> HandleConnectionLostAsync(Guid roomId, ConnectionStateChangedEventArgs e)
+    {
+        await pingService.UnregisterHeartbeatSession(Role.Client, roomId, e.ConnectionId);
+        registry.UnregisterClientConnection(e.ConnectionId);
+        logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {e.ConnectionId}");
+
+        if (!roomStore.RoomExists(roomId))
+        {
+            return false;
+        }
+
+        var context = roomFactory.GetOrCreateContext(roomId);
+        if (!context.Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant))
+        {
+            return false;
+        }
+
+        var isHostLeaving = roomStore.GetRoomHostParticipantId(roomId) == leavingParticipant.Id;
+
+        if (isHostLeaving)
+        {
+            roomStore.Remove(roomId);
+            roomFactory.DestroyContext(roomId);
+            await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
+        }
+
+        return isHostLeaving;
+    }
+
+    public async Task HandleConnectionTimeoutAsync(Guid roomId, Guid connectionId)
+    {
+        if (registry.IsConnected(roomId))
+        {
+            await DisconnectAsync(roomId, connectionId, DisconnectReason.Timeout);
+        }
     }
 }

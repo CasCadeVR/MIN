@@ -8,11 +8,8 @@ namespace MIN.Core.DI.FeatureCollection;
 /// <inheritdoc cref="ICoreFeatureCollection"/>
 public class CoreFeatureCollection : ICoreFeatureCollection
 {
-    /// <inheritdoc cref="IRoomConnector"/>
-    public IRoomConnector RoomConnector { get; }
-
-    /// <inheritdoc cref="IRoomHoster"/>
-    public IRoomHoster RoomHoster { get; }
+    /// <inheritdoc cref="IRoomLifecycleManager"/>
+    public IRoomLifecycleManager Lifecycle { get; }
 
     /// <inheritdoc cref="IRoomFactory"/>
     public IRoomFactory RoomFactory { get; }
@@ -26,14 +23,12 @@ public class CoreFeatureCollection : ICoreFeatureCollection
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="CoreFeatureCollection"/>
     /// </summary>
-    public CoreFeatureCollection(IRoomConnector roomConnector,
-        IRoomHoster roomHoster,
+    public CoreFeatureCollection(IRoomLifecycleManager lifecycle,
         IRoomFactory roomFactory,
         IRoomConnectionRegistry registry,
         IEventBus eventBus)
     {
-        RoomConnector = roomConnector;
-        RoomHoster = roomHoster;
+        Lifecycle = lifecycle;
         RoomFactory = roomFactory;
         Registry = registry;
         EventBus = eventBus;

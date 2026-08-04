@@ -43,12 +43,12 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<MessageEncryptor>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<TcpTransport>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<MinProtocolHandler>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<ClientHandshakeService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<HostHandshakeService>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<HeaderManager>(ServiceLifetime.Singleton);
 
-        services.RegisterAsImplementedInterfaces<RoomConnector>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<RoomHoster>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<RoomLifecycleManager>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<RoomFactory>(ServiceLifetime.Singleton);
 
@@ -79,7 +79,6 @@ public class CoreModule : Module
 
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, JsonOptionsInitializer>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, MessageReceiver>(ServiceLifetime.Singleton);
-        services.RegisterMultipleInterfacesAssignableTo<IHostedService, ConnectionMonitor>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<CoreFeatureCollection>(ServiceLifetime.Singleton);
     }

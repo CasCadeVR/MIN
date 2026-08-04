@@ -16,14 +16,6 @@ public interface IPingService
     event Func<Guid, Guid, Task>? OnConnectionTimeout;
 
     /// <summary>
-    /// Наступило время пинга
-    /// </summary>
-    /// <remarks>
-    /// Возвращает идентификатор комнаты и идентификатор соединения соответсвенно
-    /// </remarks>
-    event Func<Guid, Guid, Task>? OnPingRequested;
-
-    /// <summary>
     /// Зарегистрировать сессию отслеживания пинга
     /// </summary>
     Task RegisterHeartbeatSession(Role role, Guid roomId, Guid connectionId);

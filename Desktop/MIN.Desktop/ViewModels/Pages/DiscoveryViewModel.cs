@@ -169,7 +169,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
             var chatViewModel = chatViewModelFactory.Create();
             ChangeView(chatViewModel, createRoomCts.Token);
 
-            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, createViewModelResult.NetworkOptions, createRoomCts.Token);
+            var room = await featureCollection.Core.Lifecycle.StartHostingAsync(roomInfo, createViewModelResult.NetworkOptions, createRoomCts.Token);
             await featureCollection.Chat.ChatRoomService.ManageDiscoveryOutOfSettings(roomInfo,
                 room.ConnectionAddresses, createViewModelResult.NetworkOptions, cancellationToken: createRoomCts.Token);
 
@@ -180,14 +180,14 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         }
         catch (OperationCanceledException)
         {
-            await featureCollection.Core.RoomHoster.StopHostingAsync(roomInfo.Id);
+            await featureCollection.Core.Lifecycle.StopHostingAsync(roomInfo.Id);
             InAppNotifier.Info("Создание комнаты было отменено");
             ChangeView(this);
             await CreateRoom(createViewModelResult.Room, createViewModelResult.NetworkOptions);
         }
         catch (Exception ex)
         {
-            await featureCollection.Core.RoomHoster.StopHostingAsync(roomInfo.Id);
+            await featureCollection.Core.Lifecycle.StopHostingAsync(roomInfo.Id);
             InAppNotifier.Error($"Не удалось создать комнату: {ex.Message}");
             ChangeView(this);
             await CreateRoom(createViewModelResult.Room, createViewModelResult.NetworkOptions);
@@ -306,7 +306,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
                 loadingVm = vm;
             });
 
-            connectionResult = await featureCollection.Core.RoomConnector.ConnectAsync(endpoint, connectCts.Token);
+            connectionResult = await featureCollection.Core.Lifecycle.ConnectAsync(endpoint, connectCts.Token);
 
             loadingVm?.RoomId = connectionResult.RoomId;
         }

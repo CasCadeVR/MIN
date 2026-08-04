@@ -194,7 +194,6 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             StreamId = streamId,
             RoomId = roomId,
             ConnectionId = connectionId,
-            ServerConnectionId = serverConnectionId,
             Data = data,
             FilePath = filePath,
             IsRawPayload = isRawPayload,

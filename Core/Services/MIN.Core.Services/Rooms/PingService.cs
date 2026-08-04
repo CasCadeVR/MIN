@@ -3,6 +3,8 @@ using System.Diagnostics;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
+using MIN.Core.Messaging.Stateless.RoomRelated.Ping;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
 
@@ -11,25 +13,26 @@ namespace MIN.Core.Services.Rooms;
 /// <inheritdoc cref="IPingService"/>
 public class PingService : IPingService, IDisposable
 {
+    private readonly IMessageSender messageSender;
+    private readonly IEventBus eventBus;
+
     private const int ConnectionTimeoutSeconds = 60;
     private const int PingIntervalMs = 3_000;
 
     private readonly ConcurrentDictionary<PingContext, DateTime> lastPingSeen = new(); // pingContext / missed pong count
     private readonly ConcurrentDictionary<PingContext, Stopwatch> pingTravel = new(); // pingContext / pingTimer
     private readonly System.Timers.Timer pingTimer;
-    private readonly IEventBus eventBus;
 
     /// <inheritdoc />
     public event Func<Guid, Guid, Task>? OnConnectionTimeout;
 
-    /// <inheritdoc />
-    public event Func<Guid, Guid, Task>? OnPingRequested;
-
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="PingService"/>
     /// </summary>
-    public PingService(IEventBus eventBus)
+    public PingService(IEventBus eventBus,
+        IMessageSender messageSender)
     {
+        this.messageSender = messageSender;
         this.eventBus = eventBus;
 
         pingTimer = new System.Timers.Timer
@@ -66,7 +69,7 @@ public class PingService : IPingService, IDisposable
                     var stopwatchPing = new Stopwatch();
                     stopwatchPing.Start();
                     pingTravel[context] = stopwatchPing;
-                    OnPingRequested?.Invoke(context.RoomId, context.ConnectionId);
+                    await messageSender.SendAsync(new PingMessage(), context.RoomId, context.ConnectionId);
                 }
             }
         }

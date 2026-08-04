@@ -22,8 +22,7 @@ namespace MIN.Core.Services.Messaging;
 /// </summary>
 public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 {
-    private readonly IRoomHoster roomHoster;
-    private readonly IRoomConnector roomConnector;
+    private readonly IRoomLifecycleManager lifecycleManager;
     private readonly IRoomConnectionRegistry registry;
     private readonly IMessageSerializer serializer;
     private readonly IEventBus eventBus;
@@ -41,8 +40,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="MessageReceiver"/>
     /// </summary>
-    public MessageReceiver(IRoomHoster roomHoster,
-        IRoomConnector roomConnector,
+    public MessageReceiver(IRoomLifecycleManager lifecycleManager,
         IRoomConnectionRegistry registry,
         IMessageSerializer serializer,
         IEventBus eventBus,
@@ -54,8 +52,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
         IStreamManager streamManager,
         ILoggerProvider logger)
     {
-        this.roomHoster = roomHoster;
-        this.roomConnector = roomConnector;
+        this.lifecycleManager = lifecycleManager;
         this.registry = registry;
         this.serializer = serializer;
         this.eventBus = eventBus;
@@ -71,8 +68,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     async Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        roomHoster.RawMessageReceived += OnRawMessageReceived;
-        roomConnector.RawMessageReceived += OnRawMessageReceived;
+        lifecycleManager.RawMessageReceived += OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
         localMessageToken = eventBus.Subscribe<LocalMessageRecievedEvent>(OnLocalMessageRecieved);
         await Task.CompletedTask;
@@ -165,8 +161,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        roomHoster.RawMessageReceived -= OnRawMessageReceived;
-        roomConnector.RawMessageReceived -= OnRawMessageReceived;
+        lifecycleManager.RawMessageReceived -= OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
         if (disposed)
         {

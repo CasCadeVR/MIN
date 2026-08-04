@@ -6,10 +6,7 @@ using MIN.Core.Messaging.Stateless.RoomRelated.Disconnect;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
-using MIN.Core.Stores.Contracts.Interfaces;
-using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Transport.Contracts.Enum;
-using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Rooms;
@@ -17,27 +14,22 @@ namespace MIN.Core.Services.Rooms;
 /// <inheritdoc cref="INetworkErrorHandler"/>
 public class NetworkErrorHandler : INetworkErrorHandler
 {
-    private readonly ITransport transport;
-    private readonly IRoomConnectionRegistry registry;
-    private readonly IRoomFactory roomFactory;
+    private readonly IRoomLifecycleManager lifecycleManager;
     private readonly IMessageRouter messageRouter;
     private readonly IEventBus eventBus;
     private readonly IIdentityService identityService;
+
     private readonly ConcurrentDictionary<Guid, Timer> rejectAckTimers = new(); // participantId / timer
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="NetworkErrorHandler"/>
     /// </summary>
-    public NetworkErrorHandler(ITransport transport,
-        IRoomConnectionRegistry registry,
-        IRoomFactory roomFactory,
+    public NetworkErrorHandler(IRoomLifecycleManager lifecycleManager,
         IMessageRouter messageRouter,
         IEventBus eventBus,
         IIdentityService identityService)
     {
-        this.transport = transport;
-        this.registry = registry;
-        this.roomFactory = roomFactory;
+        this.lifecycleManager = lifecycleManager;
         this.messageRouter = messageRouter;
         this.eventBus = eventBus;
         this.identityService = identityService;
@@ -98,16 +90,7 @@ public class NetworkErrorHandler : INetworkErrorHandler
     }
 
     private async Task DisconnectClient(Guid participantId, Guid roomId)
-    {
-        roomFactory.TryGetContext(roomId, out var context);
-        if (context == null)
-        {
-            return;
-        }
-        var connectionId = context.Connections.GetConnectionIdFromParticipantId(participantId);
-        var serverConnectionId = registry.GetServerConnectionIdByRoomId(roomId);
-        await transport.DisconnectClientAsync(connectionId, serverConnectionId, DisconnectReason.Kick);
-    }
+        => await lifecycleManager.KickClientAsync(roomId, participantId, DisconnectReason.Kick);
 
     private void ResetRejectAckTimer(Guid participantId)
     {

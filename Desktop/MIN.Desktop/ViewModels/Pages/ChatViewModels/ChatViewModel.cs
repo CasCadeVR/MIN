@@ -146,11 +146,11 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (localParticipant.Id == room.HostParticipant.Id)
         {
             await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
-            await featureCollection.Core.RoomHoster.StopHostingAsync(roomId);
+            await featureCollection.Core.Lifecycle.StopHostingAsync(roomId);
         }
         else
         {
-            await featureCollection.Core.RoomConnector.DisconnectAsync(roomId, connectionId, DisconnectReason.None);
+            await featureCollection.Core.Lifecycle.DisconnectAsync(roomId, connectionId, DisconnectReason.None);
         }
     }
 

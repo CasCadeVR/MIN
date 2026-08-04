@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Protocol.Contracts.Constants;
 using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Protocol.Contracts.Models;
 using MIN.Core.Transport.Contracts.Events;
@@ -9,26 +10,22 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Protocol.Services;
 
-/// <inheritdoc cref="IProtocolHandler"/>
-public sealed class MinProtocolHandler : IProtocolHandler
+/// <inheritdoc cref="IClientHandshake"/>
+public sealed class ClientHandshakeService : IClientHandshake
 {
-    private const string ResponseStarter = "MIN";
-    private const int ClientSideTimuout = 5;
-    private const int ServerSideTimuout = 10;
     private readonly ITransport transport;
     private readonly ILoggerProvider logger;
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="MinProtocolHandler"/>
+    /// Инициализирует новый экземпляр <see cref="ClientHandshakeService"/>
     /// </summary>
-    public MinProtocolHandler(ITransport transport,
-        ILoggerProvider logger)
+    public ClientHandshakeService(ITransport transport, ILoggerProvider logger)
     {
         this.transport = transport;
         this.logger = logger;
     }
 
-    async Task<PreambleResult> IProtocolHandler.HandleClientAsync(Guid connectionId, CancellationToken cancellationToken)
+    async Task<PreambleResult> IClientHandshake.HandleClientAsync(Guid connectionId, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSource<PreambleResult>();
 
@@ -41,14 +38,14 @@ public sealed class MinProtocolHandler : IProtocolHandler
             transport.RawMessageReceived -= RawMessageReceivedHandler;
 
             var response = Encoding.UTF8.GetString(e.Data);
-            if (!response.StartsWith(ResponseStarter))
+            if (!response.StartsWith(ProtocolConstants.ResponseStarter))
             {
                 logger.Log($"Protocol client: неверный ответ от {connectionId}: {response[..Math.Min(response.Length, 20)]}");
                 tcs.TrySetResult(new PreambleResult { IsSuccess = false, ErrorMessage = "Конечное подключение не соответсвует MIN протоколу" });
                 return;
             }
 
-            var roomInfo = JsonSerializer.Deserialize<RoomInfo>(response.AsSpan(ResponseStarter.Length));
+            var roomInfo = JsonSerializer.Deserialize<RoomInfo>(response.AsSpan(ProtocolConstants.ResponseStarter.Length));
 
             if (roomInfo == null)
             {
@@ -82,14 +79,14 @@ public sealed class MinProtocolHandler : IProtocolHandler
 
         transport.ConnectionStateChanged += ConnectionStateChangedHandler;
 
-        var request = Encoding.UTF8.GetBytes(ResponseStarter);
+        var request = Encoding.UTF8.GetBytes(ProtocolConstants.ResponseStarter);
         logger.Log($"Protocol client: отправляю запрос на соединение {connectionId}");
         await Task.Delay(10, cancellationToken); // даём серверу время осознать
         await transport.SendAsync(request, connectionId, null, cancellationToken);
 
         try
         {
-            var timeout = TimeSpan.FromSeconds(ClientSideTimuout);
+            var timeout = TimeSpan.FromSeconds(ProtocolConstants.ClientSideTimeout);
             var result = await tcs.Task.WaitAsync(timeout, cancellationToken);
             return result;
         }
@@ -104,55 +101,6 @@ public sealed class MinProtocolHandler : IProtocolHandler
         {
             transport.RawMessageReceived -= RawMessageReceivedHandler;
             transport.ConnectionStateChanged -= ConnectionStateChangedHandler;
-        }
-    }
-
-    async Task<PreambleResult> IProtocolHandler.HandleServerAsync(Guid serverConnectionId, Guid clientConnectionId, RoomInfo roomInfo, CancellationToken cancellationToken)
-    {
-        var tcs = new TaskCompletionSource<PreambleResult>();
-
-        logger.Log($"Protocol server: ожидаю запрос от {clientConnectionId}");
-
-        async void Handler(object? sender, RawMessageReceivedEventArgs e)
-        {
-            if (e.ConnectionId != clientConnectionId)
-            {
-                return;
-            }
-            transport.RawMessageReceived -= Handler;
-
-            var request = Encoding.UTF8.GetString(e.Data);
-            if (request != ResponseStarter)
-            {
-                logger.Log($"Protocol server: неверный протокол от {clientConnectionId}");
-                tcs.TrySetResult(new PreambleResult
-                {
-                    IsSuccess = false,
-                    ErrorMessage = "Неверный протокол"
-                });
-                return;
-            }
-
-            logger.Log($"Protocol server: клиент {clientConnectionId} прошёл протокол");
-
-            var roomJson = JsonSerializer.Serialize(roomInfo);
-            var response = Encoding.UTF8.GetBytes(ResponseStarter + roomJson);
-            await transport.SendAsync(response, clientConnectionId, serverConnectionId, cancellationToken);
-
-            tcs.TrySetResult(new PreambleResult { IsSuccess = true });
-        }
-
-        transport.RawMessageReceived += Handler;
-
-        try
-        {
-            return await tcs.Task.WaitAsync(TimeSpan.FromSeconds(ServerSideTimuout), cancellationToken);
-        }
-        catch (TimeoutException)
-        {
-            transport.RawMessageReceived -= Handler;
-            logger.Log($"Protocol server: таймаут ожидания запроса от {clientConnectionId}");
-            return new PreambleResult { IsSuccess = false, ErrorMessage = "Время ожидания запроса вышло" };
         }
     }
 }

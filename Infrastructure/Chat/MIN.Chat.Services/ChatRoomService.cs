@@ -20,7 +20,7 @@ public sealed class ChatRoomService : IChatRoomService
     private readonly IMessageRouter messageRouter;
     private readonly IRoomFactory roomFactory;
     private readonly IRoomConnectionRegistry registry;
-    private readonly IRoomHoster roomHoster;
+    private readonly IRoomLifecycleManager lifecycleManager;
     private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IDiscoveryService discoveryService;
     private readonly IIdentityService identityService;
@@ -31,7 +31,7 @@ public sealed class ChatRoomService : IChatRoomService
     public ChatRoomService(IMessageRouter messageRouter,
         IRoomFactory roomFactory,
         IRoomConnectionRegistry registry,
-        IRoomHoster roomHoster,
+        IRoomLifecycleManager lifecycleManager,
         INetworkErrorHandler networkErrorHandler,
         IDiscoveryService discoveryService,
         IIdentityService identityService)
@@ -39,7 +39,7 @@ public sealed class ChatRoomService : IChatRoomService
         this.messageRouter = messageRouter;
         this.roomFactory = roomFactory;
         this.registry = registry;
-        this.roomHoster = roomHoster;
+        this.lifecycleManager = lifecycleManager;
         this.networkErrorHandler = networkErrorHandler;
         this.discoveryService = discoveryService;
         this.identityService = identityService;
@@ -109,6 +109,6 @@ public sealed class ChatRoomService : IChatRoomService
     async Task IChatRoomService.UpdateNetworkOutOfSettings(RoomInfo room, IEnumerable<IEndpoint> endpoints, NetworkOptions newNetworkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
     {
         await ManageDiscoveryOutOfSettings(room, endpoints, newNetworkOptions, oldNetworkOptions, cancellationToken);
-        await roomHoster.UpdateNetworkOptions(room.Id, newNetworkOptions, cancellationToken);
+        await lifecycleManager.UpdateNetworkOptions(room.Id, newNetworkOptions, cancellationToken);
     }
 }
