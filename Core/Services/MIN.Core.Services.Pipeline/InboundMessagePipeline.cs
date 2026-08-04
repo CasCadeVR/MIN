@@ -4,7 +4,6 @@ using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Pipeline;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.Streaming.Contracts.Events;
@@ -19,7 +18,6 @@ namespace MIN.Core.Services.Pipeline;
 /// </summary>
 public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
 {
-    private readonly IRoomLifecycleManager lifecycle;
     private readonly IChunkBufferAssembler chunkBufferAssembler;
     private readonly IEventBus eventBus;
     private readonly IRoomFactory roomFactory;
@@ -30,14 +28,14 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
     private readonly ILoggerProvider logger;
 
     private CancellationTokenSource cts = null!;
+    private IDisposable localRawMessageToken = null!;
     private IDisposable localMessageToken = null!;
     private bool disposed;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="InboundMessagePipeline"/>
     /// </summary>
-    public InboundMessagePipeline(IRoomLifecycleManager lifecycle,
-        IChunkBufferAssembler chunkBufferAssembler,
+    public InboundMessagePipeline(IChunkBufferAssembler chunkBufferAssembler,
         IEventBus eventBus,
         IRoomFactory roomFactory,
         IMessageDispatcher dispatcher,
@@ -46,7 +44,6 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
         IRawMessageHandler messageHandler,
         ILoggerProvider logger)
     {
-        this.lifecycle = lifecycle;
         this.chunkBufferAssembler = chunkBufferAssembler;
         this.eventBus = eventBus;
         this.roomFactory = roomFactory;
@@ -60,39 +57,16 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
     async Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        lifecycle.RawMessageReceived += OnRawMessageReceived;
+        localRawMessageToken = eventBus.Subscribe<RoomRawMessageReceivedEvent>(OnRoomRawMessageReceived);
+        localMessageToken = eventBus.Subscribe<LocalMessageReceivedEvent>(OnLocalMessageRecieved);
         chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
-        localMessageToken = eventBus.Subscribe<LocalMessageRecievedEvent>(OnLocalMessageRecieved);
         await Task.CompletedTask;
     }
 
-    private async Task OnLocalMessageRecieved(LocalMessageRecievedEvent e, CancellationToken cancellationToken)
+    private async Task OnRoomRawMessageReceived(RoomRawMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
-        var context = roomFactory.GetOrCreateContext(e.RoomId);
-        await dispatcher.DispatchAsync(e.Message,
-            new MessageContext(context, CoreRegistryConstants.LocalConnectionId, e.Role, cancellationToken),
-            e.BroadcastExcludeIds);
-    }
+        var e = eventMessage.EventArgs;
 
-    private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
-    {
-        try
-        {
-            if (e.IsRawPayload)
-            {
-                return;
-            }
-
-            await messageHandler.HandleAssembledAsync(e, cts.Token);
-        }
-        catch (Exception ex)
-        {
-            logger.Log($"Ошибка при обработке собранного с потока сообщения: {ex.Message}");
-        }
-    }
-
-    private async void OnRawMessageReceived(object? sender, RoomRawMessageReceivedEventArgs e)
-    {
         try
         {
             if (ackHandler.CanHandle(e.Data))
@@ -121,10 +95,34 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
         }
     }
 
+    private async Task OnLocalMessageRecieved(LocalMessageReceivedEvent e, CancellationToken cancellationToken)
+    {
+        var context = roomFactory.GetOrCreateContext(e.RoomId);
+        await dispatcher.DispatchAsync(e.Message,
+            new MessageContext(context, CoreRegistryConstants.LocalConnectionId, e.Role, cancellationToken),
+            e.BroadcastExcludeIds);
+    }
+
+    private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
+    {
+        try
+        {
+            if (e.IsRawPayload)
+            {
+                return;
+            }
+
+            await messageHandler.HandleAssembledAsync(e, cts.Token);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Ошибка при обработке собранного с потока сообщения: {ex.Message}");
+        }
+    }
+
     /// <inheritdoc />
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        lifecycle.RawMessageReceived -= OnRawMessageReceived;
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
 
         if (disposed)
@@ -132,6 +130,7 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
             return;
         }
 
+        localRawMessageToken.Dispose();
         localMessageToken.Dispose();
         disposed = true;
         cts?.Cancel();

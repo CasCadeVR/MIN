@@ -5,13 +5,11 @@ using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Stateless.RoomRelated.Ping;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
 
-namespace MIN.Core.Services.Lifecycle;
+namespace MIN.Core.Services.Services;
 
-/// <inheritdoc cref="IPingService"/>
-public class PingService : IPingService, IDisposable
+internal sealed class PingService : IDisposable
 {
     private readonly IMessageSender messageSender;
     private readonly IEventBus eventBus;
@@ -23,7 +21,6 @@ public class PingService : IPingService, IDisposable
     private readonly ConcurrentDictionary<PingContext, Stopwatch> pingTravel = new(); // pingContext / pingTimer
     private readonly System.Timers.Timer pingTimer;
 
-    /// <inheritdoc />
     public event Func<Guid, Guid, Task>? OnConnectionTimeout;
 
     /// <summary>
@@ -103,7 +100,7 @@ public class PingService : IPingService, IDisposable
         }
     }
 
-    Task IPingService.RegisterHeartbeatSession(Role role, Guid roomId, Guid connectionId)
+    public Task RegisterHeartbeatSession(Role role, Guid roomId, Guid connectionId)
     {
         if (lastPingSeen.IsEmpty)
         {
@@ -113,7 +110,7 @@ public class PingService : IPingService, IDisposable
         return Task.CompletedTask;
     }
 
-    Task IPingService.UnregisterHeartbeatSession(Role role, Guid roomId, Guid connectionId)
+    public Task UnregisterHeartbeatSession(Role role, Guid roomId, Guid connectionId)
     {
         if (lastPingSeen.Count - 1 == 0)
         {

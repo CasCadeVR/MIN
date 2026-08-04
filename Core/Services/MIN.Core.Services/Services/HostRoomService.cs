@@ -9,7 +9,6 @@ using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.SubRooms.Contracts.Interfaces;
@@ -30,11 +29,11 @@ internal sealed class HostRoomService
     private readonly IRoomStore roomStore;
     private readonly IEventBus eventBus;
     private readonly ISubRoomManager subRoomManager;
-    private readonly IPingService pingService;
     private readonly IRoomConnectionRegistry registry;
     private readonly IIdentityService identityService;
     private readonly IMessageRouter messageRouter;
     private readonly ILoggerProvider logger;
+    private readonly PingService pingService;
 
     private readonly ConcurrentDictionary<Guid, RoomInfo> readyRoomInfos = [];
     private readonly Dictionary<Guid, CancellationTokenSource> roomCancellationTokenSources = [];
@@ -46,11 +45,11 @@ internal sealed class HostRoomService
         IRoomStore roomStore,
         IEventBus eventBus,
         ISubRoomManager subRoomManager,
-        IPingService pingService,
         IRoomConnectionRegistry registry,
         IIdentityService identityService,
         IMessageRouter messageRouter,
-        ILoggerProvider logger)
+        ILoggerProvider logger,
+        PingService pingService)
     {
         this.roomFactory = roomFactory;
         this.hostHandshake = hostHandshake;
@@ -58,11 +57,11 @@ internal sealed class HostRoomService
         this.roomStore = roomStore;
         this.eventBus = eventBus;
         this.subRoomManager = subRoomManager;
-        this.pingService = pingService;
         this.registry = registry;
         this.identityService = identityService;
         this.messageRouter = messageRouter;
         this.logger = logger;
+        this.pingService = pingService;
     }
 
     public bool TryResolveRoom(ConnectionStateChangedEventArgs e, out Guid roomId)

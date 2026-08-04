@@ -16,6 +16,7 @@ using MIN.Core.Serialization.Json;
 using MIN.Core.Serialization.Json.Services;
 using MIN.Core.Services.Lifecycle;
 using MIN.Core.Services.Messaging;
+using MIN.Core.Services.Moderation;
 using MIN.Core.Services.Pipeline;
 using MIN.Core.Stores.Factories;
 using MIN.Core.Stores.Registries;
@@ -62,7 +63,6 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<ParticipantStore>(ServiceLifetime.Transient);
 
         services.RegisterAsImplementedInterfaces<RoomStore>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<PingService>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<SubRoomManager>(ServiceLifetime.Singleton);
 

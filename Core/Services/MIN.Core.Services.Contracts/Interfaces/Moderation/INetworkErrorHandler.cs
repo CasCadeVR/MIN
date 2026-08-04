@@ -1,4 +1,4 @@
-﻿namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
+﻿namespace MIN.Core.Services.Contracts.Interfaces.Moderation;
 
 /// <summary>
 /// Сервис по обработке исключений на уровне сети

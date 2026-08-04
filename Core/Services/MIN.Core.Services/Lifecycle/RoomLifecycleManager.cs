@@ -7,8 +7,8 @@ using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Events;
+using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Services.Services;
 using MIN.Core.Stores.Contracts.Interfaces;
@@ -26,14 +26,11 @@ namespace MIN.Core.Services.Lifecycle;
 public sealed class RoomLifecycleManager : IRoomLifecycleManager
 {
     private readonly ITransport transport;
-    private readonly IPingService pingService;
     private readonly IRoomConnectionRegistry registry;
     private readonly IEventBus eventBus;
+    private readonly PingService pingService;
     private readonly ClientRoomService clientService;
     private readonly HostRoomService hostService;
-
-    /// <inheritdoc />
-    public event EventHandler<RoomRawMessageReceivedEventArgs>? RawMessageReceived;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="RoomLifecycleManager"/>
@@ -47,7 +44,6 @@ public sealed class RoomLifecycleManager : IRoomLifecycleManager
         IMessageRouter messageRouter,
         IIdentityService identityService,
         IMessageEncryptor encryptor,
-        IPingService pingService,
         IRoomConnectionRegistry registry,
         IVersionProvider versionProvider,
         ISubRoomManager subRoomManager,
@@ -55,18 +51,37 @@ public sealed class RoomLifecycleManager : IRoomLifecycleManager
         ILoggerProvider logger)
     {
         this.transport = transport;
-        this.pingService = pingService;
         this.registry = registry;
         this.eventBus = eventBus;
 
+        pingService = new PingService(eventBus, messageSender);
+
         clientService = new ClientRoomService(transport, clientHandshake, roomStore, roomFactory,
-            messageSender, identityService, encryptor, pingService, registry, versionProvider, eventBus, logger);
+            messageSender, identityService, encryptor, registry, versionProvider, eventBus, logger, pingService);
 
         hostService = new HostRoomService(roomFactory, hostHandshake, transport, roomStore, eventBus,
-            subRoomManager, pingService, registry, identityService, messageRouter, logger);
+            subRoomManager, registry, identityService, messageRouter, logger, pingService);
 
         SubscribeToEvents();
     }
+
+    async Task<ConnectionResult> IRoomLifecycleManager.ConnectAsync(IEndpoint endpoint, CancellationToken cancellationToken)
+        => await clientService.ConnectAsync(endpoint, cancellationToken);
+
+    async Task IRoomLifecycleManager.DisconnectAsync(Guid roomId, Guid connectionId, DisconnectReason reason)
+        => await clientService.DisconnectAsync(roomId, connectionId, reason);
+
+    async Task<Room> IRoomLifecycleManager.StartHostingAsync(RoomInfo roomInfo, NetworkOptions networkOptions, CancellationToken cancellationToken)
+        => await hostService.StartHostingAsync(roomInfo, networkOptions, cancellationToken);
+
+    async Task<IEnumerable<IEndpoint>> IRoomLifecycleManager.UpdateNetworkOptions(Guid roomId, NetworkOptions newNetworkOptions, CancellationToken cancellationToken)
+        => await hostService.UpdateNetworkOptions(roomId, newNetworkOptions, cancellationToken);
+
+    async Task IRoomLifecycleManager.StopHostingAsync(Guid roomId)
+        => await hostService.StopHostingAsync(roomId);
+
+    async Task IRoomLifecycleManager.KickClientAsync(Guid roomId, Guid participantId, DisconnectReason reason)
+        => await hostService.KickClientAsync(roomId, participantId, reason);
 
     private void SubscribeToEvents()
     {
@@ -75,14 +90,17 @@ public sealed class RoomLifecycleManager : IRoomLifecycleManager
         pingService.OnConnectionTimeout += PingService_OnConnectionTimeout;
     }
 
-    private void Transport_RawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
+    private async void Transport_RawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
     {
         if (!clientService.TryResolveRoom(e, out var roomId) && !hostService.TryResolveRoom(e, out roomId))
         {
             return;
         }
 
-        RawMessageReceived?.Invoke(this, new RoomRawMessageReceivedEventArgs(roomId, e));
+        await eventBus.PublishAsync(new RoomRawMessageReceivedEvent()
+        {
+            EventArgs = new RoomRawMessageReceivedEventArgs(roomId, e)
+        });
     }
 
     private async void Transport_ConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
@@ -141,28 +159,4 @@ public sealed class RoomLifecycleManager : IRoomLifecycleManager
             NeedToDisconnect = needToDisconnect,
             IsConnected = e.IsConnected
         });
-
-    /// <inheritdoc />
-    public async Task<ConnectionResult> ConnectAsync(IEndpoint endpoint, CancellationToken cancellationToken = default)
-        => await clientService.ConnectAsync(endpoint, cancellationToken);
-
-    /// <inheritdoc />
-    public async Task DisconnectAsync(Guid roomId, Guid connectionId, DisconnectReason reason)
-        => await clientService.DisconnectAsync(roomId, connectionId, reason);
-
-    /// <inheritdoc />
-    public async Task<Room> StartHostingAsync(RoomInfo roomInfo, NetworkOptions networkOptions, CancellationToken cancellationToken = default)
-        => await hostService.StartHostingAsync(roomInfo, networkOptions, cancellationToken);
-
-    /// <inheritdoc />
-    public async Task<IEnumerable<IEndpoint>> UpdateNetworkOptions(Guid roomId, NetworkOptions newNetworkOptions, CancellationToken cancellationToken = default)
-        => await hostService.UpdateNetworkOptions(roomId, newNetworkOptions, cancellationToken);
-
-    /// <inheritdoc />
-    public async Task StopHostingAsync(Guid roomId)
-        => await hostService.StopHostingAsync(roomId);
-
-    /// <inheritdoc />
-    public async Task KickClientAsync(Guid roomId, Guid participantId, DisconnectReason reason)
-        => await hostService.KickClientAsync(roomId, participantId, reason);
 }

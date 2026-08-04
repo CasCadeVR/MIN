@@ -7,7 +7,7 @@ namespace MIN.Core.Services.Contracts.Events;
 /// <summary>
 /// Аргументы события получения сообщения внутри программы
 /// </summary>
-public sealed record LocalMessageRecievedEvent : BaseEvent
+public sealed record LocalMessageReceivedEvent : BaseEvent
 {
     /// <summary>
     /// Полученное сообщение
@@ -30,9 +30,9 @@ public sealed record LocalMessageRecievedEvent : BaseEvent
     public IEnumerable<Guid>? BroadcastExcludeIds { get; }
 
     /// <summary>
-    /// Инициализирует новый экземпляр <see cref="LocalMessageRecievedEvent"/>
+    /// Инициализирует новый экземпляр <see cref="LocalMessageReceivedEvent"/>
     /// </summary>
-    public LocalMessageRecievedEvent(IMessage message, Guid roomId, Role role, IEnumerable<Guid>? broadcastExcludeIds = null)
+    public LocalMessageReceivedEvent(IMessage message, Guid roomId, Role role, IEnumerable<Guid>? broadcastExcludeIds = null)
     {
         Message = message;
         RoomId = roomId;

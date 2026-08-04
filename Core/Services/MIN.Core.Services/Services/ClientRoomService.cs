@@ -6,7 +6,6 @@ using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
@@ -28,11 +27,11 @@ internal sealed class ClientRoomService
     private readonly IMessageSender messageSender;
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
-    private readonly IPingService pingService;
     private readonly IRoomConnectionRegistry registry;
     private readonly IVersionProvider versionProvider;
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
+    private readonly PingService pingService;
 
     public ClientRoomService(ITransport transport,
         IClientHandshake clientHandshake,
@@ -41,11 +40,11 @@ internal sealed class ClientRoomService
         IMessageSender messageSender,
         IIdentityService identityService,
         IMessageEncryptor encryptor,
-        IPingService pingService,
         IRoomConnectionRegistry registry,
         IVersionProvider versionProvider,
         IEventBus eventBus,
-        ILoggerProvider logger)
+        ILoggerProvider logger,
+        PingService pingService)
     {
         this.transport = transport;
         this.clientHandshake = clientHandshake;
@@ -54,11 +53,11 @@ internal sealed class ClientRoomService
         this.messageSender = messageSender;
         this.identityService = identityService;
         this.encryptor = encryptor;
-        this.pingService = pingService;
         this.registry = registry;
         this.versionProvider = versionProvider;
         this.eventBus = eventBus;
         this.logger = logger;
+        this.pingService = pingService;
     }
 
     public bool TryResolveRoom(ConnectionStateChangedEventArgs e, out Guid roomId)

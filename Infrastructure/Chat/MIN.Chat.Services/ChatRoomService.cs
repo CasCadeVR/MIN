@@ -2,8 +2,9 @@
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Stateless.RoomRelated.History;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
+using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;

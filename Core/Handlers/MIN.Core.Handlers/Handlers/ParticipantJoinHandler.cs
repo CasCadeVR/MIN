@@ -9,7 +9,7 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Messaging.Stateless.RoomRelated.Join;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 

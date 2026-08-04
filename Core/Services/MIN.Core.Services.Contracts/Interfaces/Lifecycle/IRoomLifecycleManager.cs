@@ -1,23 +1,17 @@
 ﻿using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Models;
 
-namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
+namespace MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 
 /// <summary>
 /// Единый оркестратор жизненного цикла комнат: подключение/отключение (клиент) и хостинг (сервер)
 /// </summary>
 public interface IRoomLifecycleManager
 {
-    /// <summary>
-    /// Событие получения сырых данных от сети
-    /// </summary>
-    event EventHandler<RoomRawMessageReceivedEventArgs>? RawMessageReceived;
-
     /// <summary>
     /// Подключиться к удалённой комнате (клиентская сторона)
     /// </summary>

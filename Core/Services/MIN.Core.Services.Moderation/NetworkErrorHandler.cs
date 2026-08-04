@@ -3,13 +3,14 @@ using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Messaging.Stateless.RoomRelated.Disconnect;
+using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Helpers.Contracts.Interfaces;
 
-namespace MIN.Core.Services.Lifecycle;
+namespace MIN.Core.Services.Moderation;
 
 /// <inheritdoc cref="INetworkErrorHandler"/>
 public class NetworkErrorHandler : INetworkErrorHandler
