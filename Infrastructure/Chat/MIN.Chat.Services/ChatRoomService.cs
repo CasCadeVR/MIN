@@ -18,6 +18,7 @@ public sealed class ChatRoomService : IChatRoomService
 {
     private readonly IMessageRouter messageRouter;
     private readonly IRoomFactory roomFactory;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IRoomHoster roomHoster;
     private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IDiscoveryService discoveryService;
@@ -28,6 +29,7 @@ public sealed class ChatRoomService : IChatRoomService
     /// </summary>
     public ChatRoomService(IMessageRouter messageRouter,
         IRoomFactory roomFactory,
+        IRoomConnectionRegistry registry,
         IRoomHoster roomHoster,
         INetworkErrorHandler networkErrorHandler,
         IDiscoveryService discoveryService,
@@ -35,6 +37,7 @@ public sealed class ChatRoomService : IChatRoomService
     {
         this.messageRouter = messageRouter;
         this.roomFactory = roomFactory;
+        this.registry = registry;
         this.roomHoster = roomHoster;
         this.networkErrorHandler = networkErrorHandler;
         this.discoveryService = discoveryService;
@@ -50,7 +53,7 @@ public sealed class ChatRoomService : IChatRoomService
             throw new ArgumentNullException("Не нашлась информация о комнате");
         }
 
-        if (!roomHoster.IsHosting(roomId))
+        if (!registry.IsHosting(roomId))
         {
             throw new InvalidOperationException("Ты не являешся хостом для этой комнаты");
         }
@@ -73,7 +76,7 @@ public sealed class ChatRoomService : IChatRoomService
     {
         var roomId = updatedRoomInfo.Id;
 
-        if (!roomHoster.IsHosting(roomId))
+        if (!registry.IsHosting(roomId))
         {
             throw new InvalidOperationException("Ты не являешся хостом для этой комнаты");
         }

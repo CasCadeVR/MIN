@@ -19,7 +19,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
 {
     private readonly IEnumerable<IMessageHandler> handlers;
     private readonly IMessageSender messageSender;
-    private readonly IRoomHoster roomHoster;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IEventBus eventBus;
     private readonly ISubRoomManager subRoomManager;
     private readonly IIdentityService identityService;
@@ -30,7 +30,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
     /// </summary>
     public MessageDispatcher(IEnumerable<IMessageHandler> handlers,
         IMessageSender messageSender,
-        IRoomHoster roomHoster,
+        IRoomConnectionRegistry registry,
         IEventBus eventBus,
         ISubRoomManager subRoomManager,
         IIdentityService identityService,
@@ -38,7 +38,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
     {
         this.handlers = handlers;
         this.messageSender = messageSender;
-        this.roomHoster = roomHoster;
+        this.registry = registry;
         this.eventBus = eventBus;
         this.subRoomManager = subRoomManager;
         this.identityService = identityService;
@@ -100,7 +100,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     break;
                 }
 
-                if (roomHoster.IsHosting(context.RoomContext.RoomId))
+                if (registry.IsHosting(context.RoomContext.RoomId))
                 {
                     await HandleServerMessageRouting(message, context, broadcastExcludeIds);
                 }

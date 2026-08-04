@@ -259,23 +259,22 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
                 discoveryInfo.Room,
                 discoveryInfo.Endpoints,
                 localParticipant.Id == discoveryInfo.Room.HostParticipant.Id,
+                featureCollection.Core.Registry.IsConnected(discoveryInfo.Room.Id)
+                 || featureCollection.Core.Registry.IsHosting(discoveryInfo.Room.Id),
                 clipboard);
 
-            card.Clicked += async (origin) => await OnRoomJoin(discoveryInfo.Endpoints.First(x => x.Origin == origin), discoveryInfo.Room, card);
+            card.Clicked += async (origin) =>
+            {
+                await OnRoomJoin(discoveryInfo.Endpoints.First(x => x.Origin == origin));
+                card?.IsConnecting = false;
+            };
 
             DiscoveredRooms.Add(card);
         }
     }
 
-    private async Task OnRoomJoin(IEndpoint endpoint, RoomInfo? roomInfo = null, DiscoveredRoomCardViewModel? card = null)
+    private async Task OnRoomJoin(IEndpoint endpoint)
     {
-        if (roomInfo != null && featureCollection.Core.RoomConnector.IsConnected(roomInfo.Id))
-        {
-            InAppNotifier.Info("Вы уже подключены к этой комнате");
-            card?.IsConnecting = false;
-            return;
-        }
-
         if (!await ResolveParticipant())
         {
             return;
@@ -316,10 +315,6 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         {
             loadingVm?.CloseByCode();
             InAppNotifier.Error($"Произошла ошибка при подключении: {ex.Message}");
-        }
-        finally
-        {
-            card?.IsConnecting = false;
         }
     }
 

@@ -17,7 +17,7 @@ namespace MIN.Core.Services.Rooms;
 public class NetworkErrorHandler : INetworkErrorHandler
 {
     private readonly ITransport transport;
-    private readonly IRoomConnectionResolver roomConnectionResolver;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IRoomFactory roomFactory;
     private readonly IMessageRouter messageRouter;
     private readonly IEventBus eventBus;
@@ -28,14 +28,14 @@ public class NetworkErrorHandler : INetworkErrorHandler
     /// Инициализирует новый экземпляр <see cref="NetworkErrorHandler"/>
     /// </summary>
     public NetworkErrorHandler(ITransport transport,
-        IRoomConnectionResolver roomConnectionResolver,
+        IRoomConnectionRegistry registry,
         IRoomFactory roomFactory,
         IMessageRouter messageRouter,
         IEventBus eventBus,
         IIdentityService identityService)
     {
         this.transport = transport;
-        this.roomConnectionResolver = roomConnectionResolver;
+        this.registry = registry;
         this.roomFactory = roomFactory;
         this.messageRouter = messageRouter;
         this.eventBus = eventBus;
@@ -104,7 +104,7 @@ public class NetworkErrorHandler : INetworkErrorHandler
             return;
         }
         var connectionId = context.Connections.GetConnectionIdFromParticipantId(participantId);
-        var serverConnectionId = roomConnectionResolver.GetServerConnectionIdByRoomId(connectionId, roomId);
+        var serverConnectionId = registry.GetServerConnectionIdByRoomId(roomId);
         await transport.DisconnectClientAsync(connectionId, serverConnectionId, DisconnectReason.Kick);
     }
 

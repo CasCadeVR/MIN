@@ -9,7 +9,7 @@ namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
 /// <summary>
 /// Сервис для хостинга комнат (серверная сторона)
 /// </summary>
-public interface IRoomHoster : IRoomConnectionRelated
+public interface IRoomHoster
 {
     /// <summary>
     /// Событие получения сырых данных от сервера
@@ -35,9 +35,4 @@ public interface IRoomHoster : IRoomConnectionRelated
     /// Остановить хостинг комнаты
     /// </summary>
     Task StopHostingAsync(Guid roomId);
-
-    /// <summary>
-    /// Активен ли хостинг для указанной комнаты
-    /// </summary>
-    bool IsHosting(Guid roomId);
 }

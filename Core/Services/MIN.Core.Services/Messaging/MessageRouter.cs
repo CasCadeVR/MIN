@@ -11,7 +11,7 @@ namespace MIN.Core.Services.Messaging;
 /// <inheritdoc cref="IMessageRouter"/>
 public sealed class MessageRouter : IMessageRouter
 {
-    private readonly IRoomHoster roomHoster;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IRoomStore roomStore;
     private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
@@ -20,13 +20,13 @@ public sealed class MessageRouter : IMessageRouter
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="MessageRouter"/>
     /// </summary>
-    public MessageRouter(IRoomHoster roomHoster,
+    public MessageRouter(IRoomConnectionRegistry registry,
         IRoomStore roomStore,
         IEventBus eventBus,
         IMessageSender messageSender,
         IRoomFactory roomFactory)
     {
-        this.roomHoster = roomHoster;
+        this.registry = registry;
         this.roomStore = roomStore;
         this.eventBus = eventBus;
         this.messageSender = messageSender;
@@ -37,7 +37,7 @@ public sealed class MessageRouter : IMessageRouter
     {
         message.SenderId = senderId;
 
-        var role = roomHoster.IsHosting(roomId) ? Role.Host : Role.Client;
+        var role = registry.GetRole(roomId);
 
         if (role == Role.Host)
         {

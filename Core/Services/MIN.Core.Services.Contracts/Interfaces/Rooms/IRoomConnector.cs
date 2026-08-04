@@ -8,7 +8,7 @@ namespace MIN.Core.Services.Contracts.Interfaces.Rooms;
 /// <summary>
 /// Сервис для подключения к удалённым комнатам (клиентская сторона)
 /// </summary>
-public interface IRoomConnector : IRoomConnectionRelated
+public interface IRoomConnector
 {
     /// <summary>
     /// Событие получения сырых данных от сервера
@@ -29,9 +29,4 @@ public interface IRoomConnector : IRoomConnectionRelated
     /// Отключиться от удалённой комнаты
     /// </summary>
     Task DisconnectAsync(Guid roomId, Guid connectionId, DisconnectReason reason);
-
-    /// <summary>
-    /// Подключен ли к указанной комнате
-    /// </summary>
-    bool IsConnected(Guid roomId);
 }

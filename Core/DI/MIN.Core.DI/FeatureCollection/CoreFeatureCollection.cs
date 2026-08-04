@@ -1,5 +1,4 @@
 ﻿using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 
@@ -17,11 +16,11 @@ public class CoreFeatureCollection : ICoreFeatureCollection
     /// <inheritdoc cref="IRoomFactory"/>
     public IRoomFactory RoomFactory { get; }
 
+    /// <inheritdoc cref="IRoomConnectionRegistry"/>
+    public IRoomConnectionRegistry Registry { get; }
+
     /// <inheritdoc cref="IEventBus"/>
     public IEventBus EventBus { get; }
-
-    /// <inheritdoc cref="IMessageRouter"/>
-    public IMessageRouter MessageRouter { get; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="CoreFeatureCollection"/>
@@ -29,13 +28,13 @@ public class CoreFeatureCollection : ICoreFeatureCollection
     public CoreFeatureCollection(IRoomConnector roomConnector,
         IRoomHoster roomHoster,
         IRoomFactory roomFactory,
-        IEventBus eventBus,
-        IMessageRouter messageRouter)
+        IRoomConnectionRegistry registry,
+        IEventBus eventBus)
     {
         RoomConnector = roomConnector;
         RoomHoster = roomHoster;
         RoomFactory = roomFactory;
+        Registry = registry;
         EventBus = eventBus;
-        MessageRouter = messageRouter;
     }
 }

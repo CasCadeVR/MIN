@@ -20,7 +20,7 @@ public interface IChunkBufferAssembler
     /// <summary>
     /// Обрабатывает входящий пакет
     /// </summary>
-    Task ProcessStreamChunk(byte[] data, Guid connectionId, Guid? ServerConnectionId, CancellationToken cancellationToken = default);
+    Task ProcessStreamChunk(byte[] data, Guid roomId, Guid connectionId, Guid? serverConnectionId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Очистить поток передачи данных

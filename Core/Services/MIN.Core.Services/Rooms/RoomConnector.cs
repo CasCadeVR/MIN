@@ -31,10 +31,9 @@ public sealed class RoomConnector : IRoomConnector
     private readonly IIdentityService identityService;
     private readonly IMessageEncryptor encryptor;
     private readonly IPingService pingService;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IVersionProvider versionProvider;
     private readonly ILoggerProvider logger;
-    private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
-    private readonly Dictionary<Guid, Guid> activeConnections = []; // ConnectionId -> RoomId
 
     /// <inheritdoc />
     public event EventHandler<RoomRawMessageReceivedEventArgs>? RawMessageReceived;
@@ -53,6 +52,7 @@ public sealed class RoomConnector : IRoomConnector
         IIdentityService identityService,
         IPingService pingService,
         IMessageEncryptor encryptor,
+        IRoomConnectionRegistry registry,
         IVersionProvider versionProvider,
         ILoggerProvider logger)
     {
@@ -64,6 +64,7 @@ public sealed class RoomConnector : IRoomConnector
         this.identityService = identityService;
         this.pingService = pingService;
         this.encryptor = encryptor;
+        this.registry = registry;
         this.versionProvider = versionProvider;
         this.logger = logger;
 
@@ -78,7 +79,7 @@ public sealed class RoomConnector : IRoomConnector
 
     private async void Transport_ConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
     {
-        if (!activeConnections.TryGetValue(e.ConnectionId, out var roomId))
+        if (!registry.TryGetRoomIdByClientConnectionId(e.ConnectionId, out var roomId))
         {
             return;
         }
@@ -88,9 +89,7 @@ public sealed class RoomConnector : IRoomConnector
             // Here we are cleaning for this service specifically
             pingService.OnConnectionTimeout -= PingService_OnConnectionTimeout;
             await pingService.UnregisterHeartbeatSession(Role.Client, roomId, e.ConnectionId);
-            activeRooms.Remove(roomId);
-            activeConnections.Remove(e.ConnectionId);
-
+            registry.UnregisterServerConnection(roomId);
             logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {e.ConnectionId}");
         }
 
@@ -101,7 +100,7 @@ public sealed class RoomConnector : IRoomConnector
 
     private void Transport_RawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
     {
-        if (!activeConnections.TryGetValue(e.ConnectionId, out var roomId))
+        if (!registry.TryGetRoomIdByClientConnectionId(e.ConnectionId, out var roomId))
         {
             return;
         }
@@ -129,7 +128,7 @@ public sealed class RoomConnector : IRoomConnector
                 throw new InvalidOperationException(result.ErrorMessage);
             }
 
-            if (roomStore.RoomExists(result.RoomInfo.Id))
+            if (registry.IsConnected(result.RoomInfo.Id) || registry.IsHosting(result.RoomInfo.Id))
             {
                 throw new InvalidOperationException("Вы уже подключены к этой комнате");
             }
@@ -158,8 +157,7 @@ public sealed class RoomConnector : IRoomConnector
             };
 
             await messageSender.SendAsync(selfHandshake, connectionResult.RoomId, connectionResult.ConnectionId, cancellationToken);
-            activeRooms[connectionResult.RoomId] = connectionResult.ConnectionId;
-            activeConnections[connectionResult.ConnectionId] = connectionResult.RoomId;
+            registry.RegisterClientConnection(connectionResult.RoomId, connectionResult.ConnectionId);
 
             return connectionResult;
         }
@@ -183,7 +181,7 @@ public sealed class RoomConnector : IRoomConnector
     /// <inheritdoc />
     public async Task DisconnectAsync(Guid roomId, Guid connectionId, DisconnectReason reason)
     {
-        if (!activeRooms.ContainsKey(roomId))
+        if (!registry.IsConnected(roomId))
         {
             return;
         }
@@ -193,12 +191,4 @@ public sealed class RoomConnector : IRoomConnector
         // Transport will fire event, where it would cleanup further
         await transport.DisconnectAsync(connectionId, reason);
     }
-
-    Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
-         => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
-
-    Guid IRoomConnectionRelated.GetRoomIdByConnectionId(Guid connectionId)
-        => activeConnections.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
-
-    bool IRoomConnector.IsConnected(Guid roomId) => activeRooms.ContainsKey(roomId);
 }

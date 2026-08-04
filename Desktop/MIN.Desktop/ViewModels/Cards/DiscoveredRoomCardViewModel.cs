@@ -75,12 +75,14 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase
         RoomInfo room,
         IEnumerable<IEndpoint> endpoints,
         bool asHost,
+        bool asJoined,
         IClipboard? clipboard)
     {
         this.asHost = asHost;
         this.room = room;
 
         Room = room;
+        joined = asJoined;
 
         foreach (var endpoint in endpoints)
         {

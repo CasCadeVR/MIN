@@ -11,7 +11,12 @@ public sealed class MessageAssembledEventArgs : EventArgs
     public required Guid StreamId { get; init; }
 
     /// <summary>
-    /// Идентификатор соединения отправителя
+    /// Идентификатор комнаты
+    /// </summary>
+    public required Guid RoomId { get; init; }
+
+    /// <summary>
+    /// Идентификатор комнаты
     /// </summary>
     public required Guid ConnectionId { get; init; }
 

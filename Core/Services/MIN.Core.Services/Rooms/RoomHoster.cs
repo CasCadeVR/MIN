@@ -31,10 +31,9 @@ public sealed class RoomHoster : IRoomHoster
     private readonly IEventBus eventBus;
     private readonly ISubRoomManager subRoomManager;
     private readonly IPingService pingService;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
-    private readonly Dictionary<Guid, Guid> activeRooms = []; // RoomId -> ConnectionId
-    private readonly Dictionary<Guid, Guid> activeConnections = []; // ConnectionId -> RoomId
     private readonly ConcurrentDictionary<Guid, RoomInfo> readyRoomInfos = []; // RoomId -> RoomInfo
     private readonly Dictionary<Guid, CancellationTokenSource> roomCancellationTokenSources = [];
     private readonly HashSet<Guid> protocolPhase = [];
@@ -55,6 +54,7 @@ public sealed class RoomHoster : IRoomHoster
         IEventBus eventBus,
         ISubRoomManager subRoomManager,
         IPingService pingService,
+        IRoomConnectionRegistry registry,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
@@ -65,6 +65,7 @@ public sealed class RoomHoster : IRoomHoster
         this.eventBus = eventBus;
         this.subRoomManager = subRoomManager;
         this.pingService = pingService;
+        this.registry = registry;
         this.identityService = identityService;
         this.logger = logger;
 
@@ -80,7 +81,7 @@ public sealed class RoomHoster : IRoomHoster
 
     private async void Transport_ConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
     {
-        if (!activeConnections.TryGetValue(e.ServerConnectionId ?? Guid.Empty, out var roomId))
+        if (!registry.TryGetRoomIdByServerConnectionId(e.ServerConnectionId, out var roomId))
         {
             return;
         }
@@ -117,7 +118,7 @@ public sealed class RoomHoster : IRoomHoster
 
     private async Task PingService_OnConnectionTimeout(Guid roomId, Guid connectionId)
     {
-        if (!activeRooms.TryGetValue(roomId, out var serverConnectionId))
+        if (!registry.TryGetServerConnectionIdByRoomId(roomId, out var serverConnectionId))
         {
             return;
         }
@@ -127,7 +128,7 @@ public sealed class RoomHoster : IRoomHoster
 
     private void Transport_RawMessageReceived(object? sender, RawMessageReceivedEventArgs e)
     {
-        if (!activeConnections.TryGetValue(e.ServerConnectionId ?? Guid.Empty, out var roomId))
+        if (!registry.TryGetRoomIdByServerConnectionId(e.ServerConnectionId, out var roomId))
         {
             return;
         }
@@ -143,14 +144,14 @@ public sealed class RoomHoster : IRoomHoster
 
     async Task<Room> IRoomHoster.StartHostingAsync(RoomInfo roomInfo, NetworkOptions networkOptions, CancellationToken cancellationToken)
     {
-        if (activeRooms.Count + 1 > ServicesConstants.MaximumRoomHosts)
+        if (registry.GetServerConnectionCount() + 1 > ServicesConstants.MaximumRoomHosts)
         {
             throw new InvalidOperationException($"Можно хостить максимум {ServicesConstants.MaximumRoomHosts} комнат");
         }
 
         var roomId = roomInfo.Id;
 
-        if (activeRooms.ContainsKey(roomId))
+        if (registry.IsHosting(roomId))
         {
             return roomStore.GetRoom(roomId);
         }
@@ -188,8 +189,7 @@ public sealed class RoomHoster : IRoomHoster
 
         logger.Log($"Комната создана: {string.Join(',', room.ConnectionAddresses)} ({roomInfo.Name})");
 
-        activeRooms[roomId] = connectionId;
-        activeConnections[connectionId] = roomInfo.Id;
+        registry.RegisterServerConnection(roomId, connectionId);
         readyRoomInfos[roomId] = roomInfo;
 
         return roomStore.GetRoom(roomId);
@@ -199,7 +199,7 @@ public sealed class RoomHoster : IRoomHoster
     {
         var room = roomStore.GetRoom(roomId);
 
-        if (!activeRooms.TryGetValue(roomId, out var connectionId))
+        if (!registry.TryGetServerConnectionIdByRoomId(roomId, out var connectionId))
         {
             return room.ConnectionAddresses;
         }
@@ -213,7 +213,7 @@ public sealed class RoomHoster : IRoomHoster
 
     async Task IRoomHoster.StopHostingAsync(Guid roomId)
     {
-        if (!activeRooms.TryGetValue(roomId, out var connectionId))
+        if (!registry.TryGetServerConnectionIdByRoomId(roomId, out var connectionId))
         {
             return;
         }
@@ -227,9 +227,9 @@ public sealed class RoomHoster : IRoomHoster
 
         await transport.StopHostingAsync(connectionId);
         subRoomManager.ClearRoomSubRooms(roomId);
-        activeRooms.Remove(roomId);
 
-        activeConnections.Remove(connectionId);
+        registry.UnregisterServerConnection(roomId);
+
         readyRoomInfos.TryRemove(roomId, out _);
 
         roomStore.Remove(roomId);
@@ -237,13 +237,4 @@ public sealed class RoomHoster : IRoomHoster
 
         await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
     }
-
-    Guid IRoomConnectionRelated.GetConnectionIdByRoomId(Guid roomId)
-        => activeRooms.TryGetValue(roomId, out var p) ? p : throw new KeyNotFoundException();
-
-    Guid IRoomConnectionRelated.GetRoomIdByConnectionId(Guid connectionId)
-        => activeConnections.TryGetValue(connectionId, out var p) ? p : throw new KeyNotFoundException();
-
-    bool IRoomHoster.IsHosting(Guid roomId)
-        => activeRooms.ContainsKey(roomId);
 }

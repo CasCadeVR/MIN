@@ -1,6 +1,5 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Cryptography.Contracts.Interfaces;
-using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
@@ -24,6 +23,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 {
     private readonly IRoomHoster roomHoster;
     private readonly IRoomConnector roomConnector;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IMessageSerializer serializer;
     private readonly IEventBus eventBus;
     private readonly IMessageDispatcher dispatcher;
@@ -42,6 +42,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     /// </summary>
     public MessageReceiver(IRoomHoster roomHoster,
         IRoomConnector roomConnector,
+        IRoomConnectionRegistry registry,
         IMessageSerializer serializer,
         IEventBus eventBus,
         IMessageDispatcher dispatcher,
@@ -54,6 +55,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
     {
         this.roomHoster = roomHoster;
         this.roomConnector = roomConnector;
+        this.registry = registry;
         this.serializer = serializer;
         this.eventBus = eventBus;
         this.dispatcher = dispatcher;
@@ -93,23 +95,11 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
                 return;
             }
 
-            Guid? roomId = null;
-
-            if (e.ServerConnectionId != null)
-            {
-                roomId = roomHoster.GetRoomIdByConnectionId(e.ServerConnectionId.Value);
-            }
-            else
-            {
-                roomId = roomConnector.GetRoomIdByConnectionId(e.ConnectionId);
-            }
-
-            var context = roomFactory.GetOrCreateContext(roomId.Value);
+            var roomId = registry.ResolveRoomId(e.ConnectionId, e.ServerConnectionId);
+            var context = roomFactory.GetOrCreateContext(roomId);
             var message = serializer.Deserialize(e.Data!); // Потому-что это не RawPayload
             await dispatcher.DispatchAsync(message, new MessageContext(context,
-                e.ConnectionId,
-                roomHoster.IsHosting(roomId.Value) ? Role.Host : Role.Client,
-                cts.Token));
+                e.ConnectionId, registry.GetRole(roomId), cts.Token));
         }
         catch (Exception ex)
         {
@@ -150,7 +140,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 
             if (headerManager.IsStreamChunk(plainData))
             {
-                await chunkBufferAssembler.ProcessStreamChunk(plainData, e.ConnectionId, e.ServerConnectionId, cts.Token);
+                await chunkBufferAssembler.ProcessStreamChunk(plainData, e.RoomId, e.ConnectionId, e.ServerConnectionId, cts.Token);
                 return;
             }
 
@@ -159,7 +149,7 @@ public sealed class MessageReceiver : IHostedService, IAsyncDisposable
 
             try
             {
-                await dispatcher.DispatchAsync(message, new MessageContext(context, e.ConnectionId, roomHoster.IsHosting(context.RoomId) ? Role.Host : Role.Client, cts.Token));
+                await dispatcher.DispatchAsync(message, new MessageContext(context, e.ConnectionId, registry.GetRole(context.RoomId), cts.Token));
             }
             catch (Exception ex)
             {

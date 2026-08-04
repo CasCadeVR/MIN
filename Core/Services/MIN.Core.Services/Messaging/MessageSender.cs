@@ -18,7 +18,7 @@ namespace MIN.Core.Services.Messaging;
 public sealed class MessageSender : IMessageSender, IAsyncDisposable
 {
     private readonly ITransport transport;
-    private readonly IRoomHoster roomHoster;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IMessageEncryptor encryptor;
     private readonly IMessageSerializer serializer;
     private readonly IHeaderManager headerManager;
@@ -29,7 +29,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
     /// Инциализирует новый экземпляр <see cref="MessageSender"/>
     /// </summary>
     public MessageSender(ITransport transport,
-        IRoomHoster roomHoster,
+        IRoomConnectionRegistry registry,
         IMessageEncryptor encryptor,
         IMessageSerializer serializer,
         IHeaderManager headerManager,
@@ -37,7 +37,7 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
         IStreamManager streamManager)
     {
         this.transport = transport;
-        this.roomHoster = roomHoster;
+        this.registry = registry;
         this.encryptor = encryptor;
         this.serializer = serializer;
         this.headerManager = headerManager;
@@ -55,9 +55,9 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
 
         Guid? serverConnectionId = null;
 
-        if (roomHoster.IsHosting(roomId))
+        if (registry.IsHosting(roomId))
         {
-            serverConnectionId = roomHoster.GetConnectionIdByRoomId(roomId);
+            serverConnectionId = registry.GetServerConnectionIdByRoomId(roomId);
         }
 
         var serialized = serializer.Serialize(message);
@@ -92,9 +92,9 @@ public sealed class MessageSender : IMessageSender, IAsyncDisposable
 
         Guid? serverConnectionId = null;
 
-        if (roomHoster.IsHosting(roomId))
+        if (registry.IsHosting(roomId))
         {
-            serverConnectionId = roomHoster.GetConnectionIdByRoomId(roomId);
+            serverConnectionId = registry.GetServerConnectionIdByRoomId(roomId);
         }
 
         await streamManager.SendAsync(messageStream, options, roomId, recipientConnectionId, serverConnectionId, cancellationToken);
