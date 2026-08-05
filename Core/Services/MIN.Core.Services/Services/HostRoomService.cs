@@ -1,9 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Protocol.Contracts.Interfaces;
@@ -16,7 +18,6 @@ using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Models;
-using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Services;

@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Base;
 using MIN.DI.FeatureCollection;
-using MIN.Helpers.Contracts.Extensions;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -77,7 +77,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (!Design.IsDesignMode)
         {
-            localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+            localParticipant = featureCollection.Core.IdentityService.SelfParticipant.ToParticipantInfo();
 
             OnNavigatedTo = ActionOnNavigatedTo;
             OnNavigatedFrom = ActionOnNavigatedFrom;

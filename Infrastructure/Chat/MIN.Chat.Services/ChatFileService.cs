@@ -1,5 +1,7 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.FileTransfer.DI.FeatureCollection;
@@ -7,8 +9,6 @@ using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Models;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
-using MIN.Helpers.Contracts.Extensions;
-using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Services;
 

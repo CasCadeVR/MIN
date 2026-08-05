@@ -20,9 +20,6 @@ public interface IHelperFeatureCollection
     /// <inheritdoc cref="ILoggerProvider"/>
     ILoggerProvider Logger { get; }
 
-    /// <inheritdoc cref="IIdentityService"/>
-    IIdentityService IdentityService { get; }
-
     /// <inheritdoc cref="IVersionProvider"/>
     IVersionProvider VersionProvider { get; }
 }

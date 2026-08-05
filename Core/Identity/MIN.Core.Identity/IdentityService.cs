@@ -2,9 +2,10 @@
 using System.Text.Json.Serialization;
 using MIN.Core.Entities.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
-namespace MIN.Helpers.Services;
+namespace MIN.Core.Identity;
 
 /// <inheritdoc cref="IIdentityService"/>
 public sealed class IdentityService : IIdentityService
@@ -71,6 +72,7 @@ public sealed class IdentityService : IIdentityService
             };
 
             // TODO: Когда нибудь заменить на LoadParticipantId()
+            // и разделить логику получения и сохранения на 2 класса
 
             //if (participantId == Guid.Empty)
             //{

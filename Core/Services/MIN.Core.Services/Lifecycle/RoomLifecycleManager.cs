@@ -5,6 +5,7 @@ using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Lifecycle;

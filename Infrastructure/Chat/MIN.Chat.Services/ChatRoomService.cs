@@ -1,5 +1,6 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless.RoomRelated.History;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
 using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
@@ -11,7 +12,6 @@ using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Models;
 using MIN.Discovery.Services.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Services;
 

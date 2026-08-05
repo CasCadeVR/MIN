@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
@@ -21,4 +22,7 @@ public interface ICoreFeatureCollection
 
     /// <inheritdoc cref="IEventBus"/>
     IEventBus EventBus { get; }
+
+    /// <inheritdoc cref="IIdentityService"/>
+    IIdentityService IdentityService { get; }
 }

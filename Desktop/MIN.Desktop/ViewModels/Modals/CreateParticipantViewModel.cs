@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Core.Entities.Contracts.Extensions;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Infrastructure.Validators;
 using MIN.Desktop.ViewModels.Base;
-using MIN.Helpers.Contracts.Extensions;
-using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Desktop.ViewModels.Modals;
 

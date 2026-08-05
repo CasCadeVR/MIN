@@ -9,6 +9,7 @@ using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Dispatcher;
 using MIN.Core.Handlers.Handlers;
 using MIN.Core.Headers.Services;
+using MIN.Core.Identity;
 using MIN.Core.Messaging;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Protocol.Services;
@@ -36,6 +37,8 @@ public class CoreModule : Module
     protected override void Load(IServiceCollection services)
     {
         // Global
+        services.RegisterAsImplementedInterfaces<IdentityService>(ServiceLifetime.Singleton);
+
         services.RegisterAsImplementedInterfaces<JsonMessageSerializer>(ServiceLifetime.Singleton);
 
         services.AddDataProtection();

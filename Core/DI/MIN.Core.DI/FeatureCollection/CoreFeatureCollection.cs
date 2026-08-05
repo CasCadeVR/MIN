@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
@@ -20,17 +21,22 @@ public class CoreFeatureCollection : ICoreFeatureCollection
     /// <inheritdoc cref="IEventBus"/>
     public IEventBus EventBus { get; }
 
+    /// <inheritdoc cref="IIdentityService"/>
+    public IIdentityService IdentityService { get; }
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="CoreFeatureCollection"/>
     /// </summary>
     public CoreFeatureCollection(IRoomLifecycleManager lifecycle,
         IRoomFactory roomFactory,
         IRoomConnectionRegistry registry,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        IIdentityService identityService)
     {
         Lifecycle = lifecycle;
         RoomFactory = roomFactory;
         Registry = registry;
         EventBus = eventBus;
+        IdentityService = identityService;
     }
 }

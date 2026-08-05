@@ -18,9 +18,6 @@ public class HelperFeatureCollection : IHelperFeatureCollection
     /// <inheritdoc cref="ILoggerProvider"/>
     public ILoggerProvider Logger { get; }
 
-    /// <inheritdoc cref="IIdentityService"/>
-    public IIdentityService IdentityService { get; }
-
     /// <inheritdoc cref="IVersionProvider"/>
     public IVersionProvider VersionProvider { get; }
 
@@ -31,14 +28,12 @@ public class HelperFeatureCollection : IHelperFeatureCollection
         IAppDataProvider appDataProvider,
         INotificationService notificationService,
         ILoggerProvider logger,
-        IIdentityService identityService,
         IVersionProvider versionProvider)
     {
         SettingsProvider = settingsProvider;
         AppDataProvider = appDataProvider;
         NotificationService = notificationService;
         Logger = logger;
-        IdentityService = identityService;
         VersionProvider = versionProvider;
     }
 }

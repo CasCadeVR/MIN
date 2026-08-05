@@ -8,6 +8,7 @@ using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Models;
@@ -28,7 +29,6 @@ using MIN.Desktop.ViewModels.Windows;
 using MIN.DI.FeatureCollection;
 using MIN.Discovery.Events;
 using MIN.Discovery.Services.Contracts.Enums;
-using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Models;
 
 namespace MIN.Desktop.ViewModels.Pages;
@@ -87,7 +87,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
 
         if (!Design.IsDesignMode)
         {
-            localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+            localParticipant = featureCollection.Core.IdentityService.SelfParticipant.ToParticipantInfo();
             lifeTimeCts = ctsProvider.AppCts;
             SubscribeToEvents();
             InitializeLayoutStyles();
@@ -115,7 +115,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         if (Settings.DefaultParticipantName != string.Empty)
         {
             localParticipant.Name = Settings.DefaultParticipantName;
-            featureCollection.Helper.IdentityService.SetParticipant(localParticipant);
+            featureCollection.Core.IdentityService.SetParticipant(localParticipant);
         }
         else
         {
@@ -125,7 +125,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
                 return false;
             }
 
-            Settings.DefaultParticipantName = featureCollection.Helper.IdentityService.SelfParticipant.Name;
+            Settings.DefaultParticipantName = featureCollection.Core.IdentityService.SelfParticipant.Name;
             featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         }
         return true;

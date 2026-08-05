@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Interfaces;
 
-namespace MIN.Helpers.Contracts.Interfaces;
+namespace MIN.Core.Identity.Contracts.Interfaces;
 
 /// <summary>
 /// Сервис по предоставлению данных о текущем пользователе

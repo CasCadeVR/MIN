@@ -1,13 +1,12 @@
 ﻿using MIN.Core.Entities.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Helpers.Contracts.Interfaces;
 
-namespace MIN.Helpers.Contracts.Extensions;
+namespace MIN.Core.Entities.Contracts.Extensions;
 
 /// <summary>
-/// Расширения для <see cref="IIdentityService"/>
+/// Расширения для <see cref="IParticipantData"/>
 /// </summary>
-public static class IdentityServiceExtensions
+public static class ParticipantDataExtensions
 {
     /// <summary>
     /// Преобразовать <see cref="IParticipantData"/> в <see cref="ParticipantInfo"/> 
