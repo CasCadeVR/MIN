@@ -2,7 +2,6 @@
 using System.Text.Json;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.Contracts.Enums;
 using MIN.Sessions.Core.Messaging.Contracts.Models;
@@ -26,7 +25,6 @@ public class SessionProcessBridge : ISessionProcessBridge
     private readonly Dictionary<ProcessContext, ISessionProcessTransport> transports = [];
     private readonly IMessageRouter messageRouter;
     private readonly IIpcSerializer ipcSerializer;
-    private readonly IRoomStore roomStore;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
     private CancellationTokenSource cts = null!;
@@ -37,13 +35,11 @@ public class SessionProcessBridge : ISessionProcessBridge
     /// </summary>
     public SessionProcessBridge(IMessageRouter messageRouter,
         IIpcSerializer ipcSerializer,
-        IRoomStore roomStore,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.messageRouter = messageRouter;
         this.ipcSerializer = ipcSerializer;
-        this.roomStore = roomStore;
         this.identityService = identityService;
         this.logger = logger;
     }

@@ -11,6 +11,7 @@ using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Constants;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Stores.Contracts.Exceptions;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.SubRooms.Contracts.Interfaces;
@@ -19,6 +20,7 @@ using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Core.Services.Services;
 
@@ -265,7 +267,14 @@ internal sealed class HostRoomService
             return;
         }
 
-        var connectionId = context.Connections.GetConnectionIdFromParticipantId(participantId);
-        await transport.DisconnectClientAsync(connectionId, serverConnectionId, reason);
+        try
+        {
+            var connectionId = context.Connections.GetConnectionIdFromParticipantId(participantId);
+            await transport.DisconnectClientAsync(connectionId, serverConnectionId, reason);
+        }
+        catch (ParticipantNotRegistredException ex)
+        {
+            logger.Log($"Не удалось кикнуть участника {ex.Message}", LogLevel.Warning);
+        }
     }
 }

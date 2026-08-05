@@ -153,16 +153,18 @@ public class SessionProcessManager : ISessionProcessManager
 
     async Task ISessionProcessManager.StopForRoomAsync(Guid roomId)
     {
-        var roomPendingProcesses = pendingProcesses.Keys.Where(x => x.RoomId == roomId);
+        var roomPendingProcesses = pendingProcesses.Keys.Where(x => x.RoomId == roomId).ToList();
         foreach (var context in roomPendingProcesses)
         {
             await StopProcessWithTimeOut(context, pendingProcesses[context]);
+            pendingProcesses.Remove(context);
         }
 
-        var roomRunningProcesses = runningProcesses.Keys.Where(x => x.RoomId == roomId);
+        var roomRunningProcesses = runningProcesses.Keys.Where(x => x.RoomId == roomId).ToList();
         foreach (var context in roomRunningProcesses)
         {
             await StopProcessWithTimeOut(context, runningProcesses[context]);
+            runningProcesses.Remove(context);
         }
     }
 
@@ -172,10 +174,12 @@ public class SessionProcessManager : ISessionProcessManager
         {
             await StopProcessWithTimeOut(process.Key, process.Value);
         }
+        pendingProcesses.Clear();
         foreach (var process in runningProcesses)
         {
             await StopProcessWithTimeOut(process.Key, process.Value);
         }
+        runningProcesses.Clear();
     }
 
     private async Task StopProcessWithTimeOut(ProcessContext context, Process process, bool clearAnnounce = true)

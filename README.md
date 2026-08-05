@@ -46,8 +46,20 @@
 | **Multiplayer Sessions** | Download and run game sessions from other resources |
 | **Desktop UI** | Intuitive interface using Avalonia |
 
-> [!IMPORTANT]
-> MIN works **without a server** in your local network. No internet connection required!
+---
+
+## Interface
+
+MIN provides a modern interface for:
+
+| Function | Description |
+|----------|-------------|
+| **Rooms** | Creating and managing chat rooms |
+| **Chat** | Real-time communication |
+| **Files** | Transfer with progress display |
+| **Participants** | Online/offline statuses |
+
+![Screen](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Assets/Images/screen.png)
 
 ---
 
@@ -112,6 +124,7 @@ flowchart TB
 | `MIN.Core.Transport` | TCP / UDP / Named Pipes transport |
 | `MIN.Core.Protocol` | MIN connection protocol (handshake) |
 | `MIN.Core.SubRooms` | Sub-room management for sessions |
+| `MIN.Core.Identity` | Local user identity |
 | `MIN.Core.Services` | Room hosting, connection, routing services |
 | `MIN.Core.Headers` | Message headers |
 | `MIN.Core.Serialization` | JSON serialization |
@@ -136,7 +149,7 @@ flowchart TB
 | Module | Purpose |
 |--------|---------|
 | `MIN.Common` | Common interfaces, MVC module system |
-| `MIN.Helpers` | Logging, settings, identity, versioning, updates |
+| `MIN.Helpers` | Logging, settings, versioning, updates |
 | `MIN.DI` | Root dependency injection composition |
 
 ---
@@ -149,8 +162,8 @@ flowchart TB
 | Platform | .NET 8.0 | Cross-platform framework |
 | UI | Avalonia | Cross-platform desktop interface |
 | DI | Microsoft.Extensions.DependencyInjection | Dependency injection |
-| Security | System.Security.Cryptography.ProtectedData | Windows DPAPI |
-| Transport | TCP / UDP / Named Pipes | Network communication |
+| Security | Microsoft.AspNetCore.DataProtection | Cross-Platform file protection |
+| Transport | TCP / UDP | Network communication |
 | UPnP | Open.Nat | Port forwarding for external connections |
 | Modularity | MIN.Common.Mvc | Custom module/plugin system |
 | Style | .editorconfig | Unified code style |
@@ -267,7 +280,7 @@ flowchart LR
 |------------|---------|
 | **Asymmetric (RSA)** | Key exchange between participants |
 | **Symmetric (AES)** | Message content encryption |
-| **Windows DPAPI** | Secure key storage |
+| **DataProtection** | Secure key storage |
 
 ---
 
@@ -406,22 +419,6 @@ To use direct connection:
 1. Click the **"Direct Connect"** button in the Discovery panel
 2. Enter the IP address and port in the format `IP:Port` (e.g., `192.168.1.100:56784`)
 3. Click **Connect** — the client will attempt the MIN protocol handshake automatically
-
----
-
-## Interface
-
-MIN provides a modern interface for:
-
-| Function | Description |
-|----------|-------------|
-| **Rooms** | Creating and managing chat rooms |
-| **Chat** | Real-time communication |
-| **Files** | Transfer with progress display |
-| **Participants** | Online/offline statuses |
-
-> [!NOTE]
-> Screenshots will be added after the first release.
 
 ---
 

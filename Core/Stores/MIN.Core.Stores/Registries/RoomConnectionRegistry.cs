@@ -12,6 +12,7 @@ public class RoomConnectionRegistry : IRoomConnectionRegistry
     private readonly ConcurrentDictionary<Guid, Guid> roomsByServerConnection = new(); // ServerConnectionId -> RoomId
     private readonly ConcurrentDictionary<Guid, Guid> connectedRooms = new();          // RoomId -> ConnectionId
     private readonly ConcurrentDictionary<Guid, Guid> roomsByClientConnection = new(); // ConnectionId -> RoomId
+
     Role IRoomConnectionRegistry.GetRole(Guid roomId)
         => hostedRooms.ContainsKey(roomId) ? Role.Host
             : connectedRooms.ContainsKey(roomId) ? Role.Client

@@ -92,7 +92,6 @@ public partial class LoadingViewModel : ModalViewModelBase
         Dispatcher.UIThread.Post(() =>
         {
             CloseByCode();
-            InAppNotifier.Error(eventMessage.ErrorMessage);
         });
     }
 

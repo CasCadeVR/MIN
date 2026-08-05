@@ -15,7 +15,7 @@ namespace MIN.Desktop.Infrastructure.Extensions;
 /// </summary>
 public static class MultiRoutingWindowExtensions
 {
-    private const int LoadingAssetMinWaitMs = 0;
+    private const int LoadingAssetMinWaitMs = 10;
     private const int LoadingAssetMaximumWaitMs = 500;
 
     private static object? rememberedRightSideBar;

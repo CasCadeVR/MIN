@@ -98,12 +98,14 @@ internal sealed class SessionHostHandler : IMessageHandler
 
         if (session == null)
         {
+            subRoomManager.TryStopSubRoom(context.RoomContext.RoomId, subRoomId.Value, message.SenderId);
             await networkErrorHandler.SendErrorAsync("У хоста не установлена программа сервера этой сессии", message.SenderId, context.RoomContext.RoomId);
             return HandlerResult.Success();
         }
 
         if (session.Version != sessionHostRequestMessage.SessionVersion)
         {
+            subRoomManager.TryStopSubRoom(context.RoomContext.RoomId, subRoomId.Value, message.SenderId);
             var clientOnOlderVersion = session.Version > sessionHostRequestMessage.SessionVersion ? "Вы" : "Хост";
             await networkErrorHandler.SendErrorAsync($"{clientOnOlderVersion} на устаревшей версии сессии: " +
                 $"\nВаша версия сессии - {sessionHostRequestMessage.SessionVersion}" +
@@ -118,6 +120,7 @@ internal sealed class SessionHostHandler : IMessageHandler
 
         if (hostResult == false)
         {
+            subRoomManager.TryStopSubRoom(context.RoomContext.RoomId, subRoomId.Value, message.SenderId);
             await networkErrorHandler.SendErrorAsync("У хоста повреждёна или утеряна программа сервера", message.SenderId, context.RoomContext.RoomId);
             return HandlerResult.Success();
         }

@@ -66,38 +66,46 @@ public class NetworkErrorHandler : INetworkErrorHandler
         await messageRouter.RouteAsync(disconnectMessage, roomId, selfId,
             CancellationToken.None, broadcastExcludeIds: [identityService.SelfParticipant.Id]);
 
-        var timer = new Timer(
-            OnRejectAckTimeout,
+        var timer = new Timer(OnRejectAckTimeout,
             new ParticipantContext(roomId, recipientId),
-            DateTime.UtcNow.AddMilliseconds(timeoutMs) - DateTime.UtcNow,
-            Timeout.InfiniteTimeSpan);
+            Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
-        rejectAckTimers.TryAdd(recipientId, timer);
+        if (rejectAckTimers.TryRemove(recipientId, out var previousTimer))
+        {
+            previousTimer.Dispose();
+        }
+
+        rejectAckTimers[recipientId] = timer;
+
+        timer.Change(TimeSpan.FromMilliseconds(timeoutMs), Timeout.InfiniteTimeSpan);
     }
 
     private async Task OnDisconnectAckReceived(DisconnectAckReceived e, CancellationToken cancellationToken)
     {
-        ResetRejectAckTimer(e.ParticipantId);
-        await DisconnectClient(e.ParticipantId, e.RoomId);
+        if (ResetRejectAckTimer(e.ParticipantId))
+        {
+            await DisconnectClient(e.ParticipantId, e.RoomId);
+        }
     }
 
     private async void OnRejectAckTimeout(object? state)
     {
-        if (state is ParticipantContext connection)
+        if (state is ParticipantContext connection && ResetRejectAckTimer(connection.ParticipantId))
         {
             await DisconnectClient(connection.ParticipantId, connection.RoomId);
-            ResetRejectAckTimer(connection.ParticipantId);
         }
     }
 
     private async Task DisconnectClient(Guid participantId, Guid roomId)
         => await lifecycleManager.KickClientAsync(roomId, participantId, DisconnectReason.Kick);
 
-    private void ResetRejectAckTimer(Guid participantId)
+    private bool ResetRejectAckTimer(Guid participantId)
     {
-        if (rejectAckTimers.TryGetValue(participantId, out var existingTimer))
+        if (rejectAckTimers.TryRemove(participantId, out var existingTimer))
         {
             existingTimer.Dispose();
+            return true;
         }
+        return false;
     }
 }

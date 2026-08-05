@@ -53,7 +53,7 @@ internal sealed class DisconnectHandler : IMessageHandler
                 }, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
 
                 var roomName = roomStore.GetRoom(context.RoomContext.RoomId).Name;
-                var uiToShow = "Хост кикнул тебя" + (roomName != null ? $" из комнаты {roomName}" : string.Empty) + (reason != string.Empty ? $": {reason}" : string.Empty);
+                var uiToShow = "Хост разорвал соединение" + (roomName != null ? $" для комнаты {roomName}" : string.Empty) + (reason != string.Empty ? $": {reason}" : string.Empty);
                 return HandlerResult.Failure(uiToShow, stopPropagation: true, critical: true);
 
             case DisconnectAckMessage disconnectAckMessage:
