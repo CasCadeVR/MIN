@@ -1,4 +1,4 @@
-﻿namespace MIN.Core.Services.Contracts.Exceptions;
+﻿namespace MIN.Core.Stores.Contracts.Exceptions;
 
 /// <summary>
 /// Ошибка "Соединение не зарегистрировано"

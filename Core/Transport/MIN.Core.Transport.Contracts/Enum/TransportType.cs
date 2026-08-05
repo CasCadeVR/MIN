@@ -6,11 +6,6 @@
 public enum TransportType
 {
     /// <summary>
-    /// Именованные каналы
-    /// </summary>
-    NamedPipe,
-
-    /// <summary>
     /// TCP
     /// </summary>
     Tcp,

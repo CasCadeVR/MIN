@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Messaging.Contracts.Interfaces;
 
-namespace MIN.Core.Serialization.Contracts;
+namespace MIN.Core.Serialization.Contracts.Interfaces;
 
 /// <summary>
 /// Сериализует и десериализует сообщения

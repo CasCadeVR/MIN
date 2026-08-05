@@ -57,6 +57,8 @@ public class CoreModule : Module
 
         services.RegisterAsImplementedInterfaces<RoomFactory>(ServiceLifetime.Singleton);
 
+        services.RegisterAsImplementedInterfaces<RoomStore>(ServiceLifetime.Singleton);
+
         // Room-scoped
         services.RegisterAsImplementedInterfaces<NetworkErrorHandler>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<RoomConnectionRegistry>(ServiceLifetime.Singleton);
@@ -64,8 +66,6 @@ public class CoreModule : Module
         services.RegisterAsImplementedInterfaces<ParticipantConnectionRegistry>(ServiceLifetime.Transient);
         services.RegisterAsImplementedInterfaces<MessageStore>(ServiceLifetime.Transient);
         services.RegisterAsImplementedInterfaces<ParticipantStore>(ServiceLifetime.Transient);
-
-        services.RegisterAsImplementedInterfaces<RoomStore>(ServiceLifetime.Singleton);
 
         services.RegisterAsImplementedInterfaces<SubRoomManager>(ServiceLifetime.Singleton);
 

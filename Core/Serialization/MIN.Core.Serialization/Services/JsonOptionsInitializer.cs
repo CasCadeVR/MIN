@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using MIN.Common.Core.Contracts.Interfaces;
-using MIN.Core.Serialization.Contracts;
+using MIN.Core.Serialization.Contracts.Interfaces;
 using MIN.Core.Serialization.Json.Converters;
 
 namespace MIN.Core.Serialization.Json.Services;

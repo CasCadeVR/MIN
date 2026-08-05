@@ -1,7 +1,7 @@
 using System.Text.Json;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Serialization.Contracts;
+using MIN.Core.Serialization.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Interfaces;

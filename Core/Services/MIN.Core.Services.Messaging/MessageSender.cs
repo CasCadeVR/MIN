@@ -2,7 +2,7 @@ using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Headers.Contracts.Enums;
 using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Serialization.Contracts;
+using MIN.Core.Serialization.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;

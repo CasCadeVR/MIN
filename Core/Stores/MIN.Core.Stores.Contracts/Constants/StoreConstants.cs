@@ -1,7 +1,7 @@
 ﻿namespace MIN.Core.Stores.Contracts.Constants;
 
 /// <summary>
-/// Конфигурация для Headers
+/// Конфигурация для Store
 /// </summary>
 public class StoreConstants
 {

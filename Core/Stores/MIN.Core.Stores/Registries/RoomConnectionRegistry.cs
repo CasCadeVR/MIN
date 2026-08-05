@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Services.Contracts.Exceptions;
+using MIN.Core.Stores.Contracts.Exceptions;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 
 namespace MIN.Core.Stores.Registries;
