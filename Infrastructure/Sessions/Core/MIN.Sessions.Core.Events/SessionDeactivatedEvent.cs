@@ -1,15 +1,14 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.Sessions.Core.Events;
 
 /// <summary>
 /// События деактивации сервера сессии
 /// </summary>
-public sealed class SessionDeactivatedEvent : BaseEvent
+public sealed record SessionDeactivatedEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

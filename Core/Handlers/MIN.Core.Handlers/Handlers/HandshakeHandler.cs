@@ -1,12 +1,13 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
 using MIN.Core.Messaging.Stateless.RoomRelated.Join;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Helpers.Contracts.Extensions;
+using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
@@ -19,9 +20,6 @@ internal sealed class HandshakeHandler : IMessageHandler
     private readonly ILoggerProvider logger;
     private readonly IVersionProvider versionProvider;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="HandshakeHandler"/>
-    /// </summary>
     public HandshakeHandler(IMessageEncryptor encryptor,
         INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,

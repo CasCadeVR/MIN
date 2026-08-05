@@ -53,11 +53,17 @@ public static class MultiRoutingWindowExtensions
             screen.NavigationStack[routableViewModel.LayoutType].RemoveAll(item => item.GetType() == routableViewModel.GetType());
             screen.NavigationStack[routableViewModel.LayoutType].Add(leftPriorViewModel);
         }
-        else if (routableViewModel.LayoutType == ViewLayoutType.Central
-            && screen.CentralViewModel is IRoutableViewModel centralPriorViewModel)
+        else if (routableViewModel.LayoutType == ViewLayoutType.Central)
         {
-            screen.NavigationStack[routableViewModel.LayoutType].RemoveAll(item => item.GetType() == routableViewModel.GetType());
-            screen.NavigationStack[routableViewModel.LayoutType].Add(centralPriorViewModel);
+            if (screen.CentralViewModel is IRoutableViewModel centralPriorViewModel)
+            {
+                screen.NavigationStack[routableViewModel.LayoutType].RemoveAll(item => item.GetType() == routableViewModel.GetType());
+                screen.NavigationStack[routableViewModel.LayoutType].Add(centralPriorViewModel);
+            }
+            else
+            {
+                centralPriorViewModel = null!;
+            }
 
             if (screen.RightSideBarViewModel is IRoutableViewModel rightPriorViewModel
                 && rightPriorViewModel.RelatedToCentral)
@@ -81,7 +87,6 @@ public static class MultiRoutingWindowExtensions
         else
         {
             leftPriorViewModel = null!;
-            centralPriorViewModel = null!;
             rightPriorViewModel = null!;
         }
 

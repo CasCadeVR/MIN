@@ -13,6 +13,11 @@ public interface IMessageSender
     Task SendAsync(IMessage message, Guid roomId, Guid recipientConnectionId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Отправляет потоковое сообщение через указанное соединение
+    /// </summary>
+    Task SendStreamAsync(Stream messageStream, Guid? streamId, Guid roomId, Guid recipientConnectionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Отправить сообщение всем участникам комнаты
     /// </summary>
     Task BroadcastAsync(IMessage message, Guid roomId, IEnumerable<Guid>? excludeConnectionIds, CancellationToken cancellationToken = default);

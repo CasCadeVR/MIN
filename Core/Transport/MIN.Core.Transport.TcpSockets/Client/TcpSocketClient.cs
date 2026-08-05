@@ -1,5 +1,7 @@
 ﻿using System.Net.Sockets;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.TcpSockets.Models;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Transport.TcpSockets.Client;
 
@@ -8,6 +10,8 @@ namespace MIN.Core.Transport.TcpSockets.Client;
 /// </summary>
 internal sealed class TcpSocketClient : IAsyncDisposable
 {
+    private readonly ILoggerProvider logger;
+
     private TcpClient? client;
     private TcpSocketConnection? connection;
     private bool disposed;
@@ -20,7 +24,7 @@ internal sealed class TcpSocketClient : IAsyncDisposable
     /// <summary>
     /// Событие отключения
     /// </summary>
-    public event Action<string?>? OnDisconnected;
+    public event Action<DisconnectReason>? OnDisconnected;
 
     /// <summary>
     /// Идентификатор соеднинения
@@ -33,6 +37,14 @@ internal sealed class TcpSocketClient : IAsyncDisposable
     public bool IsConnected => connection?.IsConnected == true;
 
     /// <summary>
+    /// Инициализирует новый экземпляр <see cref="TcpSocketClient"/>
+    /// </summary>
+    public TcpSocketClient(ILoggerProvider logger)
+    {
+        this.logger = logger;
+    }
+
+    /// <summary>
     /// Подключиться к серверу
     /// </summary>
     public async Task<Guid> ConnectAsync(string ipAddress, int port, CancellationToken cancellationToken)
@@ -41,7 +53,7 @@ internal sealed class TcpSocketClient : IAsyncDisposable
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         await client.ConnectAsync(ipAddress, port, cts.Token);
 
-        connection = new TcpSocketConnection(client);
+        connection = new TcpSocketConnection(client, logger);
         connection.RawMessageReceived += (_, msg) => OnMessageReceived?.Invoke(msg);
         connection.Disconnected += (_, ex) => OnDisconnected?.Invoke(ex);
         connection.StartReading();
@@ -58,7 +70,7 @@ internal sealed class TcpSocketClient : IAsyncDisposable
         await connection.SendAsync(data, cancellationToken);
     }
 
-    public async ValueTask DisposeAsync()
+    public async ValueTask StopAsync(DisconnectReason reason)
     {
         if (disposed)
         {
@@ -69,9 +81,14 @@ internal sealed class TcpSocketClient : IAsyncDisposable
 
         if (connection != null)
         {
-            await connection.DisposeAsync();
+            await connection.StopAsync(reason);
         }
 
         client?.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await StopAsync(DisconnectReason.None);
     }
 }

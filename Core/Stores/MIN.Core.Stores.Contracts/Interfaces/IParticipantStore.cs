@@ -8,6 +8,15 @@ namespace MIN.Core.Stores.Contracts.Interfaces;
 public interface IParticipantStore
 {
     /// <summary>
+    /// Привязать хранилище к списку участников комнаты
+    /// </summary>
+    /// <remarks>
+    /// Все последующие изменения будут производится напрямую в переданном списке,
+    /// чтобы он всегда оставался актуальным
+    /// </remarks>
+    void Bind(List<Participant> participants);
+
+    /// <summary>
     /// Добавить участника в комнату
     /// </summary>
     void AddParticipant(Participant participant);

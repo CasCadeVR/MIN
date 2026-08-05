@@ -1,5 +1,5 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.Components.Controls.ContextMenuStrips;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Schemes;

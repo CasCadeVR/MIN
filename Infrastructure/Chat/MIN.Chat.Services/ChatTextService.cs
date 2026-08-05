@@ -1,8 +1,8 @@
 ﻿using MIN.Chat.Messaging;
 using MIN.Chat.Services.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Extensions;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Helpers.Contracts.Extensions;
-using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Services;
 

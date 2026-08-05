@@ -22,14 +22,14 @@ public sealed class MessageStream : IDisposable
     public Guid Id { get; }
 
     /// <summary>
+    /// Идентификатор комнаты
+    /// </summary>
+    public Guid RoomId { get; }
+
+    /// <summary>
     /// Идентификатор соединения отправителя
     /// </summary>
     public Guid ConnectionId { get; }
-
-    /// <summary>
-    /// Идентификатор соединения сервера
-    /// </summary>
-    public Guid? ServerConnectionId { get; }
 
     /// <summary>
     /// Нужно ли отправлять ACK
@@ -69,11 +69,11 @@ public sealed class MessageStream : IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MessageStream"/>
     /// </summary>
-    public MessageStream(Guid streamId, Guid connectionId, Guid? serverConnectionId, int expectedChunks, bool requiresAcks, bool isRawPayload = false)
+    public MessageStream(Guid streamId, Guid roomId, Guid connectionId, int expectedChunks, bool requiresAcks, bool isRawPayload = false)
     {
         Id = streamId;
+        RoomId = roomId;
         ConnectionId = connectionId;
-        ServerConnectionId = serverConnectionId;
         ExpectedChunks = expectedChunks;
         RequiresAcks = requiresAcks;
         IsRawPayload = isRawPayload;

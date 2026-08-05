@@ -301,6 +301,7 @@
 
                     <Button Classes="icon"
                             ToolTip.Tip="Пролистать вниз"
+                            IsVisible="{Binding !IsAtBottom}"
                             Opacity="{Binding !IsAtBottom,
                                 Converter={converters:BoolToOpacityConverter}}"
                             Background="{DynamicResource SurfaceCard}"

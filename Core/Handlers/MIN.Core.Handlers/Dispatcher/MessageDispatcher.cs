@@ -1,11 +1,12 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Core.SubRooms.Contracts.Interfaces.Messages;
@@ -19,7 +20,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
 {
     private readonly IEnumerable<IMessageHandler> handlers;
     private readonly IMessageSender messageSender;
-    private readonly IRoomHoster roomHoster;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IEventBus eventBus;
     private readonly ISubRoomManager subRoomManager;
     private readonly IIdentityService identityService;
@@ -30,7 +31,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
     /// </summary>
     public MessageDispatcher(IEnumerable<IMessageHandler> handlers,
         IMessageSender messageSender,
-        IRoomHoster roomHoster,
+        IRoomConnectionRegistry registry,
         IEventBus eventBus,
         ISubRoomManager subRoomManager,
         IIdentityService identityService,
@@ -38,7 +39,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
     {
         this.handlers = handlers;
         this.messageSender = messageSender;
-        this.roomHoster = roomHoster;
+        this.registry = registry;
         this.eventBus = eventBus;
         this.subRoomManager = subRoomManager;
         this.identityService = identityService;
@@ -100,7 +101,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     break;
                 }
 
-                if (roomHoster.IsHosting(context.RoomContext.RoomId))
+                if (registry.IsHosting(context.RoomContext.RoomId))
                 {
                     await HandleServerMessageRouting(message, context, broadcastExcludeIds);
                 }

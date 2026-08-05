@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MIN.Chat.Events;
-using MIN.Core.Events.Contracts;
+using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Contracts.Models.Statuses;
@@ -22,84 +23,61 @@ namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 /// </summary>
 public partial class ChatViewModel : RoutableViewModelBase
 {
-    private HashSet<IDisposable> eventTokens = null!;
+    private IEventScope roomScope = null!;
+    private IDisposable errorToken = null!;
 
     private void SubscribeToEvents(IEventBus eventBus)
     {
-        eventTokens =
-        [
-            eventBus.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived),
-            eventBus.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived),
-            eventBus.Subscribe<FileMetaDataMessageReceivedEvent>(OnFileMetaDataMessageReceived),
-            eventBus.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted),
-            eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted),
-            eventBus.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed),
-            eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated),
-            eventBus.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated),
-            eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
-            eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
-            eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured),
-            eventBus.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged),
-        ];
+        roomScope = eventBus.CreateScope(roomId);
+        roomScope.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived);
+        roomScope.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived);
+        roomScope.Subscribe<FileMetaDataMessageReceivedEvent>(OnFileMetaDataMessageReceived);
+        roomScope.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted);
+        roomScope.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted);
+        roomScope.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed);
+        roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated);
+        roomScope.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated);
+        roomScope.Subscribe<PingMeasuredEvent>(OnPingMeasured);
+        roomScope.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
+        roomScope.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
+        roomScope.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
+
+        errorToken = eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
+    }
+
+    private async Task PublishNewDescribable(IDescribable describable, CancellationToken cancellationToken)
+        => await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
+        {
+            RoomId = roomId,
+            DescribableMessage = describable
+        }, cancellationToken);
+
+    private async Task AddToChatFlowAndNotify<T>(T message, CancellationToken cancellationToken) where T : class, IMessage, IDescribable
+    {
+        await AddMessageToChatFlow(message);
+        await PublishNewDescribable(message, cancellationToken);
+        NotifyIfNeeded(message);
     }
 
     private async Task OnChatTextMessageReceived(ChatTextMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
-        await AddMessageToChatFlow(eventMessage.Message);
-        await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-        {
-            RoomId = roomId,
-            DescribableMessage = eventMessage.Message
-        }, cancellationToken);
-        NotifyIfNeeded(eventMessage.Message);
+        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
     }
 
     private async Task OnSessionReadyMessageReceived(SessionReadyMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
-        await AddMessageToChatFlow(eventMessage.Message);
-        await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-        {
-            RoomId = roomId,
-            DescribableMessage = eventMessage.Message
-        }, cancellationToken);
-        NotifyIfNeeded(eventMessage.Message);
+        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
     }
 
     #region File related
 
     private async Task OnFileMetaDataMessageReceived(FileMetaDataMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
-        await AddMessageToChatFlow(eventMessage.Message);
-        await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-        {
-            RoomId = roomId,
-            DescribableMessage = eventMessage.Message
-        }, cancellationToken);
-        NotifyIfNeeded(eventMessage.Message);
+        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
     }
 
     private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
         if (eventMessage.Direction == FileTransferDirection.Upload)
         {
             var sanitizedSize = featureCollection.FileTransfer.FileHelperService.FormatFileSize(eventMessage.FileSize);
@@ -109,21 +87,11 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
         RemoveStatus(eventMessage.TransferId);
     }
 
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
         RemoveStatus(eventMessage.TransferId);
     }
 
@@ -133,45 +101,19 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
-        room.AddParticipant(eventMessage.Message.Participant);
-
-        await AddMessageToChatFlow(eventMessage.Message);
-        await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-        {
-            RoomId = roomId,
-            DescribableMessage = eventMessage.Message
-        }, cancellationToken);
-        NotifyIfNeeded(eventMessage.Message);
-
+        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
         chatSideBarViewModel.UpdateParticipantFlow(room.CurrentParticipants);
     }
 
     private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
         var leavingParticipantId = eventMessage.Message.Participant.Id;
-        room.RemoveParticipantById(leavingParticipantId);
         if (chatSideBarViewModel.PrivateChatParticipantId == leavingParticipantId)
         {
             chatSideBarViewModel.PrivateChatParticipantId = null;
         }
 
-        await AddMessageToChatFlow(eventMessage.Message);
-        await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
-        {
-            RoomId = roomId,
-            DescribableMessage = eventMessage.Message,
-        }, cancellationToken);
-        NotifyIfNeeded(eventMessage.Message);
+        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
 
         chatSideBarViewModel.UpdateParticipantFlow(room.CurrentParticipants);
     }
@@ -182,11 +124,6 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task OnRoomInfoUpdated(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
-        if (eventMessage.RoomInfo.Id != roomId)
-        {
-            return;
-        }
-
         if (RoomName != eventMessage.RoomInfo.Name)
         {
             await SendSystemMessage(new SystemTextMessage
@@ -201,11 +138,6 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task OnChatHistoryUpdated(ChatHistoryUpdatedEvent eventMessage, CancellationToken ct)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
         var e = eventMessage.Message;
 
         loadedPage = e.Page;
@@ -219,9 +151,14 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
+    private async Task OnPingMeasured(PingMeasuredEvent eventMessage, CancellationToken cancellationToken)
+    {
+        chatSideBarViewModel.UpdatePing(eventMessage.PingMs);
+    }
+
     private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId == roomId && eventMessage.NeedToDisconnect)
+        if (eventMessage.NeedToDisconnect)
         {
             ClearParentFormEvents();
 

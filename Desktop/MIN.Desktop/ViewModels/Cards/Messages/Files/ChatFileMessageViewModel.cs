@@ -6,7 +6,7 @@ using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models.Enums;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.FileTransfer.DI.FeatureCollection;
@@ -26,14 +26,14 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
     /// Инициализирует новый экземпляр <see cref="ChatFileMessageViewModel"/>
     /// </summary>
     public ChatFileMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
-        IEventBus eventBus,
+        IEventScope roomScope,
         FileMetadataMessage fileMetadataMessage,
         Thickness timePadding,
         ParticipantInfo localParticipant,
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(fileTransferFeatureCollection, eventBus, fileMetadataMessage, timePadding,
+        : base(fileTransferFeatureCollection, roomScope, fileMetadataMessage, timePadding,
             localParticipant, isHostMessage, removeHeaders, clipboard)
     { }
 

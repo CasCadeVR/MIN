@@ -1,4 +1,4 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Models;
 using MIN.Discovery.Services.Contracts.Models;
 
 namespace MIN.Discovery.Events;
@@ -6,7 +6,7 @@ namespace MIN.Discovery.Events;
 /// <summary>
 /// Событие, возникающее при нахождении комнаты в сети
 /// </summary>
-public class RoomDiscoveredEvent : BaseEvent
+public sealed record RoomDiscoveredEvent : BaseEvent
 {
     /// <summary>
     /// Информация о найденных комнатах

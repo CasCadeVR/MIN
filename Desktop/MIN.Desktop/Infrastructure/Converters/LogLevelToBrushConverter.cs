@@ -8,7 +8,7 @@ using MIN.Helpers.Contracts.Models.Enums;
 namespace MIN.Desktop.Infrastructure.Converters;
 
 /// <summary>
-/// Конвертор для выделения карточки
+/// Конвертор для выделения карточки логов
 /// </summary>
 public class LogLevelToBrushConverter : Converter<LogLevelToBrushConverter>
 {

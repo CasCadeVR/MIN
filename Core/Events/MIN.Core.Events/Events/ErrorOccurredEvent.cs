@@ -1,11 +1,11 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.Core.Events.Events;
 
 /// <summary>
 /// Событие, возникающее при ошибке в работе комнаты или соединения
 /// </summary>
-public sealed class ErrorOccurredEvent : BaseEvent
+public sealed record ErrorOccurredEvent : BaseEvent
 {
     /// <summary>
     /// Идентификатор комнаты (если применимо)

@@ -1,15 +1,17 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless.RoomRelated.History;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
+using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Models;
 using MIN.Discovery.Services.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Services;
 
@@ -18,7 +20,8 @@ public sealed class ChatRoomService : IChatRoomService
 {
     private readonly IMessageRouter messageRouter;
     private readonly IRoomFactory roomFactory;
-    private readonly IRoomHoster roomHoster;
+    private readonly IRoomConnectionRegistry registry;
+    private readonly IRoomLifecycleManager lifecycleManager;
     private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IDiscoveryService discoveryService;
     private readonly IIdentityService identityService;
@@ -28,14 +31,16 @@ public sealed class ChatRoomService : IChatRoomService
     /// </summary>
     public ChatRoomService(IMessageRouter messageRouter,
         IRoomFactory roomFactory,
-        IRoomHoster roomHoster,
+        IRoomConnectionRegistry registry,
+        IRoomLifecycleManager lifecycleManager,
         INetworkErrorHandler networkErrorHandler,
         IDiscoveryService discoveryService,
         IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
         this.roomFactory = roomFactory;
-        this.roomHoster = roomHoster;
+        this.registry = registry;
+        this.lifecycleManager = lifecycleManager;
         this.networkErrorHandler = networkErrorHandler;
         this.discoveryService = discoveryService;
         this.identityService = identityService;
@@ -50,7 +55,7 @@ public sealed class ChatRoomService : IChatRoomService
             throw new ArgumentNullException("Не нашлась информация о комнате");
         }
 
-        if (!roomHoster.IsHosting(roomId))
+        if (!registry.IsHosting(roomId))
         {
             throw new InvalidOperationException("Ты не являешся хостом для этой комнаты");
         }
@@ -73,7 +78,7 @@ public sealed class ChatRoomService : IChatRoomService
     {
         var roomId = updatedRoomInfo.Id;
 
-        if (!roomHoster.IsHosting(roomId))
+        if (!registry.IsHosting(roomId))
         {
             throw new InvalidOperationException("Ты не являешся хостом для этой комнаты");
         }
@@ -105,6 +110,6 @@ public sealed class ChatRoomService : IChatRoomService
     async Task IChatRoomService.UpdateNetworkOutOfSettings(RoomInfo room, IEnumerable<IEndpoint> endpoints, NetworkOptions newNetworkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
     {
         await ManageDiscoveryOutOfSettings(room, endpoints, newNetworkOptions, oldNetworkOptions, cancellationToken);
-        await roomHoster.UpdateNetworkOptions(room.Id, newNetworkOptions, cancellationToken);
+        await lifecycleManager.UpdateNetworkOptions(room.Id, newNetworkOptions, cancellationToken);
     }
 }

@@ -1,41 +1,42 @@
-﻿using MIN.Core.Events.Contracts;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Identity.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 
 namespace MIN.Core.DI.FeatureCollection;
 
 /// <inheritdoc cref="ICoreFeatureCollection"/>
 public class CoreFeatureCollection : ICoreFeatureCollection
 {
-    /// <inheritdoc cref="IRoomConnector"/>
-    public IRoomConnector RoomConnector { get; }
-
-    /// <inheritdoc cref="IRoomHoster"/>
-    public IRoomHoster RoomHoster { get; }
+    /// <inheritdoc cref="IRoomLifecycleManager"/>
+    public IRoomLifecycleManager Lifecycle { get; }
 
     /// <inheritdoc cref="IRoomFactory"/>
     public IRoomFactory RoomFactory { get; }
 
+    /// <inheritdoc cref="IRoomConnectionRegistry"/>
+    public IRoomConnectionRegistry Registry { get; }
+
     /// <inheritdoc cref="IEventBus"/>
     public IEventBus EventBus { get; }
 
-    /// <inheritdoc cref="IMessageRouter"/>
-    public IMessageRouter MessageRouter { get; }
+    /// <inheritdoc cref="IIdentityService"/>
+    public IIdentityService IdentityService { get; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="CoreFeatureCollection"/>
     /// </summary>
-    public CoreFeatureCollection(IRoomConnector roomConnector,
-        IRoomHoster roomHoster,
+    public CoreFeatureCollection(IRoomLifecycleManager lifecycle,
         IRoomFactory roomFactory,
+        IRoomConnectionRegistry registry,
         IEventBus eventBus,
-        IMessageRouter messageRouter)
+        IIdentityService identityService)
     {
-        RoomConnector = roomConnector;
-        RoomHoster = roomHoster;
+        Lifecycle = lifecycle;
         RoomFactory = roomFactory;
+        Registry = registry;
         EventBus = eventBus;
-        MessageRouter = messageRouter;
+        IdentityService = identityService;
     }
 }

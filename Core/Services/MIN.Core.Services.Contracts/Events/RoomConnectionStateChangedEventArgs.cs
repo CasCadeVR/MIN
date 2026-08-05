@@ -16,7 +16,7 @@ public sealed class RoomConnectionStateChangedEventArgs : ConnectionStateChanged
     /// Инициализирует новый экземпляр <see cref="RoomConnectionStateChangedEventArgs"/>
     /// </summary>
     public RoomConnectionStateChangedEventArgs(Guid roomId, ConnectionStateChangedEventArgs args)
-        : base(args.ConnectionId, args.IsConnected, args.LeavingMessage)
+        : base(args.ConnectionId, args.IsConnected, args.DisconnectReason)
     {
         RoomId = roomId;
     }

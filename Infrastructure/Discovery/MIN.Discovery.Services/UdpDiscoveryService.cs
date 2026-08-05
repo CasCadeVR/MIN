@@ -1,8 +1,7 @@
 using System.Text.Json;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
-using MIN.Core.Serialization.Contracts;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Serialization.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Interfaces;
@@ -23,7 +22,6 @@ namespace MIN.Discovery.Services;
 /// </summary>
 public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
 {
-    private readonly IRoomHoster roomHoster;
     private readonly IDiscoveryTransport discoveryTransport;
     private readonly IMessageSerializer serializer;
     private readonly IRoomStore roomStore;
@@ -39,15 +37,12 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="UdpDiscoveryService"/>
     /// </summary>
-    public UdpDiscoveryService(
-        IRoomHoster roomHoster,
-        IDiscoveryTransport discoveryTransport,
+    public UdpDiscoveryService(IDiscoveryTransport discoveryTransport,
         IMessageSerializer serializer,
         IRoomStore roomStore,
         IEventBus eventBus,
         ILoggerProvider logger)
     {
-        this.roomHoster = roomHoster;
         this.discoveryTransport = discoveryTransport;
         this.serializer = serializer;
         this.roomStore = roomStore;
@@ -172,8 +167,6 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
                     logger.Log("Получил запрос на обнаружение, но комната не была установлена", LogLevel.Warning);
                     return;
                 }
-
-                var connectionId = roomHoster.GetConnectionIdByRoomId(roomId);
 
                 discoveryResponse.RoomDiscoveryInfos.Add(new RoomDiscoveryInfo()
                 {

@@ -11,8 +11,12 @@
     <ProjectReference Include="..\..\Cryptography\MIN.Core.Cryptography\MIN.Core.Cryptography.csproj" />
     <ProjectReference Include="..\..\Handlers\MIN.Core.Handlers\MIN.Core.Handlers.csproj" />
     <ProjectReference Include="..\..\Headers\MIN.Core.Headers\MIN.Core.Headers.csproj" />
+    <ProjectReference Include="..\..\Identity\MIN.Core.Identity\MIN.Core.Identity.csproj" />
     <ProjectReference Include="..\..\Protocol\MIN.Core.Protocol\MIN.Core.Protocol.csproj" />
     <ProjectReference Include="..\..\Serialization\MIN.Core.Serialization\MIN.Core.Serialization.Json.csproj" />
+    <ProjectReference Include="..\..\Services\MIN.Core.Services.Messaging\MIN.Core.Services.Messaging.csproj" />
+    <ProjectReference Include="..\..\Services\MIN.Core.Services.Moderation\MIN.Core.Services.Moderation.csproj" />
+    <ProjectReference Include="..\..\Services\MIN.Core.Services.Pipeline\MIN.Core.Services.Pipeline.csproj" />
     <ProjectReference Include="..\..\Services\MIN.Core.Services\MIN.Core.Services.csproj" />
     <ProjectReference Include="..\..\Stores\MIN.Core.Stores\MIN.Core.Stores.csproj" />
     <ProjectReference Include="..\..\Streaming\MIN.Core.Streaming\MIN.Core.Streaming.csproj" />

@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Stores.Contracts.Models;
 using MIN.Desktop.Infrastructure.Events;
@@ -17,13 +16,12 @@ namespace MIN.Desktop.ViewModels.Cards;
 /// <summary>
 /// Модель карточки комнаты на боковой панели
 /// </summary>
-public partial class RecentRoomCardViewModel : CardViewModelBase, IDisposable
+public partial class RecentRoomCardViewModel : CardViewModelBase
 {
-    private readonly IEventBus eventBus;
     private readonly RoomContext roomContext;
     private readonly RoomInfo roomInfo;
+    private IEventScope roomScope = null!;
 
-    private HashSet<IDisposable> eventTokens = null!;
     private int currentAmount;
     private int maximumAmount;
 
@@ -81,7 +79,6 @@ public partial class RecentRoomCardViewModel : CardViewModelBase, IDisposable
         RoomInfo roomInfo,
         bool AsCreator)
     {
-        this.eventBus = eventBus;
         this.roomContext = roomContext;
         this.roomInfo = roomInfo;
 
@@ -92,7 +89,7 @@ public partial class RecentRoomCardViewModel : CardViewModelBase, IDisposable
 
         GetLastMessage();
         UpdateParticipantsInfo();
-        SubscribeToEvents();
+        SubscribeToEvents(eventBus);
     }
 
     private void GetLastMessage()
@@ -122,85 +119,50 @@ public partial class RecentRoomCardViewModel : CardViewModelBase, IDisposable
         Clicked?.Invoke();
     }
 
-    private void SubscribeToEvents()
+    private void SubscribeToEvents(IEventBus eventBus)
     {
-        eventTokens =
-        [
-            eventBus.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined),
-            eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft),
-            eventBus.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent),
-            eventBus.Subscribe<DescribableMessageReceivedEvent>(OnDescribableMessageReceivedEvent),
-            eventBus.Subscribe<RoomClosedEvent>(OnRoomLeft),
-        ];
+        roomScope = eventBus.CreateScope(RoomId);
+        roomScope.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
+        roomScope.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
+        roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent);
+        roomScope.Subscribe<DescribableMessageReceivedEvent>(OnDescribableMessageReceivedEvent);
+        roomScope.Subscribe<RoomClosedEvent>(OnRoomLeft);
     }
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomInfo.Id)
-        {
-            return;
-        }
-
         currentAmount++;
-
         UpdateParticipantsInfo();
-        await Task.CompletedTask;
     }
 
     private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomInfo.Id)
-        {
-            return;
-        }
-
         currentAmount--;
-
         UpdateParticipantsInfo();
-        await Task.CompletedTask;
     }
 
-    private Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
+    private async Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomInfo.Id)
-        {
-            return Task.CompletedTask;
-        }
-
         Dispose();
-        return Task.CompletedTask;
     }
 
-    private Task OnDescribableMessageReceivedEvent(DescribableMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
+    private async Task OnDescribableMessageReceivedEvent(DescribableMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomInfo.Id)
-        {
-            return Task.CompletedTask;
-        }
-
         if (!IsSelected)
         {
             MissedMessagesCount++;
         }
         LastMessageReceivedAt = DateTime.Now;
         LastMessageContent = eventMessage.DescribableMessage.GetDescription();
-
-        return Task.CompletedTask;
     }
 
     private async Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
-        if (eventMessage.RoomInfo.Id != roomInfo.Id)
-        {
-            return;
-        }
-
         RoomName = eventMessage.RoomInfo.Name;
         roomInfo.Name = eventMessage.RoomInfo.Name;
         maximumAmount = eventMessage.RoomInfo.MaximumParticipants;
 
         UpdateParticipantsInfo();
-        await Task.CompletedTask;
     }
 
     private void UpdateParticipantsInfo()
@@ -209,11 +171,9 @@ public partial class RecentRoomCardViewModel : CardViewModelBase, IDisposable
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
-    void IDisposable.Dispose()
+    public override void Dispose()
     {
-        foreach (var token in eventTokens)
-        {
-            token.Dispose();
-        }
+        roomScope.Dispose();
+        base.Dispose();
     }
 }

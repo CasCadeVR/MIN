@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 
 namespace MIN.FileTransfer.Events;
@@ -7,11 +8,9 @@ namespace MIN.FileTransfer.Events;
 /// <summary>
 /// Событие начала передачи файла
 /// </summary>
-public sealed class FileTransferStartedEvent : BaseEvent
+public sealed record FileTransferStartedEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

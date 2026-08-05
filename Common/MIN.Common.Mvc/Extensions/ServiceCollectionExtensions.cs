@@ -65,18 +65,6 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Регистрирует интерфейс указанного типа
-    /// </summary>
-    /// <typeparam name="TService">Тип, для которого осуществляется регистрация</typeparam>
-    /// <typeparam name="TInterface">Тип, для которого осуществляется регистрация</typeparam>
-    /// <param name="services"><inheritdoc cref="IServiceCollection"/></param>
-    /// <param name="lifetime"><inheritdoc cref="ServiceLifetime"/></param>
-    public static void RegisterInterfaceAssignableTo<TInterface, TService>(this IServiceCollection services, ServiceLifetime lifetime)
-    {
-        services.TryAdd(new ServiceDescriptor(typeof(TInterface), typeof(TService), lifetime));
-    }
-
-    /// <summary>
     /// Регистрация модуля в <see cref="IServiceCollection"/>
     /// </summary>
     public static void RegisterModule<TModule>(this IServiceCollection services)

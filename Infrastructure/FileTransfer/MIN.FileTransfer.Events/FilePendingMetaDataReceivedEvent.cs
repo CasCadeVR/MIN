@@ -1,11 +1,11 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.FileTransfer.Events;
 
 /// <summary>
 /// Получена информация о файле в комнате, после чего хост может раздать его другим
 /// </summary>
-public sealed class FilePendingMetaDataReceivedEvent : BaseEvent
+public sealed record FilePendingMetaDataReceivedEvent : BaseEvent
 {
     /// <summary>
     /// Идентификатор потока, по которому придёт файл

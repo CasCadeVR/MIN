@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -10,7 +9,7 @@ using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models.Enums;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.FileTransfer.DI.FeatureCollection;
@@ -21,28 +20,30 @@ namespace MIN.Desktop.ViewModels.Cards.Messages.Files;
 
 public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageViewModel
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Функциональность для обмена файлов
+    /// </summary>
     readonly protected IFileTransferFeatureCollection fileTransferFeatureCollection;
 
-    /// <inheritdoc />
-    readonly protected IEventBus eventBus;
-
-    /// <inheritdoc />
+    /// <summary>
+    /// Буфер обмена
+    /// </summary>
     readonly protected IClipboard? clipboard;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Scope событий для комнаты
+    /// </summary>
+    readonly protected IEventScope roomScope;
+
+    /// <summary>
+    /// Локальный пользователь
+    /// </summary>
     readonly protected ParticipantInfo localParticipant;
 
     /// <summary>
     /// Закешированный формат
     /// </summary>
     readonly protected string cachedFormat;
-
-    /// <summary>
-    /// Список токенов подписки
-    /// </summary>
-    protected HashSet<IDisposable> eventTokens = null!;
-
     /// <summary>
     /// Файл загружен
     /// </summary>
@@ -81,7 +82,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     /// Инициализирует новый экземпляр <see cref="ChatFileBaseMessageViewModel"/>
     /// </summary>
     protected ChatFileBaseMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
-        IEventBus eventBus,
+        IEventScope roomScope,
         FileMetadataMessage fileMetadataMessage,
         Thickness timePadding,
         ParticipantInfo localParticipant,
@@ -97,9 +98,9 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
             fileMetadataMessage.RecipientId != null)
     {
         this.fileTransferFeatureCollection = fileTransferFeatureCollection;
-        this.eventBus = eventBus;
         this.localParticipant = localParticipant;
         this.clipboard = clipboard;
+        this.roomScope = roomScope;
         FileMetadataMessage = fileMetadataMessage;
 
         cachedFormat = fileTransferFeatureCollection.FileHelperService
@@ -108,7 +109,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
         FillLabels();
-        SubscribeToEvents();
+        SubscribeToEvents(roomScope);
     }
 
     /// <summary>
@@ -147,14 +148,11 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         OnCancelRequested?.Invoke();
     }
 
-    private void SubscribeToEvents()
+    private void SubscribeToEvents(IEventScope roomScope)
     {
-        eventTokens =
-        [
-            eventBus.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted),
-            eventBus.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed),
-            eventBus.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted)
-        ];
+        roomScope.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted);
+        roomScope.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed);
+        roomScope.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted);
     }
 
     private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
@@ -166,7 +164,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
 
         IsDownloading = true;
 
-        fileTransferProgressSubsciptionToken = eventBus.Subscribe((FileTransferProgressEvent e, CancellationToken _) =>
+        fileTransferProgressSubsciptionToken = roomScope.Subscribe((FileTransferProgressEvent e, CancellationToken _) =>
         {
             if (eventMessage.FileMetadataId != FileMetadataMessage.Id)
             {
@@ -267,15 +265,5 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         {
             Process.Start("xdg-open", dir);
         }
-    }
-
-    /// <inheritdoc cref="IDisposable.Dispose"/>
-    public override void Dispose()
-    {
-        foreach (var token in eventTokens)
-        {
-            token.Dispose();
-        }
-        base.Dispose();
     }
 }

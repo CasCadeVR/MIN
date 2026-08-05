@@ -1,15 +1,14 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.FileTransfer.Events;
 
 /// <summary>
 /// Событие прогресса передачи файла
 /// </summary>
-public sealed class FileTransferProgressEvent : BaseEvent
+public sealed record FileTransferProgressEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

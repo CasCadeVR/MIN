@@ -1,14 +1,14 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Entities.Contracts.Extensions;
+using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Models;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
-using MIN.Helpers.Contracts.Extensions;
-using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Services;
 
@@ -16,7 +16,7 @@ namespace MIN.Chat.Services;
 public sealed class ChatFileService : IChatFileService
 {
     private readonly IMessageRouter messageRouter;
-    private readonly IRoomHoster roomHoster;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IEventBus eventBus;
     private readonly IFileTransferFeatureCollection fileFeatureCollection;
     private readonly IIdentityService identityService;
@@ -25,13 +25,13 @@ public sealed class ChatFileService : IChatFileService
     /// Инициализирует новый экземпляр <see cref="ChatFileService"/>
     /// </summary>
     public ChatFileService(IMessageRouter messageRouter,
-        IRoomHoster roomHoster,
+        IRoomConnectionRegistry registry,
         IEventBus eventBus,
         IFileTransferFeatureCollection fileFeatureCollection,
         IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
-        this.roomHoster = roomHoster;
+        this.registry = registry;
         this.eventBus = eventBus;
         this.fileFeatureCollection = fileFeatureCollection;
         this.identityService = identityService;
@@ -57,7 +57,7 @@ public sealed class ChatFileService : IChatFileService
             RecipientId = recipientId,
         };
 
-        if (!roomHoster.IsHosting(roomId))
+        if (!registry.IsHosting(roomId))
         {
             // Ожидаем, что хост запросит с нас файл
             var info = new TransferInfo

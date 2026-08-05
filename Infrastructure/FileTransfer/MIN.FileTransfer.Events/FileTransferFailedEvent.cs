@@ -1,15 +1,14 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.FileTransfer.Events;
 
 /// <summary>
 /// Событие ошибки передачи файла
 /// </summary>
-public sealed class FileTransferFailedEvent : BaseEvent
+public sealed record FileTransferFailedEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

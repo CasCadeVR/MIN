@@ -6,7 +6,7 @@
 public enum SubRoomPurpose : byte
 {
     /// <summary>
-    /// Активность
+    /// Активность (сессия)
     /// </summary>
     Activity,
 

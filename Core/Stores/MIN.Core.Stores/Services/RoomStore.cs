@@ -26,10 +26,6 @@ public sealed class RoomStore : IRoomStore
     {
         if (roomsById.TryGetValue(roomId, out var room))
         {
-            var context = roomFactory.GetOrCreateContext(roomId);
-            room.CurrentParticipants = context.Participants.GetParticipants().ToList();
-            room.ChatHistory = context.Messages.GetHistory().ToList();
-            room.TotalMessageCount = room.ChatHistory.Count();
             return room;
         }
 
@@ -40,10 +36,6 @@ public sealed class RoomStore : IRoomStore
     {
         if (roomsById.TryGetValue(roomId, out room!))
         {
-            var context = roomFactory.GetOrCreateContext(roomId);
-            room.CurrentParticipants = context.Participants.GetParticipants().ToList();
-            room.ChatHistory = context.Messages.GetHistory().ToList();
-            room.TotalMessageCount = room.ChatHistory.Count;
             return true;
         }
 
@@ -55,13 +47,13 @@ public sealed class RoomStore : IRoomStore
         if (roomsById.TryGetValue(roomId, out var room))
         {
             var context = roomFactory.GetOrCreateContext(roomId);
-            room.CurrentParticipants = context.Participants.GetParticipants().ToList();
-            room.ChatHistory = context.Messages.GetRecentHistory()
+            var snapshot = room.Clone();
+            snapshot.ChatHistory = context.Messages.GetRecentHistory()
                 .Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId)
                 .ToList();
-            room.TotalMessageCount = GetMessagesCountFor(context, participantId);
-            room.LocalRoomSettings.NotificationsEnabled = false;
-            return room;
+            snapshot.TotalMessageCount = GetMessagesCountFor(context, participantId);
+            snapshot.LocalRoomSettings.NotificationsEnabled = false;
+            return snapshot;
         }
 
         throw new InvalidOperationException($"Комнаты с {roomId} не нашлось");
@@ -87,6 +79,7 @@ public sealed class RoomStore : IRoomStore
     void IRoomStore.Register(Room room)
     {
         roomsById[room.Id] = room;
+        roomFactory.GetOrCreateContext(room.Id).Participants.Bind(room.CurrentParticipants);
     }
 
     void IRoomStore.Remove(Guid roomId)

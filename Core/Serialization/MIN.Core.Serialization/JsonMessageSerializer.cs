@@ -2,7 +2,7 @@
 using System.Text.Json;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Serialization.Contracts;
+using MIN.Core.Serialization.Contracts.Interfaces;
 
 namespace MIN.Core.Serialization.Json;
 

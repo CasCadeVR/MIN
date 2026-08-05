@@ -1,11 +1,11 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless.RoomRelated.History;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
 using MIN.Core.Stores.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
@@ -13,15 +13,11 @@ namespace MIN.Core.Handlers.Handlers;
 internal sealed class ChatHistoryHandler : IMessageHandler
 {
     private readonly IRoomStore roomStore;
-    private readonly IRoomHoster roomHoster;
     private readonly IEventBus eventBus;
 
-    public ChatHistoryHandler(IRoomStore roomStore,
-        IRoomHoster roomHoster,
-        IEventBus eventBus)
+    public ChatHistoryHandler(IRoomStore roomStore, IEventBus eventBus)
     {
         this.roomStore = roomStore;
-        this.roomHoster = roomHoster;
         this.eventBus = eventBus;
     }
 
@@ -51,9 +47,8 @@ internal sealed class ChatHistoryHandler : IMessageHandler
         }
         else if (message is ChatHistoryResponseMessage response)
         {
-
             if (roomStore.GetRoomHostParticipantId(roomId) == response.SenderId
-                && !roomHoster.IsHosting(roomId))
+                && context.Role == Role.Client)
             {
                 foreach (var roomMessage in response.Messages)
                 {

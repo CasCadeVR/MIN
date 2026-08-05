@@ -55,36 +55,25 @@ public class Room : IRoomData
     public ParticipantInfo HostParticipant { get; set; } = null!;
 
     /// <summary>
-    /// Получить текущих участников комнаты
+    /// Текущие участников комнаты
     /// </summary>
+    /// <remarks>
+    /// Является лишь отображением из ParticipantStore
+    /// </remarks>
     public List<Participant> CurrentParticipants { get; set; } = [];
 
     /// <summary>
-    /// Получить историю чата
+    /// История чата
     /// </summary>
+    /// <remarks>
+    /// Является лишь отображением из MessageStore
+    /// </remarks>
     public List<IMessage> ChatHistory { get; set; } = [];
 
     /// <summary>
     /// Заполнена ли комната
     /// </summary>
     public bool IsFull => CurrentParticipants.Count >= MaximumParticipants;
-
-    /// <summary>
-    /// Добавить участника в комнату
-    /// </summary>
-    public void AddParticipant(Participant participant)
-    {
-        CurrentParticipants.Add(participant);
-    }
-
-    /// <summary>
-    /// Добавить участника в комнату
-    /// </summary>
-    public bool RemoveParticipantById(Guid participantId)
-    {
-        var foundParticipant = CurrentParticipants.FirstOrDefault(x => x.Id == participantId);
-        return CurrentParticipants.Remove(foundParticipant!);
-    }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="Room"/>
@@ -108,4 +97,24 @@ public class Room : IRoomData
         IsActive = roomData.IsActive;
         CreatedAt = roomData.CreatedAt;
     }
+
+    /// <summary>
+    /// Создать клон комнаты
+    /// </summary>
+    public Room Clone() => new()
+    {
+        Id = Id,
+        Name = Name,
+        Cabinet = Cabinet,
+        PcNumber = PcNumber,
+        MaximumParticipants = MaximumParticipants,
+        IsActive = IsActive,
+        CreatedAt = CreatedAt,
+        HostParticipant = HostParticipant,
+        CurrentParticipants = CurrentParticipants.ToList(),
+        ChatHistory = ChatHistory.ToList(),
+        TotalMessageCount = TotalMessageCount,
+        ConnectionAddresses = ConnectionAddresses.ToList(),
+        LocalRoomSettings = LocalRoomSettings with { },
+    };
 }

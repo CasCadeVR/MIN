@@ -20,20 +20,14 @@
             Padding="{DynamicResource PaddingMedium}"
             Classes.self="{Binding IsLocal}">
             <Border.ContextFlyout>
-                <Flyout Placement="Right">
-                    <StackPanel>
-                        <Button
-                            Command="{Binding CopyToClipboardCommand}"
-                            Classes="no-background"
-                            HorizontalContentAlignment="Stretch">
-                            <StackPanel Spacing="8" Orientation="Horizontal" >
-                                <Svg Path="/Assets/Icons/copy.svg" />
-                                <TextBlock VerticalAlignment="Center"
-                                    Text="Скопировать текст" />
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-                </Flyout>
+                <MenuFlyout Placement="Right">
+                    <MenuItem Header="Скопировать текст"
+                            Command="{Binding CopyToClipboardCommand}">
+                        <MenuItem.Icon>
+                            <Svg Path="/Assets/Icons/copy.svg" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </MenuFlyout>
             </Border.ContextFlyout>
 
             <StackPanel Spacing="8">

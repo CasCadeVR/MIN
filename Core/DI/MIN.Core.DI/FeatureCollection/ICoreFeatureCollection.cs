@@ -1,7 +1,8 @@
-﻿using MIN.Core.Events.Contracts;
-using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Identity.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 
 namespace MIN.Core.DI.FeatureCollection;
 
@@ -10,18 +11,18 @@ namespace MIN.Core.DI.FeatureCollection;
 /// </summary>
 public interface ICoreFeatureCollection
 {
-    /// <inheritdoc cref="IRoomConnector"/>
-    IRoomConnector RoomConnector { get; }
-
-    /// <inheritdoc cref="IRoomHoster"/>
-    IRoomHoster RoomHoster { get; }
+    /// <inheritdoc cref="IRoomLifecycleManager"/>
+    IRoomLifecycleManager Lifecycle { get; }
 
     /// <inheritdoc cref="IRoomFactory"/>
     IRoomFactory RoomFactory { get; }
 
+    /// <inheritdoc cref="IRoomConnectionRegistry"/>
+    IRoomConnectionRegistry Registry { get; }
+
     /// <inheritdoc cref="IEventBus"/>
     IEventBus EventBus { get; }
 
-    /// <inheritdoc cref="IMessageRouter"/>
-    IMessageRouter MessageRouter { get; }
+    /// <inheritdoc cref="IIdentityService"/>
+    IIdentityService IdentityService { get; }
 }

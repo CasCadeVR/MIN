@@ -8,6 +8,7 @@ using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Services.Contracts.Models;
 using MIN.Core.Stores.Contracts.Registries.Models;
@@ -28,7 +29,6 @@ using MIN.Desktop.ViewModels.Windows;
 using MIN.DI.FeatureCollection;
 using MIN.Discovery.Events;
 using MIN.Discovery.Services.Contracts.Enums;
-using MIN.Helpers.Contracts.Extensions;
 using MIN.Helpers.Contracts.Models;
 
 namespace MIN.Desktop.ViewModels.Pages;
@@ -87,7 +87,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
 
         if (!Design.IsDesignMode)
         {
-            localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+            localParticipant = featureCollection.Core.IdentityService.SelfParticipant.ToParticipantInfo();
             lifeTimeCts = ctsProvider.AppCts;
             SubscribeToEvents();
             InitializeLayoutStyles();
@@ -115,7 +115,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         if (Settings.DefaultParticipantName != string.Empty)
         {
             localParticipant.Name = Settings.DefaultParticipantName;
-            featureCollection.Helper.IdentityService.SetParticipant(localParticipant);
+            featureCollection.Core.IdentityService.SetParticipant(localParticipant);
         }
         else
         {
@@ -125,7 +125,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
                 return false;
             }
 
-            Settings.DefaultParticipantName = featureCollection.Helper.IdentityService.SelfParticipant.Name;
+            Settings.DefaultParticipantName = featureCollection.Core.IdentityService.SelfParticipant.Name;
             featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         }
         return true;
@@ -169,7 +169,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
             var chatViewModel = chatViewModelFactory.Create();
             ChangeView(chatViewModel, createRoomCts.Token);
 
-            var room = await featureCollection.Core.RoomHoster.StartHostingAsync(roomInfo, createViewModelResult.NetworkOptions, createRoomCts.Token);
+            var room = await featureCollection.Core.Lifecycle.StartHostingAsync(roomInfo, createViewModelResult.NetworkOptions, createRoomCts.Token);
             await featureCollection.Chat.ChatRoomService.ManageDiscoveryOutOfSettings(roomInfo,
                 room.ConnectionAddresses, createViewModelResult.NetworkOptions, cancellationToken: createRoomCts.Token);
 
@@ -180,14 +180,14 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         }
         catch (OperationCanceledException)
         {
-            await featureCollection.Core.RoomHoster.StopHostingAsync(roomInfo.Id);
+            await featureCollection.Core.Lifecycle.StopHostingAsync(roomInfo.Id);
             InAppNotifier.Info("Создание комнаты было отменено");
             ChangeView(this);
             await CreateRoom(createViewModelResult.Room, createViewModelResult.NetworkOptions);
         }
         catch (Exception ex)
         {
-            await featureCollection.Core.RoomHoster.StopHostingAsync(roomInfo.Id);
+            await featureCollection.Core.Lifecycle.StopHostingAsync(roomInfo.Id);
             InAppNotifier.Error($"Не удалось создать комнату: {ex.Message}");
             ChangeView(this);
             await CreateRoom(createViewModelResult.Room, createViewModelResult.NetworkOptions);
@@ -259,23 +259,21 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
                 discoveryInfo.Room,
                 discoveryInfo.Endpoints,
                 localParticipant.Id == discoveryInfo.Room.HostParticipant.Id,
+                featureCollection.Core.Registry.IsConnected(discoveryInfo.Room.Id),
                 clipboard);
 
-            card.Clicked += async (origin) => await OnRoomJoin(discoveryInfo.Endpoints.First(x => x.Origin == origin), discoveryInfo.Room, card);
+            card.Clicked += async (origin) =>
+            {
+                await OnRoomJoin(discoveryInfo.Endpoints.First(x => x.Origin == origin));
+                card?.IsConnecting = false;
+            };
 
             DiscoveredRooms.Add(card);
         }
     }
 
-    private async Task OnRoomJoin(IEndpoint endpoint, RoomInfo? roomInfo = null, DiscoveredRoomCardViewModel? card = null)
+    private async Task OnRoomJoin(IEndpoint endpoint)
     {
-        if (roomInfo != null && featureCollection.Core.RoomConnector.IsConnected(roomInfo.Id))
-        {
-            InAppNotifier.Info("Вы уже подключены к этой комнате");
-            card?.IsConnecting = false;
-            return;
-        }
-
         if (!await ResolveParticipant())
         {
             return;
@@ -308,7 +306,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
                 loadingVm = vm;
             });
 
-            connectionResult = await featureCollection.Core.RoomConnector.ConnectAsync(endpoint, connectCts.Token);
+            connectionResult = await featureCollection.Core.Lifecycle.ConnectAsync(endpoint, connectCts.Token);
 
             loadingVm?.RoomId = connectionResult.RoomId;
         }
@@ -316,10 +314,6 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         {
             loadingVm?.CloseByCode();
             InAppNotifier.Error($"Произошла ошибка при подключении: {ex.Message}");
-        }
-        finally
-        {
-            card?.IsConnecting = false;
         }
     }
 

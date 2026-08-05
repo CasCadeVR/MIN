@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Base;
 using MIN.DI.FeatureCollection;
-using MIN.Helpers.Contracts.Extensions;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -25,7 +26,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     private readonly IDialogService dialogService;
 
     private readonly IMinFeatureCollection featureCollection;
-    private readonly CancellationTokenSource formCts = new();
+    private readonly CancellationTokenSource appCts = new();
     private readonly TaskCompletionSource loadingTcs = new();
 
     private readonly ParticipantInfo localParticipant = null!;
@@ -76,12 +77,11 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (!Design.IsDesignMode)
         {
-            localParticipant = featureCollection.Helper.IdentityService.SelfParticipant.ToParticipantInfo();
+            localParticipant = featureCollection.Core.IdentityService.SelfParticipant.ToParticipantInfo();
 
             OnNavigatedTo = ActionOnNavigatedTo;
             OnNavigatedFrom = ActionOnNavigatedFrom;
 
-            SubscribeToEvents(featureCollection.Core.EventBus);
             InitializeNotifications();
             InitializeTypingTimer();
             InitializeLayoutStyles();
@@ -135,21 +135,22 @@ public partial class ChatViewModel : RoutableViewModelBase
         IsHost = localParticipant.Id == room.HostParticipant.Id;
         this.connectionId = connectionId;
         roomId = room.Id;
+        SubscribeToEvents(featureCollection.Core.EventBus);
 
         await UpdateChatFlow();
         loadingTcs.SetResult();
     }
 
-    private async Task CleanUpAsync(Guid roomId, Guid connectionId, bool isHost)
+    private async Task CleanUpServicesAsync(Guid roomId, Guid connectionId)
     {
-        if (isHost)
+        if (localParticipant.Id == room.HostParticipant.Id)
         {
             await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
-            await featureCollection.Core.RoomHoster.StopHostingAsync(roomId);
+            await featureCollection.Core.Lifecycle.StopHostingAsync(roomId);
         }
         else
         {
-            await featureCollection.Core.RoomConnector.DisconnectAsync(roomId, connectionId);
+            await featureCollection.Core.Lifecycle.DisconnectAsync(roomId, connectionId, DisconnectReason.None);
         }
     }
 
@@ -163,13 +164,11 @@ public partial class ChatViewModel : RoutableViewModelBase
     public async ValueTask DisposeAsync()
     {
         ClearParentFormEvents();
-        foreach (var token in eventTokens)
-        {
-            token.Dispose();
-        }
+        roomScope.Dispose();
+        errorToken.Dispose();
         typingTimer.Dispose();
-        formCts.Cancel();
-        formCts.Dispose();
-        await CleanUpAsync(roomId, connectionId, isHost: localParticipant.Id == room.HostParticipant.Id);
+        appCts.Cancel();
+        appCts.Dispose();
+        await CleanUpServicesAsync(roomId, connectionId);
     }
 }

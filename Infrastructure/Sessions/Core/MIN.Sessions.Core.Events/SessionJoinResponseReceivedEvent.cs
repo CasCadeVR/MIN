@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Models;
 using MIN.Sessions.Core.Services.Contracts.Models;
 
 namespace MIN.Sessions.Core.Events;
@@ -6,11 +7,9 @@ namespace MIN.Sessions.Core.Events;
 /// <summary>
 /// События получения ответа от присоединения к сессии
 /// </summary>
-public sealed class SessionJoinResponseReceivedEvent : BaseEvent
+public sealed record SessionJoinResponseReceivedEvent : BaseEvent, IRoomScopedEvent
 {
-    /// <summary>
-    /// Идентификатор комнаты
-    /// </summary>
+    /// <inheritdoc />
     public Guid RoomId { get; init; }
 
     /// <summary>

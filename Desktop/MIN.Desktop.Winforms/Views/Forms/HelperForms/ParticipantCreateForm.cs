@@ -1,7 +1,7 @@
+using MIN.Core.Services.Contracts.Extensions;
+using MIN.Core.Services.Contracts.Interfaces.Identity;
 using MIN.Desktop.Contracts.Schemes;
 using MIN.Desktop.Contracts.Views.Forms;
-using MIN.Helpers.Contracts.Extensions;
-using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Desktop.Views.Forms.HelperForms;
 

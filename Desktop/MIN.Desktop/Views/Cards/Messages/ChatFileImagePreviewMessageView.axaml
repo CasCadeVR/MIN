@@ -24,28 +24,20 @@
             Padding="{DynamicResource PaddingMedium}"
             Classes.self="{Binding IsLocal}">
             <Border.ContextFlyout>
-                <Flyout FlyoutPresenterClasses="buttons"
-                        Placement="Right">
-                    <StackPanel>
-                        <Button Command="{Binding CopyNameToClipboardCommand}"
-                                Classes="no-background">
-                            <StackPanel>
-                                <Svg Path="/Assets/Icons/copy.svg" />
-                                <TextBlock VerticalAlignment="Center"
-                                    Text="Скопировать имя файла" />
-                            </StackPanel>
-                        </Button>
-
-                        <Button Command="{Binding ShowInFolderCommand}"
-                                Classes="no-background">
-                            <StackPanel>
-                                <Svg Path="/Assets/Icons/folder.svg" />
-                                <TextBlock VerticalAlignment="Center"
-                                    Text="Показать в проводнике" />
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-                </Flyout>
+                <MenuFlyout Placement="Right">
+                    <MenuItem Header="Скопировать имя файла"
+                            Command="{Binding CopyNameToClipboardCommand}">
+                        <MenuItem.Icon>
+                            <Svg Path="/Assets/Icons/copy.svg" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Показать в проводнике"
+                            Command="{Binding ShowInFolderCommand}">
+                        <MenuItem.Icon>
+                            <Svg Path="/Assets/Icons/folder.svg" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </MenuFlyout>
             </Border.ContextFlyout>
 
             <StackPanel Spacing="8">

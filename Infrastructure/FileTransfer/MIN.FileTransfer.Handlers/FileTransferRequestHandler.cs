@@ -1,12 +1,11 @@
-using MIN.Core.Events.Contracts;
+using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Rooms;
-using MIN.Core.Streaming.Contracts.Interfaces;
-using MIN.Core.Streaming.Contracts.Models;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
@@ -18,32 +17,25 @@ namespace MIN.FileTransfer.Handlers;
 
 internal sealed class FileTransferRequestHandler : IMessageHandler
 {
-    private readonly IIdentityService identityService;
     private readonly IFileTransferService fileTransferService;
     private readonly IFileStorageService fileStorageService;
-    private readonly IStreamManager streamManager;
     private readonly IMessageSender messageSender;
-    private readonly IRoomHoster roomHoster;
     private readonly IEventBus eventBus;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
-    public FileTransferRequestHandler(
-        IIdentityService identityService,
-        IFileTransferService fileTransferService,
+    public FileTransferRequestHandler(IFileTransferService fileTransferService,
         IFileStorageService fileStorageService,
-        IStreamManager streamManager,
         IMessageSender messageSender,
-        IRoomHoster roomHoster,
         IEventBus eventBus,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
-        this.identityService = identityService;
         this.fileTransferService = fileTransferService;
         this.fileStorageService = fileStorageService;
-        this.streamManager = streamManager;
         this.messageSender = messageSender;
-        this.roomHoster = roomHoster;
         this.eventBus = eventBus;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
@@ -63,7 +55,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
         var selfId = identityService.SelfParticipant.Id;
 
-        if (message.SenderId == selfId && roomHoster.IsHosting(context.RoomContext.RoomId))
+        if (message.SenderId == selfId && context.Role == Role.Host)
         {
             if (!fileTransferService.TryGetTransferInfo(request.TransferId, out var info))
             {
@@ -252,24 +244,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
         var fileSize = new FileInfo(filePath).Length;
         logger.Log($"Начинаю стриминг файла {Path.GetFileName(filePath)} ({fileSize} байт)");
 
-        var options = new StreamOptions
-        {
-            RequiresAcks = true,
-            RequiresEncryption = true,
-            StreamId = request.TransferId,
-            IsRawPayload = true,
-        };
-
-        logger.Log($"Отправляю файл через StreamManager: StreamId={request.TransferId}");
-
-        Guid? serverConnectionId = null;
-
-        if (roomHoster.IsHosting(roomId))
-        {
-            serverConnectionId = roomHoster.GetConnectionIdByRoomId(roomId);
-        }
-
         await using var fileStream = File.OpenRead(filePath);
-        await streamManager.SendAsync(fileStream, options, roomId, context.ConnectionId, serverConnectionId, info.CancellationTokenSource.Token);
+        await messageSender.SendStreamAsync(fileStream, request.TransferId, roomId, context.ConnectionId, info.CancellationTokenSource.Token);
     }
 }

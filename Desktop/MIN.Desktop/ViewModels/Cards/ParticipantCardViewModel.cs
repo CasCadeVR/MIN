@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -8,7 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using MIN.Chat.Events;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.ViewModels.Cards;
@@ -19,10 +18,8 @@ namespace MIN.Desktop.ViewModels.Cards;
 public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
 {
     private readonly Participant participant;
-    private readonly IEventBus eventBus;
-    private readonly Guid roomId;
     private readonly bool isSelf;
-    private HashSet<IDisposable> eventTokens = null!;
+    private IEventScope roomScope = null!;
 
     /// <summary>
     /// Идентфикатор участника на карточке
@@ -104,8 +101,6 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
         bool asHost)
     {
         this.participant = participant;
-        this.eventBus = eventBus;
-        this.roomId = roomId;
         this.isSelf = isSelf;
         CanKick = asHost && !isSelf;
         IsHost = isHost;
@@ -118,26 +113,19 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
 
             if (!isSelf)
             {
-                SubscribeToEvents();
+                SubscribeToEvents(eventBus, roomId);
             }
         }
     }
 
-    private void SubscribeToEvents()
+    private void SubscribeToEvents(IEventBus eventBus, Guid roomId)
     {
-        eventTokens =
-        [
-            eventBus.Subscribe<OnlineStatusChangedEvent>(OnOnlineStatusChanged),
-        ];
+        roomScope = eventBus.CreateScope(roomId);
+        roomScope.Subscribe<OnlineStatusChangedEvent>(OnOnlineStatusChanged);
     }
 
     private async Task OnOnlineStatusChanged(OnlineStatusChangedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.RoomId != roomId)
-        {
-            return;
-        }
-
         if (eventMessage.SenderId == participant.Id)
         {
             ParticipantStatus = isSelf ? OnlineStatus.Online : eventMessage.Status;
@@ -175,11 +163,9 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
-    void IDisposable.Dispose()
+    public override void Dispose()
     {
-        foreach (var token in eventTokens)
-        {
-            token.Dispose();
-        }
+        roomScope.Dispose();
+        base.Dispose();
     }
 }

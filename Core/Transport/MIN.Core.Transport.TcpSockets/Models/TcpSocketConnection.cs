@@ -1,5 +1,7 @@
 ﻿using System.Net.Sockets;
+using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Models;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Transport.TcpSockets.Models;
 
@@ -9,19 +11,22 @@ namespace MIN.Core.Transport.TcpSockets.Models;
 internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
 {
     private readonly TcpClient client;
+    private readonly ILoggerProvider logger;
     private readonly NetworkStream stream;
     private readonly SemaphoreSlim writeLock = new(1, 1);
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
     private Task? receiveLoop;
+    private DisconnectReason disconnectReason = DisconnectReason.None;
     private bool disposed;
 
     /// <summary>
     /// Инициализирует новый экзмепляр <see cref="TcpSocketConnection"/>
     /// </summary>
-    public TcpSocketConnection(TcpClient client)
+    public TcpSocketConnection(TcpClient client, ILoggerProvider logger)
     {
         this.client = client;
+        this.logger = logger;
         stream = client.GetStream();
     }
 
@@ -43,7 +48,7 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
     /// <summary>
     /// Событие отключения
     /// </summary>
-    public event Action<TcpSocketConnection, string?>? Disconnected;
+    public event Action<TcpSocketConnection, DisconnectReason>? Disconnected;
 
     /// <summary>
     /// Запускает асинхронное чтение сообщений из Tcp socket
@@ -55,8 +60,6 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
 
     private async Task ReceiveLoopAsync()
     {
-        var disconnectMessage = string.Empty;
-
         try
         {
             while (!cancellationTokenSource.Token.IsCancellationRequested && IsConnected)
@@ -70,11 +73,12 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         catch (IOException) { }
         catch (Exception ex)
         {
-            disconnectMessage = $"{ex.GetType().Name}: {ex.Message}";
+            logger.Log($"Произошла ошибка {ex.GetType().Name} в tcp connection: {ex.Message}");
+            disconnectReason = DisconnectReason.Error;
         }
         finally
         {
-            OnDisconnected(disconnectMessage);
+            OnDisconnected(disconnectReason);
             await DisposeAsync();
         }
     }
@@ -137,13 +141,12 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         RawMessageReceived?.Invoke(this, data);
     }
 
-    private void OnDisconnected(string? reason)
+    private void OnDisconnected(DisconnectReason reason)
     {
         Disconnected?.Invoke(this, reason);
     }
 
-    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
-    public async ValueTask DisposeAsync()
+    public async ValueTask StopAsync(DisconnectReason reason)
     {
         if (disposed)
         {
@@ -151,6 +154,7 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         }
 
         disposed = true;
+        disconnectReason = reason;
         cancellationTokenSource.Cancel();
 
         if (receiveLoop != null)
@@ -162,5 +166,11 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         client.Dispose();
         writeLock.Dispose();
         cancellationTokenSource.Dispose();
+    }
+
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
+    public async ValueTask DisposeAsync()
+    {
+        await StopAsync(DisconnectReason.None);
     }
 }

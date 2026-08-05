@@ -1,4 +1,4 @@
-﻿using MIN.Core.Events.Contracts;
+﻿using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
@@ -14,9 +14,6 @@ internal sealed class ParticipantLeftHandler : IMessageHandler
     private readonly IEventBus eventBus;
     private readonly ILoggerProvider logger;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="ParticipantLeftHandler"/>
-    /// </summary>
     public ParticipantLeftHandler(IEventBus eventBus, ILoggerProvider logger)
     {
         this.eventBus = eventBus;
@@ -35,9 +32,9 @@ internal sealed class ParticipantLeftHandler : IMessageHandler
             logger.Log($"Неизвестный тип сообщения в {nameof(ParticipantLeftHandler)} - {message.GetType()}");
             return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ParticipantLeftHandler)} - {message.GetType()}");
         }
-
+        var leavingParticipantId = participantLeftMessage.Participant.Id;
         context.RoomContext.Messages.AddMessage(message);
-        context.RoomContext.Participants.RemoveParticipant(participantLeftMessage.Participant.Id);
+        context.RoomContext.Participants.RemoveParticipant(leavingParticipantId);
 
         logger.Log($"Участник {participantLeftMessage.Participant.Name} вышел из комнаты");
 

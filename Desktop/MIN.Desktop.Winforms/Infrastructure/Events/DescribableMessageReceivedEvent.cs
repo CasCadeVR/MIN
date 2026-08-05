@@ -1,5 +1,5 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
-using MIN.Core.Events.Contracts;
+using MIN.Core.Events.Contracts.Models;
 
 namespace MIN.Desktop.Infrastructure.Events;
 
