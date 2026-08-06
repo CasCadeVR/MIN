@@ -172,7 +172,7 @@
                                         Classes="header4"
                                         Text="{Binding Room.Name,
                                             Converter={converters:TruncateWithEllipsisConverter},
-                                            ConverterParameter=15}" />
+                                            ConverterParameter=20}" />
 
                                     <StackPanel Spacing="8"
                                         HorizontalAlignment="Center"

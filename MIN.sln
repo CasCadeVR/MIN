@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.5.11626.173
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Desktop.Winforms", "Desktop\MIN.Desktop.Winforms\MIN.Desktop.Winforms.csproj", "{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Helpers.Contracts", "Helpers\MIN.Helpers.Contracts\MIN.Helpers.Contracts.csproj", "{C0BDD3E5-6D7A-449B-99A1-4B303DA283E8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MIN.Helpers", "Helpers\MIN.Helpers\MIN.Helpers.csproj", "{BB7F2BB5-55B6-43E4-909B-B643EF6B6964}"
@@ -226,10 +224,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C0BDD3E5-6D7A-449B-99A1-4B303DA283E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C0BDD3E5-6D7A-449B-99A1-4B303DA283E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0BDD3E5-6D7A-449B-99A1-4B303DA283E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -531,7 +525,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{D0C62271-67E4-4ADA-98C4-F0A0D0C3D3FA} = {9CABB0E8-57A8-45C2-91CA-9682DE86BBC0}
 		{C0BDD3E5-6D7A-449B-99A1-4B303DA283E8} = {644C238B-C0D0-43E3-9C80-2E63DD35ED53}
 		{BB7F2BB5-55B6-43E4-909B-B643EF6B6964} = {644C238B-C0D0-43E3-9C80-2E63DD35ED53}
 		{82A02C52-0D30-48F6-A19A-F03B78C6DE3F} = {CD03853D-299C-4AE4-BD3B-7AF72C559180}
