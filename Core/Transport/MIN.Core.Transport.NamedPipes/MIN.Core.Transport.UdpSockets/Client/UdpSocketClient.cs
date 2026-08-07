@@ -26,11 +26,6 @@ internal sealed class UdpSocketClient : IAsyncDisposable
     public event Action<byte[]>? OnMessageReceived;
 
     /// <summary>
-    /// Событие отключения
-    /// </summary>
-    public event Action<DisconnectReason>? OnDisconnected;
-
-    /// <summary>
     /// Идентификатор соединения. Один на обе ноги (TCP+UDP) — задаёт ChannelTransport
     /// </summary>
     public Guid ConnectionId { get; }
@@ -53,6 +48,8 @@ internal sealed class UdpSocketClient : IAsyncDisposable
     {
         client.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
         hostEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
+        var handshakeDatagram = UdpMessage.Wrap(ConnectionId, []);
+        await client.SendAsync(handshakeDatagram, hostEndPoint, cancellationToken);
         receiveLoop = Task.Run(ReceiveLoopAsync, cancellationToken);
     }
 
@@ -78,10 +75,6 @@ internal sealed class UdpSocketClient : IAsyncDisposable
         catch (Exception ex)
         {
             logger.Log($"Произошла ошибка {ex.GetType().Name} в udp клиенте: {ex.Message}");
-        }
-        finally
-        {
-            OnDisconnected?.Invoke(DisconnectReason.None);
         }
     }
 

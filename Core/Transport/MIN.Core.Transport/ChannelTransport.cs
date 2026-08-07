@@ -39,9 +39,30 @@ public class ChannelTransport : ITransport, IAsyncDisposable
         fastTransport = new UdpTransport(logger);
 
         secureTransport.RawMessageReceived += (_, e) => RawMessageReceived?.Invoke(this, e);
+        secureTransport.ConnectionStateChanged += OnSecureConnectionStateChanged;
+
         fastTransport.RawMessageReceived += (_, e) => RawMessageReceived?.Invoke(this, e);
-        secureTransport.ConnectionStateChanged += (_, e) => ConnectionStateChanged?.Invoke(this, e);
-        fastTransport.ConnectionStateChanged += (_, e) => ConnectionStateChanged?.Invoke(this, e);
+    }
+
+    private void OnSecureConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
+    {
+        if (!e.IsConnected)
+        {
+            _ = CleanupFastChannelAsync(e);
+        }
+        ConnectionStateChanged?.Invoke(this, e);
+    }
+
+    private async Task CleanupFastChannelAsync(ConnectionStateChangedEventArgs e)
+    {
+        try
+        {
+            await fastTransport.DisconnectClientAsync(e.ConnectionId, e.ServerConnectionId, e.DisconnectReason);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Не удалось почистить udp-канал {e.ConnectionId}: {ex.Message}", LogLevel.Warning);
+        }
     }
 
     async Task<Guid> ITransport.StartHostingAsync(Guid? serverConnectionId, CancellationToken cancellationToken)
@@ -115,10 +136,17 @@ public class ChannelTransport : ITransport, IAsyncDisposable
         await secureTransport.BroadcastAsync(data, connectionId, excludeConnections, MessageChannel.Secure, cancellationToken);
     }
 
-    async Task<IEnumerable<IEndpoint>> ITransport.SetUpAndGetEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
+    async Task<IEnumerable<IEndpoint>> ITransport.SetUpEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
     {
-        var tcpEndpoints = await secureTransport.SetUpAndGetEndpoints(connectionId, networkOptions, oldNetworkOptions, cancellationToken);
-        var udpEndpoints = await fastTransport.SetUpAndGetEndpoints(connectionId, networkOptions, oldNetworkOptions, cancellationToken);
+        var tcpEndpoints = await secureTransport.SetUpEndpoints(connectionId, networkOptions, oldNetworkOptions, cancellationToken);
+        var udpEndpoints = await fastTransport.SetUpEndpoints(connectionId, networkOptions, oldNetworkOptions, cancellationToken);
+        return tcpEndpoints.Concat(udpEndpoints);
+    }
+
+    IEnumerable<IEndpoint> ITransport.GetEndpoints(Guid serverConnectionId)
+    {
+        var tcpEndpoints = secureTransport.GetEndpoints(serverConnectionId);
+        var udpEndpoints = fastTransport.GetEndpoints(serverConnectionId);
         return tcpEndpoints.Concat(udpEndpoints);
     }
 

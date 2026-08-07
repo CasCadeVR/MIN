@@ -47,16 +47,6 @@ internal sealed class UdpSocketServer : IAsyncDisposable
     /// </summary>
     public event Action<UdpSocketServer, (UdpSocketConnection Connection, byte[] Message)>? OnMessageReceived;
 
-    /// <summary>
-    /// Логическое соединение разорвано
-    /// </summary>
-    public event Action<UdpSocketServer, (UdpSocketConnection Connection, DisconnectReason Reason)>? ConnectionDisconnected;
-
-    /// <summary>
-    /// Логическое соединение установилось (первая датаграмма от нового id)
-    /// </summary>
-    public event Action<UdpSocketServer, UdpSocketConnection>? OnConnectionEstablished;
-
     public Task StartAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -78,13 +68,16 @@ internal sealed class UdpSocketServer : IAsyncDisposable
                 {
                     var conn = new UdpSocketConnection(connectionId, result.RemoteEndPoint, listener, logger);
                     logger.Log($"Клиент подключился (udp): {result.RemoteEndPoint}");
-                    OnConnectionEstablished?.Invoke(this, conn);
                     return conn;
                 });
 
                 // На NAT адрес источника — единственный, куда реально можно слать
                 connection.UpdateRemoteEndPoint(result.RemoteEndPoint);
-                OnMessageReceived?.Invoke(this, (connection, payload));
+
+                if (payload.Length > 0)
+                {
+                    OnMessageReceived?.Invoke(this, (connection, payload));
+                }
             }
         }
         catch (OperationCanceledException) { }
@@ -102,7 +95,6 @@ internal sealed class UdpSocketServer : IAsyncDisposable
         if (connections.TryRemove(connectionId, out var connection))
         {
             await connection.StopAsync(reason);
-            ConnectionDisconnected?.Invoke(this, (connection, reason));
         }
     }
 

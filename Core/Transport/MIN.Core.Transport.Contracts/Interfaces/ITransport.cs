@@ -44,7 +44,12 @@ public interface ITransport
     /// <remarks>
     /// Настраивает только PortForwarding и vpn
     /// </remarks>
-    Task<IEnumerable<IEndpoint>> SetUpAndGetEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<IEndpoint>> SetUpEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получить последние сохранённые точки подключения
+    /// </summary>
+    IEnumerable<IEndpoint> GetEndpoints(Guid serverConnectionId);
 
     /// <summary>
     /// Прекратить сервер для указанного соединения

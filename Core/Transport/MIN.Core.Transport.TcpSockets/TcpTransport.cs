@@ -17,11 +17,12 @@ namespace MIN.Core.Transport.TcpSockets;
 /// <summary>
 /// Реализация передачи данных на основе Tcp Socket
 /// </summary>
-public class TcpTransport : ITransport
+public class TcpTransport : ITransport, IAsyncDisposable
 {
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, TcpSocketServer> servers = new();
     private readonly ConcurrentDictionary<Guid, TcpSocketClient> clients = new();
+    private readonly ConcurrentDictionary<Guid, IReadOnlyList<IEndpoint>> cachedServerEndpoints = new();
 
     /// <inheritdoc />
     public event EventHandler<RawMessageReceivedEventArgs>? RawMessageReceived;
@@ -146,7 +147,7 @@ public class TcpTransport : ITransport
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<IEndpoint>> SetUpAndGetEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
+    public async Task<IEnumerable<IEndpoint>> SetUpEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
     {
         if (!servers.TryGetValue(connectionId, out var server))
         {
@@ -224,7 +225,20 @@ public class TcpTransport : ITransport
             });
         }
 
+        cachedServerEndpoints[connectionId] = endpoints;
+
         return endpoints;
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<IEndpoint> GetEndpoints(Guid serverConnectionId)
+    {
+        if (!servers.ContainsKey(serverConnectionId))
+        {
+            throw new InvalidOperationException($"Connection {serverConnectionId} is not hosted locally");
+        }
+
+        return cachedServerEndpoints[serverConnectionId];
     }
 
     /// <inheritdoc />
@@ -249,7 +263,7 @@ public class TcpTransport : ITransport
         await DisconnectClientAsync(connectionId, null, reason);
     }
 
-    /// <inheritdoc cref="IDisposable.Dispose"/>
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
     public async ValueTask DisposeAsync()
     {
         foreach (var server in servers.Values)

@@ -17,17 +17,17 @@ namespace MIN.Core.Transport.UdpSockets;
 /// <summary>
 /// Реализация передачи данных на основе Udp Socket
 /// </summary>
-public class UdpTransport : ITransport
+public class UdpTransport : IAsyncDisposable
 {
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, UdpSocketServer> servers = new();
     private readonly ConcurrentDictionary<Guid, UdpSocketClient> clients = new();
+    private readonly ConcurrentDictionary<Guid, IReadOnlyList<IEndpoint>> cachedServerEndpoints = new();
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Получено сырое сообщение
+    /// </summary>
     public event EventHandler<RawMessageReceivedEventArgs>? RawMessageReceived;
-
-    /// <inheritdoc />
-    public event EventHandler<ConnectionStateChangedEventArgs>? ConnectionStateChanged;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="UdpTransport"/>
@@ -50,21 +50,6 @@ public class UdpTransport : ITransport
         {
             var args = new RawMessageReceivedEventArgs(eventArgs.msg, eventArgs.conn.Id, connectionId);
             RawMessageReceived?.Invoke(this, args);
-        };
-
-        server.OnConnectionEstablished += (s, conn) =>
-        {
-            var args = new ConnectionStateChangedEventArgs(conn.Id, true, serverConnectionId: connectionId)
-            {
-                RemoteEndPoint = conn.RemoteEndPoint,
-            };
-            ConnectionStateChanged?.Invoke(this, args);
-        };
-
-        server.ConnectionDisconnected += (UdpSocketServer server, (UdpSocketConnection conn, DisconnectReason reason) eventArgs) =>
-        {
-            var args = new ConnectionStateChangedEventArgs(eventArgs.conn.Id, false, eventArgs.reason, connectionId);
-            ConnectionStateChanged?.Invoke(this, args);
         };
 
         await server.StartAsync(cancellationToken);
@@ -97,17 +82,9 @@ public class UdpTransport : ITransport
             var args = new RawMessageReceivedEventArgs(msg, client.ConnectionId);
             RawMessageReceived?.Invoke(this, args);
         };
-        client.OnDisconnected += reason =>
-        {
-            var args = new ConnectionStateChangedEventArgs(client.ConnectionId, false, reason);
-            ConnectionStateChanged?.Invoke(this, args);
-        };
 
         await client.ConnectAsync(udpEp.IPAddress, udpEp.Port, cancellationToken);
         clients.TryAdd(client.ConnectionId, client);
-
-        var connectedArgs = new ConnectionStateChangedEventArgs(client.ConnectionId, true);
-        ConnectionStateChanged?.Invoke(this, connectedArgs);
 
         return client.ConnectionId;
     }
@@ -146,7 +123,7 @@ public class UdpTransport : ITransport
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<IEndpoint>> SetUpAndGetEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
+    public async Task<IEnumerable<IEndpoint>> SetUpEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
     {
         if (!servers.TryGetValue(connectionId, out var server))
         {
@@ -224,7 +201,20 @@ public class UdpTransport : ITransport
             });
         }
 
+        cachedServerEndpoints[connectionId] = endpoints;
+
         return endpoints;
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<IEndpoint> GetEndpoints(Guid serverConnectionId)
+    {
+        if (!servers.ContainsKey(serverConnectionId))
+        {
+            throw new InvalidOperationException($"Connection {serverConnectionId} is not hosted locally");
+        }
+
+        return cachedServerEndpoints[serverConnectionId];
     }
 
     /// <inheritdoc />
@@ -263,7 +253,7 @@ public class UdpTransport : ITransport
             && server.Connections.ContainsKey(recipientConnectionId);
     }
 
-    /// <inheritdoc cref="IDisposable.Dispose"/>
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
     public async ValueTask DisposeAsync()
     {
         foreach (var server in servers.Values)
