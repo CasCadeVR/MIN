@@ -199,7 +199,7 @@ internal sealed class HostRoomService
 
         room.TotalMessageCount = context.Messages.GetMessageCount();
 
-        var connectionId = await transport.StartHostingAsync(cancellationToken);
+        var connectionId = await transport.StartHostingAsync(cancellationToken: cancellationToken);
         room.ConnectionAddresses = await transport.SetUpAndGetEndpoints(connectionId, networkOptions, cancellationToken: cancellationToken);
         room.LocalRoomSettings.NetworkOptions = networkOptions;
 

@@ -75,7 +75,7 @@ internal sealed class ClientRoomService
         {
             logger.Log($"Подключаюсь к {endpoint}");
 
-            connectionResult.ConnectionId = await transport.ConnectAsync(endpoint, cancellationToken);
+            connectionResult.ConnectionId = await transport.ConnectAsync(endpoint, cancellationToken: cancellationToken);
 
             var result = await clientHandshake.HandleClientAsync(connectionResult.ConnectionId, cancellationToken);
 
