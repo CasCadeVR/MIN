@@ -166,7 +166,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             streamId.TryWriteBytes(new Span<byte>(ack, 1, 16));
             BitConverter.GetBytes(chunkIndex).CopyTo(ack, 17);
 
-            // TODO: CHECK CHANNEL
+            // Secure because of message assembling
             await transport.SendAsync(ack, connectionId, serverConnectionid, MessageChannel.Secure, cancellationToken);
         }
         catch (Exception ex)

@@ -14,7 +14,7 @@ using MIN.Sessions.Core.Transport;
 namespace MIN.Sessions.Core.DI;
 
 /// <summary>
-/// Модуль регистрации зависимостей для Chat
+/// Модуль регистрации зависимостей для Session
 /// </summary>
 public class SessionModule : Module
 {

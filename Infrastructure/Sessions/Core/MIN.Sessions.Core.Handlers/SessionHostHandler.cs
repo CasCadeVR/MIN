@@ -1,4 +1,5 @@
-﻿using MIN.Core.Entities.Contracts.Extensions;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
@@ -68,6 +69,11 @@ internal sealed class SessionHostHandler : IMessageHandler
         {
             logger.Log($"Неизвестный тип сообщения в {nameof(SessionHostHandler)} - {message.GetType()}");
             return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionHostHandler)} - {message.GetType()}");
+        }
+
+        if (context.Role != Role.Host)
+        {
+            return HandlerResult.Failure($"Получил сообщение {message.GetType()} в {nameof(SessionHostHandler)} как {context.Role}, хотя не должен был", stopPropagation: false);
         }
 
         if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
@@ -155,6 +161,7 @@ internal sealed class SessionHostHandler : IMessageHandler
             }
             else
             {
+                // sending him ready as he didnt received by sender filtering
                 await messageSender.SendAsync(hostReadyMessage, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
 
                 return HandlerResult.WithResponse(new SessionJoinResponseMessage()

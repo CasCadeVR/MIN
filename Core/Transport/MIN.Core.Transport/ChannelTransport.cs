@@ -82,8 +82,6 @@ public class ChannelTransport : ITransport, IAsyncDisposable
 
     async Task<Guid> ITransport.ConnectAsync(IEndpoint endpoint, Guid? connectionId, CancellationToken cancellationToken)
     {
-        // Единый id для обеих ног. TCP подключается первой (до handshake),
-        // UDP — второй, когда клиент вытащил UdpEndpoint хоста из RoomInfo
         var effectiveId = connectionId
             ?? endpointConnectionIds.GetOrAdd(endpoint.GetAddress(), _ => Guid.NewGuid());
 
@@ -139,8 +137,9 @@ public class ChannelTransport : ITransport, IAsyncDisposable
     async Task<IEnumerable<IEndpoint>> ITransport.SetUpEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
     {
         var tcpEndpoints = await secureTransport.SetUpEndpoints(connectionId, networkOptions, oldNetworkOptions, cancellationToken);
-        var udpEndpoints = await fastTransport.SetUpEndpoints(connectionId, networkOptions, oldNetworkOptions, cancellationToken);
-        return tcpEndpoints.Concat(udpEndpoints);
+        await fastTransport.SetUpEndpoints(connectionId, networkOptions, oldNetworkOptions, cancellationToken);
+        // Возращаются только TCP endpoint потому что у них обрабатывается подключение
+        return tcpEndpoints;
     }
 
     IEnumerable<IEndpoint> ITransport.GetEndpoints(Guid serverConnectionId)

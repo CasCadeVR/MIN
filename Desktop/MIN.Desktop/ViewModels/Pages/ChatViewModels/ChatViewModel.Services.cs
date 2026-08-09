@@ -85,6 +85,18 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
+    private async Task OnVoiceCallJoinRequested(int subRoomId)
+    {
+        try
+        {
+            await featureCollection.Chat.ChatVoiceService.JoinCallAsync(roomId, subRoomId, appCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Error(e.Message);
+        }
+    }
+
     private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
     {
         await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
@@ -111,11 +123,23 @@ public partial class ChatViewModel : RoutableViewModelBase
 #endif
     }
 
-    private async void SendSessionStartMessage(Session session)
+    private async Task SendSessionStartMessage(Session session)
     {
         try
         {
             await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, appCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Error(e.Message);
+        }
+    }
+
+    private async Task SendVoiceCallStartMessage()
+    {
+        try
+        {
+            await featureCollection.Chat.ChatVoiceService.StartCallAsync(roomId, appCts.Token);
         }
         catch (DirectoryNotFoundException e)
         {

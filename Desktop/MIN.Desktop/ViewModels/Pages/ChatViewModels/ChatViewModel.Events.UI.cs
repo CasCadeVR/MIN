@@ -137,9 +137,13 @@ public partial class ChatViewModel : RoutableViewModelBase
         var choosingForm = await dialogService.ShowDialogAsync<SessionChoosingViewModel>();
         if (choosingForm! == true)
         {
-            SendSessionStartMessage(choosingForm!.SelectedSession!);
+            await SendSessionStartMessage(choosingForm!.SelectedSession!);
         }
     }
+
+    [RelayCommand]
+    private async Task StartVoiceCallClick()
+        => await SendVoiceCallStartMessage();
 
     #endregion
 

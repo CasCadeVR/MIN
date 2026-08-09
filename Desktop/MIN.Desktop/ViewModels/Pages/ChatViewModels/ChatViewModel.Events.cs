@@ -15,6 +15,7 @@ using MIN.Desktop.ViewModels.Base;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Sessions.Core.Events;
+using MIN.Voice.Events;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -30,11 +31,13 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         roomScope = eventBus.CreateScope(roomId);
         roomScope.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived);
-        roomScope.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived);
         roomScope.Subscribe<FileMetaDataMessageReceivedEvent>(OnFileMetaDataMessageReceived);
         roomScope.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted);
         roomScope.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted);
         roomScope.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed);
+        roomScope.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived);
+        roomScope.Subscribe<VoiceCallStartedEvent>(OnVoiceCallStarted);
+
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated);
         roomScope.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated);
         roomScope.Subscribe<PingMeasuredEvent>(OnPingMeasured);
@@ -65,6 +68,11 @@ public partial class ChatViewModel : RoutableViewModelBase
     }
 
     private async Task OnSessionReadyMessageReceived(SessionReadyMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
+    }
+
+    private async Task OnVoiceCallStarted(VoiceCallStartedEvent eventMessage, CancellationToken cancellationToken)
     {
         await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
     }
@@ -161,7 +169,6 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (eventMessage.NeedToDisconnect)
         {
             ClearParentFormEvents();
-
             if (!string.IsNullOrEmpty(eventMessage.LeavingMessage))
             {
                 NotifyIfNeeded(eventMessage.LeavingMessage);
@@ -177,8 +184,12 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         if (e.NeedToDisconnect)
         {
-            NotifyIfNeeded(e.ErrorMessage);
             ClearParentFormEvents();
+            if (!string.IsNullOrEmpty(e.ErrorMessage))
+            {
+                NotifyIfNeeded(e.ErrorMessage);
+                InAppNotifier.Info(e.ErrorMessage);
+            }
             await Disconnect();
         }
     }

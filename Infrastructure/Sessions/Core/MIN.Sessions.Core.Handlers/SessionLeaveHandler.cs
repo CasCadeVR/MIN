@@ -74,14 +74,13 @@ internal sealed class SessionLeaveHandler : IMessageHandler
             isLast = true;
         }
 
-        var leaveMessage = new SessionParticipantLeftMessage()
+        await messageRouter.RouteAsync(new SessionParticipantLeftMessage()
         {
             SubRoomId = sessionLeaveMessage.SubRoomId,
             Participant = sender!.ToParticipantInfo(),
             IsLast = isLast
-        };
+        }, roomId, identityService.SelfParticipant.Id, context.CancellationToken);
 
-        await messageRouter.RouteAsync(leaveMessage, roomId, identityService.SelfParticipant.Id, context.CancellationToken);
         return HandlerResult.Success();
     }
 }

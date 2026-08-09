@@ -10,7 +10,7 @@ namespace MIN.Core.SubRooms.Contracts.Interfaces;
 public interface ISubRoomManager
 {
     /// <summary>
-    /// Захостить подкомнаты
+    /// Захостить подкомнату
     /// </summary>
     SubRoomInfo HostSubRoom(Guid roomId, ParticipantInfo creator, SubRoomPurpose purpose);
 

@@ -103,7 +103,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
                     });
                 }
 
-                // TODO: CHECK CHANNEL
+                // Secure because of message assembling
                 await transport.SendAsync(encrypted, recipientConnectionId, serverConnectionId, MessageChannel.Secure, cancellationToken);
             }
 
@@ -182,7 +182,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
                     });
                 }
 
-                // TODO: CHECK CHANNEL
+                // Secure because of message assembling
                 await transport.SendAsync(encrypted, recipientConnectionId, serverConnectionId, MessageChannel.Secure, cancellationToken);
                 chunkIndex++;
             }
