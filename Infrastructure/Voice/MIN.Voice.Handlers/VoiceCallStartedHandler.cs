@@ -42,6 +42,7 @@ internal sealed class VoiceCallStartedHandler : IMessageHandler
         {
             Message = voiceCallStartedMessage,
             RoomId = context.RoomContext.RoomId,
+            Participant = context.RoomContext.Participants.GetParticipantById(voiceCallStartedMessage.Sender.Id)
         });
 
         return HandlerResult.Success();

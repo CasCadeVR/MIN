@@ -39,12 +39,8 @@ public class VoiceCallMonitor : IHostedService
 
     async Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
-        eventBus.Subscribe<RoomJoinedEvent>(OnRoomJoined);
         eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
     }
-
-    private async Task OnRoomJoined(RoomJoinedEvent e, CancellationToken cancellationToken)
-        => await messageRouter.RouteAsync(new VoiceCallStateRequestMessage(), e.RoomId, identityService.SelfParticipant.Id, cancellationToken);
 
     private async Task OnParticipantLeft(ParticipantLeftEvent e, CancellationToken cancellationToken)
     {

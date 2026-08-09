@@ -6,21 +6,25 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Voice.Events;
 using MIN.Voice.Messaging;
+using MIN.Voice.Services.Contacts.Interfaces;
 
 namespace MIN.Voice.Handlers;
 
 internal sealed class VoiceCallParticipantLeftHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
+    private readonly IVoicePlaybackService voicePlaybackService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="VoiceCallParticipantLeftHandler"/>
     /// </summary>
     public VoiceCallParticipantLeftHandler(IEventBus eventBus,
+        IVoicePlaybackService voicePlaybackService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
+        this.voicePlaybackService = voicePlaybackService;
         this.logger = logger;
     }
 
@@ -39,6 +43,8 @@ internal sealed class VoiceCallParticipantLeftHandler : IMessageHandler
         var roomId = context.RoomContext.RoomId;
         var subRoomId = voiceParticipantLeftMessage.SubRoomId;
         var participant = voiceParticipantLeftMessage.Participant;
+
+        voicePlaybackService.RemoveParticipant(participant.Id);
 
         await eventBus.PublishAsync(new VoiceParticipantLeftEvent()
         {

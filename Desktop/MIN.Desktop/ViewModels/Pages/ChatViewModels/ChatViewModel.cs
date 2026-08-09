@@ -138,7 +138,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         SubscribeToEvents(featureCollection.Core.EventBus);
 
         await UpdateChatFlow();
-        loadingTcs.SetResult();
+        await RequestVoiceCallStateAsync();
     }
 
     private async Task CleanUpServicesAsync(Guid roomId, Guid connectionId)

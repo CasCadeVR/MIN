@@ -2,6 +2,7 @@
 using MIN.Core.Messaging.Contracts.Enums;
 using MIN.Core.Messaging.Contracts.Messages;
 using MIN.Core.SubRooms.Contracts.Interfaces.Messages;
+using MIN.Voice.Services.Contacts.Enums;
 
 namespace MIN.Voice.Messaging;
 
@@ -17,10 +18,23 @@ public sealed class VoiceDataMessage : BaseMessage, IWithinSubRoom
     public override MessageChannel Channel => MessageChannel.Fast;
 
     /// <inheritdoc />
+    public override bool RequireStreamAcks => false;
+
+    /// <inheritdoc />
     public int SubRoomId { get; set; }
+
+    /// <summary>
+    /// Порядковый номер
+    /// </summary>
+    public long SequenceNumber { get; set; }
+
+    /// <summary>
+    /// Вид кодировки
+    /// </summary>
+    public VoiceCodecKind Codec { get; set; }
 
     /// <summary>
     /// Содержимое сообщения (звук)
     /// </summary>
-    public required byte[] Voice { get; set; }
+    public required byte[] Data { get; set; }
 }

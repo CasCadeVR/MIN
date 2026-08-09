@@ -1,4 +1,5 @@
-﻿using MIN.Core.Events.Contracts.Interfaces;
+﻿using MIN.Core.Entities;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Contracts.Models;
 using MIN.Voice.Messaging;
 
@@ -16,4 +17,9 @@ public sealed record VoiceCallStartedEvent : BaseEvent, IRoomScopedEvent
     /// Полученная информация о начале звонка
     /// </summary>
     public VoiceCallStartedMessage Message { get; init; } = null!;
+
+    /// <summary>
+    /// Начавший звонок участник
+    /// </summary>
+    public Participant Participant { get; init; } = null!;
 }

@@ -9,7 +9,7 @@ public class VoiceCallMessageResolver : IVoiceCallMessageResolver
 {
     Guid? IVoiceCallMessageResolver.GetVoiceCallMessageIdOutOfSubRoomId(RoomContext context, int subRoomId)
     {
-        var history = context.Messages.GetRecentHistory();
+        var history = context.Messages.GetHistory();
         VoiceCallStartedMessage? match = null;
 
         foreach (var message in history)

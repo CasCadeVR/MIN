@@ -41,6 +41,9 @@
     <Compile Update="Views\Cards\Messages\ChatFileImagePreviewMessageView.axaml.cs">
       <DependentUpon>ChatFileImagePreviewMessageView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Cards\Messages\ChatVoiceCallMessageView.axaml.cs">
+      <DependentUpon>ChatVoiceCallMessageView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Cards\Messages\ChatSessionMessageView.axaml.cs">
       <DependentUpon>ChatSessionMessageView.axaml</DependentUpon>
     </Compile>

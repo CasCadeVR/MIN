@@ -1,6 +1,6 @@
-﻿using MIN.Core.Events.Contracts.Interfaces;
+﻿using MIN.Core.Entities;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Contracts.Models;
-using MIN.Voice.Messaging;
 
 namespace MIN.Voice.Events;
 
@@ -13,7 +13,20 @@ public sealed record VoiceCallStateReceivedEvent : BaseEvent, IRoomScopedEvent
     public Guid RoomId { get; init; }
 
     /// <summary>
-    /// Полученная информация о звонке
+    /// Идентификатор подкомнаты
     /// </summary>
-    public VoiceCallStateResponseMessage Message { get; init; } = null!;
+    /// <remarks>
+    /// null, если активного звонка неут, иначе - id подкомнаты звонка
+    /// </remarks>
+    public int? ActiveSubRoomId { get; set; }
+
+    /// <summary>
+    /// Когда начался звонок
+    /// </summary>
+    public DateTime StartedAt { get; set; }
+
+    /// <summary>
+    /// Участники в звонке
+    /// </summary>
+    public List<Participant> CallParticipants { get; set; } = [];
 }

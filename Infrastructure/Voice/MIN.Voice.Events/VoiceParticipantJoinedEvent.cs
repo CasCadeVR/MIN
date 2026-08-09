@@ -1,4 +1,4 @@
-﻿using MIN.Core.Entities.Contracts.Models;
+﻿using MIN.Core.Entities;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Contracts.Models;
 
@@ -20,5 +20,5 @@ public sealed record VoiceParticipantJoinedEvent : BaseEvent, IRoomScopedEvent
     /// <summary>
     /// Зашедний участник
     /// </summary>
-    public ParticipantInfo Participant { get; init; } = null!;
+    public Participant Participant { get; init; } = null!;
 }

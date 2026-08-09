@@ -54,7 +54,7 @@ internal sealed class VoiceCallStateHandler : IMessageHandler
 
                 var allSubrooms = subRoomManager.GetRoomSubRooms(roomId);
 
-                var voiceCallSubroom = allSubrooms.FirstOrDefault(x => x.Purpose == SubRoomPurpose.Voice);
+                var voiceCallSubroom = allSubrooms.FirstOrDefault(x => x.Purpose == SubRoomPurpose.Voice && x.IsActive);
 
                 var response = new VoiceCallStateResponseMessage()
                 {
@@ -71,10 +71,14 @@ internal sealed class VoiceCallStateHandler : IMessageHandler
 
             case VoiceCallStateResponseMessage voiceCallStateResponseMessage:
                 logger.Log($"Получил инфу о текущем звонке: {voiceCallStateResponseMessage.ActiveSubRoomId ?? -1}");
+
                 await eventBus.PublishAsync(new VoiceCallStateReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
-                    Message = voiceCallStateResponseMessage,
+                    StartedAt = voiceCallStateResponseMessage.StartedAt,
+                    ActiveSubRoomId = voiceCallStateResponseMessage.ActiveSubRoomId,
+                    CallParticipants = context.RoomContext.Participants
+                        .GetParticipantByIds(voiceCallStateResponseMessage.CallParticipantIds).ToList(),
                 });
 
                 return HandlerResult.Success();

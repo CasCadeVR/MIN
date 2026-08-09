@@ -6,6 +6,11 @@
 public interface IChatVoiceService
 {
     /// <summary>
+    /// Запросить обновление состояния звонка
+    /// </summary>
+    Task RequestCallStateAsync(Guid roomId, CancellationToken ct = default);
+
+    /// <summary>
     /// Начать звонок в комнате
     /// </summary>
     Task StartCallAsync(Guid roomId, CancellationToken ct = default);

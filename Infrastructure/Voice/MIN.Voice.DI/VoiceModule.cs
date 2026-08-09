@@ -21,5 +21,7 @@ public class VoiceModule : Module
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IVoiceMessagingAnchor>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, IVoiceHandlerAnchor>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, VoiceCallMonitor>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<VoiceCallMessageResolver>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<VoicePlaybackService>(ServiceLifetime.Singleton);
     }
 }

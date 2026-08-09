@@ -61,14 +61,12 @@ internal sealed class SessionParticipantLeftHandler : IMessageHandler
 
         var existingSessionReadyMessageId = sessionReadyMessageResolver.GetSessionReadyMessageIdOutOfSubRoomId(context.RoomContext, sessionParticipantLeftMessage.SubRoomId);
 
-        if (existingSessionReadyMessageId == null)
+        if (existingSessionReadyMessageId != null)
         {
-            return HandlerResult.Failure($"Не найдено сообщение, представляющее сессию", showErrorMessage: false);
+            var existing = context.RoomContext.Messages.GetMessageById(existingSessionReadyMessageId.Value) as SessionReadyMessage;
+            existing!.CurrentParticipantAmount--;
+            context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
         }
-
-        var existing = context.RoomContext.Messages.GetMessageById(existingSessionReadyMessageId.Value) as SessionReadyMessage;
-        existing!.CurrentParticipantAmount--;
-        context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
 
         await eventBus.PublishAsync(new SessionParticipantLeftEvent()
         {

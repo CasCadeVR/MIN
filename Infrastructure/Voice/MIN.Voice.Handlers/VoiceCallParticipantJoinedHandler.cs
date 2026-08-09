@@ -6,21 +6,25 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Voice.Events;
 using MIN.Voice.Messaging;
+using MIN.Voice.Services.Contacts.Interfaces;
 
 namespace MIN.Voice.Handlers;
 
 internal sealed class VoiceCallParticipantJoinedHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
+    private readonly IVoicePlaybackService voicePlaybackService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="VoiceCallParticipantJoinedHandler"/>
     /// </summary>
     public VoiceCallParticipantJoinedHandler(IEventBus eventBus,
+        IVoicePlaybackService voicePlaybackService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
+        this.voicePlaybackService = voicePlaybackService;
         this.logger = logger;
     }
 
@@ -40,9 +44,11 @@ internal sealed class VoiceCallParticipantJoinedHandler : IMessageHandler
         var subRoomId = voiceParticipantJoinedMessage.SubRoomId;
         var participant = voiceParticipantJoinedMessage.Participant;
 
+        voicePlaybackService.AddParticipant(participant.Id);
+
         await eventBus.PublishAsync(new VoiceParticipantJoinedEvent()
         {
-            Participant = participant,
+            Participant = context.RoomContext.Participants.GetParticipantById(participant.Id),
             SubRoomId = subRoomId,
             RoomId = roomId,
         });

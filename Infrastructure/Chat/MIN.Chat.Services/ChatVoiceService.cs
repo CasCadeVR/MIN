@@ -22,6 +22,9 @@ public sealed class ChatVoiceService : IChatVoiceService
         this.identityService = identityService;
     }
 
+    async Task IChatVoiceService.RequestCallStateAsync(Guid roomId, CancellationToken cancellationToken)
+        => await SendAsync(new VoiceCallStateRequestMessage(), roomId, cancellationToken);
+
     async Task IChatVoiceService.StartCallAsync(Guid roomId, CancellationToken cancellationToken)
         => await SendAsync(new VoiceCallStartRequestMessage(), roomId, cancellationToken);
 

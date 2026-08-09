@@ -11,7 +11,7 @@ public class SessionReadyMessageResolver : ISessionReadyMessageResolver
 {
     Guid? ISessionReadyMessageResolver.GetSessionReadyMessageIdOutOfSubRoomId(RoomContext context, int subRoomId)
     {
-        var history = context.Messages.GetRecentHistory();
+        var history = context.Messages.GetHistory();
         SessionReadyMessage? match = null;
 
         foreach (var message in history)

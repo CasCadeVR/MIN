@@ -97,6 +97,30 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
+    private async Task OnVoiceCallLeaveRequested(int subRoomId)
+    {
+        try
+        {
+            await featureCollection.Chat.ChatVoiceService.LeaveCallAsync(roomId, subRoomId, appCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Error(e.Message);
+        }
+    }
+
+    private async Task RequestVoiceCallStateAsync()
+    {
+        try
+        {
+            await featureCollection.Chat.ChatVoiceService.RequestCallStateAsync(roomId, appCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Warning(e.Message);
+        }
+    }
+
     private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
     {
         await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,

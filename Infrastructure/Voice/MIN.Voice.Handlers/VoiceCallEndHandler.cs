@@ -42,14 +42,12 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
 
         var existingVoiceCallStartedMessageId = voiceCallMessageResolver.GetVoiceCallMessageIdOutOfSubRoomId(context.RoomContext, voiceCallEndedMessage.SubRoomId);
 
-        if (existingVoiceCallStartedMessageId == null)
+        if (existingVoiceCallStartedMessageId != null)
         {
-            return HandlerResult.Failure($"Не найдено сообщение, представляющее сессию", showErrorMessage: false);
+            var existing = context.RoomContext.Messages.GetMessageById(existingVoiceCallStartedMessageId.Value) as VoiceCallStartedMessage;
+            existing!.EndedAt = DateTime.Now;
+            context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
         }
-
-        var existing = context.RoomContext.Messages.GetMessageById(existingVoiceCallStartedMessageId.Value) as VoiceCallStartedMessage;
-        existing!.EndedAt = voiceCallEndedMessage.Timestamp;
-        context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
 
         await eventBus.PublishAsync(new VoiceCallEndedEvent()
         {

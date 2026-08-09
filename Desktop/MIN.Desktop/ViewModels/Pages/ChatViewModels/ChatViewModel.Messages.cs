@@ -244,10 +244,10 @@ public partial class ChatViewModel : RoutableViewModelBase
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
-        var card = new ChatVoiceCallMessageViewModel(roomScope,
-            featureCollection.Core.EventBus, msg, localParticipant, timePadding, isHost, removeHeaders);
+        var card = new ChatVoiceCallMessageViewModel(roomScope, msg, localParticipant, timePadding, isHost, removeHeaders);
 
         card.OnJoinRequested += () => OnVoiceCallJoinRequested(msg.SubRoomId);
+        card.OnLeaveRequested += () => OnVoiceCallLeaveRequested(msg.SubRoomId);
 
         if (!withAppendOnTop)
         {

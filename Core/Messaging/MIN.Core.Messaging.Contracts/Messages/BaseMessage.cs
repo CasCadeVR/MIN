@@ -13,7 +13,7 @@ public abstract class BaseMessage : IMessage
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <inheritdoc />
-    public DateTime Timestamp { get; } = DateTime.Now;
+    public DateTime Timestamp { get; init; } = DateTime.Now;
 
     /// <inheritdoc />
     public abstract MessageTypeTag TypeTag { get; }

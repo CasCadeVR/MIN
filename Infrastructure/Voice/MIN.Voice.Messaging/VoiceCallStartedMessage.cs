@@ -1,4 +1,5 @@
 ﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Common.Core.Extensions;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Messages;
@@ -36,5 +37,7 @@ public sealed class VoiceCallStartedMessage : BaseMessage, IDescribable
     /// </summary>
     public bool IsEnded => EndedAt != null;
 
-    string IDescribable.GetDescription() => $"{Sender.Name} начал звонок в комнате";
+    string IDescribable.GetDescription() => IsEnded
+        ? $"{Sender.Name} начал звонок в комнате продолжительностью {(Timestamp - EndedAt!).Value.ToFriendlyString()}"
+        : $"{Sender.Name} начал звонок в комнате";
 }

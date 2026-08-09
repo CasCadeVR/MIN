@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MIN.Chat.Events;
@@ -12,6 +13,7 @@ using MIN.Desktop.Contracts.Models.Statuses;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Cards;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Sessions.Core.Events;
@@ -36,7 +38,12 @@ public partial class ChatViewModel : RoutableViewModelBase
         roomScope.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted);
         roomScope.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed);
         roomScope.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived);
+
         roomScope.Subscribe<VoiceCallStartedEvent>(OnVoiceCallStarted);
+        roomScope.Subscribe<VoiceCallEndedEvent>(OnVoiceCallEnded);
+        roomScope.Subscribe<VoiceParticipantJoinedEvent>(OnVoiceParticipantJoined);
+        roomScope.Subscribe<VoiceParticipantLeftEvent>(OnVoiceParticipantLeft);
+        roomScope.Subscribe<VoiceCallStateReceivedEvent>(VoiceCallStateReceived);
 
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated);
         roomScope.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated);
@@ -72,10 +79,58 @@ public partial class ChatViewModel : RoutableViewModelBase
         await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
     }
 
+    #region Voice chat related
+
     private async Task OnVoiceCallStarted(VoiceCallStartedEvent eventMessage, CancellationToken cancellationToken)
     {
+        IsVoiceChatActive = true;
+        activeVoiceChatSubroomId = eventMessage.Message.SubRoomId;
+        IsInVoiceChat = eventMessage.Participant.Id == localParticipant.Id;
+        VoiceChatParticipants.Add(new ParticipantVoiceCardViewModel(eventMessage.Participant, roomScope));
         await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
     }
+
+    private async Task OnVoiceCallEnded(VoiceCallEndedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        VoiceChatParticipants.Clear();
+        activeVoiceChatSubroomId = null;
+        IsInVoiceChat = false;
+        IsVoiceChatActive = false;
+    }
+
+    private async Task VoiceCallStateReceived(VoiceCallStateReceivedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        VoiceChatParticipants.Clear();
+        IsVoiceChatActive = eventMessage.ActiveSubRoomId != null;
+        activeVoiceChatSubroomId = eventMessage.ActiveSubRoomId;
+        foreach (var participant in eventMessage.CallParticipants)
+        {
+            VoiceChatParticipants.Add(new ParticipantVoiceCardViewModel(participant, roomScope));
+        }
+        loadingTcs.SetResult();
+    }
+
+    private async Task OnVoiceParticipantJoined(VoiceParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        IsInVoiceChat = eventMessage.Participant.Id == localParticipant.Id;
+        VoiceChatParticipants.Add(new ParticipantVoiceCardViewModel(eventMessage.Participant, roomScope));
+    }
+
+    private async Task OnVoiceParticipantLeft(VoiceParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.Participant.Id == localParticipant.Id)
+        {
+            IsInVoiceChat = false;
+        }
+        var voiceParticipant = VoiceChatParticipants.FirstOrDefault(x => x.ParticipantId == eventMessage.Participant.Id);
+        if (voiceParticipant != null)
+        {
+            VoiceChatParticipants.Remove(voiceParticipant);
+            voiceParticipant.Dispose();
+        }
+    }
+
+    #endregion
 
     #region File related
 

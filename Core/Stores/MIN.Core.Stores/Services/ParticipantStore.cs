@@ -60,6 +60,14 @@ public sealed class ParticipantStore : IParticipantStore
         }
     }
 
+    IEnumerable<Participant> IParticipantStore.GetParticipantByIds(IEnumerable<Guid> participantIds)
+    {
+        lock (participants)
+        {
+            return participants.Where(x => participantIds.Contains(x.Id));
+        }
+    }
+
     bool IParticipantStore.TryGetParticipantById(Guid participantId, out Participant? participant)
     {
         lock (participants)

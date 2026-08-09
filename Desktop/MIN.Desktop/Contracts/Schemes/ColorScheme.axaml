@@ -122,6 +122,16 @@
             <Color x:Key="FileMessageIconBackgroundHover">#689bef</Color>           <!-- File Message Icon hover Background -->
             <Color x:Key="FileMessageIconBackgroundPressed">#2d6cd3</Color>           <!-- File Message Icon pressed Background -->
 
+            <!-- *************** -->
+            <!-- Voice           -->
+            <!-- *************** -->
+
+            <Color x:Key="VoiceAccept">#1ca54e</Color>           <!-- Voice call accept button icon background -->
+            <Color x:Key="VoiceTimerOn">#1ca54e</Color>           <!-- Voice call timer when on call foreground -->
+            <Color x:Key="VoiceBackground">#222224</Color>           <!-- Voice call panel background -->
+            <Color x:Key="VoiceReject">#EF4444</Color>           <!-- Voice call reject button icon background -->
+            <Color x:Key="VoiceTalking">#2d6cd3</Color>          <!-- Voice call talking participant border brush -->
+
         </ResourceDictionary>
 
         <!-- LIGHT THEME -->
@@ -239,6 +249,16 @@
             <Color x:Key="FileMessageIconBackground">#3b82f6</Color>           <!-- File Message Icon Background -->
             <Color x:Key="FileMessageIconBackgroundHover">#689bef</Color>           <!-- File Message Icon hover Background -->
             <Color x:Key="FileMessageIconBackgroundPressed">#2d6cd3</Color>           <!-- File Message Icon pressed Background -->
+
+            <!-- *************** -->
+            <!-- Voice           -->
+            <!-- *************** -->
+
+            <Color x:Key="VoiceAccept">#1ca54e</Color>           <!-- Voice call accept button icon background -->
+            <Color x:Key="VoiceTimerOn">#1ca54e</Color>           <!-- Voice call timer when on call foreground -->
+            <Color x:Key="VoiceBackground">#b8b8b8</Color>           <!-- Voice call panel background -->
+            <Color x:Key="VoiceReject">#EF4444</Color>           <!-- Voice call reject button icon background -->
+            <Color x:Key="VoiceTalking">#2d6cd3</Color>          <!-- Voice call talking participant border brush -->
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
