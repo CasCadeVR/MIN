@@ -12,6 +12,7 @@ using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Voice.Events;
 using MIN.Voice.Messaging;
+using MIN.Voice.Services.Contacts.Interfaces;
 
 namespace MIN.Voice.Handlers;
 
@@ -31,6 +32,7 @@ internal sealed class VoiceCallStartHandler : IMessageHandler
         IEventBus eventBus,
         IMessageSender messageSender,
         IMessageRouter messageRouter,
+        IAudioCaptureService audioCaptureService,
         IIdentityService identityService,
         ILoggerProvider logger)
     {

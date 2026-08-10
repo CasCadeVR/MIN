@@ -91,6 +91,20 @@
                             OnContent="Светлая"/>
                      </DockPanel>
 
+                    <DockPanel HorizontalSpacing="12">
+                        <TextBlock VerticalAlignment="Center">Микрофон</TextBlock>
+                        <ComboBox ItemsSource="{Binding InputDevices}"
+                                  SelectedIndex="{Binding InputDeviceIndex}"
+                                  HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+
+                    <DockPanel HorizontalSpacing="12">
+                        <TextBlock VerticalAlignment="Center">Динамики</TextBlock>
+                        <ComboBox ItemsSource="{Binding OutputDevices}"
+                                  SelectedIndex="{Binding OutputDeviceIndex}"
+                                  HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+
                     <!-- Logs -->
 
                     <Button

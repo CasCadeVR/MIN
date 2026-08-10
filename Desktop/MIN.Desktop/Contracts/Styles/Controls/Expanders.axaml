@@ -6,7 +6,7 @@
                     <Border Background="White" Padding="10">
                         <StackPanel Spacing="10">
                             <Expander
-                                Classes="roomGroup"
+                                Classes="main"
                                 Header="Changelog Expander"
                                 HorizontalAlignment="Center">
                                 <TextBlock>Expanded content</TextBlock>
@@ -18,7 +18,7 @@
                     <Border Background="Black" Padding="10">
                         <StackPanel Spacing="10">
                             <Expander
-                                Classes="roomGroup"
+                                Classes="main"
                                 Header="Changelog Expander"
                                 HorizontalAlignment="Center">
                                 <TextBlock>Expanded content</TextBlock>
@@ -33,7 +33,7 @@
         </Panel>
     </Design.PreviewWith>
 
-     <Style Selector="ToggleButton.roomGroup">
+     <Style Selector="ToggleButton.main">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Template">
@@ -99,7 +99,7 @@
         </Style>
     </Style>
 
-    <Style Selector="Expander.roomGroup">
+    <Style Selector="Expander.main">
         <Setter Property="FontSize" Value="{DynamicResource FontSizeH5}" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Background" Value="Transparent" />
@@ -109,7 +109,7 @@
                 <StackPanel>
                     <ToggleButton
                         Background="{TemplateBinding Background}"
-                        Classes="roomGroup"
+                        Classes="main"
                         Content="{TemplateBinding Header}"
                         Foreground="{TemplateBinding Foreground}"
                         FontSize="{TemplateBinding FontSize}"

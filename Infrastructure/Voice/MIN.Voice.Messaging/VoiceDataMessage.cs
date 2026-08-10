@@ -21,6 +21,9 @@ public sealed class VoiceDataMessage : BaseMessage, IWithinSubRoom
     public override bool RequireStreamAcks => false;
 
     /// <inheritdoc />
+    public override bool RequiresLocalDuplication => true;
+
+    /// <inheritdoc />
     public int SubRoomId { get; set; }
 
     /// <summary>

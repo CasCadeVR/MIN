@@ -14,6 +14,7 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly IVoiceCallMessageResolver voiceCallMessageResolver;
+    private readonly IVoicePlaybackService voicePlaybackService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -21,10 +22,12 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
     /// </summary>
     public VoiceCallEndHandler(IEventBus eventBus,
         IVoiceCallMessageResolver voiceCallMessageResolver,
+        IVoicePlaybackService voicePlaybackService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
-        this.voiceCallMessageResolver = voiceCallMessageResolver;
+        this.voiceCallMessageResolver = voiceCallMessageResolver; //TODO
+        this.voicePlaybackService = voicePlaybackService;
         this.logger = logger;
     }
 
@@ -48,6 +51,8 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
             existing!.EndedAt = DateTime.Now;
             context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
         }
+
+        voicePlaybackService.Clear();
 
         await eventBus.PublishAsync(new VoiceCallEndedEvent()
         {

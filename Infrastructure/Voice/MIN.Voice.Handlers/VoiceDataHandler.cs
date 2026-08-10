@@ -1,6 +1,7 @@
 ﻿using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -14,6 +15,7 @@ internal sealed class VoiceDataHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly IVoicePlaybackService voicePlaybackService;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -21,10 +23,12 @@ internal sealed class VoiceDataHandler : IMessageHandler
     /// </summary>
     public VoiceDataHandler(IEventBus eventBus,
         IVoicePlaybackService voicePlaybackService,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
         this.voicePlaybackService = voicePlaybackService;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
@@ -40,7 +44,10 @@ internal sealed class VoiceDataHandler : IMessageHandler
             return HandlerResult.Success();
         }
 
+        //if (identityService.SelfParticipant.Id != message.SenderId)
+        //{
         voicePlaybackService.PlaySamples(message.SenderId, voiceData.SequenceNumber, voiceData.Data);
+        //}
 
         await eventBus.PublishAsync(new VoiceDataReceivedEvent()
         {

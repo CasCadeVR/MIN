@@ -9,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Enums;
@@ -49,6 +50,9 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     // Voice chat
 
+    private readonly DispatcherTimer callTimer = new(TimeSpan.FromSeconds(1), DispatcherPriority.Background, Dispatcher.UIThread);
+    private DateTime callStartedAt;
+
     /// <summary>
     /// Список участников в звонке
     /// </summary>
@@ -65,6 +69,12 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// </summary>
     [ObservableProperty]
     public partial bool IsInVoiceChat { get; set; }
+
+    /// <summary>
+    /// Длительность звонка (если он идёт)
+    /// </summary>
+    [ObservableProperty]
+    public partial TimeSpan CallDuration { get; set; }
 
     #region Layouting
 
@@ -105,9 +115,11 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     #region Timers
 
-    private void InitializeTypingTimer()
+    private void InitializeTimers()
     {
         typingTimer.Elapsed += (s, e) => OnTypingTimerStop();
+        callTimer.Tick += OnCallTimerTick;
+        callTimer.Start();
     }
 
     private void OnTypingTimerStop()
@@ -115,6 +127,9 @@ public partial class ChatViewModel : RoutableViewModelBase
         typingTimer.Stop();
         _ = SendSelfStatusChangedMessage(GetRestingStatus());
     }
+
+    private void OnCallTimerTick(object? sender, EventArgs e)
+        => CallDuration = DateTime.Now - callStartedAt;
 
     private OnlineStatus GetRestingStatus() => isParentWindowActive
             ? OnlineStatus.Online

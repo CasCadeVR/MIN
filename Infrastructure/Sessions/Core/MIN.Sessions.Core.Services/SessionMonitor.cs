@@ -90,7 +90,7 @@ public class SessionMonitor : IHostedService
         var roomId = e.RoomId;
         var participantId = e.Message.Participant.Id;
 
-        var activeSubRooms = subRoomManager.GetRoomSubRooms(roomId).Where(x => x.Purpose == SubRoomPurpose.Activity);
+        var activeSubRooms = subRoomManager.GetRoomSubRooms(roomId).Where(x => x.Purpose == SubRoomPurpose.Activity && x.IsActive);
         foreach (var subRoom in activeSubRooms)
         {
             if (subRoomManager.IsInSubRoom(roomId, subRoom.Id, participantId))

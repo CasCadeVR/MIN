@@ -4,6 +4,7 @@ using MIN.Common.Mvc;
 using MIN.Common.Mvc.Extensions;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Voice.DI.FeatureCollection;
 using MIN.Voice.Handlers;
 using MIN.Voice.Messaging;
 using MIN.Voice.Services;
@@ -21,7 +22,12 @@ public class VoiceModule : Module
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IVoiceMessagingAnchor>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, IVoiceHandlerAnchor>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, VoiceCallMonitor>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<PcmCodec>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<AudioDeviceService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<VoiceCallMessageResolver>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<VoicePlaybackService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<AudioCaptureService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<VoiceDataTransmitter>(ServiceLifetime.Transient);
+        services.RegisterAsImplementedInterfaces<VoiceFeatureCollection>(ServiceLifetime.Singleton);
     }
 }

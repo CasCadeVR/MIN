@@ -83,7 +83,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             OnNavigatedFrom = ActionOnNavigatedFrom;
 
             InitializeNotifications();
-            InitializeTypingTimer();
+            InitializeTimers();
             InitializeLayoutStyles();
             InitializeParentFormWindowStateEvents();
             InitializeObservableCollections();

@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -34,6 +36,28 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
 
     /// <inheritdoc />
     public override ViewLayoutType LayoutType => ViewLayoutType.LeftSideBar;
+
+    /// <summary>
+    /// Микрофоны
+    /// </summary>
+    public AvaloniaList<string> InputDevices { get; set; } = [];
+
+    /// <summary>
+    /// Номер выбранного микрофона
+    /// </summary>
+    [ObservableProperty]
+    public partial int InputDeviceIndex { get; set; }
+
+    /// <summary>
+    /// Динамики
+    /// </summary>
+    public AvaloniaList<string> OutputDevices { get; set; } = [];
+
+    /// <summary>
+    /// Номер выбранного динамика
+    /// </summary>
+    [ObservableProperty]
+    public partial int OutputDeviceIndex { get; set; }
 
     /// <summary>
     /// Версия приложения
@@ -89,6 +113,18 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
         {
             appCts = ctsProvider.AppCts;
 
+            var inputDeviceNames = featureCollection.Voice.AudioDeviceService.GetInputDevices().Select(x => x.Name);
+            foreach (var name in inputDeviceNames)
+            {
+                InputDevices.Add(name);
+            }
+
+            var outputDeviceNames = featureCollection.Voice.AudioDeviceService.GetOutputDevices().Select(x => x.Name);
+            foreach (var name in outputDeviceNames)
+            {
+                OutputDevices.Add(name);
+            }
+
             featureCollection.Helper.SettingsProvider.OnSettingsSaved += FillControls;
 
             FillControls();
@@ -116,6 +152,8 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
             Settings.DiscoveryPort = DiscoveryPort;
             Settings.LightThemeEnabled = LightThemeEnabled;
             Settings.DiscoveryTimeout = DiscoveryTimeout;
+            Settings.InputDeviceNumber = InputDeviceIndex;
+            Settings.OutputDeviceNumber = OutputDeviceIndex;
             featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         }
 

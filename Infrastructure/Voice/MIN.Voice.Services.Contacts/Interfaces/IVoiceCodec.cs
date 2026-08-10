@@ -5,7 +5,7 @@ namespace MIN.Voice.Services.Contacts.Interfaces
     /// <summary>
     /// Кодировщик звука в байты
     /// </summary>
-    public interface IVoiceCodec : IDisposable
+    public interface IVoiceCodec
     {
         /// <summary>
         /// Вид кодировки

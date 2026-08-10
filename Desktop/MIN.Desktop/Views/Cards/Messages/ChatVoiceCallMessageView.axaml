@@ -59,7 +59,7 @@
                         IsVisible="{Binding !AsRejected}"
                         Classes="icon"
                         Background="{DynamicResource VoiceReject}">
-                        <Svg Path="/Assets/Icons/phone-reject.svg" />
+                        <Svg Path="/Assets/Icons/phone-disconnect.svg" />
                     </Button>
                 </StackPanel>
             </StackPanel>

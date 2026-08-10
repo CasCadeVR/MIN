@@ -24,4 +24,14 @@ public class Settings
     /// Порт для обнаружения в сети
     /// </summary>
     public int DiscoveryPort { get; set; } = 42069;
+
+    /// <summary>
+    /// Индекс выбранного микрофона
+    /// </summary>
+    public int InputDeviceNumber { get; set; }
+
+    /// <summary>
+    /// Индекс выбранного динамика
+    /// </summary>
+    public int OutputDeviceNumber { get; set; }
 }

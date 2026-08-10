@@ -44,7 +44,10 @@ internal sealed class VoiceCallParticipantJoinedHandler : IMessageHandler
         var subRoomId = voiceParticipantJoinedMessage.SubRoomId;
         var participant = voiceParticipantJoinedMessage.Participant;
 
-        voicePlaybackService.AddParticipant(participant.Id);
+        if (voicePlaybackService.IsInVoiceCall(subRoomId))
+        {
+            voicePlaybackService.AddParticipant(participant.Id);
+        }
 
         await eventBus.PublishAsync(new VoiceParticipantJoinedEvent()
         {

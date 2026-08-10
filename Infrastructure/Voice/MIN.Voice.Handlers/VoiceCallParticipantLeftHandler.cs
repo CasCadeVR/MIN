@@ -44,7 +44,10 @@ internal sealed class VoiceCallParticipantLeftHandler : IMessageHandler
         var subRoomId = voiceParticipantLeftMessage.SubRoomId;
         var participant = voiceParticipantLeftMessage.Participant;
 
-        voicePlaybackService.RemoveParticipant(participant.Id);
+        if (voicePlaybackService.IsInVoiceCall(subRoomId))
+        {
+            voicePlaybackService.RemoveParticipant(participant.Id);
+        }
 
         await eventBus.PublishAsync(new VoiceParticipantLeftEvent()
         {

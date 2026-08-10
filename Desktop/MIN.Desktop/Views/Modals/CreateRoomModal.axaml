@@ -54,7 +54,7 @@
                 </Border>
 
                 <Border Classes="card">
-                    <Expander Classes="roomGroup" Header="Настройка сети" IsExpanded="False">
+                    <Expander Classes="main" Header="Настройка сети" IsExpanded="False">
                         <StackPanel Margin="0,8,0,0" Classes="form">
                             <!-- LAN Udp Broadcast -->
 

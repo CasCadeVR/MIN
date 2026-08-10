@@ -133,65 +133,85 @@
                 <!-- Voice chat -->
 
                 <Border DockPanel.Dock="Top"
-                    IsVisible="{Binding IsVoiceChatActive}"
                     Background="{DynamicResource VoiceBackground}"
+                    CornerRadius="{DynamicResource CornerRadiusLarge}"
                     Padding="{DynamicResource PaddingTopBar}"
-                    CornerRadius="{DynamicResource CornerRadiusLarge}">
-                    <Border.Styles>
-                        <Style Selector="Border.talking">
-                            <Setter Property="BorderBrush" Value="{DynamicResource VoiceTalking}" />
-                            <Setter Property="BorderThickness" Value="4" />
-                        </Style>
-                        <Style Selector="Border:not(.talking)">
-                            <Setter Property="BorderThickness" Value="0" />
-                        </Style>
-                    </Border.Styles>
+                    IsVisible="{Binding IsVoiceChatActive}">
+                    <Expander Classes="main">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Идёт звонок - " />
+                                <TextBlock
+                                    Classes.callTimer-in="{Binding IsInVoiceChat}"
+                                    Text="{Binding CallDuration, StringFormat='hh\\:mm\\:ss'}" />
+                            </StackPanel>
+                        </Expander.Header>
 
-                    <StackPanel Spacing="8">
-                        <ScrollViewer Classes="main">
-                            <ItemsControl ItemsSource="{Binding VoiceChatParticipants}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <VirtualizingStackPanel Orientation="Horizontal"
-                                            HorizontalAlignment="Center"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Classes="card appear-from-top"
-                                            Classes.talking="{Binding Talking}"
-                                            Margin="4">
-                                            <SelectableTextBlock HorizontalAlignment="Center"
-                                                Classes="header4"
-                                                Text="{Binding ParticipantName,
-                                                    Converter={converters:TruncateWithEllipsisConverter},
-                                                    ConverterParameter=20}" />
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
+                        <Expander.Styles>
+                            <Style Selector="Border.talking">
+                                <Setter Property="BorderBrush" Value="{DynamicResource VoiceTalking}" />
+                                <Setter Property="BorderThickness" Value="4" />
+                            </Style>
+                            <Style Selector="Border:not(.talking)">
+                                <Setter Property="BorderThickness" Value="0" />
+                            </Style>
+                            <Style Selector="TextBlock.callTimer-in">
+                                <Setter Property="Foreground" Value="{DynamicResource VoiceTimerOn}" />
+                            </Style>
+                        </Expander.Styles>
 
-                         <StackPanel HorizontalAlignment="Center"
-                            Spacing="8"
-                            Orientation="Horizontal">
-                            <Button Command="{Binding JoinVoiceCallCommand}"
-                                ToolTip.Tip="Присоединиться к звонку"
-                                Classes="icon"
-                                IsVisible="{Binding !IsInVoiceChat}"
-                                Background="{DynamicResource VoiceAccept}">
-                                <Svg Path="/Assets/Icons/phone.svg" />
-                            </Button>
-                            <Button Command="{Binding LeaveVoiceCallCommand}"
-                                ToolTip.Tip="Покинуть"
-                                IsVisible="{Binding IsInVoiceChat}"
-                                Classes="icon"
-                                Background="{DynamicResource VoiceReject}">
-                                <Svg Path="/Assets/Icons/phone-reject.svg" />
-                            </Button>
-                        </StackPanel>
-                    </StackPanel>
+                        <Border 
+                            CornerRadius="{DynamicResource CornerRadiusLarge}">
+
+                            <StackPanel Spacing="8">
+                                <ScrollViewer Classes="horizontal"
+                                    scrollBehaviors:PrimaryScrollWheelBehavior.PrimaryScrollWheelDirection="Horizontal">
+                                    <ItemsControl ItemsSource="{Binding VoiceChatParticipants}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <VirtualizingStackPanel Orientation="Horizontal"
+                                                    HorizontalAlignment="Center"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Classes="card appear-from-top"
+                                                    Classes.talking="{Binding Talking}"
+                                                    Margin="4,0">
+                                                    <SelectableTextBlock HorizontalAlignment="Center"
+                                                        Classes="header4"
+                                                        Text="{Binding ParticipantName,
+                                                            Converter={converters:TruncateWithEllipsisConverter},
+                                                            ConverterParameter=20}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+
+                                    <StackPanel HorizontalAlignment="Center"
+                                    Spacing="8"
+                                    Orientation="Horizontal">
+                                    <Button Command="{Binding JoinVoiceCallCommand}"
+                                        ToolTip.Tip="Присоединиться к звонку"
+                                        Classes="icon"
+                                        IsVisible="{Binding !IsInVoiceChat}"
+                                        Background="{DynamicResource VoiceAccept}">
+                                        <Svg Path="/Assets/Icons/phone.svg" />
+                                    </Button>
+                                    <Button Command="{Binding LeaveVoiceCallCommand}"
+                                        ToolTip.Tip="Покинуть"
+                                        IsVisible="{Binding IsInVoiceChat}"
+                                        Classes="icon"
+                                        Background="{DynamicResource VoiceReject}">
+                                        <Svg Path="/Assets/Icons/phone-disconnect.svg" />
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
                 </Border>
+
 
                 <!-- TextBox and actions -->
 

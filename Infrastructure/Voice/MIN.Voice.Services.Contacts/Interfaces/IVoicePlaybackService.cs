@@ -6,6 +6,16 @@
 public interface IVoicePlaybackService : IDisposable
 {
     /// <summary>
+    /// Зарегистрировать заинтерисованность в получении звука
+    /// </summary>
+    void RegisterSubroomVoice(int subRoomId);
+
+    /// <summary>
+    /// Состою ли я в звонке
+    /// </summary>
+    bool IsInVoiceCall(int subRoomId);
+
+    /// <summary>
     /// Добавить канал звука для участника
     /// </summary>
     void AddParticipant(Guid participantId);
@@ -21,7 +31,7 @@ public interface IVoicePlaybackService : IDisposable
     void PlaySamples(Guid participantId, long sequenceNumber, byte[] data);
 
     /// <summary>
-    /// Очистить все каналы звуков
+    /// Очистить все каналы звуков и выйти из подкомнаты звука
     /// </summary>
     void Clear();
 }

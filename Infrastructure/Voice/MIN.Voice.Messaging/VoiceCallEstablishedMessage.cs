@@ -23,4 +23,9 @@ public sealed class VoiceCallEstablishedMessage : BaseMessage
     /// Флаг, указывающий, нужно ли оповещать остальных
     /// </summary>
     public bool NeedToAnnounce { get; set; }
+
+    /// <summary>
+    /// Идентификаторы участников в звонке
+    /// </summary>
+    public List<Guid> CallParticipantIds { get; set; } = [];
 }

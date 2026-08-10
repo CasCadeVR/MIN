@@ -13,6 +13,7 @@ using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Voice.Events;
 using MIN.Voice.Messaging;
+using MIN.Voice.Services.Contacts.Interfaces;
 
 namespace MIN.Voice.Handlers;
 
@@ -21,6 +22,7 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
+    private readonly IVoicePlaybackService voicePlaybackService;
     private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -31,6 +33,7 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
     public VoiceCallJoinHandler(ISubRoomManager subRoomManager,
         IEventBus eventBus,
         IMessageRouter messageRouter,
+        IVoicePlaybackService voicePlaybackService,
         INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
         ILoggerProvider logger)
@@ -38,6 +41,7 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
+        this.voicePlaybackService = voicePlaybackService;
         this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
         this.logger = logger;
@@ -99,6 +103,13 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
                 });
 
             case VoiceCallEstablishedMessage voiceCallEstablishedMessage:
+                voicePlaybackService.RegisterSubroomVoice(voiceCallEstablishedMessage.SubRoomId);
+
+                foreach (var participantId in voiceCallEstablishedMessage.CallParticipantIds)
+                {
+                    voicePlaybackService.AddParticipant(participantId);
+                }
+
                 await eventBus.PublishAsync(new VoiceCallEstablishedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
