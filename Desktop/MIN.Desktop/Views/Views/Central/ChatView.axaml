@@ -152,17 +152,15 @@
                             <ItemsControl ItemsSource="{Binding VoiceChatParticipants}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel
-                                            ItemsAlignment="Center"
-                                            Orientation="Horizontal"
-                                            ItemSpacing="8"
-                                            LineSpacing="8" />
+                                        <VirtualizingStackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Center"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Classes="card appear-from-top"
-                                            Classes.talking="{Binding Talking}">
+                                            Classes.talking="{Binding Talking}"
+                                            Margin="4">
                                             <SelectableTextBlock HorizontalAlignment="Center"
                                                 Classes="header4"
                                                 Text="{Binding ParticipantName,

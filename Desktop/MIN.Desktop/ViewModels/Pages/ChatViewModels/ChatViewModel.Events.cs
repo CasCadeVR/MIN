@@ -112,7 +112,10 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task OnVoiceParticipantJoined(VoiceParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        IsInVoiceChat = eventMessage.Participant.Id == localParticipant.Id;
+        if (eventMessage.Participant.Id == localParticipant.Id)
+        {
+            IsInVoiceChat = true;
+        }
         VoiceChatParticipants.Add(new ParticipantVoiceCardViewModel(eventMessage.Participant, roomScope));
     }
 

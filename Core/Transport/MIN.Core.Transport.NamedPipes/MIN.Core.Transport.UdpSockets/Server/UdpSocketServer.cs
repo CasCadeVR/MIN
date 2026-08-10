@@ -19,6 +19,7 @@ internal sealed class UdpSocketServer : IAsyncDisposable
     private readonly ILoggerProvider logger;
     private readonly UdpClient listener;
     private readonly ConcurrentDictionary<Guid, UdpSocketConnection> connections = new();
+    private readonly ushort port;
 
     private CancellationTokenSource? cts;
     private Task? receiveLoop;
@@ -26,7 +27,7 @@ internal sealed class UdpSocketServer : IAsyncDisposable
     /// <summary>
     /// Порт подключения
     /// </summary>
-    public ushort Port => (ushort)((IPEndPoint)listener.Client.LocalEndPoint!).Port;
+    public ushort Port => port;
 
     /// <summary>
     /// Текущие соединения
@@ -40,6 +41,7 @@ internal sealed class UdpSocketServer : IAsyncDisposable
     {
         this.logger = logger;
         listener = new UdpClient(new IPEndPoint(IPAddress.Any, port));
+        this.port = (ushort)((IPEndPoint)listener.Client.LocalEndPoint!).Port;
     }
 
     /// <summary>

@@ -112,13 +112,13 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
 
                 var selfParticipant = identityService.SelfParticipant.ToParticipantInfo();
 
-                var sessionParticipantJoinedMessage = new VoiceParticipantJoinedMessage()
+                var voiceParticipantJoinedMessage = new VoiceParticipantJoinedMessage()
                 {
                     SubRoomId = voiceCallEstablishedMessage.SubRoomId,
                     Participant = selfParticipant,
                 };
 
-                await messageRouter.RouteAsync(sessionParticipantJoinedMessage, context.RoomContext.RoomId, selfParticipant.Id, context.CancellationToken);
+                await messageRouter.RouteAsync(voiceParticipantJoinedMessage, context.RoomContext.RoomId, selfParticipant.Id, context.CancellationToken);
 
                 return HandlerResult.Success();
 

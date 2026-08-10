@@ -38,6 +38,6 @@ public sealed class VoiceCallStartedMessage : BaseMessage, IDescribable
     public bool IsEnded => EndedAt != null;
 
     string IDescribable.GetDescription() => IsEnded
-        ? $"{Sender.Name} начал звонок в комнате продолжительностью {(Timestamp - EndedAt!).Value.ToFriendlyString()}"
+        ? $"{Sender.Name} начал звонок в комнате продолжительностью {(EndedAt! - Timestamp).Value.ToFriendlyString()}"
         : $"{Sender.Name} начал звонок в комнате";
 }
