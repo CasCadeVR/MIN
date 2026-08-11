@@ -97,6 +97,28 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
+    private async Task OnMuteSelfRequested()
+    {
+        if (activeVoiceChatSubroomId != null)
+        {
+            await featureCollection.Voice.MuteService.MuteSelf(roomId, activeVoiceChatSubroomId.Value, appCts.Token);
+        }
+    }
+
+    private async Task OnUnmuteSelfRequested()
+    {
+        if (activeVoiceChatSubroomId != null)
+        {
+            await featureCollection.Voice.MuteService.UnmuteSelf(roomId, activeVoiceChatSubroomId.Value, appCts.Token);
+        }
+    }
+
+    private void OnMuteParticipantRequested(Guid participantId)
+        => featureCollection.Voice.MuteService.MuteParticipant(participantId);
+
+    private void OnUnmuteParticipantRequested(Guid participantId)
+        => featureCollection.Voice.MuteService.UnmuteParticipant(participantId);
+
     private async Task OnVoiceCallLeaveRequested(int subRoomId)
     {
         try

@@ -27,23 +27,11 @@ public class VoicePlaybackService : IVoicePlaybackService
 
         settingsProvider.OnSettingsSaved += () =>
         {
-            // Restart audio playback cuz dynamics might have changed
-
             lock (sync)
             {
-                var savedSubrooms = voiceCalls.ToList();
-                var savedGuids = channels.Keys.ToList();
-
-                Clear();
-
-                foreach (var subRoomId in savedSubrooms)
+                foreach (var channel in channels)
                 {
-                    RegisterSubroomVoice(subRoomId);
-                }
-
-                foreach (var participantId in savedGuids)
-                {
-                    AddParticipant(participantId);
+                    channel.Value.ChangeDevice(settingsProvider.GetSettings().OutputDeviceNumber);
                 }
             }
         };
@@ -129,7 +117,6 @@ public class VoicePlaybackService : IVoicePlaybackService
             }
 
             voiceCalls.Clear();
-
             channels.Clear();
         }
     }

@@ -42,6 +42,14 @@ internal sealed class ParticipantChannel : IDisposable
         waveOut.Play();
     }
 
+    /// <summary>
+    /// Обновить устройство вывода
+    /// </summary>
+    public void ChangeDevice(int deviceNumber)
+    {
+        waveOut.DeviceNumber = deviceNumber;
+    }
+
     public void Enqueue(long sequenceNumber, byte[] data)
     {
         var decoded = codec.Decode(data);

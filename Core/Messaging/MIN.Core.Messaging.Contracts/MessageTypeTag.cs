@@ -341,6 +341,11 @@ public enum MessageTypeTag : byte
     /// </summary>
     VoiceStateResponse = 153,
 
+    /// <summary>
+    /// Ответ на состояние звонка в комнате.
+    /// </summary>
+    VoiceMuteState = 154,
+
     // ===== Зарезервировано (160-255) =====
     // Свободные диапазоны для будущих категорий
 }

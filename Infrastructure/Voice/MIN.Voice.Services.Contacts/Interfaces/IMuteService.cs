@@ -8,12 +8,12 @@ public interface IMuteService
     /// <summary>
     /// Отключить микрофон
     /// </summary>
-    void MuteSelf();
+    Task MuteSelf(Guid roomId, int subroomId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Включить микрофон
     /// </summary>
-    void UnmuteSelf(Guid roomId, int subroomId);
+    Task UnmuteSelf(Guid roomId, int subroomId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Замьютить участника

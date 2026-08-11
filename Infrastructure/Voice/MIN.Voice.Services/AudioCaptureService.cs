@@ -28,14 +28,8 @@ public class AudioCaptureService : IAudioCaptureService
 
         settingsProvider.OnSettingsSaved += () =>
         {
-            // Restart audio capture cuz microphone might have changed
-            if (!isStarted)
-            {
-                return;
-            }
-
-            Stop();
-            Start();
+            var deviceNumber = Math.Clamp(settingsProvider.GetSettings().InputDeviceNumber, 0, WaveInEvent.DeviceCount - 1);
+            waveIn?.DeviceNumber = deviceNumber;
         };
     }
 

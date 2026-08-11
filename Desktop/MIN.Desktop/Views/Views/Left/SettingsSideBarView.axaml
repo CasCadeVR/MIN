@@ -82,14 +82,16 @@
                     <!-- App theme -->
 
                     <DockPanel HorizontalSpacing="12">
-                         <TextBlock VerticalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center">
                             Тема
-                         </TextBlock>
+                        </TextBlock>
 
                         <ToggleSwitch IsChecked="{Binding LightThemeEnabled}"
                             OffContent="Тёмная"
                             OnContent="Светлая"/>
                      </DockPanel>
+
+                    <!-- Audio -->
 
                     <DockPanel HorizontalSpacing="12">
                         <TextBlock VerticalAlignment="Center">Микрофон</TextBlock>

@@ -162,75 +162,73 @@
                                     Margin="0,4">
                                 <Button.Flyout>
                                     <Flyout Placement="Left" FlyoutPresenterClasses="cardDetails">
-                                        <Border>
-                                            <StackPanel Spacing="8">
-                                                <DockPanel>
-                                                    <Button Classes="icon"
-                                                            ToolTip.Tip="Подробнее"
-                                                            DockPanel.Dock="Right"
-                                                            IsVisible="{Binding CanInteract}" >
-                                                        <Svg Path="/Assets/Icons/about-card.svg" />
-                                                         <Button.Flyout>
-                                                            <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                                                <MenuItem Header="Прекратить приватное общение"
-                                                                    Command="{Binding TogglePrivateChatCommand}">
+                                        <StackPanel Spacing="8">
+                                            <DockPanel>
+                                                <Button Classes="icon"
+                                                        ToolTip.Tip="Подробнее"
+                                                        DockPanel.Dock="Right"
+                                                        IsVisible="{Binding CanInteract}" >
+                                                    <Svg Path="/Assets/Icons/about-card.svg" />
+                                                        <Button.Flyout>
+                                                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                            <MenuItem Header="Прекратить приватное общение"
+                                                                Command="{Binding TogglePrivateChatCommand}">
+                                                                <MenuItem.IsVisible>
+                                                                <MultiBinding Converter="{StaticResource AndMultiConverter}">
+                                                                        <Binding Path="CanStartPrivateChat" />
+                                                                        <Binding Path="IsSelected" />
+                                                                    </MultiBinding>
+                                                                </MenuItem.IsVisible>
+                                                                <MenuItem.Icon>
+                                                                    <Svg Path="/Assets/Icons/private-chat.svg" />
+                                                                </MenuItem.Icon>
+                                                            </MenuItem>
+                                                            <MenuItem Header="Начать приватное общение"
+                                                                Command="{Binding TogglePrivateChatCommand}">
                                                                     <MenuItem.IsVisible>
-                                                                    <MultiBinding Converter="{StaticResource AndMultiConverter}">
-                                                                            <Binding Path="CanStartPrivateChat" />
-                                                                            <Binding Path="IsSelected" />
-                                                                        </MultiBinding>
-                                                                    </MenuItem.IsVisible>
-                                                                    <MenuItem.Icon>
-                                                                        <Svg Path="/Assets/Icons/private-chat.svg" />
-                                                                    </MenuItem.Icon>
-                                                                </MenuItem>
-                                                                <MenuItem Header="Начать приватное общение"
-                                                                    Command="{Binding TogglePrivateChatCommand}">
-                                                                     <MenuItem.IsVisible>
-                                                                    <MultiBinding Converter="{StaticResource AndMultiConverter}">
-                                                                            <Binding Path="CanStartPrivateChat" />
-                                                                            <Binding Path="!IsSelected" />
-                                                                        </MultiBinding>
-                                                                    </MenuItem.IsVisible>
-                                                                    <MenuItem.Icon>
-                                                                        <Svg Path="/Assets/Icons/private-chat.svg" />
-                                                                    </MenuItem.Icon>
-                                                                </MenuItem>
-                                                                <MenuItem Header="Кикнуть участника"
-                                                                    IsVisible="{Binding CanKick}"
-                                                                    Command="{Binding KickParticipantCommand}">
-                                                                    <MenuItem.Icon>
-                                                                        <Svg Path="/Assets/Icons/close.svg" />
-                                                                    </MenuItem.Icon>
-                                                                </MenuItem>
-                                                            </MenuFlyout>
-                                                        </Button.Flyout>
-                                                    </Button>
+                                                                <MultiBinding Converter="{StaticResource AndMultiConverter}">
+                                                                        <Binding Path="CanStartPrivateChat" />
+                                                                        <Binding Path="!IsSelected" />
+                                                                    </MultiBinding>
+                                                                </MenuItem.IsVisible>
+                                                                <MenuItem.Icon>
+                                                                    <Svg Path="/Assets/Icons/private-chat.svg" />
+                                                                </MenuItem.Icon>
+                                                            </MenuItem>
+                                                            <MenuItem Header="Кикнуть участника"
+                                                                IsVisible="{Binding CanKick}"
+                                                                Command="{Binding KickParticipantCommand}">
+                                                                <MenuItem.Icon>
+                                                                    <Svg Path="/Assets/Icons/close.svg" />
+                                                                </MenuItem.Icon>
+                                                            </MenuItem>
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
 
-                                                    <TextBlock Text="{Binding ParticipantName}"
-                                                        VerticalAlignment="Center"
-                                                        MaxWidth="300"
-                                                        Classes="header4" />
-                                                </DockPanel>
+                                                <TextBlock Text="{Binding ParticipantName}"
+                                                    VerticalAlignment="Center"
+                                                    MaxWidth="300"
+                                                    Classes="header4" />
+                                            </DockPanel>
 
-                                                <TextBlock IsVisible="{Binding IsHost}"
-                                                    Text="Хост"  />
+                                            <TextBlock IsVisible="{Binding IsHost}"
+                                                Text="Хост"  />
 
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        Text="{Binding ParticipantStatus,
-                                                        Converter={converters:OnlineStatusToTextConverter}}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding ParticipantStatus,
+                                                    Converter={converters:OnlineStatusToTextConverter}}" />
 
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        Text="{Binding ParticipantLastSeenAt,
-                                                        Converter={converters:DateConverter},
-                                                            ConverterParameter={x:Static converters:DateMode.Short}}"
-                                                        IsVisible="{Binding IsOffline}" />
-                                                </StackPanel>
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding ParticipantLastSeenAt,
+                                                    Converter={converters:DateConverter},
+                                                        ConverterParameter={x:Static converters:DateMode.Short}}"
+                                                    IsVisible="{Binding IsOffline}" />
                                             </StackPanel>
-                                        </Border>
+                                        </StackPanel>
                                     </Flyout>
                                 </Button.Flyout>
                                 <StackPanel Spacing="6">

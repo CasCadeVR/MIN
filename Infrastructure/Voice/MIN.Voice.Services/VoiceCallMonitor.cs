@@ -55,13 +55,13 @@ public class VoiceCallMonitor : IHostedService
     private async Task OnVoiceCallEstablished(VoiceCallEstablishedEvent e, CancellationToken cancellationToken)
     {
         voicePlaybackService.RegisterSubroomVoice(e.SubRoomId);
-        muteService.UnmuteSelf(e.RoomId, e.SubRoomId);
+        await muteService.UnmuteSelf(e.RoomId, e.SubRoomId, cancellationToken);
     }
 
     private async Task OnVoiceCallLeft(VoiceCallLeftEvent e, CancellationToken cancellationToken)
     {
         voicePlaybackService.UnregisterSubroomVoice(e.SubRoomId);
-        muteService.MuteSelf();
+        await muteService.MuteSelf(e.RoomId, e.SubRoomId, cancellationToken);
     }
 
     private async Task OnParticipantLeft(ParticipantLeftEvent e, CancellationToken cancellationToken)

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MIN.Chat.Events;
 using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Entities;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -87,7 +88,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         callStartedAt = DateTime.Now;
         activeVoiceChatSubroomId = eventMessage.Message.SubRoomId;
         IsInVoiceChat = eventMessage.Participant.Id == localParticipant.Id;
-        VoiceChatParticipants.Add(new ParticipantVoiceCardViewModel(eventMessage.Participant, roomScope));
+        AddToVoiceChatParticipant(eventMessage.Participant);
         await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
     }
 
@@ -109,7 +110,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         activeVoiceChatSubroomId = eventMessage.ActiveSubRoomId;
         foreach (var participant in eventMessage.CallParticipants)
         {
-            VoiceChatParticipants.Add(new ParticipantVoiceCardViewModel(participant, roomScope));
+            AddToVoiceChatParticipant(participant);
         }
         loadingTcs.SetResult();
     }
@@ -120,7 +121,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             IsInVoiceChat = true;
         }
-        VoiceChatParticipants.Add(new ParticipantVoiceCardViewModel(eventMessage.Participant, roomScope));
+        AddToVoiceChatParticipant(eventMessage.Participant);
     }
 
     private async Task OnVoiceParticipantLeft(VoiceParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
@@ -135,6 +136,24 @@ public partial class ChatViewModel : RoutableViewModelBase
             VoiceChatParticipants.Remove(voiceParticipant);
             voiceParticipant.Dispose();
         }
+    }
+
+    private void AddToVoiceChatParticipant(Participant participant)
+    {
+        var card = new ParticipantVoiceCardViewModel(participant, roomScope,
+            localParticipant.Id == participant.Id);
+        card.OnForceMuted += (forceMuted) =>
+        {
+            if (forceMuted)
+            {
+                OnUnmuteParticipantRequested(participant.Id);
+            }
+            else
+            {
+                OnMuteParticipantRequested(participant.Id);
+            }
+        };
+        VoiceChatParticipants.Add(card);
     }
 
     #endregion

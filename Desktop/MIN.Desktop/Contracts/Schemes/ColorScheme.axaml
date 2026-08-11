@@ -129,6 +129,7 @@
             <Color x:Key="VoiceAccept">#1ca54e</Color>           <!-- Voice call accept button icon background -->
             <Color x:Key="VoiceTimerOn">#1ca54e</Color>           <!-- Voice call timer when on call foreground -->
             <Color x:Key="VoiceBackground">#222224</Color>           <!-- Voice call panel background -->
+            <Color x:Key="VoiceMuted">#f25b5b</Color>           <!-- Voice call muted button background -->
             <Color x:Key="VoiceReject">#EF4444</Color>           <!-- Voice call reject button icon background -->
             <Color x:Key="VoiceTalking">#2d6cd3</Color>          <!-- Voice call talking participant border brush -->
 
@@ -256,8 +257,9 @@
 
             <Color x:Key="VoiceAccept">#1ca54e</Color>           <!-- Voice call accept button icon background -->
             <Color x:Key="VoiceTimerOn">#1ca54e</Color>           <!-- Voice call timer when on call foreground -->
-            <Color x:Key="VoiceBackground">#b8b8b8</Color>           <!-- Voice call panel background -->
+            <Color x:Key="VoiceBackground">#F1F1F1</Color>           <!-- Voice call panel background -->
             <Color x:Key="VoiceReject">#EF4444</Color>           <!-- Voice call reject button icon background -->
+            <Color x:Key="VoiceMuted">#f25b5b</Color>           <!-- Voice call muted button background -->
             <Color x:Key="VoiceTalking">#2d6cd3</Color>          <!-- Voice call talking participant border brush -->
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>

@@ -137,18 +137,19 @@
                     CornerRadius="{DynamicResource CornerRadiusLarge}"
                     Padding="{DynamicResource PaddingTopBar}"
                     IsVisible="{Binding IsVoiceChatActive}">
-                    <Expander Classes="main">
+                    <Expander Classes="main" IsExpanded="True">
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Идёт звонок - " />
-                                <TextBlock
+                                <TextBlock FontSize="{DynamicResource FontSizeH5}"
+                                    Text="Идёт звонок - " />
+                                <TextBlock FontSize="{DynamicResource FontSizeH5}"
                                     Classes.callTimer-in="{Binding IsInVoiceChat}"
                                     Text="{Binding CallDuration, StringFormat='hh\\:mm\\:ss'}" />
                             </StackPanel>
                         </Expander.Header>
 
                         <Expander.Styles>
-                            <Style Selector="Border.talking">
+                            <Style Selector="Button.talking">
                                 <Setter Property="BorderBrush" Value="{DynamicResource VoiceTalking}" />
                             </Style>
                
@@ -172,16 +173,96 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border Classes="card appear-from-top"
-                                                    Classes.talking="{Binding Talking}"
-                                                    BorderThickness="4"
-                                                    Margin="4,0">
-                                                    <SelectableTextBlock HorizontalAlignment="Center"
-                                                        Classes="header4"
-                                                        Text="{Binding ParticipantName,
-                                                            Converter={converters:TruncateWithEllipsisConverter},
-                                                            ConverterParameter=20}" />
-                                                </Border>
+                                                <Panel Margin="4">
+                                                    <Button Classes="card appear-from-top"
+                                                        Classes.talking="{Binding Talking}"
+                                                        BorderThickness="4">
+                                                        <TextBlock HorizontalAlignment="Center"
+                                                            Classes="header4"
+                                                            Text="{Binding ParticipantName,
+                                                                Converter={converters:TruncateWithEllipsisConverter},
+                                                                ConverterParameter=20}">
+                                                        </TextBlock>
+
+                                                        <Button.Flyout>
+                                                            <Flyout Placement="Bottom" FlyoutPresenterClasses="cardDetails">
+                                                                <Border>      
+                                                                    <StackPanel Spacing="8">
+                                                                        <TextBlock
+                                                                            HorizontalAlignment="Center"
+                                                                            Classes="header5"
+                                                                            Text="{Binding ParticipantName,
+                                                                            Converter={converters:TruncateWithEllipsisConverter},
+                                                                            ConverterParameter=20}" />
+
+                                                                        <StackPanel Spacing="8"
+                                                                            IsVisible="{Binding !IsSelf}">
+                                                                            <Button Classes="no-background"
+                                                                                IsVisible="{Binding ForceMuted}"
+                                                                                Command="{Binding ToggleMuteCommand}">
+                                                                                <StackPanel Orientation="Horizontal"
+                                                                                    Spacing="8">
+                                                                                    <Svg Path="/Assets/Icons/sound-on.svg" />
+                                                                                    <TextBlock VerticalAlignment="Center"
+                                                                                        Text="Разглушить участника" />
+                                                                                </StackPanel>
+                                                                            </Button>
+
+                                                                            <Button Classes="no-background"
+                                                                                IsVisible="{Binding !ForceMuted}"
+                                                                                Command="{Binding ToggleMuteCommand}">
+                                                                                <StackPanel Orientation="Horizontal"
+                                                                                    Spacing="8">
+                                                                                    <Svg Path="/Assets/Icons/sound-off.svg" />
+                                                                                    <TextBlock VerticalAlignment="Center"
+                                                                                        Text="Заглушить участника" />
+                                                                                </StackPanel>
+                                                                            </Button>
+                                                                        </StackPanel>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </Flyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+
+                                                    <Border
+                                                        VerticalAlignment="Bottom"
+                                                        HorizontalAlignment="Right"
+                                                        Width="28"
+                                                        Height="28"
+                                                        Margin="-2"
+                                                        Opacity="{Binding MicMuted,
+                                                            Converter={converters:BoolToOpacityConverter}}"
+                                                        CornerRadius="{DynamicResource CornerRadiusLarge}"
+                                                        Background="{DynamicResource VoiceMuted}">
+                                                        <Border.Transitions>
+                                                            <Transitions>
+                                                                <DoubleTransition Duration="0:0:.1" Property="Opacity" />
+                                                            </Transitions>
+                                                        </Border.Transitions>
+
+                                                        <Svg Path="/Assets/Icons/microphone-mute.svg" />
+                                                    </Border>
+
+                                                    <Border
+                                                        VerticalAlignment="Top"
+                                                        HorizontalAlignment="Right"
+                                                        Width="24"
+                                                        Height="24"
+                                                        Margin="-2"
+                                                        Opacity="{Binding ForceMuted,
+                                                            Converter={converters:BoolToOpacityConverter}}"
+                                                        CornerRadius="{DynamicResource CornerRadiusLarge}"
+                                                        Background="{DynamicResource VoiceMuted}">
+                                                        <Border.Transitions>
+                                                            <Transitions>
+                                                                <DoubleTransition Duration="0:0:.1" Property="Opacity" />
+                                                            </Transitions>
+                                                        </Border.Transitions>
+
+                                                        <Svg Path="/Assets/Icons/sound-off.svg" />
+                                                    </Border>
+                                                </Panel>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
@@ -190,6 +271,29 @@
                                 <StackPanel HorizontalAlignment="Center"
                                     Spacing="8"
                                     Orientation="Horizontal">
+
+                                    <!-- Microphone -->
+
+                                    <StackPanel HorizontalAlignment="Center"
+                                        IsVisible="{Binding IsInVoiceChat}"
+                                        Spacing="8"
+                                        Orientation="Horizontal">
+                                        <Button Command="{Binding ToggleMuteCommand}"
+                                            ToolTip.Tip="Включить микрофон"
+                                            IsVisible="{Binding IsMuted}"
+                                            Classes="icon close"
+                                            Background="{DynamicResource VoiceMuted}">
+                                            <Svg Path="/Assets/Icons/microphone-mute.svg" />
+                                        </Button>
+
+                                         <Button Command="{Binding ToggleMuteCommand}"
+                                            ToolTip.Tip="Выключить микрофон"
+                                            IsVisible="{Binding !IsMuted}"
+                                            Classes="icon">
+                                            <Svg Path="/Assets/Icons/microphone.svg" />
+                                        </Button>
+                                    </StackPanel>
+
                                     <Button Command="{Binding JoinVoiceCallCommand}"
                                         ToolTip.Tip="Присоединиться к звонку"
                                         Classes="icon"
@@ -376,16 +480,6 @@
                         </ItemsControl>
                     </ScrollViewer>
 
-                    <Panel.Styles>
-                        <Style Selector="Button.icon">
-                            <Setter Property="Transitions">
-                                <Transitions>
-                                    <DoubleTransition Duration="0:0:.2" Property="Opacity" />
-                                </Transitions>
-                            </Setter>
-                        </Style>
-                    </Panel.Styles>
-
                     <Button Classes="icon"
                             ToolTip.Tip="Пролистать вниз"
                             IsVisible="{Binding !IsAtBottom}"
@@ -395,6 +489,12 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Bottom"
                             Command="{Binding ScrollToBottomCommand}">
+                        <Button.Transitions>
+                             <Transitions>
+                                <DoubleTransition Duration="0:0:.2" Property="Opacity" />
+                            </Transitions>
+                        </Button.Transitions>
+
                         <Panel>
                             <Svg Margin="{DynamicResource PaddingCard}"
                                 Path="/Assets/Icons/arrow-down.svg" />

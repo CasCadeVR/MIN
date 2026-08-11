@@ -49,7 +49,6 @@ public partial class ChatViewModel : RoutableViewModelBase
     private CancellationTokenSource? updatingRoomCts;
 
     // Voice chat
-
     private readonly DispatcherTimer callTimer = new(TimeSpan.FromSeconds(1), DispatcherPriority.Background, Dispatcher.UIThread);
     private DateTime callStartedAt;
 
@@ -69,6 +68,12 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// </summary>
     [ObservableProperty]
     public partial bool IsInVoiceChat { get; set; }
+
+    /// <summary>
+    /// Выключил ли микрофон локальный пользователь
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsMuted { get; set; }
 
     /// <summary>
     /// Длительность звонка (если он идёт)
@@ -189,6 +194,20 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
 
         await OnVoiceCallJoinRequested(activeVoiceChatSubroomId.Value);
+    }
+
+    [RelayCommand]
+    private async Task ToggleMute()
+    {
+        if (IsMuted)
+        {
+            await OnUnmuteSelfRequested();
+        }
+        else
+        {
+            await OnMuteSelfRequested();
+        }
+        IsMuted = !IsMuted;
     }
 
     [RelayCommand]
