@@ -11,6 +11,11 @@ public interface IVoicePlaybackService : IDisposable
     void RegisterSubroomVoice(int subRoomId);
 
     /// <summary>
+    /// Отписаться от заинтерисованности в получении звука
+    /// </summary>
+    void UnregisterSubroomVoice(int subRoomId);
+
+    /// <summary>
     /// Состою ли я в звонке
     /// </summary>
     bool IsInVoiceCall(int subRoomId);

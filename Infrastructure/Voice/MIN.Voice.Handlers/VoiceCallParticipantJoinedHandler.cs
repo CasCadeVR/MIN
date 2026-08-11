@@ -1,6 +1,7 @@
 ﻿using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -14,6 +15,7 @@ internal sealed class VoiceCallParticipantJoinedHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly IVoicePlaybackService voicePlaybackService;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -21,10 +23,12 @@ internal sealed class VoiceCallParticipantJoinedHandler : IMessageHandler
     /// </summary>
     public VoiceCallParticipantJoinedHandler(IEventBus eventBus,
         IVoicePlaybackService voicePlaybackService,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
         this.voicePlaybackService = voicePlaybackService;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
@@ -44,7 +48,7 @@ internal sealed class VoiceCallParticipantJoinedHandler : IMessageHandler
         var subRoomId = voiceParticipantJoinedMessage.SubRoomId;
         var participant = voiceParticipantJoinedMessage.Participant;
 
-        if (voicePlaybackService.IsInVoiceCall(subRoomId))
+        if (voicePlaybackService.IsInVoiceCall(subRoomId) && identityService.SelfParticipant.Id != participant.Id)
         {
             voicePlaybackService.AddParticipant(participant.Id);
         }

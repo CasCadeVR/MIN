@@ -100,11 +100,11 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
                 {
                     NeedToAnnounce = true,
                     SubRoomId = subRoomInfo.Id,
+                    CallParticipantIds = subRoomInfo.Participants
+                        .Where(x => x.Id != senderParicipantInfo.Id).Select(x => x.Id).ToList()
                 });
 
             case VoiceCallEstablishedMessage voiceCallEstablishedMessage:
-                voicePlaybackService.RegisterSubroomVoice(voiceCallEstablishedMessage.SubRoomId);
-
                 foreach (var participantId in voiceCallEstablishedMessage.CallParticipantIds)
                 {
                     voicePlaybackService.AddParticipant(participantId);

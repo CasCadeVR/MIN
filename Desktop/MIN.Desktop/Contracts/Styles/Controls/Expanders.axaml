@@ -36,6 +36,7 @@
      <Style Selector="ToggleButton.main">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Border
@@ -43,39 +44,49 @@
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Foreground="{TemplateBinding Foreground}"
-                                   FontSize="{TemplateBinding FontSize}"
-                                   Text="{TemplateBinding Content}" />
-                        <Path
-                            Data="M0.530273 1.46973L5.53027 6.46973M4.46961 6.46973L9.46961 1.46973"
-                            HorizontalAlignment="Center"
-                            RenderTransformOrigin="50%,50%"
-                            Stretch="None"
-                            Stroke="{TemplateBinding Foreground}"
-                            StrokeThickness="1.5"
-                            VerticalAlignment="Center">
-                            <Path.RenderTransform>
-                                <RotateTransform />
-                            </Path.RenderTransform>
-                        </Path>
-                    </StackPanel>
+                    <DockPanel HorizontalSpacing="8">
+                        <ContentPresenter DockPanel.Dock="Left"
+                            Content="{TemplateBinding Content}"
+                            Foreground="{TemplateBinding Foreground}"
+                            FontSize="{TemplateBinding FontSize}" />
+                        <Border DockPanel.Dock="Right"
+                                Background="Transparent"
+                                Padding="{DynamicResource PaddingMedium}"
+                                Height="22"
+                                CornerRadius="38">
+                            <Path
+                                Data="M0.530273 1.46973L5.53027 6.46973M4.46961 6.46973L9.46961 1.46973"
+                                HorizontalAlignment="Center"
+                                RenderTransformOrigin="50%,50%"
+                                Stretch="None"
+                                Stroke="{TemplateBinding Foreground}"
+                                StrokeThickness="1.5"
+                                VerticalAlignment="Center">
+                                <Path.RenderTransform>
+                                    <RotateTransform />
+                                </Path.RenderTransform>
+                            </Path>
+                        </Border>
+                        <Rectangle />
+                    </DockPanel>
                 </Border>
             </ControlTemplate>
         </Setter>
 
         <Style Selector="^:pointerover">
             <Setter Property="Cursor" Value="Hand" />
-            <Style Selector="^ /template/ TextBlock">
-                <Setter Property="Background" Value="{Binding $parent[ToggleButton].Background}" />
+            <Style Selector="^ TextBlock">
                 <Setter Property="TextDecorations" Value="Underline" />
+            </Style>
+            <Style Selector="^ DockPanel > Border">
+                <Setter Property="Background" Value="{DynamicResource TextIconHover}" />
             </Style>
         </Style>
 
         <!--  Arrow Animation  -->
         <Style Selector="^[Tag=expanded] /template/ Path">
             <Style.Animations>
-                <Animation Duration="0:0:0.0625" FillMode="Both">
+                <Animation Duration="0:0:0.1" FillMode="Both">
                     <KeyFrame Cue="0%">
                         <Setter Property="RotateTransform.Angle" Value="0" />
                     </KeyFrame>
@@ -87,7 +98,7 @@
         </Style>
         <Style Selector="^[Tag=collapsed] /template/ Path">
             <Style.Animations>
-                <Animation Duration="0:0:0.0625" FillMode="Both">
+                <Animation Duration="0:0:0.1" FillMode="Both">
                     <KeyFrame Cue="0%">
                         <Setter Property="RotateTransform.Angle" Value="180" />
                     </KeyFrame>
@@ -104,6 +115,7 @@
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
+
         <Setter Property="Template">
             <ControlTemplate>
                 <StackPanel>
@@ -168,5 +180,9 @@
         <Style Selector="^:not(:expanded) /template/ ToggleButton">
             <Setter Property="Tag" Value="collapsed" />
         </Style>
+    </Style>
+
+    <Style Selector="Expander.main /template/ ToggleButton /template/ ContentPresenter TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH5}" />
     </Style>
 </Styles>

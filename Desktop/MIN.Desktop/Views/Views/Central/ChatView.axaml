@@ -150,11 +150,8 @@
                         <Expander.Styles>
                             <Style Selector="Border.talking">
                                 <Setter Property="BorderBrush" Value="{DynamicResource VoiceTalking}" />
-                                <Setter Property="BorderThickness" Value="4" />
                             </Style>
-                            <Style Selector="Border:not(.talking)">
-                                <Setter Property="BorderThickness" Value="0" />
-                            </Style>
+               
                             <Style Selector="TextBlock.callTimer-in">
                                 <Setter Property="Foreground" Value="{DynamicResource VoiceTimerOn}" />
                             </Style>
@@ -163,7 +160,7 @@
                         <Border 
                             CornerRadius="{DynamicResource CornerRadiusLarge}">
 
-                            <StackPanel Spacing="8">
+                            <StackPanel Margin="0,8,0,0" Spacing="8">
                                 <ScrollViewer Classes="horizontal"
                                     scrollBehaviors:PrimaryScrollWheelBehavior.PrimaryScrollWheelDirection="Horizontal">
                                     <ItemsControl ItemsSource="{Binding VoiceChatParticipants}">
@@ -177,6 +174,7 @@
                                             <DataTemplate>
                                                 <Border Classes="card appear-from-top"
                                                     Classes.talking="{Binding Talking}"
+                                                    BorderThickness="4"
                                                     Margin="4,0">
                                                     <SelectableTextBlock HorizontalAlignment="Center"
                                                         Classes="header4"
@@ -189,7 +187,7 @@
                                     </ItemsControl>
                                 </ScrollViewer>
 
-                                    <StackPanel HorizontalAlignment="Center"
+                                <StackPanel HorizontalAlignment="Center"
                                     Spacing="8"
                                     Orientation="Horizontal">
                                     <Button Command="{Binding JoinVoiceCallCommand}"

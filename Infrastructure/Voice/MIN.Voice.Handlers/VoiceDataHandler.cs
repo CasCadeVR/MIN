@@ -44,10 +44,15 @@ internal sealed class VoiceDataHandler : IMessageHandler
             return HandlerResult.Success();
         }
 
-        //if (identityService.SelfParticipant.Id != message.SenderId)
-        //{
-        voicePlaybackService.PlaySamples(message.SenderId, voiceData.SequenceNumber, voiceData.Data);
-        //}
+        if (!voicePlaybackService.IsInVoiceCall(voiceData.SubRoomId))
+        {
+            return HandlerResult.Success();
+        }
+
+        if (identityService.SelfParticipant.Id != message.SenderId)
+        {
+            voicePlaybackService.PlaySamples(message.SenderId, voiceData.SequenceNumber, voiceData.Data);
+        }
 
         await eventBus.PublishAsync(new VoiceDataReceivedEvent()
         {

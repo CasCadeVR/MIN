@@ -1,7 +1,9 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Voice.Events;
 using MIN.Voice.Messaging;
 
 namespace MIN.Chat.Services;
@@ -10,15 +12,18 @@ namespace MIN.Chat.Services;
 public sealed class ChatVoiceService : IChatVoiceService
 {
     private readonly IMessageRouter messageRouter;
+    private readonly IEventBus eventBus;
     private readonly IIdentityService identityService;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatVoiceService"/>
     /// </summary>
     public ChatVoiceService(IMessageRouter messageRouter,
+        IEventBus eventBus,
         IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
+        this.eventBus = eventBus;
         this.identityService = identityService;
     }
 
@@ -35,10 +40,18 @@ public sealed class ChatVoiceService : IChatVoiceService
         }, roomId, cancellationToken);
 
     async Task IChatVoiceService.LeaveCallAsync(Guid roomId, int subRoomId, CancellationToken cancellationToken)
-        => await SendAsync(new VoiceCallLeaveMessage()
+    {
+        await eventBus.PublishAsync(new VoiceCallLeftEvent()
+        {
+            RoomId = roomId,
+            SubRoomId = subRoomId,
+        }, cancellationToken);
+
+        await SendAsync(new VoiceCallLeaveMessage()
         {
             SubRoomId = subRoomId,
         }, roomId, cancellationToken);
+    }
 
     private async Task SendAsync(IMessage? message, Guid roomId, CancellationToken cancellationToken)
     {

@@ -194,6 +194,8 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
         LightThemeEnabled = Settings.LightThemeEnabled;
         DiscoveryTimeout = Settings.DiscoveryTimeout;
         DiscoveryPort = Settings.DiscoveryPort;
+        InputDeviceIndex = Settings.InputDeviceNumber;
+        OutputDeviceIndex = Settings.OutputDeviceNumber;
     }
 
     private bool CanSave() => !HasErrors;

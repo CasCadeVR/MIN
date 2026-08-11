@@ -52,6 +52,15 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
             context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
         }
 
+        if (voicePlaybackService.IsInVoiceCall(voiceCallEndedMessage.SubRoomId))
+        {
+            await eventBus.PublishAsync(new VoiceCallLeftEvent()
+            {
+                RoomId = context.RoomContext.RoomId,
+                SubRoomId = voiceCallEndedMessage.SubRoomId
+            });
+        }
+
         voicePlaybackService.Clear();
 
         await eventBus.PublishAsync(new VoiceCallEndedEvent()

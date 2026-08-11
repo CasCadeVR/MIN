@@ -53,6 +53,10 @@ public class VoicePlaybackService : IVoicePlaybackService
     public void RegisterSubroomVoice(int subRoomId)
         => voiceCalls.Add(subRoomId);
 
+    /// <inheritdoc />
+    public void UnregisterSubroomVoice(int subRoomId)
+        => voiceCalls.Remove(subRoomId);
+
     bool IVoicePlaybackService.IsInVoiceCall(int subRoomId)
         => voiceCalls.Contains(subRoomId);
 

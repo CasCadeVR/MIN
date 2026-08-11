@@ -20,8 +20,8 @@ public class VoiceCallMonitor : IHostedService
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
-    private readonly IAudioCaptureService audioCaptureService;
-    private readonly IVoiceDataTransmitter voiceDataTransmitter;
+    private readonly IMuteService muteService;
+    private readonly IVoicePlaybackService voicePlaybackService;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -31,16 +31,16 @@ public class VoiceCallMonitor : IHostedService
     public VoiceCallMonitor(ISubRoomManager subRoomManager,
         IEventBus eventBus,
         IMessageRouter messageRouter,
-        IAudioCaptureService audioCaptureService,
-        IVoiceDataTransmitter voiceDataTransmitter,
+        IMuteService muteService,
+        IVoicePlaybackService voicePlaybackService,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
-        this.audioCaptureService = audioCaptureService;
-        this.voiceDataTransmitter = voiceDataTransmitter;
+        this.muteService = muteService;
+        this.voicePlaybackService = voicePlaybackService;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -48,20 +48,20 @@ public class VoiceCallMonitor : IHostedService
     async Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         eventBus.Subscribe<VoiceCallEstablishedEvent>(OnVoiceCallEstablished);
-        eventBus.Subscribe<VoiceCallEndedEvent>(OnVoiceCallEnded);
+        eventBus.Subscribe<VoiceCallLeftEvent>(OnVoiceCallLeft);
         eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
     }
 
     private async Task OnVoiceCallEstablished(VoiceCallEstablishedEvent e, CancellationToken cancellationToken)
     {
-        audioCaptureService.Start();
-        voiceDataTransmitter.Begin(e.RoomId, e.SubRoomId);
+        voicePlaybackService.RegisterSubroomVoice(e.SubRoomId);
+        muteService.UnmuteSelf(e.RoomId, e.SubRoomId);
     }
 
-    private async Task OnVoiceCallEnded(VoiceCallEndedEvent e, CancellationToken cancellationToken)
+    private async Task OnVoiceCallLeft(VoiceCallLeftEvent e, CancellationToken cancellationToken)
     {
-        audioCaptureService.Stop();
-        voiceDataTransmitter.End();
+        voicePlaybackService.UnregisterSubroomVoice(e.SubRoomId);
+        muteService.MuteSelf();
     }
 
     private async Task OnParticipantLeft(ParticipantLeftEvent e, CancellationToken cancellationToken)

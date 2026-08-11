@@ -1,25 +1,24 @@
 ﻿using MIN.Voice.Services.Contacts.Enums;
 
-namespace MIN.Voice.Services.Contacts.Interfaces
+namespace MIN.Voice.Services.Contacts.Interfaces;
+
+/// <summary>
+/// Кодировщик звука в байты
+/// </summary>
+public interface IVoiceCodec
 {
     /// <summary>
-    /// Кодировщик звука в байты
+    /// Вид кодировки
     /// </summary>
-    public interface IVoiceCodec
-    {
-        /// <summary>
-        /// Вид кодировки
-        /// </summary>
-        VoiceCodecKind Kind { get; }
+    VoiceCodecKind Kind { get; }
 
-        /// <summary>
-        /// Закодировать звук в байты
-        /// </summary>
-        byte[] Encode(byte[] pcm);
+    /// <summary>
+    /// Закодировать звук в байты
+    /// </summary>
+    byte[] Encode(byte[] pcm);
 
-        /// <summary>
-        /// Распоковать байты в звук
-        /// </summary>
-        byte[] Decode(byte[] compressed);
-    }
+    /// <summary>
+    /// Распоковать байты в звук
+    /// </summary>
+    byte[] Decode(byte[] compressed);
 }
