@@ -21,9 +21,7 @@ public class SettingsProvider : ISettingsProvider
     }
 
     Settings ISettingsProvider.GetSettings()
-    {
-        return cachedSettings ??= storage.Load();
-    }
+        => cachedSettings ??= storage.Load();
 
     void ISettingsProvider.SaveSettings(Settings settings)
     {

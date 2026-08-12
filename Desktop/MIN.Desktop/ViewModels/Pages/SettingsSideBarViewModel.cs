@@ -29,13 +29,14 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     private readonly IDialogService dialogService;
     private readonly CancellationTokenSource appCts = null!;
 
+    /// <inheritdoc />
+    public override ViewLayoutType LayoutType => ViewLayoutType.LeftSideBar;
+
     /// <summary>
     /// Текущие настройки
     /// </summary>
-    public Settings Settings { get; set; } = null!;
-
-    /// <inheritdoc />
-    public override ViewLayoutType LayoutType => ViewLayoutType.LeftSideBar;
+    [ObservableProperty]
+    public partial Settings Settings { get; set; } = null!;
 
     /// <summary>
     /// Микрофоны
@@ -43,21 +44,9 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     public AvaloniaList<string> InputDevices { get; set; } = [];
 
     /// <summary>
-    /// Номер выбранного микрофона
-    /// </summary>
-    [ObservableProperty]
-    public partial int InputDeviceIndex { get; set; }
-
-    /// <summary>
     /// Динамики
     /// </summary>
     public AvaloniaList<string> OutputDevices { get; set; } = [];
-
-    /// <summary>
-    /// Номер выбранного динамика
-    /// </summary>
-    [ObservableProperty]
-    public partial int OutputDeviceIndex { get; set; }
 
     /// <summary>
     /// Версия приложения
@@ -150,13 +139,12 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
         {
             Settings.DefaultParticipantName = DefaultParticipantName;
             Settings.DiscoveryPort = DiscoveryPort;
-            Settings.LightThemeEnabled = LightThemeEnabled;
             Settings.DiscoveryTimeout = DiscoveryTimeout;
-            Settings.InputDeviceNumber = InputDeviceIndex;
-            Settings.OutputDeviceNumber = OutputDeviceIndex;
-            featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         }
 
+        Settings.LightThemeEnabled = LightThemeEnabled;
+
+        featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         ChangeViewToPrevious();
     }
 
@@ -188,14 +176,13 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
 
     private void FillControls()
     {
+        Version = $"Версия: {featureCollection.Helper.VersionProvider.Version}";
+
         Settings = featureCollection.Helper.SettingsProvider.GetSettings();
-        Version = $"Версия: {featureCollection.Helper.VersionProvider.Version.ToString()}";
         DefaultParticipantName = Settings.DefaultParticipantName;
         LightThemeEnabled = Settings.LightThemeEnabled;
         DiscoveryTimeout = Settings.DiscoveryTimeout;
         DiscoveryPort = Settings.DiscoveryPort;
-        InputDeviceIndex = Settings.InputDeviceNumber;
-        OutputDeviceIndex = Settings.OutputDeviceNumber;
     }
 
     private bool CanSave() => !HasErrors;

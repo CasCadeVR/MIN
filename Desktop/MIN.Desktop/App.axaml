@@ -14,7 +14,7 @@
                 <ResourceInclude Source="/Contracts/Schemes/ColorScheme.axaml"/>
                 <ResourceInclude Source="/Contracts/Schemes/SizeScheme.axaml"/>
             </ResourceDictionary.MergedDictionaries>
-                <converters:AndMultiConverter x:Key="AndMultiConverter" />
+            <converters:AndMultiConverter x:Key="AndMultiConverter" />
         </ResourceDictionary>
 
     </Application.Resources>

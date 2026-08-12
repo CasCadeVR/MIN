@@ -26,6 +26,11 @@ public interface IVoicePlaybackService : IDisposable
     void AddParticipant(Guid participantId);
 
     /// <summary>
+    /// Изменить громкость определённого участника
+    /// </summary>
+    void ChangeParticipantVolume(Guid participantId, int specificVolume);
+
+    /// <summary>
     /// Удалить канал звука для участника
     /// </summary>
     void RemoveParticipant(Guid participantId);

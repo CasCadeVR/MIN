@@ -1,5 +1,6 @@
 ﻿using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
+using MIN.Helpers.Contracts.Models;
 using MIN.Voice.Services.Contacts.Interfaces;
 using MIN.Voice.Services.Models;
 using NAudio.Wave;
@@ -15,6 +16,7 @@ public class VoicePlaybackService : IVoicePlaybackService
     private readonly ISettingsProvider settingsProvider;
     private readonly ILoggerProvider logger;
     private readonly object sync = new();
+    private int appVolume;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="VoicePlaybackService"/>
@@ -29,9 +31,20 @@ public class VoicePlaybackService : IVoicePlaybackService
         {
             lock (sync)
             {
+                appVolume = settingsProvider.GetSettings().OutputDeviceVolume;
+
+                var avaibleDevices = WaveInterop.waveOutGetNumDevs() - 1;
+
+                if (avaibleDevices <= 0)
+                {
+                    return;
+                }
+
+                var clamped = Math.Clamp(settingsProvider.GetSettings().OutputDeviceNumber, 0, avaibleDevices);
+
                 foreach (var channel in channels)
                 {
-                    channel.Value.ChangeDevice(settingsProvider.GetSettings().OutputDeviceNumber);
+                    channel.Value.ChangeDevice(clamped);
                 }
             }
         };
@@ -64,9 +77,22 @@ public class VoicePlaybackService : IVoicePlaybackService
                 ? -1
                 : Math.Min(settings.OutputDeviceNumber, WaveInterop.waveOutGetNumDevs() - 1);
 
+            appVolume = settings.OutputDeviceVolume;
+
             try
             {
-                channels[participantId] = new ParticipantChannel(codec, deviceNumber);
+                var channel = new ParticipantChannel(codec, deviceNumber, appVolume);
+
+                settings.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName == nameof(Settings.OutputDeviceVolume))
+                    {
+                        appVolume = settings.OutputDeviceVolume;
+                        channel.ChangeVolume(appVolume, channel.SpecificVolume);
+                    }
+                };
+
+                channels[participantId] = channel;
             }
             catch (Exception ex)
             {
@@ -85,6 +111,20 @@ public class VoicePlaybackService : IVoicePlaybackService
             }
 
             channel.Dispose();
+        }
+    }
+
+    void IVoicePlaybackService.ChangeParticipantVolume(Guid participantId, int specificVolume)
+    {
+        lock (sync)
+        {
+            ParticipantChannel? channel;
+            lock (sync)
+            {
+                channels.TryGetValue(participantId, out channel);
+            }
+
+            channel?.ChangeVolume(appVolume, specificVolume);
         }
     }
 

@@ -218,6 +218,9 @@
                                                                                         Text="Заглушить участника" />
                                                                                 </StackPanel>
                                                                             </Button>
+
+                                                                            <TextBlock Text="{Binding #outputVolumeSlider.Value, StringFormat='Громкость участника: {0:F0}%'}" />
+                                                                            <Slider x:Name="outputVolumeSlider" Minimum="0" Maximum="200" Value="{Binding DesiredVolume}" />
                                                                         </StackPanel>
                                                                     </StackPanel>
                                                                 </Border>

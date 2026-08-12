@@ -57,6 +57,7 @@ internal sealed class UdpSocketConnection : BaseConnection, IAsyncDisposable
         }
 
         await writeLock.WaitAsync(cancellationToken);
+
         try
         {
             var datagram = UdpMessage.Wrap(Id, data);

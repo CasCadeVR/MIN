@@ -153,6 +153,10 @@ public partial class ChatViewModel : RoutableViewModelBase
                 OnMuteParticipantRequested(participant.Id);
             }
         };
+        card.OnParticipantDesiredVolumeChanged += (volume) =>
+        {
+            OnNewDesiredVolumeRequested(participant.Id, volume);
+        };
         VoiceChatParticipants.Add(card);
     }
 

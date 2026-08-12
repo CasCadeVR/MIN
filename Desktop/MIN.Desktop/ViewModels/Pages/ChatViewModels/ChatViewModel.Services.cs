@@ -119,6 +119,9 @@ public partial class ChatViewModel : RoutableViewModelBase
     private void OnUnmuteParticipantRequested(Guid participantId)
         => featureCollection.Voice.MuteService.UnmuteParticipant(participantId);
 
+    private void OnNewDesiredVolumeRequested(Guid participantId, int volume)
+        => featureCollection.Voice.VoicePlayback.ChangeParticipantVolume(participantId, volume);
+
     private async Task OnVoiceCallLeaveRequested(int subRoomId)
     {
         try

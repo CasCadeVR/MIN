@@ -133,7 +133,14 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     .Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId));
             }
 
-            await messageSender.BroadcastAsync(message, context.RoomContext.RoomId, excludeConnectionIds, context.CancellationToken);
+            try
+            {
+                await messageSender.BroadcastAsync(message, context.RoomContext.RoomId, excludeConnectionIds, context.CancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                logger.Log($"Широковещательная отправка в комнате {context.RoomContext.RoomId} прервалась", LogLevel.Warning);
+            }
         }
         else if (message.RecipientId != null)
         {
@@ -145,7 +152,14 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
             if (recipientConnectionId != CoreRegistryConstants.LocalConnectionId)
             {
-                await messageSender.SendAsync(message, context.RoomContext.RoomId, recipientConnectionId, context.CancellationToken);
+                try
+                {
+                    await messageSender.SendAsync(message, context.RoomContext.RoomId, recipientConnectionId, context.CancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    logger.Log($"Отправка приватного сообщения в комнате {context.RoomContext.RoomId} прервалась", LogLevel.Warning);
+                }
             }
         }
     }

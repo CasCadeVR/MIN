@@ -2,6 +2,7 @@
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Voice.Messaging;
 using MIN.Voice.Services.Contacts.Interfaces;
 using MIN.Voice.Services.Contacts.Models;
@@ -52,7 +53,6 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
 
         this.roomId = roomId;
         this.subRoomId = subRoomId;
-        sequenceNumber = 0;
         isActive = true;
 
         queue = Channel.CreateBounded<VoiceDataMessage>(new BoundedChannelOptions(64)
@@ -123,7 +123,7 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
                 }
                 catch (Exception ex)
                 {
-                    logger.Log($"Ошибка отправки голосового кадра: {ex.Message}");
+                    logger.Log($"Ошибка отправки голосового кадра: {ex.Message}", LogLevel.Error);
                 }
             }
         }

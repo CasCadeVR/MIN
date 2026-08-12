@@ -12,4 +12,7 @@ public interface IVoiceFeatureCollection
 
     /// <inheritdoc cref="IMuteService"/>
     IMuteService MuteService { get; }
+
+    /// <inheritdoc cref="IVoicePlaybackService"/>
+    IVoicePlaybackService VoicePlayback { get; }
 }

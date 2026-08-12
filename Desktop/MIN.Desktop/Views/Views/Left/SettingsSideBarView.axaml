@@ -96,16 +96,25 @@
                     <DockPanel HorizontalSpacing="12">
                         <TextBlock VerticalAlignment="Center">Микрофон</TextBlock>
                         <ComboBox ItemsSource="{Binding InputDevices}"
-                                  SelectedIndex="{Binding InputDeviceIndex}"
+                                  SelectedIndex="{Binding Settings.InputDeviceNumber}"
                                   HorizontalAlignment="Stretch"/>
                     </DockPanel>
+
+                    <TextBlock Text="{Binding #inputVolumeSlider.Value, StringFormat='Громкость микрофона: {0:F0}%'}" />
+                    <Slider x:Name="inputVolumeSlider" Minimum="0" Maximum="100" Value="{Binding Settings.InputDeviceVolume}" />
+
+                    <TextBlock Text="{Binding #inputSensitivitySlider.Value, StringFormat='Чувствительность микрофона: {0:F0} дБ'}" />
+                    <Slider x:Name="inputSensitivitySlider" Minimum="0" Maximum="90" Value="{Binding Settings.InputDeviceSensitivity}" />
 
                     <DockPanel HorizontalSpacing="12">
                         <TextBlock VerticalAlignment="Center">Динамики</TextBlock>
                         <ComboBox ItemsSource="{Binding OutputDevices}"
-                                  SelectedIndex="{Binding OutputDeviceIndex}"
+                                  SelectedIndex="{Binding Settings.OutputDeviceNumber}"
                                   HorizontalAlignment="Stretch"/>
                     </DockPanel>
+
+                    <TextBlock Text="{Binding #outputVolumeSlider.Value, StringFormat='Громкость динамиков: {0:F0}%'}" />
+                    <Slider x:Name="outputVolumeSlider" Minimum="0" Maximum="100" Value="{Binding Settings.OutputDeviceVolume}" />
 
                     <!-- Logs -->
 

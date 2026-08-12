@@ -1,8 +1,10 @@
 ﻿using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
+using MIN.Helpers.Contracts.Models;
 using MIN.Voice.Services.Contacts.Constants;
 using MIN.Voice.Services.Contacts.Interfaces;
 using MIN.Voice.Services.Contacts.Models;
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 
 namespace MIN.Voice.Services;
@@ -13,6 +15,7 @@ public class AudioCaptureService : IAudioCaptureService
     private readonly ILoggerProvider logger;
     private readonly ISettingsProvider settingsProvider;
     private WaveInEvent? waveIn;
+    private MMDevice? audioDevice;
     private bool isStarted;
 
     /// <inheritdoc />
@@ -28,8 +31,27 @@ public class AudioCaptureService : IAudioCaptureService
 
         settingsProvider.OnSettingsSaved += () =>
         {
-            var deviceNumber = Math.Clamp(settingsProvider.GetSettings().InputDeviceNumber, 0, WaveInEvent.DeviceCount - 1);
-            waveIn?.DeviceNumber = deviceNumber;
+            if (!isStarted)
+            {
+                return;
+            }
+
+            if (WaveInEvent.DeviceCount <= 0)
+            {
+                return;
+            }
+
+            var settings = settingsProvider.GetSettings();
+
+            var clamped = Math.Clamp(settings.InputDeviceNumber, 0, WaveInEvent.DeviceCount - 1);
+
+            if (waveIn?.DeviceNumber == clamped)
+            {
+                return;
+            }
+
+            Stop();
+            Start();
         };
     }
 
@@ -52,7 +74,21 @@ public class AudioCaptureService : IAudioCaptureService
             VoiceAudioConstants.BitsPerSample,
             VoiceAudioConstants.Channels);
 
-        var deviceNumber = Math.Clamp(settingsProvider.GetSettings().InputDeviceNumber, 0, WaveInEvent.DeviceCount - 1);
+        var settings = settingsProvider.GetSettings();
+
+        settings.PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName == nameof(Settings.InputDeviceVolume))
+            {
+                SetMicrophoneVolume(settings.InputDeviceVolume);
+            }
+        };
+
+        var deviceNumber = Math.Clamp(settings.InputDeviceNumber, 0, WaveInEvent.DeviceCount - 1);
+
+        var enumerator = new MMDeviceEnumerator();
+        audioDevice = enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active)
+                                 .ElementAtOrDefault(deviceNumber);
 
         waveIn = new WaveInEvent
         {
@@ -103,6 +139,17 @@ public class AudioCaptureService : IAudioCaptureService
         }
     }
 
+    private void SetMicrophoneVolume(int volume)
+    {
+        if (audioDevice == null)
+        {
+            return;
+        }
+
+        var normalizedVolume = Math.Clamp(volume, 0, 100) / 100.0f;
+        audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar = normalizedVolume;
+    }
+
     private void OnDataAvailable(object? sender, WaveInEventArgs e)
     {
         try
@@ -120,6 +167,11 @@ public class AudioCaptureService : IAudioCaptureService
 
     private void OnRecordingStopped(object? sender, StoppedEventArgs e)
     {
+        if (!ReferenceEquals(sender, waveIn))
+        {
+            return;
+        }
+
         isStarted = false;
         waveIn = null;
     }

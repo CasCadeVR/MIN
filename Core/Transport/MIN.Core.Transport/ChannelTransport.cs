@@ -107,7 +107,11 @@ public class ChannelTransport : ITransport, IAsyncDisposable
                 await fastTransport.SendAsync(data, recipientConnectionId, serverConnectionId, MessageChannel.Fast, cancellationToken);
                 return;
             }
-            catch (Exception ex)
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 logger.Log($"UDP отправка не удалась, падаю на TCP: {ex.Message}", LogLevel.Warning);
             }

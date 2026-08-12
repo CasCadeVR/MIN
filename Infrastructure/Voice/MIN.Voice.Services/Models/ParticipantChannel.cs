@@ -10,15 +10,20 @@ namespace MIN.Voice.Services.Models;
 internal sealed class ParticipantChannel : IDisposable
 {
     private const int MaxBufferedFrames = 10;
-
     private readonly IVoiceCodec codec;
     private readonly BufferedWaveProvider provider;
-    private readonly WaveOutEvent waveOut;
     private readonly SortedDictionary<long, byte[]> pending = [];
     private readonly object gate = new();
+    private int deviceNumber;
+    private WaveOutEvent waveOut = null!;
     private long? expectedNextSequence;
 
-    public ParticipantChannel(IVoiceCodec codec, int deviceNumber)
+    /// <summary>
+    /// Специфичный для участника громкость
+    /// </summary>
+    public int SpecificVolume;
+
+    public ParticipantChannel(IVoiceCodec codec, int deviceNumber, int startVolume, int specificVolume = 100)
     {
         this.codec = codec;
 
@@ -33,8 +38,17 @@ internal sealed class ParticipantChannel : IDisposable
             DiscardOnBufferOverflow = true,
         };
 
+        this.deviceNumber = deviceNumber;
+        SpecificVolume = specificVolume;
+
+        InitNewWave(startVolume, specificVolume);
+    }
+
+    private void InitNewWave(int startVolume, int specificVolume)
+    {
         waveOut = new WaveOutEvent
         {
+            Volume = ConvertVolumes(startVolume, specificVolume),
             DeviceNumber = deviceNumber,
             DesiredLatency = 100,
         };
@@ -43,11 +57,34 @@ internal sealed class ParticipantChannel : IDisposable
     }
 
     /// <summary>
+    /// Поменять звук потока
+    /// </summary>
+    public void ChangeVolume(int appVolume, int specificVolume)
+    {
+        SpecificVolume = specificVolume;
+        waveOut?.Volume = ConvertVolumes(appVolume, specificVolume);
+    }
+
+    private static float ConvertVolumes(int appVolume, int specificVolume)
+        => Math.Clamp((appVolume / 100.0f) * (specificVolume / 100.0f), 0f, 1f);
+
+    /// <summary>
     /// Обновить устройство вывода
     /// </summary>
     public void ChangeDevice(int deviceNumber)
     {
-        waveOut.DeviceNumber = deviceNumber;
+        if (this.deviceNumber == deviceNumber)
+        {
+            return;
+        }
+
+        this.deviceNumber = deviceNumber;
+        var savedVolume = waveOut.Volume;
+
+        waveOut.Stop();
+        waveOut.Dispose();
+
+        InitNewWave((int)savedVolume, SpecificVolume);
     }
 
     public void Enqueue(long sequenceNumber, byte[] data)

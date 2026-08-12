@@ -57,9 +57,20 @@ public partial class ParticipantVoiceCardViewModel : CardViewModelBase
     public partial bool Talking { get; set; }
 
     /// <summary>
+    /// Выбранная громкость
+    /// </summary>
+    [ObservableProperty]
+    public partial int DesiredVolume { get; set; } = 100;
+
+    /// <summary>
     /// Событие по переключению заглушки участника
     /// </summary>
     public Action<bool>? OnForceMuted;
+
+    /// <summary>
+    /// Событие по переключению заглушки участника
+    /// </summary>
+    public Action<int>? OnParticipantDesiredVolumeChanged;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ParticipantVoiceCardViewModel"/>
@@ -78,6 +89,8 @@ public partial class ParticipantVoiceCardViewModel : CardViewModelBase
             talkingTimer.Tick += OnTalkingTimerTick;
         }
     }
+
+    partial void OnDesiredVolumeChanged(int value) => OnParticipantDesiredVolumeChanged?.Invoke(value / 2);
 
     private void OnTalkingTimerTick(object? sender, EventArgs e)
         => Talking = false;
