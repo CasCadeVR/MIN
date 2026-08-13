@@ -81,7 +81,7 @@ public class Settings : INotifyPropertyChanged
 
     /// <summary>
     /// Чувствительность ввода микрофона (дБ)
-    /// Отрицательное число в диапозоне от (-60 до 0)
+    /// Отрицательное число в диапозоне от (-60 до -10)
     /// </summary>
     public int InputDeviceSensitivity
     {

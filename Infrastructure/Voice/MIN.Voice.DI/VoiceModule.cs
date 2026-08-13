@@ -27,6 +27,7 @@ public class VoiceModule : Module
         services.RegisterAsImplementedInterfaces<VoiceCallMessageResolver>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<VoicePlaybackService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<AudioCaptureService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<VoiceActivityDetector>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<VoiceDataTransmitter>(ServiceLifetime.Transient);
         services.RegisterAsImplementedInterfaces<MuteService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<VoiceFeatureCollection>(ServiceLifetime.Singleton);

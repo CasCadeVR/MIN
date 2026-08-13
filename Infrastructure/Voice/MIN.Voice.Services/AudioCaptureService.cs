@@ -1,4 +1,5 @@
-﻿using MIN.Helpers.Contracts.Interfaces;
+﻿
+using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models;
 using MIN.Voice.Services.Contacts.Constants;
@@ -16,6 +17,7 @@ public class AudioCaptureService : IAudioCaptureService
     private readonly ISettingsProvider settingsProvider;
     private WaveInEvent? waveIn;
     private MMDevice? audioDevice;
+    private MMDeviceEnumerator? mMDeviceEnumerator;
     private bool isStarted;
 
     /// <inheritdoc />
@@ -183,11 +185,9 @@ public class AudioCaptureService : IAudioCaptureService
         var capabilities = WaveInEvent.GetCapabilities(waveDeviceNumber);
         var waveProductName = capabilities.ProductName;
 
-        var enumerator = new MMDeviceEnumerator();
-        var devices = enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active);
+        mMDeviceEnumerator ??= new MMDeviceEnumerator();
+        var devices = mMDeviceEnumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active);
 
-        // Ищем первое устройство, чьё FriendlyName содержит или равно имени из WaveIn
-        // (иногда добавляются суффиксы, поэтому используем Contains или StartsWith)
         foreach (var device in devices)
         {
             if (device.FriendlyName.Contains(waveProductName, StringComparison.OrdinalIgnoreCase) ||
@@ -197,7 +197,6 @@ public class AudioCaptureService : IAudioCaptureService
             }
         }
 
-        // Запасной вариант: если не найдено, берём по индексу (как раньше)
         return devices.ElementAtOrDefault(waveDeviceNumber);
     }
 

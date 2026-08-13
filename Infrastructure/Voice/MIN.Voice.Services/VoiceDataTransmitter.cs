@@ -2,7 +2,6 @@
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Voice.Messaging;
 using MIN.Voice.Services.Contacts.Interfaces;
@@ -14,9 +13,9 @@ namespace MIN.Voice.Services;
 public class VoiceDataTransmitter : IVoiceDataTransmitter
 {
     private readonly IAudioCaptureService audioCaptureService;
-    private readonly IMessageRouter messageRouter;
     private readonly IVoiceCodec codec;
-    private readonly ISettingsProvider settingsProvider;
+    private readonly IVoiceActivityDetector vadDetector;
+    private readonly IMessageRouter messageRouter;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -33,16 +32,16 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
     /// Инициализирует новый экземпляр <see cref="VoiceDataTransmitter"/>
     /// </summary>
     public VoiceDataTransmitter(IAudioCaptureService audioCaptureService,
-        IMessageRouter messageRouter,
         IVoiceCodec codec,
-        ISettingsProvider settingsProvider,
+        IVoiceActivityDetector vadDetector,
+        IMessageRouter messageRouter,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.audioCaptureService = audioCaptureService;
-        this.messageRouter = messageRouter;
+        this.vadDetector = vadDetector;
         this.codec = codec;
-        this.settingsProvider = settingsProvider;
+        this.messageRouter = messageRouter;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -55,6 +54,7 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
             return;
         }
 
+
         this.roomId = roomId;
         this.subRoomId = subRoomId;
         isActive = true;
@@ -66,6 +66,8 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
 
         sendCts = new CancellationTokenSource();
         sendTask = SendPumpAsync(sendCts.Token);
+
+        vadDetector.Reset();
 
         audioCaptureService.FrameCaptured += OnFrameCaptured;
     }
@@ -86,22 +88,12 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
         sendCts?.Cancel();
         sendCts = null;
         sendTask = null;
+
+        vadDetector.Reset();
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     public void Dispose() => End();
-
-    private static float ComputeRmsDb(byte[] pcmData)
-    {
-        long sum = 0;
-        for (var i = 0; i < pcmData.Length; i += 2)
-        {
-            var sample = BitConverter.ToInt16(pcmData, i);
-            sum += sample * sample;
-        }
-        var rms = Math.Sqrt((double)sum / (pcmData.Length / 2));
-        return rms < 1e-10 ? -100f : (float)(20 * Math.Log10(rms / 32768.0));
-    }
 
     private void OnFrameCaptured(object? sender, AudioFrame e)
     {
@@ -110,11 +102,7 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
             return;
         }
 
-        var sensitivity = settingsProvider.GetSettings().InputDeviceSensitivity;
-
-        var rmsDb = ComputeRmsDb(e.Data);
-
-        if (sensitivity < 0 && rmsDb < sensitivity)
+        if (!vadDetector.IsVoice(e.Data))
         {
             return;
         }
