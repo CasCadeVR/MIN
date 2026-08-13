@@ -42,6 +42,37 @@ public partial class MainWindow : WindowEx<MainWindowViewModel>
             _ => WindowLayout.Narrow
         };
         CurrentLayout = mode;
+        UpdateColumnDefinitions(mode);
         vm.UpdateLayout(mode);
+    }
+
+    private void UpdateColumnDefinitions(WindowLayout layout)
+    {
+        switch (layout)
+        {
+            case WindowLayout.ThreeColumns:
+                Center.SetValue(Grid.ColumnProperty, 1);
+                Right.SetValue(Grid.ColumnProperty, 2);
+                break;
+
+            case WindowLayout.TwoColumns:
+                Center.SetValue(Grid.ColumnProperty, 1);
+                Right.SetValue(Grid.ColumnProperty, 1);
+                break;
+
+            case WindowLayout.Narrow:
+                Center.SetValue(Grid.ColumnProperty, 0);
+                Right.SetValue(Grid.ColumnProperty, 0);
+                break;
+        }
+
+        var defs = layout switch
+        {
+            WindowLayout.ThreeColumns => "Auto,*,Auto",
+            WindowLayout.TwoColumns => "Auto,*",
+            WindowLayout.Narrow => "*",
+            _ => "*"
+        };
+        WindowGrid.ColumnDefinitions = ColumnDefinitions.Parse(defs);
     }
 }

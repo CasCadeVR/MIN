@@ -97,118 +97,119 @@
     <DockPanel>
          <controls:CustomTitleBar />
 
-        <Grid>
-            <Border Grid.Row="1" >
-                <DockPanel>
+        <Panel>
+            <Grid x:Name="WindowGrid" ColumnDefinitions="Auto,*,Auto">
+                <!--  Navigated content (left side)  -->
+                <ContentControl
+                    x:Name="Left"
+                    Content="{Binding LeftSideBarViewModel}"
+                    HorizontalContentAlignment="Stretch"
+                    Grid.Column="0">
+                    <ContentControl.ContentTemplate>
+                        <designer:MultiDataTemplate UseCache="False">
+                            <!-- Loading view -->
+                            <DataTemplate x:DataType="system:Uri">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Svg Path="{Binding AbsolutePath}"
+                                            Classes="rotating"
+                                            Height="50" />
+                                    <Button IsEnabled="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                        Classes="no-background"
+                                        Command="{Binding $parent[Window].DataContext.CancelRoutingCommand}">
+                                            <StackPanel>
+                                            <TextBlock IsVisible="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                                Text="Отменить" />
+                                            <TextBlock IsVisible="{Binding $parent[Window].DataContext.IsCancellingRouting}"
+                                                Text="Идёт отмена..." />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
 
-                    <!--  Navigated content (left side)  -->
-                    <ContentControl
-                        Content="{Binding LeftSideBarViewModel}"
-                        HorizontalContentAlignment="Stretch"
-                        DockPanel.Dock="Left">
-                        <ContentControl.ContentTemplate>
-                            <designer:MultiDataTemplate UseCache="False">
-                                <!-- Loading view -->
-                                <DataTemplate x:DataType="system:Uri">
+                            </DataTemplate>
+                            <DataTemplate x:DataType="pagesVm:MainSideBarViewModel">
+                                <pagesLeft:MainSideBarView />
+                            </DataTemplate>
+                            <DataTemplate x:DataType="pagesVm:SettingsSideBarViewModel">
+                                <pagesLeft:SettingsSideBarView />
+                            </DataTemplate>
+                        </designer:MultiDataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
+
+                  <!--  Center content  -->
+
+                <ContentControl
+                    x:Name="Center"
+                    Content="{Binding CentralViewModel}"
+                    HorizontalContentAlignment="Stretch"
+                    Grid.Column="1">
+                    <ContentControl.ContentTemplate>
+                        <designer:MultiDataTemplate UseCache="False">
+                            <!-- Loading view -->
+                            <DataTemplate x:DataType="system:Uri">
                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Svg Path="{Binding AbsolutePath}"
-                                             Classes="rotating"
-                                             Height="50" />
-                                        <Button IsEnabled="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
-                                            Classes="no-background"
-                                            Command="{Binding $parent[Window].DataContext.CancelRoutingCommand}">
-                                             <StackPanel>
-                                                <TextBlock IsVisible="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
-                                                    Text="Отменить" />
-                                                <TextBlock IsVisible="{Binding $parent[Window].DataContext.IsCancellingRouting}"
-                                                    Text="Идёт отмена..." />
-                                            </StackPanel>
-                                        </Button>
-                                    </StackPanel>
+                                    <Svg Path="{Binding AbsolutePath}"
+                                            Classes="rotating"
+                                            Height="50" />
+                                    <Button IsEnabled="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                        Classes="no-background"
+                                        Command="{Binding $parent[Window].DataContext.CancelRoutingCommand}">
+                                            <StackPanel>
+                                            <TextBlock IsVisible="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                                Text="Отменить" />
+                                            <TextBlock IsVisible="{Binding $parent[Window].DataContext.IsCancellingRouting}"
+                                                Text="Идёт отмена..." />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
 
-                                </DataTemplate>
-                                <DataTemplate x:DataType="pagesVm:MainSideBarViewModel">
-                                    <pagesLeft:MainSideBarView />
-                                </DataTemplate>
-                                <DataTemplate x:DataType="pagesVm:SettingsSideBarViewModel">
-                                    <pagesLeft:SettingsSideBarView />
-                                </DataTemplate>
-                            </designer:MultiDataTemplate>
-                        </ContentControl.ContentTemplate>
-                    </ContentControl>
+                            </DataTemplate>
+                            <DataTemplate x:DataType="pagesVm:DiscoveryViewModel">
+                                <pagesCentral:DiscoveryView />
+                            </DataTemplate>
+                            <DataTemplate x:DataType="pagesChatPanelVm:ChatViewModel">
+                                <pagesCentral:ChatView />
+                            </DataTemplate>
+                        </designer:MultiDataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
 
-                    <!--  Right content (right side bar)  -->
+                <!--  Right content (right side bar)  -->
 
-                    <ContentControl
-                        Content="{Binding RightSideBarViewModel}"
-                        HorizontalContentAlignment="Stretch"
-                        DockPanel.Dock="Right">
-                        <ContentControl.ContentTemplate>
-                            <designer:MultiDataTemplate UseCache="False">
-                                <!-- Loading view -->
-                                <DataTemplate x:DataType="system:Uri">
-                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Svg Path="{Binding AbsolutePath}"
-                                             Classes="rotating"
-                                             Height="50" />
-                                        <Button IsEnabled="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
-                                            Classes="no-background"
-                                            Command="{Binding $parent[Window].DataContext.CancelRoutingCommand}">
-                                             <StackPanel>
-                                                <TextBlock IsVisible="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
-                                                    Text="Отменить" />
-                                                <TextBlock IsVisible="{Binding $parent[Window].DataContext.IsCancellingRouting}"
-                                                    Text="Идёт отмена..." />
-                                            </StackPanel>
-                                        </Button>
-                                    </StackPanel>
+                <ContentControl
+                    x:Name="Right"
+                    Content="{Binding RightSideBarViewModel}"
+                    HorizontalContentAlignment="Stretch"
+                    Grid.Column="2">
+                    <ContentControl.ContentTemplate>
+                        <designer:MultiDataTemplate UseCache="False">
+                            <!-- Loading view -->
+                            <DataTemplate x:DataType="system:Uri">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Svg Path="{Binding AbsolutePath}"
+                                            Classes="rotating"
+                                            Height="50" />
+                                    <Button IsEnabled="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                        Classes="no-background"
+                                        Command="{Binding $parent[Window].DataContext.CancelRoutingCommand}">
+                                            <StackPanel>
+                                            <TextBlock IsVisible="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
+                                                Text="Отменить" />
+                                            <TextBlock IsVisible="{Binding $parent[Window].DataContext.IsCancellingRouting}"
+                                                Text="Идёт отмена..." />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
 
-                                </DataTemplate>
-                                 <DataTemplate x:DataType="pagesVm:ChatSideBarViewModel">
-                                    <pagesRight:ChatSideBarView />
-                                </DataTemplate>
-                            </designer:MultiDataTemplate>
-                        </ContentControl.ContentTemplate>
-                    </ContentControl>
-
-                      <!--  Center content  -->
-
-                    <ContentControl
-                        Content="{Binding CentralViewModel}"
-                        HorizontalContentAlignment="Stretch">
-                        <ContentControl.ContentTemplate>
-                            <designer:MultiDataTemplate UseCache="False">
-                                <!-- Loading view -->
-                                <DataTemplate x:DataType="system:Uri">
-                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Svg Path="{Binding AbsolutePath}"
-                                             Classes="rotating"
-                                             Height="50" />
-                                        <Button IsEnabled="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
-                                            Classes="no-background"
-                                            Command="{Binding $parent[Window].DataContext.CancelRoutingCommand}">
-                                             <StackPanel>
-                                                <TextBlock IsVisible="{Binding !$parent[Window].DataContext.IsCancellingRouting}"
-                                                    Text="Отменить" />
-                                                <TextBlock IsVisible="{Binding $parent[Window].DataContext.IsCancellingRouting}"
-                                                    Text="Идёт отмена..." />
-                                            </StackPanel>
-                                        </Button>
-                                    </StackPanel>
-
-                                </DataTemplate>
-                                <DataTemplate x:DataType="pagesVm:DiscoveryViewModel">
-                                    <pagesCentral:DiscoveryView />
-                                </DataTemplate>
-                                <DataTemplate x:DataType="pagesChatPanelVm:ChatViewModel">
-                                    <pagesCentral:ChatView />
-                                </DataTemplate>
-                            </designer:MultiDataTemplate>
-                        </ContentControl.ContentTemplate>
-                    </ContentControl>
-                </DockPanel>
-            </Border>
-
+                            </DataTemplate>
+                                <DataTemplate x:DataType="pagesVm:ChatSideBarViewModel">
+                                <pagesRight:ChatSideBarView />
+                            </DataTemplate>
+                        </designer:MultiDataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
+            </Grid>
+            
             <!--  Notifications  -->
 
             <Grid Classes="notifications" ColumnDefinitions="*,280">
@@ -260,6 +261,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </Grid>
-        </Grid>
+        </Panel>
     </DockPanel>
 </Window>

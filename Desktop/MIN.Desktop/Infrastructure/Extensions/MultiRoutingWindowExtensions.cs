@@ -65,6 +65,12 @@ public static class MultiRoutingWindowExtensions
                 centralPriorViewModel = null!;
             }
 
+            if (rememberedRightSideBar is IRoutableViewModel rememberedRightPriorViewModel
+                && rememberedRightPriorViewModel.RelatedToCentral)
+            {
+                rememberedRightSideBar = null;
+            }
+
             if (screen.RightSideBarViewModel is IRoutableViewModel rightPriorViewModel
                 && rightPriorViewModel.RelatedToCentral)
             {
