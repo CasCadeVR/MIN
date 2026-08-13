@@ -17,7 +17,7 @@ namespace MIN.Desktop.ViewModels.Cards;
 /// </summary>
 public partial class ParticipantVoiceCardViewModel : CardViewModelBase
 {
-    private readonly DispatcherTimer talkingTimer = new(TimeSpan.FromMilliseconds(50), DispatcherPriority.Background, Dispatcher.UIThread);
+    private readonly DispatcherTimer talkingTimer = new(TimeSpan.FromMilliseconds(500), DispatcherPriority.Background, Dispatcher.UIThread);
 
     private readonly Participant participant;
 

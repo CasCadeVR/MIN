@@ -9,7 +9,7 @@ namespace MIN.Helpers.Contracts.Models;
 public class Settings : INotifyPropertyChanged
 {
     private int inputDeviceVolume = 100;
-    private int inputDeviceSensitivity = 100;
+    private int inputDeviceSensitivity = -40;
     private int outputDeviceVolume = 100;
 
     /// <summary>
@@ -81,6 +81,7 @@ public class Settings : INotifyPropertyChanged
 
     /// <summary>
     /// Чувствительность ввода микрофона (дБ)
+    /// Отрицательное число в диапозоне от (-60 до 0)
     /// </summary>
     public int InputDeviceSensitivity
     {

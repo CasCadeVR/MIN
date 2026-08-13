@@ -2,6 +2,7 @@
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Voice.Messaging;
 using MIN.Voice.Services.Contacts.Interfaces;
@@ -15,6 +16,7 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
     private readonly IAudioCaptureService audioCaptureService;
     private readonly IMessageRouter messageRouter;
     private readonly IVoiceCodec codec;
+    private readonly ISettingsProvider settingsProvider;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -33,12 +35,14 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
     public VoiceDataTransmitter(IAudioCaptureService audioCaptureService,
         IMessageRouter messageRouter,
         IVoiceCodec codec,
+        ISettingsProvider settingsProvider,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.audioCaptureService = audioCaptureService;
         this.messageRouter = messageRouter;
         this.codec = codec;
+        this.settingsProvider = settingsProvider;
         this.identityService = identityService;
         this.logger = logger;
     }
@@ -87,9 +91,30 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
     /// <inheritdoc cref="IDisposable.Dispose"/>
     public void Dispose() => End();
 
+    private static float ComputeRmsDb(byte[] pcmData)
+    {
+        long sum = 0;
+        for (var i = 0; i < pcmData.Length; i += 2)
+        {
+            var sample = BitConverter.ToInt16(pcmData, i);
+            sum += sample * sample;
+        }
+        var rms = Math.Sqrt((double)sum / (pcmData.Length / 2));
+        return rms < 1e-10 ? -100f : (float)(20 * Math.Log10(rms / 32768.0));
+    }
+
     private void OnFrameCaptured(object? sender, AudioFrame e)
     {
         if (!isActive)
+        {
+            return;
+        }
+
+        var sensitivity = settingsProvider.GetSettings().InputDeviceSensitivity;
+
+        var rmsDb = ComputeRmsDb(e.Data);
+
+        if (sensitivity < 0 && rmsDb < sensitivity)
         {
             return;
         }

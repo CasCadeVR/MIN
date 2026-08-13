@@ -86,9 +86,11 @@ public class AudioCaptureService : IAudioCaptureService
 
         var deviceNumber = Math.Clamp(settings.InputDeviceNumber, 0, WaveInEvent.DeviceCount - 1);
 
-        var enumerator = new MMDeviceEnumerator();
-        audioDevice = enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active)
-                                 .ElementAtOrDefault(deviceNumber);
+        audioDevice = GetMMDeviceByWaveInDeviceNumber(deviceNumber);
+        if (audioDevice == null)
+        {
+            logger.Log($"Не удалось найти MMDevice для WaveIn устройства #{deviceNumber}, управление громкостью микрофона недоступно");
+        }
 
         waveIn = new WaveInEvent
         {
@@ -174,6 +176,29 @@ public class AudioCaptureService : IAudioCaptureService
 
         isStarted = false;
         waveIn = null;
+    }
+
+    private MMDevice? GetMMDeviceByWaveInDeviceNumber(int waveDeviceNumber)
+    {
+        var capabilities = WaveInEvent.GetCapabilities(waveDeviceNumber);
+        var waveProductName = capabilities.ProductName;
+
+        var enumerator = new MMDeviceEnumerator();
+        var devices = enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active);
+
+        // Ищем первое устройство, чьё FriendlyName содержит или равно имени из WaveIn
+        // (иногда добавляются суффиксы, поэтому используем Contains или StartsWith)
+        foreach (var device in devices)
+        {
+            if (device.FriendlyName.Contains(waveProductName, StringComparison.OrdinalIgnoreCase) ||
+                waveProductName.Contains(device.FriendlyName, StringComparison.OrdinalIgnoreCase))
+            {
+                return device;
+            }
+        }
+
+        // Запасной вариант: если не найдено, берём по индексу (как раньше)
+        return devices.ElementAtOrDefault(waveDeviceNumber);
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
