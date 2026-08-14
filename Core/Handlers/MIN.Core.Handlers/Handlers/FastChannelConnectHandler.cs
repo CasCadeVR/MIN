@@ -37,7 +37,7 @@ internal sealed class FastChannelConnectHandler : IMessageHandler
         {
             var serverConnectionId = registry.GetServerConnectionIdByRoomId(context.RoomContext.RoomId);
             var udpEndpoint = transport.GetEndpoints(serverConnectionId)
-                .FirstOrDefault(ep => ep.Type == TransportType.Udp);
+                .FirstOrDefault(ep => ep.Type == TransportType.Udp && ep.Origin == requestMessage.AddressOrigin);
 
             if (udpEndpoint == null)
             {

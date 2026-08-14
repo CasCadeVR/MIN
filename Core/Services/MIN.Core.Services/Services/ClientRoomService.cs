@@ -101,7 +101,12 @@ internal sealed class ClientRoomService
             roomFactory.GetOrCreateContext(connectionResult.RoomId)
                 .Connections.RegisterLocalParticipant(selfParticipant);
 
-            roomStore.Register(new Room(result.RoomInfo));
+            var room = new Room(result.RoomInfo)
+            {
+                ConnectionAddresses = [endpoint]
+            };
+
+            roomStore.Register(room);
 
             logger.Log($"Подключились к комнате с id {connectionResult.RoomId}, соединение с id {connectionResult.ConnectionId}");
 
@@ -150,10 +155,10 @@ internal sealed class ClientRoomService
         registry.UnregisterClientConnection(e.ConnectionId);
         logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {e.ConnectionId}");
 
-        if (!roomStore.RoomExists(roomId))
-        {
-            return false;
-        }
+        //if (!roomStore.RoomExists(roomId))
+        //{
+        //    return false;
+        //}
 
         var context = roomFactory.GetOrCreateContext(roomId);
         if (!context.Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant))

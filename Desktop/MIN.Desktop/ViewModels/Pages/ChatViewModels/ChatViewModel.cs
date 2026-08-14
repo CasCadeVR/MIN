@@ -151,7 +151,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task CleanUpServicesAsync(Guid roomId, Guid connectionId)
     {
-        if (localParticipant.Id == room.HostParticipant.Id)
+        if (IsHost)
         {
             await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
             await featureCollection.Core.Lifecycle.StopHostingAsync(roomId);

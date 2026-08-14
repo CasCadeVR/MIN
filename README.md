@@ -361,8 +361,7 @@ MIN/
   "clientExecutableFileName": "Name_of_client_exe_file.exe",
   "maximumParticipants": 5,
   "thumbnailFileName": "thumbnail.png",
-  "downloadLink": "https://github.com/...",
-  "preferredTransport": null
+  "downloadLink": "https://github.com/..."
 }
 ```
 
@@ -377,7 +376,6 @@ MIN/
 | `maximumParticipants` | Maximum number of participants (`null` = no limit) |
 | `thumbnailFileName` | Thumbnail image filename (`null` = no thumbnail) |
 | `downloadLink` | URL where users can download this session |
-| `preferredTransport` | Preferred transport: `"tcp"`, `"namedPipe"`, or `null` (MIN auto-detects based on OS) |
 
 ### Session Architecture
 

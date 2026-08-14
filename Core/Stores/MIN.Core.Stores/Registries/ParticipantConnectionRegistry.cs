@@ -12,11 +12,9 @@ public sealed class ParticipantConnectionRegistry : IParticipantConnectionRegist
     private readonly ConcurrentDictionary<Guid, ParticipantInfo> participantByConnectionId = new();
     private readonly ConcurrentDictionary<Guid, Guid> connectionIdByParticipantId = new();
 
-    void IParticipantConnectionRegistry.Register(Guid connectionId, ParticipantInfo participant)
-    {
-        participantByConnectionId[connectionId] = participant;
-        connectionIdByParticipantId[participant.Id] = connectionId;
-    }
+    bool IParticipantConnectionRegistry.TryRegister(Guid connectionId, ParticipantInfo participant)
+        => participantByConnectionId.TryAdd(connectionId, participant)
+        && connectionIdByParticipantId.TryAdd(participant.Id, connectionId);
 
     void IParticipantConnectionRegistry.RegisterLocalParticipant(ParticipantInfo participant)
     {

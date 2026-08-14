@@ -6,9 +6,9 @@
 public interface ISessionTransportFactory
 {
     /// <summary>
-    /// Создать транспорт исходя от нужд программы
+    /// Создать транспорт исходя от системы
     /// </summary>
-    ISessionProcessTransport Create(string? preferredTransport);
+    ISessionProcessTransport Create();
 
     /// <summary>
     /// Закрыть транспорт

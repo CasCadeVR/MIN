@@ -50,9 +50,18 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
         switch (message)
         {
             case RoomJoinRequestMessage roomJoinRequestMessage:
-                if (roomStore.GetRoom(context.RoomContext.RoomId).IsFull)
+                var room = roomStore.GetRoom(context.RoomContext.RoomId);
+
+                if (room.IsFull)
                 {
-                    await networkErrorHandler.SendErrorAsync("Комната заполнена",
+                    await networkErrorHandler.SendErrorAsync("Комната заполнена. Попробуйте позже.",
+                        message.SenderId, context.RoomContext.RoomId, critical: true);
+                    return HandlerResult.Success();
+                }
+
+                if (context.RoomContext.Participants.TryGetParticipantById(roomJoinRequestMessage.SenderId, out _))
+                {
+                    await networkErrorHandler.SendErrorAsync("Такой участник в ней уже присутствует. Попробуйте позже.",
                         message.SenderId, context.RoomContext.RoomId, critical: true);
                     return HandlerResult.Success();
                 }

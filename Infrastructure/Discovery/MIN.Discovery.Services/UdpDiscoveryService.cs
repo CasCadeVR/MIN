@@ -80,8 +80,7 @@ public sealed class UdpDiscoveryService : IDiscoveryService, IAsyncDisposable
         await discoveryTransport.StartListeningAsync(serviceCts.Token);
     }
 
-    /// <inheritdoc />
-    public async Task StopDiscoveryAsync(Guid roomId)
+    async Task IDiscoveryService.StopDiscoveryAsync(Guid roomId)
     {
         activeRoomsSizeById.Remove(roomId);
         activeRoomIds.Remove(roomId);

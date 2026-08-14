@@ -361,8 +361,7 @@ MIN/
   "clientExecutableFileName": "Name_of_client_exe_file.exe",
   "maximumParticipants": 5,
   "thumbnailFileName": "thumbnail.png",
-  "downloadLink": "https://github.com/...",
-  "preferredTransport": null
+  "downloadLink": "https://github.com/..."
 }
 ```
 
@@ -377,7 +376,6 @@ MIN/
 | `maximumParticipants` | Максимальное количество участников (`null` = без лимита) |
 | `thumbnailFileName` | Имя файла обложки (`null` = без обложки) |
 | `downloadLink` | Ссылка, по которой можно скачать эту сессию |
-| `preferredTransport` | Предпочитаемый транспорт: `"tcp"`, `"namedPipe"` или `null` (MIN определяет автоматически на основе ОС) |
 
 ### Архитектура сессий
 

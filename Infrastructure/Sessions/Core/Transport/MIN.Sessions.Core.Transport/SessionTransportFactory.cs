@@ -7,23 +7,10 @@ namespace MIN.Sessions.Core.Transport;
 /// <inheritdoc cref="ISessionTransportFactory"/>
 public class SessionTransportFactory : ISessionTransportFactory
 {
-    ISessionProcessTransport ISessionTransportFactory.Create(string? preferredTransport)
-    {
-        if (preferredTransport == "tcp")
-        {
-            return new TcpLoopbackTransport();
-        }
-        if (preferredTransport == "pipe")
-        {
-            return new NamedPipeProcessTransport();
-        }
-
-        // По умолчанию — по ОС
-
-        return OperatingSystem.IsWindows()
+    ISessionProcessTransport ISessionTransportFactory.Create()
+        => OperatingSystem.IsWindows()
             ? new NamedPipeProcessTransport()
             : new TcpLoopbackTransport();
-    }
 
     async void ISessionTransportFactory.Destroy(ISessionProcessTransport transport)
     {
