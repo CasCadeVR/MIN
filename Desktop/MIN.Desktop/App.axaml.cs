@@ -36,11 +36,11 @@ public partial class App : Application
 
             foreach (var hostedService in hostedServices)
             {
-                Task.Run(() =>
+                _ = Task.Run(async () =>
                 {
                     try
                     {
-                        hostedService.StartAsync(appLifeTimeCts.Token);
+                        await hostedService.StartAsync(appLifeTimeCts.Token);
                     }
                     catch (Exception ex)
                     {

@@ -13,7 +13,6 @@ namespace MIN.Voice.Handlers;
 internal sealed class VoiceCallEndHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
-    private readonly IVoiceCallMessageResolver voiceCallMessageResolver;
     private readonly IVoicePlaybackService voicePlaybackService;
     private readonly ILoggerProvider logger;
 
@@ -21,12 +20,10 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
     /// Инициализирует новый экземлпяр <see cref="VoiceCallEndHandler"/>
     /// </summary>
     public VoiceCallEndHandler(IEventBus eventBus,
-        IVoiceCallMessageResolver voiceCallMessageResolver,
         IVoicePlaybackService voicePlaybackService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
-        this.voiceCallMessageResolver = voiceCallMessageResolver; //TODO
         this.voicePlaybackService = voicePlaybackService;
         this.logger = logger;
     }
@@ -43,7 +40,8 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
             return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(VoiceCallEndHandler)} - {message.GetType()}");
         }
 
-        var existingVoiceCallStartedMessageId = voiceCallMessageResolver.GetVoiceCallMessageIdOutOfSubRoomId(context.RoomContext, voiceCallEndedMessage.SubRoomId);
+        var existingVoiceCallStartedMessageId = context.RoomContext.Messages.GetHistory()
+            .OfType<VoiceCallStartedMessage>().FirstOrDefault(x => x.SubRoomId == voiceCallEndedMessage.SubRoomId)?.Id;
 
         if (existingVoiceCallStartedMessageId != null)
         {

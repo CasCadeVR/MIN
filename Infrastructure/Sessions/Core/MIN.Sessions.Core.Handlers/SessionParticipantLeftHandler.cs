@@ -15,7 +15,6 @@ internal sealed class SessionParticipantLeftHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly ISessionProcessBridge sessionProcessBridge;
-    private readonly ISessionReadyMessageResolver sessionReadyMessageResolver;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -23,12 +22,10 @@ internal sealed class SessionParticipantLeftHandler : IMessageHandler
     /// </summary>
     public SessionParticipantLeftHandler(IEventBus eventBus,
         ISessionProcessBridge sessionProcessBridge,
-        ISessionReadyMessageResolver sessionReadyMessageResolver,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
         this.sessionProcessBridge = sessionProcessBridge;
-        this.sessionReadyMessageResolver = sessionReadyMessageResolver;
         this.logger = logger;
     }
 
@@ -59,7 +56,8 @@ internal sealed class SessionParticipantLeftHandler : IMessageHandler
             }
         }
 
-        var existingSessionReadyMessageId = sessionReadyMessageResolver.GetSessionReadyMessageIdOutOfSubRoomId(context.RoomContext, sessionParticipantLeftMessage.SubRoomId);
+        var existingSessionReadyMessageId = context.RoomContext.Messages.GetHistory()
+            .OfType<SessionReadyMessage>().FirstOrDefault(x => x.SubRoomId == sessionParticipantLeftMessage.SubRoomId)?.Id;
 
         if (existingSessionReadyMessageId != null)
         {

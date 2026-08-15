@@ -10,10 +10,10 @@ public interface IAudioDeviceService
     /// <summary>
     /// Получить микрофоны
     /// </summary>
-    IReadOnlyList<AudioDeviceInfo> GetInputDevices();
+    IReadOnlyList<AudioDeviceInfo> GetInputDevices(bool asDecoded = false);
 
     /// <summary>
     /// Получить динамики
     /// </summary>
-    IReadOnlyList<AudioDeviceInfo> GetOutputDevices();
+    IReadOnlyList<AudioDeviceInfo> GetOutputDevices(bool asDecoded = false);
 }

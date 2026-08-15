@@ -15,7 +15,6 @@ internal sealed class SessionParticipantJoinedHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
     private readonly ISessionProcessBridge sessionProcessBridge;
-    private readonly ISessionReadyMessageResolver sessionReadyMessageResolver;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -23,12 +22,10 @@ internal sealed class SessionParticipantJoinedHandler : IMessageHandler
     /// </summary>
     public SessionParticipantJoinedHandler(IEventBus eventBus,
         ISessionProcessBridge sessionProcessBridge,
-        ISessionReadyMessageResolver sessionReadyMessageResolver,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
         this.sessionProcessBridge = sessionProcessBridge;
-        this.sessionReadyMessageResolver = sessionReadyMessageResolver;
         this.logger = logger;
     }
 
@@ -56,16 +53,15 @@ internal sealed class SessionParticipantJoinedHandler : IMessageHandler
                 participant.Name), processContext, message.SenderId, context.CancellationToken);
         }
 
-        var existingSessionReadyMessageId = sessionReadyMessageResolver.GetSessionReadyMessageIdOutOfSubRoomId(context.RoomContext, sessionParticipantJoinedMessage.SubRoomId);
+        var existingSessionReadyMessageId = context.RoomContext.Messages.GetHistory()
+            .OfType<SessionReadyMessage>().FirstOrDefault(x => x.SubRoomId == sessionParticipantJoinedMessage.SubRoomId)?.Id;
 
-        if (existingSessionReadyMessageId == null)
+        if (existingSessionReadyMessageId != null)
         {
-            return HandlerResult.Failure($"Не найдено сообщение, представляющее сессию", showErrorMessage: false);
+            var existing = context.RoomContext.Messages.GetMessageById(existingSessionReadyMessageId.Value) as SessionReadyMessage;
+            existing!.CurrentParticipantAmount++;
+            context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
         }
-
-        var existing = context.RoomContext.Messages.GetMessageById(existingSessionReadyMessageId.Value) as SessionReadyMessage;
-        existing!.CurrentParticipantAmount++;
-        context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
 
         await eventBus.PublishAsync(new SessionParticipantJoinedEvent()
         {

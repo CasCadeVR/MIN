@@ -1,4 +1,5 @@
-﻿using MIN.Sessions.Core.Messaging.Contracts.Enums;
+﻿using MIN.Core.Messaging.Contracts.Enums;
+using MIN.Sessions.Core.Messaging.Contracts.Enums;
 
 namespace MIN.Sessions.Core.Messaging.Contracts.Models;
 
@@ -24,6 +25,11 @@ public class IpcProcessMessageEnvelope
     /// Направление сообщения сессии
     /// </summary>
     public SessionMessageRoute Route { get; init; }
+
+    /// <summary>
+    /// Канал, по которому пойдёт сообщение
+    /// </summary>
+    public MessageChannel Channel { get; init; }
 
     /// <summary>
     /// Содержимое сообщения

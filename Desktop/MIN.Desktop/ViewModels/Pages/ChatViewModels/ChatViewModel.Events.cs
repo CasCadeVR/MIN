@@ -95,6 +95,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     private async Task OnVoiceCallEnded(VoiceCallEndedEvent eventMessage, CancellationToken cancellationToken)
     {
         VoiceChatParticipants.Clear();
+        IsMuted = false;
         callTimer.Stop();
         callTimer.Tick -= OnCallTimerTick;
         activeVoiceChatSubroomId = null;
@@ -128,6 +129,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         if (eventMessage.Participant.Id == localParticipant.Id)
         {
+            IsMuted = false;
             IsInVoiceChat = false;
         }
         var voiceParticipant = VoiceChatParticipants.FirstOrDefault(x => x.ParticipantId == eventMessage.Participant.Id);

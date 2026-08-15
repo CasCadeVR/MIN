@@ -1,23 +1,29 @@
-﻿
+﻿using System.Threading.Channels;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
-using MIN.Helpers.Contracts.Models;
 using MIN.Voice.Services.Contacts.Constants;
 using MIN.Voice.Services.Contacts.Interfaces;
 using MIN.Voice.Services.Contacts.Models;
-using NAudio.CoreAudioApi;
-using NAudio.Wave;
+using OpenTK.Audio.OpenAL;
 
 namespace MIN.Voice.Services;
 
 /// <inheritdoc cref="IAudioCaptureService"/>
 public class AudioCaptureService : IAudioCaptureService
 {
+    private const int BufferFrameMultiplier = 4;
+    private const int IdleSleepMs = 5;
+
     private readonly ILoggerProvider logger;
     private readonly ISettingsProvider settingsProvider;
-    private WaveInEvent? waveIn;
-    private MMDevice? audioDevice;
-    private MMDeviceEnumerator? mMDeviceEnumerator;
+    private readonly SemaphoreSlim controlLock = new(1, 1); // async-safe, no deadlock on Join
+    private readonly int frameSampleCount;
+
+    private CancellationTokenSource? cts;
+    private string? currentDeviceName;
+    private Thread? captureThread;
+    private Thread? dispatchThread;
+    private Channel<AudioFrame>? frameChannel;
     private bool isStarted;
 
     /// <inheritdoc />
@@ -31,174 +37,234 @@ public class AudioCaptureService : IAudioCaptureService
         this.logger = logger;
         this.settingsProvider = settingsProvider;
 
-        settingsProvider.OnSettingsSaved += () =>
+        frameSampleCount = VoiceAudioConstants.SampleRate * VoiceAudioConstants.FrameDurationMs / 1000;
+
+        settingsProvider.OnSettingsSaved += async () =>
         {
-            if (!isStarted)
+            await controlLock.WaitAsync();
+            try
             {
-                return;
-            }
+                if (!isStarted)
+                {
+                    return;
+                }
 
-            if (WaveInEvent.DeviceCount <= 0)
+                var settings = settingsProvider.GetSettings();
+                var newDeviceName = GetDeviceNameByIndex(settings.InputDeviceNumber);
+
+                if (currentDeviceName == newDeviceName)
+                {
+                    return;
+                }
+
+                await StopInternalAsync();
+                StartInternal();
+            }
+            finally
             {
-                return;
+                controlLock.Release();
             }
-
-            var settings = settingsProvider.GetSettings();
-
-            var clamped = Math.Clamp(settings.InputDeviceNumber, 0, WaveInEvent.DeviceCount - 1);
-
-            if (waveIn?.DeviceNumber == clamped)
-            {
-                return;
-            }
-
-            Stop();
-            Start();
         };
     }
 
     /// <inheritdoc />
     public void Start()
     {
-        if (isStarted)
+        controlLock.Wait();
+        try
         {
-            return;
-        }
-
-        if (WaveInEvent.DeviceCount == 0)
-        {
-            logger.Log("Не найдено устройство записи, захват звука невозможен");
-            return;
-        }
-
-        var waveFormat = new WaveFormat(
-            VoiceAudioConstants.SampleRate,
-            VoiceAudioConstants.BitsPerSample,
-            VoiceAudioConstants.Channels);
-
-        var settings = settingsProvider.GetSettings();
-
-        settings.PropertyChanged += (sender, e) =>
-        {
-            if (e.PropertyName == nameof(Settings.InputDeviceVolume))
+            if (isStarted)
             {
-                SetMicrophoneVolume(settings.InputDeviceVolume);
+                return;
             }
-        };
 
-        var deviceNumber = Math.Clamp(settings.InputDeviceNumber, 0, WaveInEvent.DeviceCount - 1);
-
-        audioDevice = GetMMDeviceByWaveInDeviceNumber(deviceNumber);
-        if (audioDevice == null)
+            StartInternal();
+        }
+        finally
         {
-            logger.Log($"Не удалось найти MMDevice для WaveIn устройства #{deviceNumber}, управление громкостью микрофона недоступно");
+            controlLock.Release();
+        }
+    }
+
+    private void StartInternal()
+    {
+        var settings = settingsProvider.GetSettings();
+        var deviceName = GetDeviceNameByIndex(settings.InputDeviceNumber);
+
+        var format = VoiceAudioConstants.Channels == 1
+            ? ALFormat.Mono16
+            : ALFormat.Stereo16;
+
+        var bufferSize = frameSampleCount * BufferFrameMultiplier;
+
+        var device = ALC.CaptureOpenDevice(deviceName, VoiceAudioConstants.SampleRate, format, bufferSize);
+
+        if (device == ALCaptureDevice.Null)
+        {
+            logger.Log($"Не удалось открыть устройство захвата '{deviceName ?? "по умолчанию"}'");
+            return;
         }
 
-        waveIn = new WaveInEvent
-        {
-            DeviceNumber = deviceNumber,
-            WaveFormat = waveFormat,
-            BufferMilliseconds = VoiceAudioConstants.FrameDurationMs,
-        };
+        currentDeviceName = deviceName;
 
-        waveIn.DataAvailable += OnDataAvailable;
-        waveIn.RecordingStopped += OnRecordingStopped;
+        ALC.CaptureStart(device);
 
         isStarted = true;
-        waveIn.StartRecording();
+        cts = new CancellationTokenSource();
+        var token = cts.Token;
+
+        // Bounded channel = natural backpressure instead of unbounded ThreadPool fan-out.
+        // Single reader guarantees frames are dispatched in the exact order they were captured.
+        frameChannel = Channel.CreateBounded<AudioFrame>(new BoundedChannelOptions(64)
+        {
+            SingleReader = true,
+            SingleWriter = true,
+            FullMode = BoundedChannelFullMode.DropOldest // if consumer falls behind, drop stale audio, not fresh
+        });
+
+        captureThread = new Thread(() => CaptureLoop(device, token))
+        {
+            Name = "AudioCaptureThread",
+            IsBackground = true
+        };
+        captureThread.Start();
+
+        dispatchThread = new Thread(() => DispatchLoop(frameChannel.Reader, token))
+        {
+            Name = "AudioDispatchThread",
+            IsBackground = true
+        };
+        dispatchThread.Start();
+
+        logger.Log($"Захват запущен на устройстве '{deviceName ?? "микрофона, выбранному по умолчанию"}'");
+    }
+
+    // Producer: ONLY talks to OpenAL and writes to the channel. No locking, no event invocation here.
+    private void CaptureLoop(ALCaptureDevice device, CancellationToken token)
+    {
+        var frameBuffer = new byte[frameSampleCount * 2];
+        var samples = new short[frameSampleCount];
+        var writer = frameChannel!.Writer;
+
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                var samplesAvailable = ALC.GetInteger(device, AlcGetInteger.CaptureSamples);
+
+                if (samplesAvailable >= frameSampleCount)
+                {
+                    ALC.CaptureSamples(device, samples, frameSampleCount);
+                    Buffer.BlockCopy(samples, 0, frameBuffer, 0, frameBuffer.Length);
+
+                    var frameCopy = new byte[frameBuffer.Length];
+                    Buffer.BlockCopy(frameBuffer, 0, frameCopy, 0, frameBuffer.Length);
+
+                    // TryWrite never blocks the capture loop; DropOldest keeps latency bounded
+                    writer.TryWrite(new AudioFrame(frameCopy));
+                }
+                else
+                {
+                    Thread.Sleep(IdleSleepMs);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Log($"Ошибка в цикле захвата: {ex.Message}");
+                if (ex is ObjectDisposedException or InvalidOperationException)
+                {
+                    break;
+                }
+                Thread.Sleep(50);
+            }
+        }
+
+        writer.TryComplete();
+
+        try
+        {
+            ALC.CaptureStop(device);
+            ALC.CaptureCloseDevice(device);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Ошибка при остановке устройства захвата: {ex.Message}");
+        }
+
+        logger.Log("Цикл захвата завершён");
+    }
+
+    // Consumer: single thread reading the channel = strict FIFO delivery to subscribers, no reordering.
+    private void DispatchLoop(ChannelReader<AudioFrame> reader, CancellationToken token)
+    {
+        try
+        {
+            foreach (var frame in reader.ReadAllAsync(token).ToBlockingEnumerable(token))
+            {
+                try
+                {
+                    FrameCaptured?.Invoke(this, frame);
+                }
+                catch (Exception ex)
+                {
+                    logger.Log($"Ошибка в обработчике FrameCaptured: {ex.Message}");
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // expected on stop
+        }
     }
 
     /// <inheritdoc />
     public void Stop()
     {
-        if (!isStarted)
-        {
-            return;
-        }
+        //controlLock.Wait();
+        //try
+        //{
+        //    if (!isStarted)
+        //    {
+        //        return;
+        //    }
 
-        isStarted = false;
-
-        var current = waveIn;
-        waveIn = null;
-
-        if (current == null)
-        {
-            return;
-        }
-
-        current.DataAvailable -= OnDataAvailable;
-        current.RecordingStopped -= OnRecordingStopped;
-
-        try
-        {
-            current.StopRecording();
-        }
-        catch (Exception ex)
-        {
-            logger.Log($"Не удалось остановить захват звука: {ex.Message}");
-        }
-        finally
-        {
-            current.Dispose();
-        }
+        //    StopInternalAsync().GetAwaiter().GetResult();
+        //}
+        //finally
+        //{
+        //    controlLock.Release();
+        //}
     }
 
-    private void SetMicrophoneVolume(int volume)
+    // No lock is held while waiting for the threads to exit, so they're free to reach
+    // their own cleanup code (which no longer needs to touch shared state under lock at all).
+    private Task StopInternalAsync()
     {
-        if (audioDevice == null)
-        {
-            return;
-        }
+        cts?.Cancel();
 
-        var normalizedVolume = Math.Clamp(volume, 0, 100) / 100.0f;
-        audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar = normalizedVolume;
+        return Task.Run(() =>
+        {
+            captureThread?.Join();
+            dispatchThread?.Join();
+
+            currentDeviceName = null;
+            isStarted = false;
+
+            cts?.Dispose();
+            cts = null;
+
+            logger.Log("Захват остановлен");
+        });
     }
 
-    private void OnDataAvailable(object? sender, WaveInEventArgs e)
+    private static string? GetDeviceNameByIndex(int index)
     {
-        try
-        {
-            var buffer = new byte[e.BytesRecorded];
-            Buffer.BlockCopy(e.Buffer, 0, buffer, 0, e.BytesRecorded);
-
-            FrameCaptured?.Invoke(this, new AudioFrame(buffer));
-        }
-        catch (Exception ex)
-        {
-            logger.Log($"Ошибка во время захвата звука: {ex.Message}");
-        }
+        var devices = GetCaptureDevices();
+        return index >= 0 && index < devices.Count ? devices[index] : null;
     }
 
-    private void OnRecordingStopped(object? sender, StoppedEventArgs e)
-    {
-        if (!ReferenceEquals(sender, waveIn))
-        {
-            return;
-        }
-
-        isStarted = false;
-        waveIn = null;
-    }
-
-    private MMDevice? GetMMDeviceByWaveInDeviceNumber(int waveDeviceNumber)
-    {
-        var capabilities = WaveInEvent.GetCapabilities(waveDeviceNumber);
-        var waveProductName = capabilities.ProductName;
-
-        mMDeviceEnumerator ??= new MMDeviceEnumerator();
-        var devices = mMDeviceEnumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active);
-
-        foreach (var device in devices)
-        {
-            if (device.FriendlyName.Contains(waveProductName, StringComparison.OrdinalIgnoreCase) ||
-                waveProductName.Contains(device.FriendlyName, StringComparison.OrdinalIgnoreCase))
-            {
-                return device;
-            }
-        }
-
-        return devices.ElementAtOrDefault(waveDeviceNumber);
-    }
+    private static List<string> GetCaptureDevices()
+        => ALC.GetString(ALDevice.Null, AlcGetStringList.CaptureDeviceSpecifier);
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     public void Dispose() => Stop();

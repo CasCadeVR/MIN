@@ -19,8 +19,8 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(NetSdkVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(NetSdkVersion)" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageVersion Include="NAudio" Version="2.3.0" />
     <PackageVersion Include="Open.NAT.Core" Version="2.1.0.5" />
+    <PackageVersion Include="OpenTK.Audio.OpenAL" Version="4.9.4" />
     <PackageVersion Include="ServiceScan.SourceGenerator" Version="3.1.4" />
     <PackageVersion Include="Xaml.Behaviors.Interactions" Version="12.0.0.1" />
     <PackageVersion Include="Xaml.Behaviors.Interactivity" Version="12.0.0.1" />

@@ -1,35 +1,66 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Text;
 using MIN.Voice.Services.Contacts.Interfaces;
 using MIN.Voice.Services.Contacts.Models;
-using NAudio;
-using NAudio.Wave;
+using OpenTK.Audio.OpenAL;
 
 namespace MIN.Voice.Services;
 
 /// <inheritdoc cref="IAudioDeviceService"/>
 public class AudioDeviceService : IAudioDeviceService
 {
-    IReadOnlyList<AudioDeviceInfo> IAudioDeviceService.GetInputDevices()
+    private const string PossiblePrefix = "OpenAL Soft on ";
+
+    IReadOnlyList<AudioDeviceInfo> IAudioDeviceService.GetInputDevices(bool asDecoded)
+    => GetDevices(isInput: true, asDecoded);
+
+    IReadOnlyList<AudioDeviceInfo> IAudioDeviceService.GetOutputDevices(bool asDecoded)
+        => GetDevices(isInput: false, asDecoded);
+
+    private static List<AudioDeviceInfo> GetDevices(bool isInput, bool asDecoded)
     {
         var result = new List<AudioDeviceInfo>();
-        for (var i = 0; i < WaveInEvent.DeviceCount; i++)
+
+        var listType = isInput
+            ? AlcGetStringList.CaptureDeviceSpecifier
+            : AlcGetStringList.AllDevicesSpecifier;
+
+        try
         {
-            result.Add(new AudioDeviceInfo(i, WaveInEvent.GetCapabilities(i).ProductName));
+            var devices = ALC.GetString(ALDevice.Null, listType);
+            if (devices != null)
+            {
+                AddDevicesFromList(devices, result, asDecoded);
+            }
         }
+        catch { }
+
         return result;
     }
 
-    IReadOnlyList<AudioDeviceInfo> IAudioDeviceService.GetOutputDevices()
+    private static void AddDevicesFromList(List<string> devices, List<AudioDeviceInfo> result, bool asDecoded)
     {
-        // TODO: maybe some day this hacky code will be the same as the one above (idk why on output wave there are no device infos)
-        var result = new List<AudioDeviceInfo>();
-        var count = WaveInterop.waveOutGetNumDevs();
-        for (var i = 0; i < count; i++)
+        if (asDecoded)
         {
-            var caps = new WaveOutCapabilities();
-            MmException.Try(WaveInterop.waveOutGetDevCaps(i, out caps, Marshal.SizeOf(caps)), "waveOutGetDevCaps");
-            result.Add(new AudioDeviceInfo(i, caps.ProductName));
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
-        return result;
+
+        for (var i = 0; i < devices.Count; i++)
+        {
+            var name = devices[i];
+
+            if (asDecoded)
+            {
+                var bytes = Encoding.GetEncoding("Windows-1251").GetBytes(name);
+                name = Encoding.UTF8.GetString(bytes);
+            }
+
+            if (name.StartsWith(
+                PossiblePrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                name = name.Substring(PossiblePrefix.Length);
+            }
+
+            result.Add(new AudioDeviceInfo(i, name));
+        }
     }
 }

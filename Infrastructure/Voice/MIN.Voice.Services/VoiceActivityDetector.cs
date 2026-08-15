@@ -1,4 +1,5 @@
 ﻿using MIN.Helpers.Contracts.Interfaces.SettingsServices;
+using MIN.Helpers.Contracts.Models;
 using MIN.Voice.Services.Contacts.Interfaces;
 
 namespace MIN.Voice.Services;
@@ -35,6 +36,13 @@ public class VoiceActivityDetector : IVoiceActivityDetector
     private void LoadSettings()
     {
         var settings = settingsProvider.GetSettings();
+        settings.PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName == nameof(Settings.InputDeviceSensitivity))
+            {
+                sensitivityDb = settings.InputDeviceSensitivity;
+            }
+        };
         sensitivityDb = settings.InputDeviceSensitivity;
         holdTimeMs = 400;
         adaptiveMarginDb = 10;

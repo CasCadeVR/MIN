@@ -1,50 +1,82 @@
-﻿using MIN.Helpers.Contracts.Interfaces;
+﻿using System.ComponentModel;
+using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models;
 using MIN.Voice.Services.Contacts.Interfaces;
 using MIN.Voice.Services.Models;
-using NAudio.Wave;
 
 namespace MIN.Voice.Services;
 
 /// <inheritdoc cref="IVoicePlaybackService"/>
 public class VoicePlaybackService : IVoicePlaybackService
 {
-    private readonly Dictionary<Guid, ParticipantChannel> channels = [];
+    private readonly Dictionary<Guid, ParticipantVoiceEntry> channels = [];
     private readonly HashSet<int> voiceCalls = [];
     private readonly IVoiceCodec codec;
     private readonly ISettingsProvider settingsProvider;
     private readonly ILoggerProvider logger;
     private readonly object sync = new();
-    private int appVolume;
+    private readonly PlaybackDeviceContext? deviceContext;
+    private float appVolume;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="VoicePlaybackService"/>
     /// </summary>
-    public VoicePlaybackService(IVoiceCodec codec, ISettingsProvider settingsProvider, ILoggerProvider logger)
+    public VoicePlaybackService(IVoiceCodec codec,
+        IAudioDeviceService audioDeviceService,
+        ISettingsProvider settingsProvider,
+        ILoggerProvider logger)
     {
         this.codec = codec;
         this.settingsProvider = settingsProvider;
         this.logger = logger;
 
+        var settings = settingsProvider.GetSettings();
+        appVolume = settings.OutputDeviceVolume / 100.0f;
+
+        // Одно устройство/контекст на всё приложение - создаём один раз здесь.
+        // Если создать не удалось (нет устройства вывода и т.п.), участники
+        // просто не будут создаваться (см. try/catch в AddParticipant),
+        // а не будут крашить сервис целиком.
+        try
+        {
+            var outputDevices = audioDeviceService.GetOutputDevices();
+            var deviceName = settings.OutputDeviceNumber >= 0 && settings.OutputDeviceNumber < outputDevices.Count
+                ? outputDevices[settings.OutputDeviceNumber].Name
+                : null;
+
+            deviceContext = new PlaybackDeviceContext(deviceName);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Не удалось инициализировать устройство воспроизведения: {ex.Message}");
+        }
+
         settingsProvider.OnSettingsSaved += () =>
         {
             lock (sync)
             {
-                appVolume = settingsProvider.GetSettings().OutputDeviceVolume;
+                var currentSettings = settingsProvider.GetSettings();
+                appVolume = currentSettings.OutputDeviceVolume / 100.0f;
 
-                var avaibleDevices = WaveInterop.waveOutGetNumDevs() - 1;
-
-                if (avaibleDevices <= 0)
+                var outputDevices = audioDeviceService.GetOutputDevices();
+                if (currentSettings.OutputDeviceNumber < 0 || currentSettings.OutputDeviceNumber >= outputDevices.Count)
                 {
                     return;
                 }
 
-                var clamped = Math.Clamp(settingsProvider.GetSettings().OutputDeviceNumber, 0, avaibleDevices);
+                var device = outputDevices[currentSettings.OutputDeviceNumber];
 
-                foreach (var channel in channels)
+                try
                 {
-                    channel.Value.ChangeDevice(clamped);
+                    // Меняем устройство ОДИН раз на общем контексте - все
+                    // ParticipantChannel пересоздадут свои source через
+                    // PlaybackDeviceContext.DeviceChanged.
+                    deviceContext?.ChangeDevice(device.Name);
+                }
+                catch (Exception ex)
+                {
+                    logger.Log($"Не удалось сменить устройство воспроизведения: {ex.Message}");
                 }
             }
         };
@@ -71,28 +103,30 @@ public class VoicePlaybackService : IVoicePlaybackService
                 return;
             }
 
+            if (deviceContext == null)
+            {
+                logger.Log($"Не удалось создать канал воспроизведения для {participantId}: устройство воспроизведения не инициализировано");
+                return;
+            }
+
             var settings = settingsProvider.GetSettings();
-
-            var deviceNumber = settings.OutputDeviceNumber < 0
-                ? -1
-                : Math.Min(settings.OutputDeviceNumber, WaveInterop.waveOutGetNumDevs() - 1);
-
-            appVolume = settings.OutputDeviceVolume;
+            appVolume = settings.OutputDeviceVolume / 100.0f;
 
             try
             {
-                var channel = new ParticipantChannel(codec, deviceNumber, appVolume);
+                var channel = new ParticipantChannel(codec, deviceContext, appVolume);
 
-                settings.PropertyChanged += (sender, e) =>
+                void volumeHandler(object? _, PropertyChangedEventArgs e)
                 {
                     if (e.PropertyName == nameof(Settings.OutputDeviceVolume))
                     {
-                        appVolume = settings.OutputDeviceVolume;
+                        appVolume = settings.OutputDeviceVolume / 100.0f;
                         channel.ChangeVolume(appVolume, channel.SpecificVolume);
                     }
-                };
+                }
+                settings.PropertyChanged += volumeHandler;
 
-                channels[participantId] = channel;
+                channels[participantId] = new ParticipantVoiceEntry(channel, volumeHandler);
             }
             catch (Exception ex)
             {
@@ -105,27 +139,26 @@ public class VoicePlaybackService : IVoicePlaybackService
     {
         lock (sync)
         {
-            if (!channels.Remove(participantId, out var channel))
+            if (!channels.Remove(participantId, out var entry))
             {
                 return;
             }
 
-            channel.Dispose();
+            settingsProvider.GetSettings().PropertyChanged -= entry.VolumeHandler;
+            entry.Channel.Dispose();
         }
     }
 
     void IVoicePlaybackService.ChangeParticipantVolume(Guid participantId, int specificVolume)
     {
+        ParticipantChannel? channel;
         lock (sync)
         {
-            ParticipantChannel? channel;
-            lock (sync)
-            {
-                channels.TryGetValue(participantId, out channel);
-            }
-
-            channel?.ChangeVolume(appVolume, specificVolume);
+            channels.TryGetValue(participantId, out var entry);
+            channel = entry?.Channel;
         }
+
+        channel?.ChangeVolume(appVolume, specificVolume / 100.0f);
     }
 
     void IVoicePlaybackService.PlaySamples(Guid participantId, long sequenceNumber, byte[] data)
@@ -135,7 +168,8 @@ public class VoicePlaybackService : IVoicePlaybackService
             ParticipantChannel? channel;
             lock (sync)
             {
-                channels.TryGetValue(participantId, out channel);
+                channels.TryGetValue(participantId, out var entry);
+                channel = entry?.Channel;
             }
 
             channel?.Enqueue(sequenceNumber, data);
@@ -151,9 +185,12 @@ public class VoicePlaybackService : IVoicePlaybackService
     {
         lock (sync)
         {
-            foreach (var channel in channels.Values)
+            var settings = settingsProvider.GetSettings();
+
+            foreach (var entry in channels.Values)
             {
-                channel.Dispose();
+                settings.PropertyChanged -= entry.VolumeHandler;
+                entry.Channel.Dispose();
             }
 
             voiceCalls.Clear();
@@ -162,5 +199,9 @@ public class VoicePlaybackService : IVoicePlaybackService
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
-    public void Dispose() => ((IVoicePlaybackService)this).Clear();
+    public void Dispose()
+    {
+        Clear();
+        deviceContext?.Dispose();
+    }
 }

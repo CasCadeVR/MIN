@@ -22,6 +22,8 @@ public class VoiceCallMonitor : IHostedService
     private readonly IMessageRouter messageRouter;
     private readonly IMuteService muteService;
     private readonly IVoicePlaybackService voicePlaybackService;
+    private readonly IAudioCaptureService audioCaptureService;
+    private readonly IVoiceDataTransmitter voiceDataTransmitter;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
@@ -33,6 +35,8 @@ public class VoiceCallMonitor : IHostedService
         IMessageRouter messageRouter,
         IMuteService muteService,
         IVoicePlaybackService voicePlaybackService,
+        IAudioCaptureService audioCaptureService,
+        IVoiceDataTransmitter voiceDataTransmitter,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
@@ -41,15 +45,25 @@ public class VoiceCallMonitor : IHostedService
         this.messageRouter = messageRouter;
         this.muteService = muteService;
         this.voicePlaybackService = voicePlaybackService;
+        this.audioCaptureService = audioCaptureService;
+        this.voiceDataTransmitter = voiceDataTransmitter;
         this.identityService = identityService;
         this.logger = logger;
     }
 
     async Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
+        eventBus.Subscribe<RoomClosedEvent>(OnRoomClosed);
         eventBus.Subscribe<VoiceCallEstablishedEvent>(OnVoiceCallEstablished);
         eventBus.Subscribe<VoiceCallLeftEvent>(OnVoiceCallLeft);
         eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
+    }
+
+    private async Task OnRoomClosed(RoomClosedEvent e, CancellationToken cancellationToken)
+    {
+        audioCaptureService.Stop();
+        voiceDataTransmitter.End();
+        voicePlaybackService.Clear();
     }
 
     private async Task OnVoiceCallEstablished(VoiceCallEstablishedEvent e, CancellationToken cancellationToken)
@@ -95,6 +109,9 @@ public class VoiceCallMonitor : IHostedService
 
     Task IHostedService.StopAsync(CancellationToken cancellationToken)
     {
+        audioCaptureService.Stop();
+        voiceDataTransmitter.End();
+        voicePlaybackService.Dispose();
         return Task.CompletedTask;
     }
 }

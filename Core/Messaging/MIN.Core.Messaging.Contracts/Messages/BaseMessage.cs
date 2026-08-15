@@ -37,5 +37,5 @@ public abstract class BaseMessage : IMessage
     public virtual bool RequireStreamAcks { get; }
 
     /// <inheritdoc />
-    public virtual MessageChannel Channel { get; } = MessageChannel.Secure;
+    public virtual MessageChannel Channel { get; init; } = MessageChannel.Secure;
 }

@@ -1,6 +1,7 @@
-﻿using MIN.Voice.Services.Contacts.Constants;
+﻿using System.Runtime.InteropServices;
+using MIN.Voice.Services.Contacts.Constants;
 using MIN.Voice.Services.Contacts.Interfaces;
-using NAudio.Wave;
+using OpenTK.Audio.OpenAL;
 
 namespace MIN.Voice.Services.Models;
 
@@ -10,81 +11,54 @@ namespace MIN.Voice.Services.Models;
 internal sealed class ParticipantChannel : IDisposable
 {
     private const int MaxBufferedFrames = 10;
+    private const int NumBuffers = 4;
+
     private readonly IVoiceCodec codec;
-    private readonly BufferedWaveProvider provider;
-    private readonly SortedDictionary<long, byte[]> pending = [];
     private readonly object gate = new();
-    private int deviceNumber;
-    private WaveOutEvent waveOut = null!;
+    private readonly PlaybackDeviceContext deviceContext;
+    private readonly int[] bufferIds = new int[NumBuffers];
+    private readonly Queue<int> freeBuffers = new();
+    private SortedDictionary<long, byte[]> pending = [];
+    private int sourceId;
     private long? expectedNextSequence;
+    private float currentGain;
+    private bool disposed;
 
     /// <summary>
     /// Специфичный для участника громкость
     /// </summary>
-    public int SpecificVolume;
+    public float SpecificVolume;
 
-    public ParticipantChannel(IVoiceCodec codec, int deviceNumber, int startVolume, int specificVolume = 100)
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="ParticipantChannel"/>.
+    /// Устройство/контекст - общие на всё приложение (<paramref name="deviceContext"/>),
+    /// канал владеет только своим source и буферами.
+    /// </summary>
+    public ParticipantChannel(IVoiceCodec codec, PlaybackDeviceContext deviceContext, float startVolume, float specificVolume = 1.0f)
     {
         this.codec = codec;
-
-        var waveFormat = new WaveFormat(
-            VoiceAudioConstants.SampleRate,
-            VoiceAudioConstants.BitsPerSample,
-            VoiceAudioConstants.Channels);
-
-        provider = new BufferedWaveProvider(waveFormat)
-        {
-            BufferDuration = TimeSpan.FromMilliseconds(500),
-            DiscardOnBufferOverflow = true,
-        };
-
-        this.deviceNumber = deviceNumber;
+        this.deviceContext = deviceContext;
         SpecificVolume = specificVolume;
+        currentGain = Math.Clamp(startVolume * specificVolume, 0f, 1f);
 
-        InitNewWave(startVolume, specificVolume);
+        deviceContext.RunExclusive(CreateSourceAndBuffers);
+
+        // Если общее устройство меняется, пересоздаём свой source/буферы
+        // под новым контекстом.
+        deviceContext.DeviceChanged += OnDeviceChanged;
     }
 
-    private void InitNewWave(int startVolume, int specificVolume)
+    // Вызывается ТОЛЬКО изнутри deviceContext.RunExclusive - контекст уже текущий.
+    private void CreateSourceAndBuffers()
     {
-        waveOut = new WaveOutEvent
+        sourceId = AL.GenSource();
+        AL.GenBuffers(NumBuffers, bufferIds);
+        foreach (var buf in bufferIds)
         {
-            Volume = ConvertVolumes(startVolume, specificVolume),
-            DeviceNumber = deviceNumber,
-            DesiredLatency = 100,
-        };
-        waveOut.Init(provider);
-        waveOut.Play();
-    }
-
-    /// <summary>
-    /// Поменять звук потока
-    /// </summary>
-    public void ChangeVolume(int appVolume, int specificVolume)
-    {
-        SpecificVolume = specificVolume;
-        waveOut?.Volume = ConvertVolumes(appVolume, specificVolume);
-    }
-
-    private static float ConvertVolumes(int appVolume, int specificVolume)
-        => Math.Clamp((appVolume / 100.0f) * (specificVolume / 100.0f), 0f, 1f);
-
-    /// <summary>
-    /// Обновить устройство вывода
-    /// </summary>
-    public void ChangeDevice(int deviceNumber)
-    {
-        if (this.deviceNumber == deviceNumber)
-        {
-            return;
+            freeBuffers.Enqueue(buf);
         }
 
-        this.deviceNumber = deviceNumber;
-        var savedVolume = waveOut.Volume;
-
-        waveOut.Stop();
-        waveOut.Dispose();
-
-        InitNewWave((int)savedVolume, SpecificVolume);
+        AL.Source(sourceId, ALSourcef.Gain, currentGain);
     }
 
     public void Enqueue(long sequenceNumber, byte[] data)
@@ -93,6 +67,11 @@ internal sealed class ParticipantChannel : IDisposable
 
         lock (gate)
         {
+            if (disposed)
+            {
+                return;
+            }
+
             expectedNextSequence ??= sequenceNumber;
 
             if (sequenceNumber < expectedNextSequence.Value)
@@ -109,28 +88,139 @@ internal sealed class ParticipantChannel : IDisposable
                 pending.Remove(oldest);
             }
 
-            FlushReady();
+            // Всё общение с AL идёт под общим gate deviceContext - гарантирует,
+            // что наш контекст точно текущий, даже если другой участник
+            // (на другом потоке) тоже сейчас что-то делает с AL.
+            deviceContext.RunExclusive(FlushPending);
         }
     }
 
-    private void FlushReady()
+    // Вызывается либо изнутри Enqueue (под gate И под RunExclusive), либо из
+    // OnDeviceChanged (под RunExclusive). AL-контекст гарантированно текущий.
+    private void FlushPending()
     {
-        while (pending.TryGetValue(expectedNextSequence!.Value, out var samples))
+        UpdateFreeBuffers();
+
+        while (pending.Count > 0 && freeBuffers.Count > 0)
         {
-            provider.AddSamples(samples, 0, samples.Length);
-            pending.Remove(expectedNextSequence.Value);
-            expectedNextSequence = expectedNextSequence.Value + 1;
+            var seq = expectedNextSequence!.Value;
+            if (!pending.TryGetValue(seq, out var samples))
+            {
+                break;
+            }
+
+            var buffer = freeBuffers.Dequeue();
+
+            var handle = GCHandle.Alloc(samples, GCHandleType.Pinned);
+            try
+            {
+                AL.BufferData(buffer, ALFormat.Mono16, handle.AddrOfPinnedObject(), samples.Length, VoiceAudioConstants.SampleRate);
+            }
+            finally
+            {
+                handle.Free();
+            }
+
+            AL.SourceQueueBuffer(sourceId, buffer);
+            pending.Remove(seq);
+            expectedNextSequence = seq + 1;
+
+            AL.GetSource(sourceId, ALGetSourcei.SourceState, out var state);
+            if ((ALSourceState)state != ALSourceState.Playing)
+            {
+                AL.SourcePlay(sourceId);
+            }
+        }
+    }
+
+    private void UpdateFreeBuffers()
+    {
+        AL.GetSource(sourceId, ALGetSourcei.BuffersProcessed, out var processed);
+        if (processed > 0)
+        {
+            var processedBufs = new int[processed];
+            AL.SourceUnqueueBuffers(sourceId, processed, processedBufs);
+            foreach (var buf in processedBufs)
+            {
+                freeBuffers.Enqueue(buf);
+            }
+        }
+    }
+
+    public void ChangeVolume(float appVolume, float specificVolume)
+    {
+        SpecificVolume = specificVolume;
+        var newGain = Math.Clamp(appVolume * specificVolume, 0f, 1f);
+
+        lock (gate)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            deviceContext.RunExclusive(() => AL.Source(sourceId, ALSourcef.Gain, newGain));
+            currentGain = newGain;
+        }
+    }
+
+    // Устройство меняется централизованно через PlaybackDeviceContext.ChangeDevice -
+    // этот канал просто пересоздаёт свой source/буферы под новым контекстом.
+    // DeviceChanged поднимается ВНЕ lock самого deviceContext, так что тут
+    // спокойно берём и свой gate, и RunExclusive.
+    private void OnDeviceChanged()
+    {
+        lock (gate)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            var pendingCopy = pending;
+            var expectedSeq = expectedNextSequence;
+            var gain = currentGain;
+
+            freeBuffers.Clear();
+
+            deviceContext.RunExclusive(CreateSourceAndBuffers);
+
+            pending = pendingCopy;
+            expectedNextSequence = expectedSeq;
+            currentGain = gain;
+
+            deviceContext.RunExclusive(FlushPending);
         }
     }
 
     public void Dispose()
     {
-        waveOut.Stop();
-        waveOut.Dispose();
-
         lock (gate)
         {
-            pending.Clear();
+            if (disposed)
+            {
+                return;
+            }
+
+            deviceContext.DeviceChanged -= OnDeviceChanged;
+
+            deviceContext.RunExclusive(() =>
+            {
+                AL.SourceStop(sourceId);
+                AL.GetSource(sourceId, ALGetSourcei.BuffersQueued, out var queued);
+                if (queued > 0)
+                {
+                    var queuedBufs = new int[queued];
+                    AL.SourceUnqueueBuffers(sourceId, queued, queuedBufs);
+                }
+                AL.DeleteSource(sourceId);
+                foreach (var buf in bufferIds)
+                {
+                    AL.DeleteBuffer(buf);
+                }
+            });
+
+            disposed = true;
         }
     }
 }

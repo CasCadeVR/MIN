@@ -24,7 +24,6 @@ public class VoiceModule : Module
         services.RegisterMultipleInterfacesAssignableTo<IHostedService, VoiceCallMonitor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<PcmCodec>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<AudioDeviceService>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<VoiceCallMessageResolver>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<VoicePlaybackService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<AudioCaptureService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<VoiceActivityDetector>(ServiceLifetime.Singleton);
