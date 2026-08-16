@@ -38,6 +38,7 @@ internal sealed class ParticipantChannel : IDisposable
     {
         this.codec = codec;
         this.deviceContext = deviceContext;
+
         SpecificVolume = specificVolume;
         currentGain = Math.Clamp(startVolume * specificVolume, 0f, 1f);
 

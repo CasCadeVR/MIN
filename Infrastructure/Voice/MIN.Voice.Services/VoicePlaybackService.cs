@@ -34,10 +34,6 @@ public class VoicePlaybackService : IVoicePlaybackService
         var settings = settingsProvider.GetSettings();
         appVolume = settings.OutputDeviceVolume / 100.0f;
 
-        // Одно устройство/контекст на всё приложение - создаём один раз здесь.
-        // Если создать не удалось (нет устройства вывода и т.п.), участники
-        // просто не будут создаваться (см. try/catch в AddParticipant),
-        // а не будут крашить сервис целиком.
         try
         {
             var outputDevices = audioDeviceService.GetOutputDevices();
@@ -69,9 +65,6 @@ public class VoicePlaybackService : IVoicePlaybackService
 
                 try
                 {
-                    // Меняем устройство ОДИН раз на общем контексте - все
-                    // ParticipantChannel пересоздадут свои source через
-                    // PlaybackDeviceContext.DeviceChanged.
                     deviceContext?.ChangeDevice(device.Name);
                 }
                 catch (Exception ex)

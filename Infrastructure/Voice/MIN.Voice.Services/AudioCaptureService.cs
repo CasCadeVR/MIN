@@ -1,6 +1,7 @@
 ﻿using System.Threading.Channels;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
+using MIN.Helpers.Contracts.Models;
 using MIN.Voice.Services.Contacts.Constants;
 using MIN.Voice.Services.Contacts.Interfaces;
 using MIN.Voice.Services.Contacts.Models;
@@ -26,6 +27,12 @@ public class AudioCaptureService : IAudioCaptureService
     private Channel<AudioFrame>? frameChannel;
     private bool isStarted;
 
+    // volatile: written from the settings-saved callback (arbitrary thread),
+    // read once per frame on the capture thread. A float fits in a machine
+    // word so the read/write is already atomic - volatile just guarantees the
+    // capture thread doesn't cache a stale value across loop iterations.
+    private volatile float micGain = 1f;
+
     /// <inheritdoc />
     public event EventHandler<AudioFrame>? FrameCaptured;
 
@@ -39,6 +46,8 @@ public class AudioCaptureService : IAudioCaptureService
 
         frameSampleCount = VoiceAudioConstants.SampleRate * VoiceAudioConstants.FrameDurationMs / 1000;
 
+        micGain = ReadMicGain();
+
         settingsProvider.OnSettingsSaved += async () =>
         {
             await controlLock.WaitAsync();
@@ -50,6 +59,9 @@ public class AudioCaptureService : IAudioCaptureService
                 }
 
                 var settings = settingsProvider.GetSettings();
+                settings.PropertyChanged -= Settings_PropertyChanged;
+                settings.PropertyChanged += Settings_PropertyChanged;
+
                 var newDeviceName = GetDeviceNameByIndex(settings.InputDeviceNumber);
 
                 if (currentDeviceName == newDeviceName)
@@ -89,6 +101,8 @@ public class AudioCaptureService : IAudioCaptureService
     private void StartInternal()
     {
         var settings = settingsProvider.GetSettings();
+        settings.PropertyChanged += Settings_PropertyChanged;
+
         var deviceName = GetDeviceNameByIndex(settings.InputDeviceNumber);
 
         var format = VoiceAudioConstants.Channels == 1
@@ -139,6 +153,21 @@ public class AudioCaptureService : IAudioCaptureService
         logger.Log($"Захват запущен на устройстве '{deviceName ?? "микрофона, выбранному по умолчанию"}'");
     }
 
+    private void Settings_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Settings.InputDeviceVolume))
+        {
+            micGain = ReadMicGain();
+        }
+    }
+
+    private float ReadMicGain()
+    {
+        var settings = settingsProvider.GetSettings();
+        var percent = settings.InputDeviceVolume / 100f;
+        return Math.Clamp(percent, 0f, 1.0f);
+    }
+
     // Producer: ONLY talks to OpenAL and writes to the channel. No locking, no event invocation here.
     private void CaptureLoop(ALCaptureDevice device, CancellationToken token)
     {
@@ -155,6 +184,9 @@ public class AudioCaptureService : IAudioCaptureService
                 if (samplesAvailable >= frameSampleCount)
                 {
                     ALC.CaptureSamples(device, samples, frameSampleCount);
+
+                    ApplyGain(samples, micGain);
+
                     Buffer.BlockCopy(samples, 0, frameBuffer, 0, frameBuffer.Length);
 
                     var frameCopy = new byte[frameBuffer.Length];
@@ -175,7 +207,7 @@ public class AudioCaptureService : IAudioCaptureService
                 {
                     break;
                 }
-                Thread.Sleep(50);
+                Thread.Sleep(IdleSleepMs * 10);
             }
         }
 
@@ -192,6 +224,28 @@ public class AudioCaptureService : IAudioCaptureService
         }
 
         logger.Log("Цикл захвата завершён");
+    }
+
+    // Scales 16-bit PCM samples in place. gain == 1f is a no-op fast path so
+    // the common case (mic at 100%) costs nothing extra per frame.
+    private static void ApplyGain(short[] samples, float gain)
+    {
+        if (gain == 1f)
+        {
+            return;
+        }
+
+        if (gain == 0f)
+        {
+            Array.Clear(samples, 0, samples.Length);
+            return;
+        }
+
+        for (var i = 0; i < samples.Length; i++)
+        {
+            var scaled = samples[i] * gain;
+            samples[i] = (short)Math.Clamp(scaled, short.MinValue, short.MaxValue);
+        }
     }
 
     // Consumer: single thread reading the channel = strict FIFO delivery to subscribers, no reordering.
@@ -220,20 +274,20 @@ public class AudioCaptureService : IAudioCaptureService
     /// <inheritdoc />
     public void Stop()
     {
-        //controlLock.Wait();
-        //try
-        //{
-        //    if (!isStarted)
-        //    {
-        //        return;
-        //    }
+        controlLock.Wait();
+        try
+        {
+            if (!isStarted)
+            {
+                return;
+            }
 
-        //    StopInternalAsync().GetAwaiter().GetResult();
-        //}
-        //finally
-        //{
-        //    controlLock.Release();
-        //}
+            StopInternalAsync().GetAwaiter().GetResult();
+        }
+        finally
+        {
+            controlLock.Release();
+        }
     }
 
     // No lock is held while waiting for the threads to exit, so they're free to reach
@@ -248,6 +302,7 @@ public class AudioCaptureService : IAudioCaptureService
             dispatchThread?.Join();
 
             currentDeviceName = null;
+            settingsProvider.GetSettings().PropertyChanged -= Settings_PropertyChanged;
             isStarted = false;
 
             cts?.Dispose();
