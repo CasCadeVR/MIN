@@ -13,6 +13,7 @@ namespace MIN.Voice.Handlers;
 internal sealed class VoiceCallParticipantLeftHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
+    private readonly IVoiceCallStateService voiceCallStateService;
     private readonly IVoicePlaybackService voicePlaybackService;
     private readonly ILoggerProvider logger;
 
@@ -20,10 +21,12 @@ internal sealed class VoiceCallParticipantLeftHandler : IMessageHandler
     /// Инициализирует новый экземлпяр <see cref="VoiceCallParticipantLeftHandler"/>
     /// </summary>
     public VoiceCallParticipantLeftHandler(IEventBus eventBus,
+        IVoiceCallStateService voiceCallStateService,
         IVoicePlaybackService voicePlaybackService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
+        this.voiceCallStateService = voiceCallStateService;
         this.voicePlaybackService = voicePlaybackService;
         this.logger = logger;
     }
@@ -44,7 +47,7 @@ internal sealed class VoiceCallParticipantLeftHandler : IMessageHandler
         var subRoomId = voiceParticipantLeftMessage.SubRoomId;
         var participant = voiceParticipantLeftMessage.Participant;
 
-        if (voicePlaybackService.IsInVoiceCall(subRoomId))
+        if (voiceCallStateService.IsInVoiceCall(roomId, subRoomId))
         {
             voicePlaybackService.RemoveParticipant(participant.Id);
         }

@@ -1,5 +1,6 @@
 ﻿using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.SubRooms.Contracts.Models;
 using MIN.Voice.Messaging;
 using MIN.Voice.Services.Contacts.Interfaces;
 
@@ -32,24 +33,26 @@ public class MuteService : IMuteService
 
     async Task IMuteService.MuteSelf(Guid roomId, int subroomId, CancellationToken cancellationToken)
     {
-        await SendMutedState(roomId, subroomId, muted: true, cancellationToken);
+        var context = new SubRoomContext(roomId, subroomId);
+        await SendMutedState(context, muted: true, cancellationToken);
         audioCaptureService.Stop();
         voiceDataTransmitter.End();
     }
 
     async Task IMuteService.UnmuteSelf(Guid roomId, int subroomId, CancellationToken cancellationToken)
     {
-        await SendMutedState(roomId, subroomId, muted: false, cancellationToken);
+        var context = new SubRoomContext(roomId, subroomId);
+        await SendMutedState(context, muted: false, cancellationToken);
         audioCaptureService.Start();
-        voiceDataTransmitter.Begin(roomId, subroomId);
+        voiceDataTransmitter.Begin(context);
     }
 
-    private async Task SendMutedState(Guid roomId, int subroomId, bool muted, CancellationToken cancellationToken)
+    private async Task SendMutedState(SubRoomContext subRoomContext, bool muted, CancellationToken cancellationToken)
         => await messageRouter.RouteAsync(new VoiceMuteStateChangedMessage()
         {
-            SubRoomId = subroomId,
+            SubRoomId = subRoomContext.SubRoomId,
             IsMuted = muted
-        }, roomId, identityService.SelfParticipant.Id, cancellationToken);
+        }, subRoomContext.RoomId, identityService.SelfParticipant.Id, cancellationToken);
 
     void IMuteService.MuteParticipant(Guid participantId)
     {

@@ -14,6 +14,7 @@ namespace MIN.Voice.Handlers;
 internal sealed class VoiceCallParticipantJoinedHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
+    private readonly IVoiceCallStateService voiceCallStateService;
     private readonly IVoicePlaybackService voicePlaybackService;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -22,11 +23,13 @@ internal sealed class VoiceCallParticipantJoinedHandler : IMessageHandler
     /// Инициализирует новый экземлпяр <see cref="VoiceCallParticipantJoinedHandler"/>
     /// </summary>
     public VoiceCallParticipantJoinedHandler(IEventBus eventBus,
+        IVoiceCallStateService voiceCallStateService,
         IVoicePlaybackService voicePlaybackService,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
+        this.voiceCallStateService = voiceCallStateService;
         this.voicePlaybackService = voicePlaybackService;
         this.identityService = identityService;
         this.logger = logger;
@@ -48,7 +51,7 @@ internal sealed class VoiceCallParticipantJoinedHandler : IMessageHandler
         var subRoomId = voiceParticipantJoinedMessage.SubRoomId;
         var participant = voiceParticipantJoinedMessage.Participant;
 
-        if (voicePlaybackService.IsInVoiceCall(subRoomId) && identityService.SelfParticipant.Id != participant.Id)
+        if (voiceCallStateService.IsInVoiceCall(roomId, subRoomId) && identityService.SelfParticipant.Id != participant.Id)
         {
             voicePlaybackService.AddParticipant(participant.Id);
         }

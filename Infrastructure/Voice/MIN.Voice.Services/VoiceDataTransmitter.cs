@@ -1,6 +1,7 @@
 ﻿using System.Threading.Channels;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.SubRooms.Contracts.Models;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Voice.Messaging;
@@ -47,16 +48,15 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
     }
 
     /// <inheritdoc />
-    public void Begin(Guid roomId, int subRoomId)
+    public void Begin(SubRoomContext subRoomContext)
     {
         if (isActive)
         {
             return;
         }
 
-
-        this.roomId = roomId;
-        this.subRoomId = subRoomId;
+        roomId = subRoomContext.RoomId;
+        subRoomId = subRoomContext.SubRoomId;
         isActive = true;
 
         queue = Channel.CreateBounded<VoiceDataMessage>(new BoundedChannelOptions(64)

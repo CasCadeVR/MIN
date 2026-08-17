@@ -11,7 +11,6 @@ namespace MIN.Voice.Services;
 public class VoicePlaybackService : IVoicePlaybackService
 {
     private readonly Dictionary<Guid, ParticipantVoiceEntry> channels = [];
-    private readonly HashSet<int> voiceCalls = [];
     private readonly IVoiceCodec codec;
     private readonly ISettingsProvider settingsProvider;
     private readonly ILoggerProvider logger;
@@ -74,17 +73,6 @@ public class VoicePlaybackService : IVoicePlaybackService
             }
         };
     }
-
-    /// <inheritdoc />
-    public void RegisterSubroomVoice(int subRoomId)
-        => voiceCalls.Add(subRoomId);
-
-    /// <inheritdoc />
-    public void UnregisterSubroomVoice(int subRoomId)
-        => voiceCalls.Remove(subRoomId);
-
-    bool IVoicePlaybackService.IsInVoiceCall(int subRoomId)
-        => voiceCalls.Contains(subRoomId);
 
     /// <inheritdoc />
     public void AddParticipant(Guid participantId)
@@ -186,7 +174,6 @@ public class VoicePlaybackService : IVoicePlaybackService
                 entry.Channel.Dispose();
             }
 
-            voiceCalls.Clear();
             channels.Clear();
         }
     }

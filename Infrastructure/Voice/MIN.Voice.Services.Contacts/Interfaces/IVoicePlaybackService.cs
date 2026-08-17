@@ -6,21 +6,6 @@
 public interface IVoicePlaybackService : IDisposable
 {
     /// <summary>
-    /// Зарегистрировать заинтерисованность в получении звука
-    /// </summary>
-    void RegisterSubroomVoice(int subRoomId);
-
-    /// <summary>
-    /// Отписаться от заинтерисованности в получении звука
-    /// </summary>
-    void UnregisterSubroomVoice(int subRoomId);
-
-    /// <summary>
-    /// Состою ли я в звонке
-    /// </summary>
-    bool IsInVoiceCall(int subRoomId);
-
-    /// <summary>
     /// Добавить канал звука для участника
     /// </summary>
     void AddParticipant(Guid participantId);

@@ -13,18 +13,18 @@ namespace MIN.Voice.Handlers;
 internal sealed class VoiceCallEndHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
-    private readonly IVoicePlaybackService voicePlaybackService;
+    private readonly IVoiceCallStateService voiceCallStateService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="VoiceCallEndHandler"/>
     /// </summary>
     public VoiceCallEndHandler(IEventBus eventBus,
-        IVoicePlaybackService voicePlaybackService,
+        IVoiceCallStateService voiceCallStateService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
-        this.voicePlaybackService = voicePlaybackService;
+        this.voiceCallStateService = voiceCallStateService;
         this.logger = logger;
     }
 
@@ -50,7 +50,7 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
             context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
         }
 
-        if (voicePlaybackService.IsInVoiceCall(voiceCallEndedMessage.SubRoomId))
+        if (voiceCallStateService.IsInVoiceCall(context.RoomContext.RoomId, voiceCallEndedMessage.SubRoomId))
         {
             await eventBus.PublishAsync(new VoiceCallLeftEvent()
             {
@@ -58,8 +58,6 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
                 SubRoomId = voiceCallEndedMessage.SubRoomId
             });
         }
-
-        voicePlaybackService.Clear();
 
         await eventBus.PublishAsync(new VoiceCallEndedEvent()
         {

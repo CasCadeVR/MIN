@@ -1,4 +1,6 @@
-﻿namespace MIN.Voice.Services.Contacts.Interfaces;
+﻿using MIN.Core.SubRooms.Contracts.Models;
+
+namespace MIN.Voice.Services.Contacts.Interfaces;
 
 /// <summary>
 /// Сервис передачи звука
@@ -8,7 +10,7 @@ public interface IVoiceDataTransmitter : IDisposable
     /// <summary>
     /// Начать передачу звука
     /// </summary>
-    void Begin(Guid roomId, int subRoomId);
+    void Begin(SubRoomContext subRoomContext);
 
     /// <summary>
     /// Остановить передачу звука

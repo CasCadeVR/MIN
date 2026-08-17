@@ -14,6 +14,7 @@ namespace MIN.Voice.Handlers;
 internal sealed class VoiceDataHandler : IMessageHandler
 {
     private readonly IEventBus eventBus;
+    private readonly IVoiceCallStateService voiceCallStateService;
     private readonly IVoicePlaybackService voicePlaybackService;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -22,11 +23,13 @@ internal sealed class VoiceDataHandler : IMessageHandler
     /// Инициализирует новый экземлпяр <see cref="VoiceDataHandler"/>
     /// </summary>
     public VoiceDataHandler(IEventBus eventBus,
+        IVoiceCallStateService voiceCallStateService,
         IVoicePlaybackService voicePlaybackService,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
+        this.voiceCallStateService = voiceCallStateService;
         this.voicePlaybackService = voicePlaybackService;
         this.identityService = identityService;
         this.logger = logger;
@@ -44,7 +47,7 @@ internal sealed class VoiceDataHandler : IMessageHandler
             return HandlerResult.Success();
         }
 
-        if (!voicePlaybackService.IsInVoiceCall(voiceData.SubRoomId))
+        if (!voiceCallStateService.IsInVoiceCall(context.RoomContext.RoomId, voiceData.SubRoomId))
         {
             return HandlerResult.Success();
         }
