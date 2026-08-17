@@ -15,14 +15,16 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
 {
     private readonly IAudioCaptureService audioCaptureService;
     private readonly IVoiceCodec codec;
-    private readonly IVoiceActivityDetector vadDetector;
+    private readonly IVoiceAudioDetector voiceAudioDetector;
     private readonly IMessageRouter messageRouter;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     private Channel<VoiceDataMessage> queue = null!;
+    private Channel<byte[]> captureQueue = null!;
     private CancellationTokenSource? sendCts;
     private Task? sendTask;
+    private Task? processTask;
 
     private Guid roomId;
     private int subRoomId;
@@ -34,13 +36,13 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
     /// </summary>
     public VoiceDataTransmitter(IAudioCaptureService audioCaptureService,
         IVoiceCodec codec,
-        IVoiceActivityDetector vadDetector,
+        IVoiceAudioDetector voiceAudioDetector,
         IMessageRouter messageRouter,
         IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.audioCaptureService = audioCaptureService;
-        this.vadDetector = vadDetector;
+        this.voiceAudioDetector = voiceAudioDetector;
         this.codec = codec;
         this.messageRouter = messageRouter;
         this.identityService = identityService;
@@ -59,16 +61,21 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
         subRoomId = subRoomContext.SubRoomId;
         isActive = true;
 
+        captureQueue = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(10)
+        {
+            FullMode = BoundedChannelFullMode.DropOldest,
+        });
+
         queue = Channel.CreateBounded<VoiceDataMessage>(new BoundedChannelOptions(64)
         {
             FullMode = BoundedChannelFullMode.DropOldest,
         });
 
         sendCts = new CancellationTokenSource();
+        processTask = ProcessCapturedFramesAsync(sendCts.Token);
         sendTask = SendPumpAsync(sendCts.Token);
 
-        vadDetector.Reset();
-
+        voiceAudioDetector.Reset();
         audioCaptureService.FrameCaptured += OnFrameCaptured;
     }
 
@@ -84,12 +91,14 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
 
         audioCaptureService.FrameCaptured -= OnFrameCaptured;
 
+        captureQueue.Writer.TryComplete();
         queue.Writer.TryComplete();
         sendCts?.Cancel();
         sendCts = null;
         sendTask = null;
+        processTask = null;
 
-        vadDetector.Reset();
+        voiceAudioDetector.Reset();
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
@@ -102,22 +111,35 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
             return;
         }
 
-        if (!vadDetector.IsVoice(e.Data))
+        captureQueue.Writer.TryWrite(e.Data);
+    }
+
+    private async Task ProcessCapturedFramesAsync(CancellationToken cancellationToken)
+    {
+        try
         {
-            return;
+            await foreach (var data in captureQueue.Reader.ReadAllAsync(cancellationToken))
+            {
+                if (!voiceAudioDetector.IsVoice(data))
+                {
+                    continue;
+                }
+
+                var currentSequence = Interlocked.Increment(ref sequenceNumber);
+                var message = new VoiceDataMessage
+                {
+                    SubRoomId = subRoomId,
+                    SequenceNumber = currentSequence,
+                    Codec = codec.Kind,
+                    Data = codec.Encode(data),
+                };
+
+                queue.Writer.TryWrite(message);
+            }
         }
-
-        var currentSequence = Interlocked.Increment(ref sequenceNumber);
-
-        var message = new VoiceDataMessage
+        catch (OperationCanceledException)
         {
-            SubRoomId = subRoomId,
-            SequenceNumber = currentSequence,
-            Codec = codec.Kind,
-            Data = codec.Encode(e.Data),
-        };
-
-        queue.Writer.TryWrite(message);
+        }
     }
 
     private async Task SendPumpAsync(CancellationToken cancellationToken)

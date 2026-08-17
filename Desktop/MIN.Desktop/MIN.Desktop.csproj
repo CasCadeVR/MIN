@@ -37,7 +37,7 @@
     <ProjectReference Include="..\..\DI\MIN.DI\MIN.DI.csproj" />
   </ItemGroup>
 
-    <ItemGroup>
+  <ItemGroup>
     <Compile Update="Views\Cards\Messages\ChatFileImagePreviewMessageView.axaml.cs">
       <DependentUpon>ChatFileImagePreviewMessageView.axaml</DependentUpon>
     </Compile>

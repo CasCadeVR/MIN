@@ -88,6 +88,7 @@ internal sealed class ClientRoomService
 
             if (registry.IsConnected(result.RoomInfo.Id) || registry.IsHosting(result.RoomInfo.Id))
             {
+                await transport.DisconnectAsync(connectionResult.ConnectionId, DisconnectReason.Error);
                 throw new InvalidOperationException("Вы уже подключены к этой комнате");
             }
 
@@ -155,27 +156,27 @@ internal sealed class ClientRoomService
         registry.UnregisterClientConnection(e.ConnectionId);
         logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {e.ConnectionId}");
 
-        //if (!roomStore.RoomExists(roomId))
-        //{
-        //    return false;
-        //}
-
         var context = roomFactory.GetOrCreateContext(roomId);
         if (!context.Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant))
         {
             return false;
         }
 
-        var isHostLeaving = roomStore.GetRoomHostParticipantId(roomId) == leavingParticipant.Id;
+        if (!roomStore.RoomExists(roomId))
+        {
+            return false;
+        }
 
-        if (isHostLeaving)
+        var isDisconnectingFromHost = roomStore.GetRoomHostParticipantId(roomId) == leavingParticipant.Id;
+
+        if (isDisconnectingFromHost)
         {
             roomStore.Remove(roomId);
             roomFactory.DestroyContext(roomId);
             await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
         }
 
-        return isHostLeaving;
+        return isDisconnectingFromHost;
     }
 
     public async Task HandleConnectionTimeoutAsync(Guid roomId, Guid connectionId)

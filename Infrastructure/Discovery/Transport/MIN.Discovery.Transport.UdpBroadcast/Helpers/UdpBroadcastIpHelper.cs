@@ -53,7 +53,7 @@ internal class UdpBroadcastIpHelper : IDisposable
         }
     }
 
-    private IEnumerable<IPAddress> GetAllBroadcastChannels()
+    private static List<IPAddress> GetAllBroadcastChannels()
     {
         var result = new List<IPAddress>();
 

@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using MIN.Core.Messaging.Contracts.Enums;
+﻿using MIN.Core.Messaging.Contracts.Enums;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Interfaces;
@@ -21,7 +20,6 @@ public class ChannelTransport : ITransport, IAsyncDisposable
     private readonly TcpTransport secureTransport;
     private readonly UdpTransport fastTransport;
     private readonly ILoggerProvider logger;
-    private readonly ConcurrentDictionary<string, Guid> endpointConnectionIds = new();
 
     /// <inheritdoc />
     public event EventHandler<RawMessageReceivedEventArgs>? RawMessageReceived;
@@ -82,17 +80,14 @@ public class ChannelTransport : ITransport, IAsyncDisposable
 
     async Task<Guid> ITransport.ConnectAsync(IEndpoint endpoint, Guid? connectionId, CancellationToken cancellationToken)
     {
-        var effectiveId = connectionId
-            ?? endpointConnectionIds.GetOrAdd(endpoint.GetAddress(), _ => Guid.NewGuid());
-
         if (endpoint is TcpEndpoint)
         {
-            return await secureTransport.ConnectAsync(endpoint, effectiveId, cancellationToken);
+            return await secureTransport.ConnectAsync(endpoint, connectionId, cancellationToken);
         }
 
         if (endpoint is UdpEndpoint)
         {
-            return await fastTransport.ConnectAsync(endpoint, effectiveId, cancellationToken);
+            return await fastTransport.ConnectAsync(endpoint, connectionId, cancellationToken);
         }
 
         throw new ArgumentException($"Неподдерживаемый endpoint: {endpoint.GetType().Name}");
@@ -161,14 +156,6 @@ public class ChannelTransport : ITransport, IAsyncDisposable
 
     async Task ITransport.DisconnectAsync(Guid connectionId, DisconnectReason reason)
     {
-        foreach (var (key, id) in endpointConnectionIds)
-        {
-            if (id == connectionId)
-            {
-                endpointConnectionIds.TryRemove(key, out _);
-            }
-        }
-
         await secureTransport.DisconnectAsync(connectionId, reason);
         await fastTransport.DisconnectAsync(connectionId, reason);
     }
