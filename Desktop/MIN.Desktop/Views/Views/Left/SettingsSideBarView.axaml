@@ -107,6 +107,13 @@
                     <Slider x:Name="inputSensitivitySlider" Minimum="-60" Maximum="-10" Value="{Binding Settings.InputDeviceSensitivity}" />
 
                     <DockPanel HorizontalSpacing="12">
+                        <TextBlock VerticalAlignment="Center">Шумоподавление</TextBlock>
+                        <ComboBox ItemsSource="{Binding NoiseReductions}"
+                                  SelectedIndex="{Binding ChoosenNoiseReduction}"
+                                  HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+
+                    <DockPanel HorizontalSpacing="12">
                         <TextBlock VerticalAlignment="Center">Динамики</TextBlock>
                         <ComboBox ItemsSource="{Binding OutputDevices}"
                                   SelectedIndex="{Binding Settings.OutputDeviceNumber}"

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Common.Core.Extensions;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
@@ -17,6 +19,7 @@ using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Modals;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Models;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Desktop.ViewModels.Pages;
 
@@ -47,6 +50,11 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     /// Динамики
     /// </summary>
     public AvaloniaList<string> OutputDevices { get; set; } = [];
+
+    /// <summary>
+    /// Доступные шумоподавления
+    /// </summary>
+    public AvaloniaList<string> NoiseReductions { get; set; } = [];
 
     /// <summary>
     /// Версия приложения
@@ -89,6 +97,12 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     public partial bool LightThemeEnabled { get; set; }
 
     /// <summary>
+    /// Выбранное (по номеру) шумоподавление
+    /// </summary>
+    [ObservableProperty]
+    public partial int ChoosenNoiseReduction { get; set; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="SettingsSideBarViewModel"/>
     /// </summary>
     public SettingsSideBarViewModel(IMinFeatureCollection featureCollection,
@@ -112,6 +126,11 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
             foreach (var name in outputDeviceNames)
             {
                 OutputDevices.Add(name);
+            }
+
+            foreach (NoiseReduction denoiser in Enum.GetValues(typeof(NoiseReduction)))
+            {
+                NoiseReductions.Add(denoiser.GetDescription());
             }
 
             featureCollection.Helper.SettingsProvider.OnSettingsSaved += FillControls;
@@ -143,6 +162,11 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
         }
 
         Settings.LightThemeEnabled = LightThemeEnabled;
+
+        if (ChoosenNoiseReduction >= 0 && ChoosenNoiseReduction < Enum.GetValues(typeof(NoiseReduction)).Length)
+        {
+            Settings.NoiseReduction = (NoiseReduction)ChoosenNoiseReduction;
+        }
 
         featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         ChangeViewToPrevious();
@@ -183,6 +207,7 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
         LightThemeEnabled = Settings.LightThemeEnabled;
         DiscoveryTimeout = Settings.DiscoveryTimeout;
         DiscoveryPort = Settings.DiscoveryPort;
+        ChoosenNoiseReduction = (int)Settings.NoiseReduction;
     }
 
     private bool CanSave() => !HasErrors;

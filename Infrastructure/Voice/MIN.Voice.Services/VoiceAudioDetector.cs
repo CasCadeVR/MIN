@@ -2,6 +2,7 @@
 using Microsoft.ML.OnnxRuntime.Tensors;
 using MIN.Helpers.Contracts.Interfaces.SettingsServices;
 using MIN.Helpers.Contracts.Models;
+using MIN.Helpers.Contracts.Models.Enums;
 using MIN.Voice.Services.Contacts.Constants;
 using MIN.Voice.Services.Contacts.Interfaces;
 
@@ -31,6 +32,7 @@ public class VoiceAudioDetector : IVoiceAudioDetector, IDisposable
     private readonly InferenceSession session;
     private readonly float[] context = new float[ContextSamples];
     private bool propertyChangedSubscribed;
+    private bool onnxEnabled;
 
     // Accumulates incoming 320-sample frames until we have enough for one 512-sample window
     private readonly List<float> pending = new(WindowSamples);
@@ -81,6 +83,7 @@ public class VoiceAudioDetector : IVoiceAudioDetector, IDisposable
             propertyChangedSubscribed = true;
         }
 
+        onnxEnabled = settings.NoiseReduction == NoiseReduction.Onnx;
         sensitivityDb = settings.InputDeviceSensitivity;
     }
 
@@ -117,15 +120,18 @@ public class VoiceAudioDetector : IVoiceAudioDetector, IDisposable
             return HoldGate(false);
         }
 
-        var maxProb = 0f;
-        foreach (var prob in ProcessFrame(shortSamples))
+        var isSpeech = rmsDb > GetCurrentThreshold();
+
+        if (onnxEnabled)
         {
-            maxProb = Math.Max(maxProb, prob);
+            var maxProb = 0f;
+            foreach (var prob in ProcessFrame(shortSamples))
+            {
+                maxProb = Math.Max(maxProb, prob);
+            }
+
+            isSpeech = maxProb > SpeechProbThreshold;
         }
-
-        var isOnnxSpeech = maxProb > SpeechProbThreshold;
-
-        var isSpeech = isOnnxSpeech && rmsDb > GetCurrentThreshold();
 
         if (!isSpeech)
         {
@@ -135,7 +141,7 @@ public class VoiceAudioDetector : IVoiceAudioDetector, IDisposable
         return HoldGate(isSpeech);
     }
 
-    private short[] ToShortSamples(byte[] pcmData)
+    private static short[] ToShortSamples(byte[] pcmData)
     {
         if (pcmData.Length % 2 != 0)
         {
@@ -166,7 +172,7 @@ public class VoiceAudioDetector : IVoiceAudioDetector, IDisposable
     {
         foreach (var s in pcmSamples)
         {
-            pending.Add(s / 32768f); // normalize to [-1, 1] — Silero expects this, unlike RNNoise
+            pending.Add(s / 32768f);
         }
 
         var probabilities = new List<float>();

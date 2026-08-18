@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Helpers.Contracts.Models;
 
@@ -46,6 +47,11 @@ public class Settings : INotifyPropertyChanged
     /// Индекс выбранного динамика
     /// </summary>
     public int OutputDeviceNumber { get; set; }
+
+    /// <summary>
+    /// Выбранное шумоподавление
+    /// </summary>
+    public NoiseReduction NoiseReduction { get; set; }
 
     /// <summary>
     /// Громкость микрофона
