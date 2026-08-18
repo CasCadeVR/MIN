@@ -51,7 +51,7 @@ public class Settings : INotifyPropertyChanged
     /// <summary>
     /// Выбранное шумоподавление
     /// </summary>
-    public NoiseReduction NoiseReduction { get; set; }
+    public NoiseReduction NoiseReduction { get; set; } = NoiseReduction.Onnx;
 
     /// <summary>
     /// Громкость микрофона

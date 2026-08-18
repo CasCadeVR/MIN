@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Core.Transport.Contracts.Extensions;
 using MIN.Core.Transport.TcpSockets.Models;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Infrastructure.Validators;
@@ -69,6 +70,8 @@ public partial class DirectConnectViewModel : ModalViewModelBase
     {
         Endpoint.IPAddress = IpAddress;
         Endpoint.Port = Convert.ToInt32(Port);
+
+        Endpoint.Origin = Endpoint.AssumeOriginOutOfAddress();
 
         IsConnecting = true;
         OnConnect?.Invoke();

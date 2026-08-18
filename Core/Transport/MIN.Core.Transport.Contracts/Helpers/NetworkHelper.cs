@@ -34,9 +34,9 @@ public static partial class NetworkHelper
     private static IPAddress? lanIpCache;
     private static long lastSeenPacketChange = -1;
     private static long lastBytesSendOrReceived = -1;
-    private static readonly object connectivityLock = new();
-    private static readonly object wanIpLock = new();
-    private static readonly object lanIpLock = new();
+    private readonly static object connectivityLock = new();
+    private readonly static object wanIpLock = new();
+    private readonly static object lanIpLock = new();
 
     private static bool? hasInternet;
 

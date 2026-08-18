@@ -8,6 +8,26 @@ namespace MIN.Core.Transport.Contracts.Extensions;
 /// </summary>
 public static class IpAddressExtensions
 {
+    private readonly static Cidr[] vpnNetworks =
+    [
+        "25.0.0.0/8",
+        "5.0.0.0/8",
+
+        "255.255.255.0/24", // Некоторые версии Radmin используют 255.255.255.0/24
+        "26.0.0.0/8",       // Диапазон Radmin VPN
+        
+        "192.168.192.0/20", // ZeroTier по умолчанию
+        "25.0.0.0/8",       // ZeroTier также использует 25.x.x.x
+        
+        "100.64.0.0/10",    // Tailscale использует CGNAT диапазон
+        
+        "10.0.0.0/8",       // Частный, но если не в LAN - может быть VPN
+        "172.16.0.0/12",    // Частный, но если не в LAN - может быть VPN
+        "192.168.0.0/16",   // Частный, но если не в LAN - может быть VPN
+        
+        "100.64.0.0/10",
+    ];
+
     /// <summary>
     /// Возвращает true, если указанный IP-адрес зарезервирован для частных сетей
     /// </summary>
@@ -27,6 +47,31 @@ public static class IpAddressExtensions
                 return true;
             }
         }
+        return false;
+    }
+
+    /// <summary>
+    /// Проверяет, принадлежит ли IP-адрес VPN-сетям
+    /// </summary>
+    public static bool IsVpn(this IPAddress address)
+    {
+        address = address.TryExtractMappedIPv4();
+
+        if (address.AddressFamily != AddressFamily.InterNetwork)
+        {
+            return false;
+        }
+
+        var addressBytes = address.GetAddressBytes();
+
+        foreach (var vpnSubnet in vpnNetworks)
+        {
+            if (vpnSubnet.ContainsHost(addressBytes))
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 
