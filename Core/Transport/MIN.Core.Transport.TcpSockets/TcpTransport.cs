@@ -154,13 +154,11 @@ public class TcpTransport : ITransport, IAsyncDisposable
             throw new InvalidOperationException($"Connection {connectionId} is not hosted locally");
         }
 
-        var includeWan = false;
+        var includeWan = networkOptions.EnablePortForwarding;
 
         if ((oldNetworkOptions == null && networkOptions.EnablePortForwarding)
             || (oldNetworkOptions.HasValue && networkOptions.EnablePortForwarding && !oldNetworkOptions.Value.EnablePortForwarding))
         {
-            includeWan = true;
-
             ResultCodes? result = ResultCodes.UNKNOWN_ERROR;
             try
             {
@@ -193,14 +191,11 @@ public class TcpTransport : ITransport, IAsyncDisposable
             await PortForwardingHelper.UnmapPortAsync(server.Port, Protocol.Tcp, cancellationToken);
         }
 
-        var includeVpns = oldNetworkOptions == null && networkOptions.EnableRadmin
-            || oldNetworkOptions.HasValue && networkOptions.EnableRadmin && !oldNetworkOptions.Value.EnableRadmin;
-
         IEnumerable<MachineKnownIp> knownIps = [];
 
         try
         {
-            knownIps = await NetworkHelper.GetAllKnownIpsAsync(includeWan, includeVpns, cancellationToken);
+            knownIps = await NetworkHelper.GetAllKnownIpsAsync(includeWan, networkOptions.EnableRadmin, cancellationToken);
         }
         catch
         {

@@ -98,6 +98,7 @@ public static partial class NetworkHelper
         }
 
         var ip = await PortForwardingHelper.GetExternalIpAsync(cancellationToken);
+        var canceled = false;
 
         if (ip == null || ip.IsPrivate())
         {
@@ -116,6 +117,7 @@ public static partial class NetworkHelper
                     }
                     break;
                 }
+                catch (TaskCanceledException) { canceled = true; }
                 catch
                 {
                     // ignore
@@ -125,7 +127,12 @@ public static partial class NetworkHelper
 
         lock (wanIpLock)
         {
-            return wanIpCache = ip;
+            if (!canceled)
+            {
+                wanIpCache = ip;
+            }
+
+            return ip;
         }
     }
 

@@ -174,16 +174,21 @@ internal sealed class HostRoomService
             return roomStore.GetRoom(roomId);
         }
 
+        var localParticipant = identityService.SelfParticipant.ToParticipantInfo();
+
+        roomInfo.HostParticipant = localParticipant;
+        var room = new Room(roomInfo);
+
+        var connectionId = await transport.StartHostingAsync(cancellationToken: cancellationToken);
+        room.ConnectionAddresses = await transport.SetUpEndpoints(connectionId, networkOptions, cancellationToken: cancellationToken);
+        room.LocalRoomSettings.NetworkOptions = networkOptions;
+
         roomCancellationTokenSources[roomId] = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         var context = roomFactory.GetOrCreateContext(roomId);
 
-        var localParticipant = identityService.SelfParticipant.ToParticipantInfo();
 
         context.Connections.RegisterLocalParticipant(localParticipant);
-        roomInfo.HostParticipant = localParticipant;
-
-        var room = new Room(roomInfo);
 
         roomStore.Register(room);
 
@@ -198,10 +203,6 @@ internal sealed class HostRoomService
         });
 
         room.TotalMessageCount = context.Messages.GetMessageCount();
-
-        var connectionId = await transport.StartHostingAsync(cancellationToken: cancellationToken);
-        room.ConnectionAddresses = await transport.SetUpEndpoints(connectionId, networkOptions, cancellationToken: cancellationToken);
-        room.LocalRoomSettings.NetworkOptions = networkOptions;
 
         context.Participants.AddParticipant(new Participant(localParticipant));
 
