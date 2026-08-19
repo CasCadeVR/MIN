@@ -91,10 +91,10 @@ public class VoiceDataTransmitter : IVoiceDataTransmitter
 
         audioCaptureService.FrameCaptured -= OnFrameCaptured;
 
-        captureQueue.Writer.TryComplete();
-        queue.Writer.TryComplete();
         sendCts?.Cancel();
         sendCts = null;
+        captureQueue.Writer.TryComplete();
+        queue.Writer.TryComplete();
         sendTask = null;
         processTask = null;
 

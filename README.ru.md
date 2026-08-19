@@ -1,8 +1,8 @@
-# MIN - Local Messenger
+# MIN - Распределённый мессенджер
 
 ![Logo](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Assets/Images/logoImage.png)
 
-> **Безопасный локальный мессенджер с end-to-end шифрованием для локальной сети**
+> **Безопасный распределённый мессенджер с end-to-end шифрованием**
 
 [![Stars](https://img.shields.io/github/stars/MIN-Corp/MIN?style=flat-square&logo=github)](https://github.com/MIN-Corp/MIN/stargazers)
 [![Forks](https://img.shields.io/github/forks/MIN-Corp/MIN?style=flat-square&logo=github)](https://github.com/MIN-Corp/MIN/network/members)
@@ -44,6 +44,7 @@
 | **Текстовые сообщения** | Отправка и получение сообщений в реальном времени |
 | **Комнаты** | Создание и присоединение к чат-комнатам |
 | **Мультиплеерные сессии** | Скачивание и запуск игровых сессий из других ресурсов |
+| **Звонки** | Конференции по звонку со всеми участниками комнаты |
 | **Desktop UI** | Интуитивный интерфейс на Avalonia |
 
 ---
@@ -57,6 +58,7 @@ MIN предоставляет современный интерфейс для:
 | **Комнаты** | Создание и управление чат-комнатами |
 | **Чат** | Общение в реальном времени |
 | **Файлы** | Передача с отображением прогресса |
+| **Звонки** | Разговаривайте со своими друзьями по звонку |
 | **Участники** | Статусы онлайн/оффлайн |
 
 ![Screen](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Assets/Images/screen.png)
@@ -86,6 +88,7 @@ flowchart TB
         D["Discovery Services<br>UDP Broadcast Discovery"]
         E["FileTransfer Services<br>Потоковая передача"]
         F["Session Services<br>Мультиплеерные сессии"]
+        V["Voice Services<br>Звонки и обработка звуков"]
     end
     
     subgraph CORE["Core Layer"]
@@ -103,7 +106,7 @@ flowchart TB
     end
     
     class A highlight;
-    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P component
+    class B,C,D,E,F,V,G,H,I,J,K,L,M,N,O,P component
     class UI uiLayer;
     class INF infraLayer;
     class CORE coreLayer
@@ -139,6 +142,7 @@ flowchart TB
 | `MIN.Discovery` | Обнаружение комнат через UDP Broadcast |
 | `MIN.FileTransfer` | Передача файлов |
 | `MIN.Sessions` | Управление мультиплеерными сессиями |
+| `MIN.Voice` | Звонки |
 
 #### Desktop (UI)
 | Модуль | Назначение |
@@ -165,6 +169,8 @@ flowchart TB
 | Защита | Microsoft.AspNetCore.DataProtection | Кросс-платформенная защита файлов |
 | Транспорт | TCP / UDP | Сетевое взаимодействие |
 | UPnP | Open.Nat | Проброс портов для внешних подключений |
+| Звонки | OpenAL | Кросс-платформенная запись и воспроизведения звука |
+| Шумоподавление | Onnx | Убирает фоновый шум |
 | Модульность | MIN.Common.Mvc | Система модулей/плагинов |
 | Стиль | .editorconfig | Единый код-стайл |
 
@@ -180,6 +186,7 @@ flowchart TB
 - [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0) или выше
 - Windows 10/11
 - Локальная сеть (для обнаружения комнат)
+- Виртуальная сеть (Radmin, Hamachi) (Если хочется подключиться вне сети не используя UPnP)
 
 ### Быстрый старт
 
@@ -230,22 +237,23 @@ flowchart TB
             R["Discovery/"]
             S["FileTransfer/"]
             T["Sessions/"]
+            U["Voice/"]
         end
         subgraph DESK["Desktop/"]
-            U["MIN.Desktop/"]
-            V["Views/"]
-            W["Components/"]
-            X["Resources/"]
+            V["MIN.Desktop/"]
+            W["Views/"]
+            X["Components/"]
+            Y["Resources/"]
         end
-        Y["Common/"]
-        Z["Helpers/"]
-        AA["DI/"]
+        Z["Common/"]
+        AA["Helpers/"]
+        AB["DI/"]
     end
     
     class CORE coreFolder
     class INF infraFolder
     class DESK deskFolder
-    class G,H,I,J,K,L,M,N,O,P,DI,Q,R,S,T,U,V,W,X,Y,Z,AA file
+    class G,H,I,J,K,L,M,N,O,P,DI,Q,R,S,T,U,V,W,X,Y,Z,AA,AB file
 ```
 
 > [!NOTE]
@@ -267,7 +275,7 @@ flowchart LR
     classDef recipient fill:#dbeafe,stroke:#3b82f6,stroke-width:3px,color:#1e40af
     
     A["Отправитель"] -->|"Шифрование"| B["Зашифрованное сообщение"]
-    B -->|"Локальная сеть"| C["Получатель"]
+    B -->|"Сеть"| C["Получатель"]
     
     class A sender;
     class B encrypted;
@@ -432,7 +440,7 @@ MIN поддерживает UPnP (Universal Plug and Play) проброс по�
 > [!TIP]
 > **Сделано с любовью командой CasCade**
 
-*MIN — Локальный мессенджер для вашей сети*
+*MIN — Распределлёный мессенджер*
 
 ---
 

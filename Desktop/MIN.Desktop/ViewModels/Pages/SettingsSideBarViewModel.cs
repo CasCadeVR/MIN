@@ -14,6 +14,7 @@ using MIN.Common.Core.Extensions;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Infrastructure.Validators;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Modals;
@@ -190,13 +191,18 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     {
         featureCollection.Helper.AppDataProvider.ClearFolder("cryptography");
         featureCollection.Helper.AppDataProvider.ClearFolder("network");
+        InAppNotifier.Success("Кэш был успешно очищен");
     }
 
     /// <summary>
     /// Отсканировать папку с сессиями
     /// </summary>
     [RelayCommand]
-    public async Task ScanSessionsAsync() => await featureCollection.Chat.ChatSessionService.ScanDownloadedSessions(appCts.Token);
+    public async Task ScanSessionsAsync()
+    {
+        await featureCollection.Chat.ChatSessionService.ScanDownloadedSessions(appCts.Token);
+        InAppNotifier.Info($"Найдено установленных активностей: {featureCollection.Sessions.SessionScanner.DownloadedSessions.Count}");
+    }
 
     private void FillControls()
     {

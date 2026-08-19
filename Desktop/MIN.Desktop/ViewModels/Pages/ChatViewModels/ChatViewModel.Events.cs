@@ -85,7 +85,9 @@ public partial class ChatViewModel : RoutableViewModelBase
     private async Task OnVoiceCallStarted(VoiceCallStartedEvent eventMessage, CancellationToken cancellationToken)
     {
         IsVoiceChatActive = true;
+        CallDuration = TimeSpan.Zero;
         callStartedAt = DateTime.Now;
+        callTimer.Start();
         activeVoiceChatSubroomId = eventMessage.Message.SubRoomId;
         IsInVoiceChat = eventMessage.Participant.Id == localParticipant.Id;
         AddToVoiceChatParticipant(eventMessage.Participant);
@@ -97,7 +99,6 @@ public partial class ChatViewModel : RoutableViewModelBase
         VoiceChatParticipants.Clear();
         IsMuted = false;
         callTimer.Stop();
-        callTimer.Tick -= OnCallTimerTick;
         activeVoiceChatSubroomId = null;
         IsInVoiceChat = false;
         IsVoiceChatActive = false;
@@ -108,6 +109,10 @@ public partial class ChatViewModel : RoutableViewModelBase
         VoiceChatParticipants.Clear();
         callStartedAt = eventMessage.StartedAt;
         IsVoiceChatActive = eventMessage.ActiveSubRoomId != null;
+        if (IsVoiceChatActive)
+        {
+            callTimer.Start();
+        }
         activeVoiceChatSubroomId = eventMessage.ActiveSubRoomId;
         foreach (var participant in eventMessage.CallParticipants)
         {

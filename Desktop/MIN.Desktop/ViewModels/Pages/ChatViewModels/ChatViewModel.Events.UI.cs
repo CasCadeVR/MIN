@@ -124,7 +124,6 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         typingTimer.Elapsed += (s, e) => OnTypingTimerStop();
         callTimer.Tick += OnCallTimerTick;
-        callTimer.Start();
     }
 
     private void OnTypingTimerStop()

@@ -1,8 +1,8 @@
-# MIN - Local Messenger
+# MIN - Distributed Messenger
 
 ![Logo](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Assets/Images/logoImage.png)
 
-> **Secure local messenger with end-to-end encryption for local network**
+> **Secure distributed messenger with end-to-end encryption**
 
 [![Stars](https://img.shields.io/github/stars/MIN-Corp/MIN?style=flat-square&logo=github)](https://github.com/MIN-Corp/MIN/stargazers)
 [![Forks](https://img.shields.io/github/forks/MIN-Corp/MIN?style=flat-square&logo=github)](https://github.com/MIN-Corp/MIN/network/members)
@@ -44,6 +44,7 @@
 | **Text Messages** | Sending and receiving messages in real time |
 | **Rooms** | Creating and joining chat rooms |
 | **Multiplayer Sessions** | Download and run game sessions from other resources |
+| **Voice calls** | Start voice calls in room with all participants in it |
 | **Desktop UI** | Intuitive interface using Avalonia |
 
 ---
@@ -57,6 +58,7 @@ MIN provides a modern interface for:
 | **Rooms** | Creating and managing chat rooms |
 | **Chat** | Real-time communication |
 | **Files** | Transfer with progress display |
+| **Voice calls** | Talk with your friends using room voice calls |
 | **Participants** | Online/offline statuses |
 
 ![Screen](https://raw.githubusercontent.com/MIN-Corp/MIN/main/Desktop/MIN.Desktop/Assets/Images/screen.png)
@@ -86,6 +88,7 @@ flowchart TB
         D["Discovery Services<br>UDP Broadcast Discovery"]
         E["FileTransfer Services<br>Streaming transfer"]
         F["Session Services<br>Multiplayer sessions"]
+        V["Voice Services<br>Voice calls and voice managment"]
     end
     
     subgraph CORE["Core Layer"]
@@ -103,7 +106,7 @@ flowchart TB
     end
     
     class A highlight;
-    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P component
+    class B,C,D,E,F,V,G,H,I,J,K,L,M,N,O,P component
     class UI uiLayer;
     class INF infraLayer;
     class CORE coreLayer
@@ -139,6 +142,7 @@ flowchart TB
 | `MIN.Discovery` | Room discovery via UDP Broadcast |
 | `MIN.FileTransfer` | File transfer |
 | `MIN.Sessions` | Multiplayer session management |
+| `MIN.Voice` | Voice calls |
 
 #### Desktop (UI)
 | Module | Purpose |
@@ -165,6 +169,8 @@ flowchart TB
 | Security | Microsoft.AspNetCore.DataProtection | Cross-Platform file protection |
 | Transport | TCP / UDP | Network communication |
 | UPnP | Open.Nat | Port forwarding for external connections |
+| Voice calls | OpenAL | Cross-Platform voice recording and playback |
+| Noise reduction | Onnx | Reducing background noise |
 | Modularity | MIN.Common.Mvc | Custom module/plugin system |
 | Style | .editorconfig | Unified code style |
 
@@ -180,6 +186,7 @@ flowchart TB
 - [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0) or higher
 - Windows 10/11
 - Local network (for room discovery)
+- Virutal networks (Radmin, Hamachi) (if you want to connect outside local network without UPnP)
 
 ### Quick Start
 
@@ -230,22 +237,23 @@ flowchart TB
             R["Discovery/"]
             S["FileTransfer/"]
             T["Sessions/"]
+            U["Voice/"]
         end
         subgraph DESK["Desktop/"]
-            U["MIN.Desktop/"]
-            V["Views/"]
-            W["Components/"]
-            X["Resources/"]
+            V["MIN.Desktop/"]
+            W["Views/"]
+            X["Components/"]
+            Y["Resources/"]
         end
-        Y["Common/"]
-        Z["Helpers/"]
-        AA["DI/"]
+        Z["Common/"]
+        AA["Helpers/"]
+        AB["DI/"]
     end
     
     class CORE coreFolder
     class INF infraFolder
     class DESK deskFolder
-    class G,H,I,J,K,L,M,N,O,P,DI,Q,R,S,T,U,V,W,X,Y,Z,AA file
+    class G,H,I,J,K,L,M,N,O,P,DI,Q,R,S,T,U,V,W,X,Y,Z,AA,AB file
 ```
 
 > [!NOTE]
@@ -267,7 +275,7 @@ flowchart LR
     classDef recipient fill:#dbeafe,stroke:#3b82f6,stroke-width:3px,color:#1e40af
     
     A["Sender"] -->|"Encryption"| B["Encrypted Message"]
-    B -->|"Local Network"| C["Recipient"]
+    B -->|"Network"| C["Recipient"]
     
     class A sender;
     class B encrypted;
@@ -432,7 +440,7 @@ To use direct connection:
 > [!TIP]
 > **Made with love by CasCade team**
 
-*MIN — Local messenger for your network*
+*MIN — Distributed messenger*
 
 ---
 

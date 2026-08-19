@@ -3,6 +3,7 @@ using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Voice.Events;
 using MIN.Voice.Messaging;
 using MIN.Voice.Services.Contacts.Interfaces;
@@ -14,6 +15,7 @@ public sealed class ChatVoiceService : IChatVoiceService
 {
     private readonly IVoiceCallStateService voiceCallStateService;
     private readonly IMessageRouter messageRouter;
+    private readonly IRoomConnectionRegistry registry;
     private readonly IEventBus eventBus;
     private readonly IIdentityService identityService;
 
@@ -22,11 +24,13 @@ public sealed class ChatVoiceService : IChatVoiceService
     /// </summary>
     public ChatVoiceService(IVoiceCallStateService voiceCallStateService,
         IMessageRouter messageRouter,
+        IRoomConnectionRegistry registry,
         IEventBus eventBus,
         IIdentityService identityService)
     {
         this.voiceCallStateService = voiceCallStateService;
         this.messageRouter = messageRouter;
+        this.registry = registry;
         this.eventBus = eventBus;
         this.identityService = identityService;
     }
@@ -41,6 +45,12 @@ public sealed class ChatVoiceService : IChatVoiceService
         if (voiceCallContext != null && voiceCallContext.Value.RoomId != roomId)
         {
             await LeaveCallAsync(voiceCallContext.Value.RoomId, voiceCallContext.Value.SubRoomId, cancellationToken);
+
+            if (registry.IsHosting(roomId))
+            {
+                // Костыль, но я реально хз как там исправить
+                await Task.Delay(10, cancellationToken);
+            }
         }
 
         await SendAsync(new VoiceCallStartRequestMessage(), roomId, cancellationToken);
@@ -53,6 +63,12 @@ public sealed class ChatVoiceService : IChatVoiceService
         if (voiceCallContext != null && voiceCallContext.Value.RoomId != roomId)
         {
             await LeaveCallAsync(voiceCallContext.Value.RoomId, voiceCallContext.Value.SubRoomId, cancellationToken);
+
+            if (registry.IsHosting(roomId))
+            {
+                // Костыль, но я реально хз как там исправить
+                await Task.Delay(10, cancellationToken);
+            }
         }
 
         await SendAsync(new VoiceCallJoinRequestMessage()

@@ -69,12 +69,10 @@ internal class UdpBroadcastIpHelper : IDisposable
 
             if (props.GatewayAddresses.Count > 0)
             {
-                Console.WriteLine($"Главный адаптер: {ni.Description}");
                 foreach (var ip in props.UnicastAddresses)
                 {
                     if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                     {
-                        Console.WriteLine($"Его IP: {ip.Address}");
                         var ipAddr = BitConverter.ToUInt32(ip.Address.GetAddressBytes(), 0);
                         var mask = BitConverter.ToUInt32(ip.IPv4Mask.GetAddressBytes(), 0);
                         var broadcast = ipAddr | ~mask;
