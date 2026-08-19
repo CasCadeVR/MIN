@@ -10,6 +10,7 @@
     <ProjectReference Include="..\..\Discovery\MIN.Discovery.DI\MIN.Discovery.DI.csproj" />
     <ProjectReference Include="..\..\FileTransfer\MIN.FileTransfer.DI\MIN.FileTransfer.DI.csproj" />
     <ProjectReference Include="..\..\Sessions\Core\MIN.Sessions.Core.DI\MIN.Sessions.Core.DI.csproj" />
+    <ProjectReference Include="..\..\Voice\MIN.Voice.DI\MIN.Voice.DI.csproj" />
   </ItemGroup>
 
 </Project>

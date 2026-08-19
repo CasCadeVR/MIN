@@ -3,7 +3,6 @@ using System.Text.Json;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Sessions.Core.Messaging.Contracts.Enums;
 using MIN.Sessions.Core.Messaging.Contracts.Models;
 using MIN.Sessions.Core.Messaging.Ipc;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
@@ -73,10 +72,10 @@ public class SessionProcessBridge : ISessionProcessBridge
         }
 
         var message = ipcSerializer.Deserialize(envelope.Body);
-        await HandleIpcMessage(message, e.Context, envelope.RecipientId, envelope.BroadcastExcludeIds, envelope.Route);
+        await HandleIpcMessage(message, e.Context, envelope);
     }
 
-    private async Task HandleIpcMessage(IpcMessage message, ProcessContext context, Guid? recipientId, IEnumerable<Guid>? broadcastExcludeIds, SessionMessageRoute route)
+    private async Task HandleIpcMessage(IpcMessage message, ProcessContext context, IpcProcessMessageEnvelope envelope)
     {
         switch (message)
         {
@@ -86,9 +85,10 @@ public class SessionProcessBridge : ISessionProcessBridge
                     SubRoomId = context.SubRoomId,
                     SessionProcessRole = context.Role,
                     Body = inSessionMessage.Body,
-                    Route = route,
-                    RecipientId = recipientId,
-                }, context.RoomId, identityService.SelfParticipant.Id, cts.Token, broadcastExcludeIds);
+                    Route = envelope.Route,
+                    Channel = envelope.Channel,
+                    RecipientId = envelope.RecipientId,
+                }, context.RoomId, identityService.SelfParticipant.Id, cts.Token, envelope.BroadcastExcludeIds);
                 break;
 
             case ServerShutdownMessage serverShutdownMessage:

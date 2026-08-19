@@ -218,4 +218,6 @@
     <StyleInclude Source="/Contracts/Styles/Controls/ToggleSwitches.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/Expanders.axaml"/>
     <StyleInclude Source="/Contracts/Styles/Controls/ProgressBars.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/Sliders.axaml"/>
+    <StyleInclude Source="/Contracts/Styles/Controls/ComboBoxes.axaml"/>
 </Styles>

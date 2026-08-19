@@ -86,7 +86,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         for (var i = messages.Count - 1; i >= 0; i--)
         {
             var index = appendOnTop ? messages.Count - 1 - i : i;
-            await AddMessageToChatFlow(messages[index], appendOnTop, scrollToBottom: false);
+            await AddMessageToChatFlow(messages[index], appendOnTop);
         }
     }
 

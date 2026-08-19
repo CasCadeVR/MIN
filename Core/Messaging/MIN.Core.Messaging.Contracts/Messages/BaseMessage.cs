@@ -1,4 +1,5 @@
-﻿using MIN.Core.Messaging.Contracts.Interfaces;
+﻿using MIN.Core.Messaging.Contracts.Enums;
+using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Messaging.Contracts.Messages;
 
@@ -12,7 +13,7 @@ public abstract class BaseMessage : IMessage
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <inheritdoc />
-    public DateTime Timestamp { get; } = DateTime.Now;
+    public DateTime Timestamp { get; init; } = DateTime.Now;
 
     /// <inheritdoc />
     public abstract MessageTypeTag TypeTag { get; }
@@ -34,4 +35,7 @@ public abstract class BaseMessage : IMessage
 
     /// <inheritdoc />
     public virtual bool RequireStreamAcks { get; }
+
+    /// <inheritdoc />
+    public virtual MessageChannel Channel { get; init; } = MessageChannel.Secure;
 }

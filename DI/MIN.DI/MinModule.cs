@@ -10,6 +10,7 @@ using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.DI;
 using MIN.Helpers.Services;
 using MIN.Sessions.Core.DI;
+using MIN.Voice.DI;
 
 namespace MIN.DI;
 
@@ -30,6 +31,7 @@ public class MinModule : Common.Mvc.Module
         services.RegisterModule<FileTransferModule>();
         services.RegisterModule<DiscoveryModule>();
         services.RegisterModule<SessionModule>();
+        services.RegisterModule<VoiceModule>();
 
         services.RegisterAsImplementedInterfaces<MinFeatureCollection>(ServiceLifetime.Singleton);
     }

@@ -1,20 +1,26 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Common.Core.Extensions;
 using MIN.Desktop.Contracts.Constants;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Infrastructure.Validators;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Modals;
 using MIN.DI.FeatureCollection;
 using MIN.Helpers.Contracts.Models;
+using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Desktop.ViewModels.Pages;
 
@@ -27,13 +33,29 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     private readonly IDialogService dialogService;
     private readonly CancellationTokenSource appCts = null!;
 
+    /// <inheritdoc />
+    public override ViewLayoutType LayoutType => ViewLayoutType.LeftSideBar;
+
     /// <summary>
     /// Текущие настройки
     /// </summary>
-    public Settings Settings { get; set; } = null!;
+    [ObservableProperty]
+    public partial Settings Settings { get; set; } = null!;
 
-    /// <inheritdoc />
-    public override ViewLayoutType LayoutType => ViewLayoutType.LeftSideBar;
+    /// <summary>
+    /// Микрофоны
+    /// </summary>
+    public AvaloniaList<string> InputDevices { get; set; } = [];
+
+    /// <summary>
+    /// Динамики
+    /// </summary>
+    public AvaloniaList<string> OutputDevices { get; set; } = [];
+
+    /// <summary>
+    /// Доступные шумоподавления
+    /// </summary>
+    public AvaloniaList<string> NoiseReductions { get; set; } = [];
 
     /// <summary>
     /// Версия приложения
@@ -76,6 +98,12 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     public partial bool LightThemeEnabled { get; set; }
 
     /// <summary>
+    /// Выбранное (по номеру) шумоподавление
+    /// </summary>
+    [ObservableProperty]
+    public partial int ChoosenNoiseReduction { get; set; }
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="SettingsSideBarViewModel"/>
     /// </summary>
     public SettingsSideBarViewModel(IMinFeatureCollection featureCollection,
@@ -88,6 +116,23 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
         if (!Design.IsDesignMode)
         {
             appCts = ctsProvider.AppCts;
+
+            var inputDeviceNames = featureCollection.Voice.AudioDeviceService.GetInputDevices(asDecoded: true).Select(x => x.Name);
+            foreach (var name in inputDeviceNames)
+            {
+                InputDevices.Add(name);
+            }
+
+            var outputDeviceNames = featureCollection.Voice.AudioDeviceService.GetOutputDevices(asDecoded: true).Select(x => x.Name);
+            foreach (var name in outputDeviceNames)
+            {
+                OutputDevices.Add(name);
+            }
+
+            foreach (NoiseReduction denoiser in Enum.GetValues(typeof(NoiseReduction)))
+            {
+                NoiseReductions.Add(denoiser.GetDescription());
+            }
 
             featureCollection.Helper.SettingsProvider.OnSettingsSaved += FillControls;
 
@@ -114,11 +159,17 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
         {
             Settings.DefaultParticipantName = DefaultParticipantName;
             Settings.DiscoveryPort = DiscoveryPort;
-            Settings.LightThemeEnabled = LightThemeEnabled;
             Settings.DiscoveryTimeout = DiscoveryTimeout;
-            featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         }
 
+        Settings.LightThemeEnabled = LightThemeEnabled;
+
+        if (ChoosenNoiseReduction >= 0 && ChoosenNoiseReduction < Enum.GetValues(typeof(NoiseReduction)).Length)
+        {
+            Settings.NoiseReduction = (NoiseReduction)ChoosenNoiseReduction;
+        }
+
+        featureCollection.Helper.SettingsProvider.SaveSettings(Settings);
         ChangeViewToPrevious();
     }
 
@@ -140,22 +191,29 @@ public partial class SettingsSideBarViewModel : ValidatingRoutableViewModelBase
     {
         featureCollection.Helper.AppDataProvider.ClearFolder("cryptography");
         featureCollection.Helper.AppDataProvider.ClearFolder("network");
+        InAppNotifier.Success("Кэш был успешно очищен");
     }
 
     /// <summary>
     /// Отсканировать папку с сессиями
     /// </summary>
     [RelayCommand]
-    public async Task ScanSessionsAsync() => await featureCollection.Chat.ChatSessionService.ScanDownloadedSessions(appCts.Token);
+    public async Task ScanSessionsAsync()
+    {
+        await featureCollection.Chat.ChatSessionService.ScanDownloadedSessions(appCts.Token);
+        InAppNotifier.Info($"Найдено установленных активностей: {featureCollection.Sessions.SessionScanner.DownloadedSessions.Count}");
+    }
 
     private void FillControls()
     {
+        Version = $"Версия: {featureCollection.Helper.VersionProvider.Version}";
+
         Settings = featureCollection.Helper.SettingsProvider.GetSettings();
-        Version = $"Версия: {featureCollection.Helper.VersionProvider.Version.ToString()}";
         DefaultParticipantName = Settings.DefaultParticipantName;
         LightThemeEnabled = Settings.LightThemeEnabled;
         DiscoveryTimeout = Settings.DiscoveryTimeout;
         DiscoveryPort = Settings.DiscoveryPort;
+        ChoosenNoiseReduction = (int)Settings.NoiseReduction;
     }
 
     private bool CanSave() => !HasErrors;

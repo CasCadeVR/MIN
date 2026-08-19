@@ -82,14 +82,46 @@
                     <!-- App theme -->
 
                     <DockPanel HorizontalSpacing="12">
-                         <TextBlock VerticalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center">
                             Тема
-                         </TextBlock>
+                        </TextBlock>
 
                         <ToggleSwitch IsChecked="{Binding LightThemeEnabled}"
                             OffContent="Тёмная"
                             OnContent="Светлая"/>
                      </DockPanel>
+
+                    <!-- Audio -->
+
+                    <DockPanel HorizontalSpacing="12">
+                        <TextBlock VerticalAlignment="Center">Микрофон</TextBlock>
+                        <ComboBox ItemsSource="{Binding InputDevices}"
+                                  SelectedIndex="{Binding Settings.InputDeviceNumber}"
+                                  HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+
+                    <TextBlock Text="{Binding #inputVolumeSlider.Value, StringFormat='Громкость микрофона: {0:F0}%'}" />
+                    <Slider x:Name="inputVolumeSlider" Minimum="0" Maximum="100" Value="{Binding Settings.InputDeviceVolume}" />
+
+                    <TextBlock Text="{Binding #inputSensitivitySlider.Value, StringFormat='Чувствительность микрофона: {0:F0} дБ'}" />
+                    <Slider x:Name="inputSensitivitySlider" Minimum="-60" Maximum="-10" Value="{Binding Settings.InputDeviceSensitivity}" />
+
+                    <DockPanel HorizontalSpacing="12">
+                        <TextBlock VerticalAlignment="Center">Шумоподавление</TextBlock>
+                        <ComboBox ItemsSource="{Binding NoiseReductions}"
+                                  SelectedIndex="{Binding ChoosenNoiseReduction}"
+                                  HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+
+                    <DockPanel HorizontalSpacing="12">
+                        <TextBlock VerticalAlignment="Center">Динамики</TextBlock>
+                        <ComboBox ItemsSource="{Binding OutputDevices}"
+                                  SelectedIndex="{Binding Settings.OutputDeviceNumber}"
+                                  HorizontalAlignment="Stretch"/>
+                    </DockPanel>
+
+                    <TextBlock Text="{Binding #outputVolumeSlider.Value, StringFormat='Громкость динамиков: {0:F0}%'}" />
+                    <Slider x:Name="outputVolumeSlider" Minimum="0" Maximum="100" Value="{Binding Settings.OutputDeviceVolume}" />
 
                     <!-- Logs -->
 

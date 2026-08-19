@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MIN.Chat.Events;
 using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Entities;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -12,9 +14,11 @@ using MIN.Desktop.Contracts.Models.Statuses;
 using MIN.Desktop.Infrastructure.Events;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Cards;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Sessions.Core.Events;
+using MIN.Voice.Events;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -30,11 +34,18 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         roomScope = eventBus.CreateScope(roomId);
         roomScope.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived);
-        roomScope.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived);
         roomScope.Subscribe<FileMetaDataMessageReceivedEvent>(OnFileMetaDataMessageReceived);
         roomScope.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted);
         roomScope.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted);
         roomScope.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed);
+        roomScope.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived);
+
+        roomScope.Subscribe<VoiceCallStartedEvent>(OnVoiceCallStarted);
+        roomScope.Subscribe<VoiceCallEndedEvent>(OnVoiceCallEnded);
+        roomScope.Subscribe<VoiceParticipantJoinedEvent>(OnVoiceParticipantJoined);
+        roomScope.Subscribe<VoiceParticipantLeftEvent>(OnVoiceParticipantLeft);
+        roomScope.Subscribe<VoiceCallStateReceivedEvent>(VoiceCallStateReceived);
+
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated);
         roomScope.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated);
         roomScope.Subscribe<PingMeasuredEvent>(OnPingMeasured);
@@ -68,6 +79,95 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
     }
+
+    #region Voice chat related
+
+    private async Task OnVoiceCallStarted(VoiceCallStartedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        IsVoiceChatActive = true;
+        CallDuration = TimeSpan.Zero;
+        callStartedAt = DateTime.Now;
+        callTimer.Start();
+        activeVoiceChatSubroomId = eventMessage.Message.SubRoomId;
+        IsInVoiceChat = eventMessage.Participant.Id == localParticipant.Id;
+        AddToVoiceChatParticipant(eventMessage.Participant);
+        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
+    }
+
+    private async Task OnVoiceCallEnded(VoiceCallEndedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        VoiceChatParticipants.Clear();
+        IsMuted = false;
+        callTimer.Stop();
+        activeVoiceChatSubroomId = null;
+        IsInVoiceChat = false;
+        IsVoiceChatActive = false;
+    }
+
+    private async Task VoiceCallStateReceived(VoiceCallStateReceivedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        VoiceChatParticipants.Clear();
+        callStartedAt = eventMessage.StartedAt;
+        IsVoiceChatActive = eventMessage.ActiveSubRoomId != null;
+        if (IsVoiceChatActive)
+        {
+            callTimer.Start();
+        }
+        activeVoiceChatSubroomId = eventMessage.ActiveSubRoomId;
+        foreach (var participant in eventMessage.CallParticipants)
+        {
+            AddToVoiceChatParticipant(participant);
+        }
+        loadingTcs.SetResult();
+    }
+
+    private async Task OnVoiceParticipantJoined(VoiceParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.Participant.Id == localParticipant.Id)
+        {
+            IsInVoiceChat = true;
+        }
+        AddToVoiceChatParticipant(eventMessage.Participant);
+    }
+
+    private async Task OnVoiceParticipantLeft(VoiceParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.Participant.Id == localParticipant.Id)
+        {
+            IsMuted = false;
+            IsInVoiceChat = false;
+        }
+        var voiceParticipant = VoiceChatParticipants.FirstOrDefault(x => x.ParticipantId == eventMessage.Participant.Id);
+        if (voiceParticipant != null)
+        {
+            VoiceChatParticipants.Remove(voiceParticipant);
+            voiceParticipant.Dispose();
+        }
+    }
+
+    private void AddToVoiceChatParticipant(Participant participant)
+    {
+        var card = new ParticipantVoiceCardViewModel(participant, roomScope,
+            localParticipant.Id == participant.Id);
+        card.OnForceMuted += (forceMuted) =>
+        {
+            if (forceMuted)
+            {
+                OnUnmuteParticipantRequested(participant.Id);
+            }
+            else
+            {
+                OnMuteParticipantRequested(participant.Id);
+            }
+        };
+        card.OnParticipantDesiredVolumeChanged += (volume) =>
+        {
+            OnNewDesiredVolumeRequested(participant.Id, volume);
+        };
+        VoiceChatParticipants.Add(card);
+    }
+
+    #endregion
 
     #region File related
 
@@ -161,7 +261,6 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (eventMessage.NeedToDisconnect)
         {
             ClearParentFormEvents();
-
             if (!string.IsNullOrEmpty(eventMessage.LeavingMessage))
             {
                 NotifyIfNeeded(eventMessage.LeavingMessage);
@@ -177,8 +276,12 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         if (e.NeedToDisconnect)
         {
-            NotifyIfNeeded(e.ErrorMessage);
             ClearParentFormEvents();
+            if (!string.IsNullOrEmpty(e.ErrorMessage))
+            {
+                NotifyIfNeeded(e.ErrorMessage);
+                InAppNotifier.Info(e.ErrorMessage);
+            }
             await Disconnect();
         }
     }

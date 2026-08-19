@@ -85,6 +85,67 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
+    private async Task OnVoiceCallJoinRequested(int subRoomId)
+    {
+        try
+        {
+            await featureCollection.Chat.ChatVoiceService.JoinCallAsync(roomId, subRoomId, appCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Error(e.Message);
+        }
+    }
+
+    private async Task OnMuteSelfRequested()
+    {
+        if (activeVoiceChatSubroomId != null)
+        {
+            await featureCollection.Voice.MuteService.MuteSelf(roomId, activeVoiceChatSubroomId.Value, appCts.Token);
+        }
+    }
+
+    private async Task OnUnmuteSelfRequested()
+    {
+        if (activeVoiceChatSubroomId != null)
+        {
+            await featureCollection.Voice.MuteService.UnmuteSelf(roomId, activeVoiceChatSubroomId.Value, appCts.Token);
+        }
+    }
+
+    private void OnMuteParticipantRequested(Guid participantId)
+        => featureCollection.Voice.MuteService.MuteParticipant(participantId);
+
+    private void OnUnmuteParticipantRequested(Guid participantId)
+        => featureCollection.Voice.MuteService.UnmuteParticipant(participantId);
+
+    private void OnNewDesiredVolumeRequested(Guid participantId, int volume)
+        => featureCollection.Voice.VoicePlayback.ChangeParticipantVolume(participantId, volume);
+
+    private async Task OnVoiceCallLeaveRequested(int subRoomId)
+    {
+        try
+        {
+            await featureCollection.Chat.ChatVoiceService.LeaveCallAsync(roomId, subRoomId, appCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Error(e.Message);
+        }
+    }
+
+    private async Task RequestVoiceCallStateAsync()
+    {
+        try
+        {
+            await featureCollection.Chat.ChatVoiceService.RequestCallStateAsync(roomId, appCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Warning(e.Message);
+        }
+    }
+
     private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
     {
         await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
@@ -111,11 +172,23 @@ public partial class ChatViewModel : RoutableViewModelBase
 #endif
     }
 
-    private async void SendSessionStartMessage(Session session)
+    private async Task SendSessionStartMessage(Session session)
     {
         try
         {
             await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, appCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Error(e.Message);
+        }
+    }
+
+    private async Task SendVoiceCallStartMessage()
+    {
+        try
+        {
+            await featureCollection.Chat.ChatVoiceService.StartCallAsync(roomId, appCts.Token);
         }
         catch (DirectoryNotFoundException e)
         {

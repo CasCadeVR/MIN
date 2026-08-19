@@ -24,6 +24,7 @@ public class ChatModule : Module
         services.RegisterAsImplementedInterfaces<ChatStatusService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatFileService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatSessionService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<ChatVoiceService>(ServiceLifetime.Singleton);
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessageHandler, IChatHandlerAnchor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatFeatureCollection>(ServiceLifetime.Singleton);
     }

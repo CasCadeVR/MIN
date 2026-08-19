@@ -12,8 +12,10 @@ using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Cards.Messages;
 using MIN.Desktop.ViewModels.Cards.Messages.Files;
 using MIN.Desktop.ViewModels.Cards.Messages.Sessions;
+using MIN.Desktop.ViewModels.Cards.Messages.Voice;
 using MIN.FileTransfer.Messaging;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
+using MIN.Voice.Messaging;
 
 namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 
@@ -35,7 +37,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     private SystemChatMessageViewModel? loadMoreLabel;
     private int renderedMessageCount;
 
-    private async Task AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool scrollToBottom = true, bool countTowardCap = true)
+    private async Task AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool countTowardCap = true)
     {
         var isSelfMessage = message.SenderId == localParticipant.Id;
         var isHostMessage = room?.HostParticipant?.Id == message.SenderId;
@@ -51,6 +53,10 @@ public partial class ChatViewModel : RoutableViewModelBase
 
             case SessionReadyMessage m:
                 messageCard = await CreateSessionMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
+                break;
+
+            case VoiceCallStartedMessage m:
+                messageCard = await CreateVoiceMessageCard(m, isSelfMessage, isHostMessage, isCurrentPrivate, appendOnTop);
                 break;
 
             case FileMetadataMessage m:
@@ -232,6 +238,26 @@ public partial class ChatViewModel : RoutableViewModelBase
         return card;
     }
 
+    private async Task<ChatVoiceCallMessageViewModel> CreateVoiceMessageCard(VoiceCallStartedMessage msg,
+       bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
+    {
+        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
+        var timePadding = CalculateTimePadding(msg.Timestamp);
+
+        var card = new ChatVoiceCallMessageViewModel(roomScope, msg, localParticipant, timePadding, isHost, removeHeaders);
+
+        card.OnJoinRequested += () => OnVoiceCallJoinRequested(msg.SubRoomId);
+        card.OnLeaveRequested += () => OnVoiceCallLeaveRequested(msg.SubRoomId);
+
+        if (!withAppendOnTop)
+        {
+            await InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+        }
+
+        lastChatMessage = msg;
+        return card;
+    }
+
     private async Task<ChatFileImagePreviewMessageViewModel> CreateChatImagePreviewMessageCard(FileMetadataMessage msg,
         bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
     {
@@ -293,7 +319,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     private async Task SendSystemMessage(SystemTextMessage systemMessage, bool needsToNotify = false,
         bool countTowardCap = false)
     {
-        await AddMessageToChatFlow(systemMessage, scrollToBottom: true, countTowardCap: countTowardCap);
+        await AddMessageToChatFlow(systemMessage, countTowardCap: countTowardCap);
 
         if (needsToNotify)
         {

@@ -4,6 +4,7 @@ using MIN.Discovery.DI.FeatureCollection;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.Helpers.DI.FeatureCollection;
 using MIN.Sessions.Core.DI.FeatureCollection;
+using MIN.Voice.DI.FeatureCollection;
 
 namespace MIN.DI.FeatureCollection;
 
@@ -28,6 +29,9 @@ public class MinFeatureCollection : IMinFeatureCollection
     /// <inheritdoc />
     public ISessionFeatureCollection Sessions { get; }
 
+    /// <inheritdoc />
+    public IVoiceFeatureCollection Voice { get; }
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="MinFeatureCollection"/>
     /// </summary>
@@ -36,7 +40,8 @@ public class MinFeatureCollection : IMinFeatureCollection
         IChatFeatureCollection chat,
         IFileTransferFeatureCollection fileTransfer,
         IDiscoveryFeatureCollection discovery,
-        ISessionFeatureCollection sessions)
+        ISessionFeatureCollection sessions,
+        IVoiceFeatureCollection voice)
     {
         Helper = helper;
         Core = core;
@@ -44,5 +49,6 @@ public class MinFeatureCollection : IMinFeatureCollection
         FileTransfer = fileTransfer;
         Discovery = discovery;
         Sessions = sessions;
+        Voice = voice;
     }
 }

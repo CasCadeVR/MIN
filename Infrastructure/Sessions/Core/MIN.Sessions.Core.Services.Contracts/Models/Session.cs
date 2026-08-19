@@ -59,14 +59,6 @@ public class Session
     public string? ThumbnailFileName { get; set; }
 
     /// <summary>
-    /// Удобный для сессии транспорт
-    /// </summary>
-    /// <remarks>
-    /// null -> MIN сам даст транспорт на основе операционной системы
-    /// </remarks>
-    public string? PreferredTransport { get; set; }
-
-    /// <summary>
     /// Путь к папке сессии
     /// </summary>
     [JsonIgnore]

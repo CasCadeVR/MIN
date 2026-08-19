@@ -59,7 +59,7 @@ public class SessionProcessManager : ISessionProcessManager
             return false;
         }
 
-        var processTransport = transportFactory.Create(session.PreferredTransport);
+        var processTransport = transportFactory.Create();
         transports[context] = processTransport;
         processBridge.RegisterTransport(context, processTransport);
 
@@ -79,7 +79,7 @@ public class SessionProcessManager : ISessionProcessManager
             if ((mode & UnixFileMode.UserExecute) == 0)
             {
                 psi.FileName = "dotnet";
-                psi.ArgumentList.Insert(0, fullPath); // [fullPath, connectionString]
+                psi.ArgumentList.Insert(0, fullPath);
             }
         }
 

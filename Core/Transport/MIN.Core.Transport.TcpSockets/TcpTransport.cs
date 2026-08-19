@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using MIN.Core.Messaging.Contracts.Enums;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Core.Transport.Contracts.Events;
 using MIN.Core.Transport.Contracts.Helpers;
@@ -16,11 +17,12 @@ namespace MIN.Core.Transport.TcpSockets;
 /// <summary>
 /// Реализация передачи данных на основе Tcp Socket
 /// </summary>
-public class TcpTransport : ITransport
+public class TcpTransport : ITransport, IAsyncDisposable
 {
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, TcpSocketServer> servers = new();
     private readonly ConcurrentDictionary<Guid, TcpSocketClient> clients = new();
+    private readonly ConcurrentDictionary<Guid, IReadOnlyList<IEndpoint>> cachedServerEndpoints = new();
 
     /// <inheritdoc />
     public event EventHandler<RawMessageReceivedEventArgs>? RawMessageReceived;
@@ -36,9 +38,12 @@ public class TcpTransport : ITransport
         this.logger = logger;
     }
 
-    async Task<Guid> ITransport.StartHostingAsync(CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async Task<Guid> StartHostingAsync(Guid? serverConnectionId, CancellationToken cancellationToken)
     {
-        var connectionId = Guid.NewGuid();
+        var connectionId = serverConnectionId != null
+            ? serverConnectionId.Value
+            : Guid.NewGuid();
         var port = PortProvider.AllocatePort();
         var server = new TcpSocketServer(logger, port);
 
@@ -69,7 +74,8 @@ public class TcpTransport : ITransport
         return connectionId;
     }
 
-    async Task ITransport.StopHostingAsync(Guid connectionId)
+    /// <inheritdoc />
+    public async Task StopHostingAsync(Guid connectionId)
     {
         if (servers.TryRemove(connectionId, out var server))
         {
@@ -78,7 +84,8 @@ public class TcpTransport : ITransport
         }
     }
 
-    async Task<Guid> ITransport.ConnectAsync(IEndpoint endpoint, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async Task<Guid> ConnectAsync(IEndpoint endpoint, Guid? connectionId, CancellationToken cancellationToken)
     {
         if (endpoint is not TcpEndpoint tcpEp)
         {
@@ -97,16 +104,17 @@ public class TcpTransport : ITransport
             ConnectionStateChanged?.Invoke(this, args);
         };
 
-        var connectionId = await client.ConnectAsync(tcpEp.IPAddress, tcpEp.Port, cancellationToken);
-        clients.TryAdd(connectionId, client);
+        var connectedConnectionId = await client.ConnectAsync(tcpEp.IPAddress, tcpEp.Port, connectionId, cancellationToken);
+        clients.TryAdd(connectedConnectionId, client);
 
-        var connectedArgs = new ConnectionStateChangedEventArgs(connectionId, true);
+        var connectedArgs = new ConnectionStateChangedEventArgs(connectedConnectionId, true);
         ConnectionStateChanged?.Invoke(this, connectedArgs);
 
-        return connectionId;
+        return connectedConnectionId;
     }
 
-    async Task ITransport.SendAsync(byte[] data, Guid receipientConnectionId, Guid? serverConnectionId, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async Task SendAsync(byte[] data, Guid receipientConnectionId, Guid? serverConnectionId, MessageChannel channel, CancellationToken cancellationToken)
     {
         if (clients.TryGetValue(receipientConnectionId, out var client))
         {
@@ -124,7 +132,8 @@ public class TcpTransport : ITransport
         logger.Log("Попытка отправить сообщение, не подключившись, игнорю", LogLevel.Warning);
     }
 
-    async Task ITransport.BroadcastAsync(byte[] data, Guid connectionId, IEnumerable<Guid>? excludeConnections, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async Task BroadcastAsync(byte[] data, Guid connectionId, IEnumerable<Guid>? excludeConnections, MessageChannel channel, CancellationToken cancellationToken)
     {
         var excludeSet = excludeConnections?.ToHashSet() ?? [];
 
@@ -137,7 +146,8 @@ public class TcpTransport : ITransport
         }
     }
 
-    async Task<IEnumerable<IEndpoint>> ITransport.SetUpAndGetEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async Task<IEnumerable<IEndpoint>> SetUpEndpoints(Guid connectionId, NetworkOptions networkOptions, NetworkOptions? oldNetworkOptions, CancellationToken cancellationToken)
     {
         if (!servers.TryGetValue(connectionId, out var server))
         {
@@ -215,7 +225,20 @@ public class TcpTransport : ITransport
             });
         }
 
+        cachedServerEndpoints[connectionId] = endpoints;
+
         return endpoints;
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<IEndpoint> GetEndpoints(Guid serverConnectionId)
+    {
+        if (!servers.ContainsKey(serverConnectionId))
+        {
+            throw new InvalidOperationException($"Connection {serverConnectionId} is not hosted locally");
+        }
+
+        return cachedServerEndpoints[serverConnectionId];
     }
 
     /// <inheritdoc />
@@ -234,12 +257,13 @@ public class TcpTransport : ITransport
         }
     }
 
-    async Task ITransport.DisconnectAsync(Guid connectionId, DisconnectReason reason)
+    /// <inheritdoc />
+    public async Task DisconnectAsync(Guid connectionId, DisconnectReason reason)
     {
         await DisconnectClientAsync(connectionId, null, reason);
     }
 
-    /// <inheritdoc cref="IDisposable.Dispose"/>
+    /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
     public async ValueTask DisposeAsync()
     {
         foreach (var server in servers.Values)

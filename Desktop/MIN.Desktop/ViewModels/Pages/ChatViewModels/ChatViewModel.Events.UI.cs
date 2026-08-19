@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Collections;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Enums;
@@ -17,6 +19,7 @@ using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 using MIN.Desktop.Infrastructure.Extensions;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Cards;
 using MIN.Desktop.ViewModels.Modals;
 using MIN.Desktop.Views;
 
@@ -29,8 +32,8 @@ public partial class ChatViewModel : RoutableViewModelBase
 {
     private readonly System.Timers.Timer typingTimer = new() { Interval = 3000 };
 
-
     private bool isParentWindowActive = true;
+    private int? activeVoiceChatSubroomId;
 
     [ObservableProperty]
     public partial int CaretIndex { get; set; }
@@ -45,6 +48,38 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private CancellationTokenSource? updatingRoomCts;
 
+    // Voice chat
+    private readonly DispatcherTimer callTimer = new(TimeSpan.FromSeconds(1), DispatcherPriority.Background, Dispatcher.UIThread);
+    private DateTime callStartedAt;
+
+    /// <summary>
+    /// Список участников в звонке
+    /// </summary>
+    public AvaloniaList<ParticipantVoiceCardViewModel> VoiceChatParticipants { get; } = [];
+
+    /// <summary>
+    /// Активен ли сейчас звонок
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsVoiceChatActive { get; set; }
+
+    /// <summary>
+    /// Находится ли локальный пользователь в звонке
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsInVoiceChat { get; set; }
+
+    /// <summary>
+    /// Выключил ли микрофон локальный пользователь
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsMuted { get; set; }
+
+    /// <summary>
+    /// Длительность звонка (если он идёт)
+    /// </summary>
+    [ObservableProperty]
+    public partial TimeSpan CallDuration { get; set; }
 
     #region Layouting
 
@@ -85,9 +120,10 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     #region Timers
 
-    private void InitializeTypingTimer()
+    private void InitializeTimers()
     {
         typingTimer.Elapsed += (s, e) => OnTypingTimerStop();
+        callTimer.Tick += OnCallTimerTick;
     }
 
     private void OnTypingTimerStop()
@@ -95,6 +131,9 @@ public partial class ChatViewModel : RoutableViewModelBase
         typingTimer.Stop();
         _ = SendSelfStatusChangedMessage(GetRestingStatus());
     }
+
+    private void OnCallTimerTick(object? sender, EventArgs e)
+        => CallDuration = DateTime.Now - callStartedAt;
 
     private OnlineStatus GetRestingStatus() => isParentWindowActive
             ? OnlineStatus.Online
@@ -137,8 +176,48 @@ public partial class ChatViewModel : RoutableViewModelBase
         var choosingForm = await dialogService.ShowDialogAsync<SessionChoosingViewModel>();
         if (choosingForm! == true)
         {
-            SendSessionStartMessage(choosingForm!.SelectedSession!);
+            await SendSessionStartMessage(choosingForm!.SelectedSession!);
         }
+    }
+
+    [RelayCommand]
+    private async Task StartVoiceCallClick()
+        => await SendVoiceCallStartMessage();
+
+    [RelayCommand]
+    private async Task JoinVoiceCall()
+    {
+        if (activeVoiceChatSubroomId == null)
+        {
+            return;
+        }
+
+        await OnVoiceCallJoinRequested(activeVoiceChatSubroomId.Value);
+    }
+
+    [RelayCommand]
+    private async Task ToggleMute()
+    {
+        if (IsMuted)
+        {
+            await OnUnmuteSelfRequested();
+        }
+        else
+        {
+            await OnMuteSelfRequested();
+        }
+        IsMuted = !IsMuted;
+    }
+
+    [RelayCommand]
+    private async Task LeaveVoiceCall()
+    {
+        if (activeVoiceChatSubroomId == null)
+        {
+            return;
+        }
+
+        await OnVoiceCallLeaveRequested(activeVoiceChatSubroomId.Value);
     }
 
     #endregion
@@ -224,7 +303,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     #endregion
 
-    #region MesssageTextBox events
+    #region MessageTextBox events
 
     [RelayCommand]
     private void MessageTextChanged()

@@ -14,7 +14,7 @@ using MIN.Sessions.Core.Transport;
 namespace MIN.Sessions.Core.DI;
 
 /// <summary>
-/// Модуль регистрации зависимостей для Chat
+/// Модуль регистрации зависимостей для Session
 /// </summary>
 public class SessionModule : Module
 {
@@ -27,7 +27,6 @@ public class SessionModule : Module
         services.RegisterAsImplementedInterfaces<SessionProcessBridge>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionFeatureCollection>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionProcessManager>(ServiceLifetime.Singleton);
-        services.RegisterAsImplementedInterfaces<SessionReadyMessageResolver>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionTransportFactory>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<SessionScanner>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<IpcJsonSerializer>(ServiceLifetime.Singleton);

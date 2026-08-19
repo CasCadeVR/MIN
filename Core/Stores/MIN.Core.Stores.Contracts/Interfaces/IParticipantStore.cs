@@ -37,6 +37,11 @@ public interface IParticipantStore
     Participant GetParticipantById(Guid participantId);
 
     /// <summary>
+    /// Получить участников комнаты по их идентификаторам
+    /// </summary>
+    IEnumerable<Participant> GetParticipantByIds(IEnumerable<Guid> participantId);
+
+    /// <summary>
     /// Попытаться получить участника комнаты
     /// </summary>
     bool TryGetParticipantById(Guid participantId, out Participant? participant);

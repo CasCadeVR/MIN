@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\Infrastructure\Discovery\MIN.Discovery.DI\MIN.Discovery.DI.csproj" />
     <ProjectReference Include="..\..\Infrastructure\FileTransfer\MIN.FileTransfer.DI\MIN.FileTransfer.DI.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Sessions\Core\MIN.Sessions.Core.DI\MIN.Sessions.Core.DI.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Voice\MIN.Voice.DI\MIN.Voice.DI.csproj" />
   </ItemGroup>
 
 </Project>

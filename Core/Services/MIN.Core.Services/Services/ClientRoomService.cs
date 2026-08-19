@@ -5,7 +5,7 @@ using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Identity.Contracts.Interfaces;
-using MIN.Core.Messaging.Stateless;
+using MIN.Core.Messaging.Stateless.Handshake;
 using MIN.Core.Protocol.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Models;
@@ -75,7 +75,7 @@ internal sealed class ClientRoomService
         {
             logger.Log($"Подключаюсь к {endpoint}");
 
-            connectionResult.ConnectionId = await transport.ConnectAsync(endpoint, cancellationToken);
+            connectionResult.ConnectionId = await transport.ConnectAsync(endpoint, cancellationToken: cancellationToken);
 
             var result = await clientHandshake.HandleClientAsync(connectionResult.ConnectionId, cancellationToken);
 
@@ -88,6 +88,7 @@ internal sealed class ClientRoomService
 
             if (registry.IsConnected(result.RoomInfo.Id) || registry.IsHosting(result.RoomInfo.Id))
             {
+                await transport.DisconnectAsync(connectionResult.ConnectionId, DisconnectReason.Error);
                 throw new InvalidOperationException("Вы уже подключены к этой комнате");
             }
 
@@ -101,7 +102,12 @@ internal sealed class ClientRoomService
             roomFactory.GetOrCreateContext(connectionResult.RoomId)
                 .Connections.RegisterLocalParticipant(selfParticipant);
 
-            roomStore.Register(new Room(result.RoomInfo));
+            var room = new Room(result.RoomInfo)
+            {
+                ConnectionAddresses = [endpoint]
+            };
+
+            roomStore.Register(room);
 
             logger.Log($"Подключились к комнате с id {connectionResult.RoomId}, соединение с id {connectionResult.ConnectionId}");
 
@@ -150,27 +156,27 @@ internal sealed class ClientRoomService
         registry.UnregisterClientConnection(e.ConnectionId);
         logger.Log($"Отключились от комнаты с id {roomId}, соединение было с id {e.ConnectionId}");
 
-        if (!roomStore.RoomExists(roomId))
-        {
-            return false;
-        }
-
         var context = roomFactory.GetOrCreateContext(roomId);
         if (!context.Connections.TryGetParticipantFromConnectionId(e.ConnectionId, out var leavingParticipant))
         {
             return false;
         }
 
-        var isHostLeaving = roomStore.GetRoomHostParticipantId(roomId) == leavingParticipant.Id;
+        if (!roomStore.RoomExists(roomId))
+        {
+            return false;
+        }
 
-        if (isHostLeaving)
+        var isDisconnectingFromHost = roomStore.GetRoomHostParticipantId(roomId) == leavingParticipant.Id;
+
+        if (isDisconnectingFromHost)
         {
             roomStore.Remove(roomId);
             roomFactory.DestroyContext(roomId);
             await eventBus.PublishAsync(new RoomClosedEvent() { RoomId = roomId });
         }
 
-        return isHostLeaving;
+        return isDisconnectingFromHost;
     }
 
     public async Task HandleConnectionTimeoutAsync(Guid roomId, Guid connectionId)

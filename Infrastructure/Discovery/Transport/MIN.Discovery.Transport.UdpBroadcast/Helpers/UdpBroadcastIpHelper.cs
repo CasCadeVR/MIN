@@ -53,38 +53,48 @@ internal class UdpBroadcastIpHelper : IDisposable
         }
     }
 
-    private IEnumerable<IPAddress> GetAllBroadcastChannels()
+    private static List<IPAddress> GetAllBroadcastChannels()
     {
-        var result = new List<IPAddress>();
+        var result = new HashSet<IPAddress>
+        {
+            // Always include the limited broadcast as a fallback
+            IPAddress.Broadcast // 255.255.255.255
+        };
 
         foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
         {
             if (ni.OperationalStatus != OperationalStatus.Up ||
-                ni.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                ni.NetworkInterfaceType == NetworkInterfaceType.Loopback ||
+                ni.NetworkInterfaceType == NetworkInterfaceType.Tunnel ||
+                ni.NetworkInterfaceType == NetworkInterfaceType.Ppp ||
+                !ni.Supports(NetworkInterfaceComponent.IPv4))
             {
                 continue;
             }
 
             var props = ni.GetIPProperties();
 
-            if (props.GatewayAddresses.Count > 0)
+            foreach (var ip in props.UnicastAddresses)
             {
-                Console.WriteLine($"Главный адаптер: {ni.Description}");
-                foreach (var ip in props.UnicastAddresses)
+                if (ip.Address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
                 {
-                    if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                    {
-                        Console.WriteLine($"Его IP: {ip.Address}");
-                        var ipAddr = BitConverter.ToUInt32(ip.Address.GetAddressBytes(), 0);
-                        var mask = BitConverter.ToUInt32(ip.IPv4Mask.GetAddressBytes(), 0);
-                        var broadcast = ipAddr | ~mask;
-                        result.Add(new IPAddress(BitConverter.GetBytes(broadcast)));
-                    }
+                    continue;
                 }
+
+                if (ip.IPv4Mask == null || ip.PrefixLength >= 31)
+                {
+                    // /31, /32 or missing mask -> point-to-point or invalid, skip
+                    continue;
+                }
+
+                var ipAddr = BitConverter.ToUInt32(ip.Address.GetAddressBytes(), 0);
+                var mask = BitConverter.ToUInt32(ip.IPv4Mask.GetAddressBytes(), 0);
+                var broadcast = ipAddr | ~mask;
+                result.Add(new IPAddress(BitConverter.GetBytes(broadcast)));
             }
         }
 
-        return result;
+        return result.ToList();
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>

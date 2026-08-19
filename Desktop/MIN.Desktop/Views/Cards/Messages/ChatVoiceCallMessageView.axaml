@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages.Voice"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="20"
+             x:DataType="vm:ChatVoiceCallMessageViewModel"
+             x:Class="MIN.Desktop.Views.Cards.Messages.ChatVoiceCallMessageView">
+
+    <Design.DataContext>
+        <vm:ChatVoiceCallMessageViewModel/>
+    </Design.DataContext>
+
+    <Border Classes="message-row"
+        Margin="{Binding TimePadding}"
+        Classes.selected="{Binding IsSelected}">
+
+        <Border Classes="message"
+            MaxWidth="400"
+            Classes.system="{Binding AsEnded}"
+            Padding="{DynamicResource PaddingMedium}"
+            HorizontalAlignment="Center">
+
+            <StackPanel Spacing="8">
+                <StackPanel.Styles>
+                    <Style Selector="TextBlock.ended">
+                        <Setter Property="Foreground" Value="{DynamicResource TextOnPrimary}" />
+                    </Style>
+                    <Style Selector="TextBlock.callTimer-in">
+                        <Setter Property="Foreground" Value="{DynamicResource VoiceTimerOn}" />
+                    </Style>
+                </StackPanel.Styles>
+
+                <TextBlock Classes="chat"
+                    Classes.ended="{Binding AsEnded}"
+                    HorizontalAlignment="Center"
+                    TextAlignment="Center"
+                    Text="{Binding Description}" />
+
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Classes.callTimer-in="{Binding AsJoined}"
+                    Text="{Binding CallDuration, StringFormat='hh\\:mm\\:ss'}"
+                    IsVisible="{Binding !AsEnded}" />
+
+                <StackPanel HorizontalAlignment="Center"
+                            IsVisible="{Binding !AsEnded}"
+                            Spacing="8"
+                            Orientation="Horizontal">
+                    <Button Command="{Binding JoinVoiceCallCommand}"
+                        ToolTip.Tip="Присоединиться к звонку"
+                        Classes="icon"
+                        IsVisible="{Binding !AsJoined}"
+                        Background="{DynamicResource VoiceAccept}">
+                        <Svg Path="/Assets/Icons/phone.svg" />
+                    </Button>
+                    <Button Command="{Binding LeaveOrRejectVoiceCallCommand}"
+                        ToolTip.Tip="Отклонить звонок"
+                        IsVisible="{Binding !AsRejected}"
+                        Classes="icon"
+                        Background="{DynamicResource VoiceReject}">
+                        <Svg Path="/Assets/Icons/phone-disconnect.svg" />
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Border>
+</UserControl>

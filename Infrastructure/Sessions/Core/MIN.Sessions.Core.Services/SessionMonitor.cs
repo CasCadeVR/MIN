@@ -3,6 +3,7 @@ using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
@@ -89,7 +90,7 @@ public class SessionMonitor : IHostedService
         var roomId = e.RoomId;
         var participantId = e.Message.Participant.Id;
 
-        var activeSubRooms = subRoomManager.GetRoomSubRooms(roomId);
+        var activeSubRooms = subRoomManager.GetRoomSubRooms(roomId).Where(x => x.Purpose == SubRoomPurpose.Activity && x.IsActive);
         foreach (var subRoom in activeSubRooms)
         {
             if (subRoomManager.IsInSubRoom(roomId, subRoom.Id, participantId))
