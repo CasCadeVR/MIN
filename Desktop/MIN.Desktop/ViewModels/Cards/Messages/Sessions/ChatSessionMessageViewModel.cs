@@ -80,7 +80,8 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
         Thickness timePadding,
         bool isHostMessage,
         bool removeHeaders)
-        : base(sessionReadyMessage.Sender.Name,
+        : base(sessionReadyMessage.Id,
+            sessionReadyMessage.Sender.Name,
             sessionReadyMessage.Timestamp,
             timePadding,
             localParticipant.Id == sessionReadyMessage.SenderId,

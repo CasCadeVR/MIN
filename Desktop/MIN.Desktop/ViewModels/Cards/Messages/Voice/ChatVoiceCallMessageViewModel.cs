@@ -70,7 +70,8 @@ public partial class ChatVoiceCallMessageViewModel : BaseChatMessageViewModel
         Thickness timePadding,
         bool isHostMessage,
         bool removeHeaders)
-        : base(voiceCallStartedMessage.Sender.Name,
+        : base(voiceCallStartedMessage.Id,
+            voiceCallStartedMessage.Sender.Name,
             voiceCallStartedMessage.Timestamp,
             timePadding,
             localParticipant.Id == voiceCallStartedMessage.SenderId,

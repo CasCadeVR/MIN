@@ -26,7 +26,8 @@
                 </MenuItem>
 
                 <MenuItem Header="Редактировать"
-                        Command="{Binding CopyToClipboardCommand}">
+                    IsVisible="{Binding IsLocal}"
+                    Command="{Binding EditMessageCommand}">
                     <MenuItem.Icon>
                         <Svg Path="/Assets/Icons/pencil.svg" />
                     </MenuItem.Icon>
@@ -35,7 +36,8 @@
                 <Separator />
 
                 <MenuItem Header="Удалить сообщение"
-                    Command="{Binding CopyToClipboardCommand}"
+                    Command="{Binding DeleteMessageCommand}"
+                    IsVisible="{Binding IsLocal}"
                     Classes="danger">
                     <MenuItem.Icon>
                         <Svg Path="/Assets/Icons/delete.svg" />

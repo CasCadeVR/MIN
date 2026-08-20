@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Chat.Events;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
@@ -20,6 +21,7 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
 {
     private readonly RoomContext roomContext;
     private readonly RoomInfo roomInfo;
+    private Guid lastMessageId;
     private IEventScope roomScope = null!;
 
     private int currentAmount;
@@ -97,6 +99,7 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
         var lastMessage = roomContext.Messages.GetLastMessage();
         if (lastMessage is IDescribable describable)
         {
+            lastMessageId = lastMessage.Id;
             LastMessageContent = describable.GetDescription();
         }
     }
@@ -126,6 +129,7 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
         roomScope.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent);
         roomScope.Subscribe<DescribableMessageReceivedEvent>(OnDescribableMessageReceivedEvent);
+        roomScope.Subscribe<ChatMessageDeletedEvent>(OnChatMessageDeleted);
         roomScope.Subscribe<RoomClosedEvent>(OnRoomLeft);
     }
 
@@ -146,6 +150,14 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
         Dispose();
     }
 
+    private async Task OnChatMessageDeleted(ChatMessageDeletedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (lastMessageId == eventMessage.MessageId)
+        {
+            GetLastMessage();
+        }
+    }
+
     private async Task OnDescribableMessageReceivedEvent(DescribableMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (!IsSelected)
@@ -154,6 +166,7 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
         }
         LastMessageReceivedAt = DateTime.Now;
         LastMessageContent = eventMessage.DescribableMessage.GetDescription();
+        lastMessageId = eventMessage.MessageId;
     }
 
     private async Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)

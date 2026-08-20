@@ -101,6 +101,16 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
+    private void RemoveMessage(Guid id)
+    {
+        var existingCard = Messages.FirstOrDefault(x => x.Id == id);
+        if (existingCard == null)
+        {
+            return;
+        }
+        Messages.Remove(existingCard);
+    }
+
     private void ShowLoadMoreLabel()
     {
         if (loadMoreLabel != null)
@@ -186,6 +196,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
         var card = new ChatTextMessageViewModel(msg, timePadding, isSelf, isHost, removeHeaders, parentWindow.Clipboard);
+        card.OnDeleteRequested += async () => await OnMessageDeleteRequested(msg.Id);
 
         if (!withAppendOnTop)
         {
@@ -208,6 +219,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
+        card.OnDeleteRequested += async () => await OnMessageDeleteRequested(msg.Id);
 
         if (!withAppendOnTop)
         {
@@ -323,7 +335,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (needsToNotify)
         {
-            await PublishNewDescribable(systemMessage, appCts.Token);
+            await PublishNewDescribable(systemMessage.Id, systemMessage, appCts.Token);
             NotifyIfNeeded(systemMessage);
         }
     }

@@ -44,6 +44,11 @@ public interface IMessageStore
     IMessage GetLastMessage();
 
     /// <summary>
+    /// Удалить сообщение по Id
+    /// </summary>
+    void RemoveMessage(Guid id);
+
+    /// <summary>
     /// Очистить сообщения из комнаты
     /// </summary>
     void ClearMessages();

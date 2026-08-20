@@ -33,21 +33,31 @@ public partial class ChatViewModel : RoutableViewModelBase
     private void SubscribeToEvents(IEventBus eventBus)
     {
         roomScope = eventBus.CreateScope(roomId);
+
+        // Text
         roomScope.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived);
+
+        // Files
         roomScope.Subscribe<FileMetaDataMessageReceivedEvent>(OnFileMetaDataMessageReceived);
         roomScope.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted);
         roomScope.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted);
         roomScope.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed);
+
+        // Sessions
         roomScope.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived);
 
+        // Voice calls
         roomScope.Subscribe<VoiceCallStartedEvent>(OnVoiceCallStarted);
         roomScope.Subscribe<VoiceCallEndedEvent>(OnVoiceCallEnded);
         roomScope.Subscribe<VoiceParticipantJoinedEvent>(OnVoiceParticipantJoined);
         roomScope.Subscribe<VoiceParticipantLeftEvent>(OnVoiceParticipantLeft);
         roomScope.Subscribe<VoiceCallStateReceivedEvent>(VoiceCallStateReceived);
 
+        // Other
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated);
         roomScope.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated);
+        roomScope.Subscribe<ChatMessageDeletedEvent>(ChatMessageDeleted);
+
         roomScope.Subscribe<PingMeasuredEvent>(OnPingMeasured);
         roomScope.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
         roomScope.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
@@ -56,17 +66,18 @@ public partial class ChatViewModel : RoutableViewModelBase
         errorToken = eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
     }
 
-    private async Task PublishNewDescribable(IDescribable describable, CancellationToken cancellationToken)
+    private async Task PublishNewDescribable(Guid id, IDescribable describable, CancellationToken cancellationToken)
         => await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
         {
             RoomId = roomId,
+            MessageId = id,
             DescribableMessage = describable
         }, cancellationToken);
 
     private async Task AddToChatFlowAndNotify<T>(T message, CancellationToken cancellationToken) where T : class, IMessage, IDescribable
     {
         await AddMessageToChatFlow(message);
-        await PublishNewDescribable(message, cancellationToken);
+        await PublishNewDescribable(message.Id, message, cancellationToken);
         NotifyIfNeeded(message);
     }
 
@@ -236,7 +247,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         chatSideBarViewModel.UpdateStats(room);
     }
 
-    private async Task OnChatHistoryUpdated(ChatHistoryUpdatedEvent eventMessage, CancellationToken ct)
+    private async Task OnChatHistoryUpdated(ChatHistoryUpdatedEvent eventMessage, CancellationToken cancellationToken)
     {
         var e = eventMessage.Message;
 
@@ -249,6 +260,11 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             ShowLoadMoreLabel();
         }
+    }
+
+    private async Task ChatMessageDeleted(ChatMessageDeletedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        RemoveMessage(eventMessage.MessageId);
     }
 
     private async Task OnPingMeasured(PingMeasuredEvent eventMessage, CancellationToken cancellationToken)

@@ -82,8 +82,19 @@ public sealed class MessageStore : IMessageStore
         }
     }
 
+    void IMessageStore.RemoveMessage(Guid id)
+    {
+        lock (messages)
+        {
+            messages.RemoveAll(x => x.Id == id);
+        }
+    }
+
     void IMessageStore.ClearMessages()
     {
-        messages.Clear();
+        lock (messages)
+        {
+            messages.Clear();
+        }
     }
 }

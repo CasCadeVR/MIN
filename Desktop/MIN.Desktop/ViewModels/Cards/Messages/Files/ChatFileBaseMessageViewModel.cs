@@ -89,7 +89,8 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(fileMetadataMessage.Sender.Name,
+        : base(fileMetadataMessage.Id,
+            fileMetadataMessage.Sender.Name,
             fileMetadataMessage.Timestamp,
             timePadding,
             localParticipant.Id == fileMetadataMessage.Sender.Id,

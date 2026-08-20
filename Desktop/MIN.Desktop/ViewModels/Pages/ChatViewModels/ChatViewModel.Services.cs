@@ -196,6 +196,18 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
+    private async Task OnMessageDeleteRequested(Guid id)
+    {
+        try
+        {
+            await featureCollection.Chat.ChatMessageService.DeleteMessageAsync(roomId, id, appCts.Token);
+        }
+        catch (DirectoryNotFoundException e)
+        {
+            InAppNotifier.Error(e.Message);
+        }
+    }
+
     [RelayCommand(CanExecute = nameof(IsMessageValid))]
     private async Task SendMessage()
     {
@@ -203,7 +215,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             if (!string.IsNullOrWhiteSpace(SendingMessage))
             {
-                await featureCollection.Chat.ChatTextService.SendMessageAsync(roomId,
+                await featureCollection.Chat.ChatTextService.SendTextMessageAsync(roomId,
                     SendingMessage.Trim(),
                     chatSideBarViewModel.PrivateChatParticipantId,
                     appCts.Token

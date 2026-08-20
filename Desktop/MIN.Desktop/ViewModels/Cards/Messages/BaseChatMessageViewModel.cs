@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia;
+using CommunityToolkit.Mvvm.Input;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages;
@@ -9,6 +10,11 @@ namespace MIN.Desktop.ViewModels.Cards.Messages;
 /// </summary>
 public abstract partial class BaseChatMessageViewModel : CardViewModelBase
 {
+    /// <summary>
+    /// Идентификатор сообщения
+    /// </summary>
+    public Guid Id { get; }
+
     /// <summary>
     /// Имя отправителя сообщения
     /// </summary>
@@ -53,6 +59,16 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     public Thickness TimePadding { get; init; }
 
     /// <summary>
+    /// Пользователь захотел удалить сообщение
+    /// </summary>
+    public Action? OnDeleteRequested;
+
+    /// <summary>
+    /// Пользователь захотел отредактировать сообщение
+    /// </summary>
+    public Action? OnEditRequested;
+
+    /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
     /// </summary>
     public BaseChatMessageViewModel()
@@ -63,7 +79,8 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
     /// </summary>
-    public BaseChatMessageViewModel(string name,
+    public BaseChatMessageViewModel(Guid id,
+       string name,
        DateTime time,
        Thickness timePadding,
        bool isLocal,
@@ -71,6 +88,7 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
        bool removeHeaders,
        bool isPrivate)
     {
+        Id = id;
         SenderName = name;
         Timestamp = time.ToShortTimeString();
         TimePadding = timePadding;
@@ -78,5 +96,23 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
         IsHost = isHost;
         RemoveHeaders = removeHeaders;
         IsPrivate = isPrivate;
+    }
+
+    /// <summary>
+    /// Удалить сообщение
+    /// </summary>
+    [RelayCommand]
+    protected virtual void DeleteMessage()
+    {
+        OnDeleteRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// Отредактировать сообщение
+    /// </summary>
+    [RelayCommand]
+    protected virtual void EditMessage()
+    {
+        OnEditRequested?.Invoke();
     }
 }

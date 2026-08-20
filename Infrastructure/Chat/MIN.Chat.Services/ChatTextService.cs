@@ -22,7 +22,7 @@ public sealed class ChatTextService : IChatTextService
         this.identityService = identityService;
     }
 
-    async Task IChatTextService.SendMessageAsync(Guid roomId, string content, Guid? recipientId, CancellationToken cancellationToken)
+    async Task IChatTextService.SendTextMessageAsync(Guid roomId, string content, Guid? recipientId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(content))
         {

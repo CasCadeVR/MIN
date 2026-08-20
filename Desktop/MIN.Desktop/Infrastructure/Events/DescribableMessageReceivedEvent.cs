@@ -14,6 +14,11 @@ public sealed record DescribableMessageReceivedEvent : BaseEvent, IRoomScopedEve
     public Guid RoomId { get; init; }
 
     /// <summary>
+    /// Идентификатор описываемого сообщения
+    /// </summary>
+    public Guid MessageId { get; init; }
+
+    /// <summary>
     /// Описаемое сообщение
     /// </summary>
     public IDescribable DescribableMessage { get; init; } = null!;

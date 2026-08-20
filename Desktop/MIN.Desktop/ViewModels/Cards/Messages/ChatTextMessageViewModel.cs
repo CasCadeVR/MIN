@@ -28,7 +28,8 @@ public partial class ChatTextMessageViewModel : BaseChatMessageViewModel
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(chatMessage.Sender.Name,
+        : base(chatMessage.Id,
+            chatMessage.Sender.Name,
             chatMessage.Timestamp,
             timePadding,
             isLocal,

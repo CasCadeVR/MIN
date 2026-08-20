@@ -17,27 +17,46 @@
         Classes.private="{Binding IsPrivate}"
         Classes.selected="{Binding IsSelected}">
 
+        <Border.ContextFlyout>
+            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="Скопировать имя"
+                    Command="{Binding CopyNameToClipboardCommand}">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/copy.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Показать в проводнике"
+                        Command="{Binding ShowInFolderCommand}">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/folder.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <MenuItem Header="Редактировать"
+                    IsVisible="{Binding IsLocal}"
+                    Command="{Binding EditMessageCommand}">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/pencil.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
+                <MenuItem Header="Удалить сообщение"
+                    Command="{Binding DeleteMessageCommand}"
+                    IsVisible="{Binding IsLocal}"
+                    Classes="danger">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/delete.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuFlyout>
+        </Border.ContextFlyout>
+
         <Border Classes="message"
             MaxWidth="400"
             Padding="{DynamicResource PaddingMedium}"
             Classes.self="{Binding IsLocal}">
-            <Border.ContextFlyout>
-                <MenuFlyout Placement="Right">
-                    <MenuItem Header="Скопировать имя"
-                            Command="{Binding CopyNameToClipboardCommand}">
-                        <MenuItem.Icon>
-                            <Svg Path="/Assets/Icons/copy.svg" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Показать в проводнике"
-                            Command="{Binding ShowInFolderCommand}">
-                        <MenuItem.Icon>
-                            <Svg Path="/Assets/Icons/folder.svg" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                </MenuFlyout>
-            </Border.ContextFlyout>
-
             <StackPanel Spacing="8">
                 <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
                     <TextBlock
