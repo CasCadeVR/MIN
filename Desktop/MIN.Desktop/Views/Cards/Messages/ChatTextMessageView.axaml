@@ -16,19 +16,37 @@
         Classes.private="{Binding IsPrivate}"
         Classes.selected="{Binding IsSelected}">
 
-        <Border Classes="message"
+       <Border.ContextFlyout>
+            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="Скопировать текст"
+                    Command="{Binding CopyToClipboardCommand}">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/copy.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <MenuItem Header="Редактировать"
+                        Command="{Binding CopyToClipboardCommand}">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/pencil.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
+                <MenuItem Header="Удалить сообщение"
+                    Command="{Binding CopyToClipboardCommand}"
+                    Classes="danger">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/delete.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuFlyout>
+        </Border.ContextFlyout>
+
+       <Border Classes="message"
             Padding="{DynamicResource PaddingMedium}"
             Classes.self="{Binding IsLocal}">
-            <Border.ContextFlyout>
-                <MenuFlyout Placement="Right">
-                    <MenuItem Header="Скопировать текст"
-                            Command="{Binding CopyToClipboardCommand}">
-                        <MenuItem.Icon>
-                            <Svg Path="/Assets/Icons/copy.svg" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                </MenuFlyout>
-            </Border.ContextFlyout>
 
             <StackPanel Spacing="8">
                 <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">

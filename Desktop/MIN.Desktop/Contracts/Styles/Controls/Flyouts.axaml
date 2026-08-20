@@ -1,6 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!--<Design.PreviewWith>
+<!--    <Design.PreviewWith>
         <Border Padding="250">
            <Border Background="{DynamicResource SidebarSecondaryBackground}" Padding="20">
             <StackPanel Spacing="8">
@@ -140,19 +140,29 @@
                                         <Svg Path="/Assets/Icons/globe.svg" />
                                     </MenuItem.Icon>
                                 </MenuItem>
-                            </MenuFlyout>
-                        </SplitButton.Flyout>
+                                <MenuItem Header="Удалить сообщение"
+                               Classes="danger">
+                                    <MenuItem.Icon>
+                                        <Svg Path="/Assets/Icons/delete.svg" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                    </MenuFlyout>
+                                </SplitButton.Flyout>
                     </SplitButton>
                 </StackPanel>
             </Border>
         </Border>
-    </Design.PreviewWith>-->
-
+    </Design.PreviewWith>
+-->
      <Style Selector="MenuFlyoutPresenter">
         <Setter Property="Background" Value="{DynamicResource SurfaceElevated}" />
         <Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusLarge}" />
         <Setter Property="RenderTransformOrigin" Value="0%,0%" />
         <Setter Property="Opacity" Value="0" />
+
+          <Style Selector="^ > Separator">
+            <Setter Property="Margin" Value="0" />
+        </Style>
 
         <Setter Property="Template">
             <ControlTemplate>
@@ -199,11 +209,12 @@
             <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
         </Style>
 
+       
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
-                        TextElement.Foreground="#000"
                         CornerRadius="{TemplateBinding CornerRadius}">
                     <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
                         <ContentControl
@@ -226,6 +237,32 @@
 
         <Style Selector="^:pointerover">
             <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Opacity" Value="0.8" />
+        </Style>
+
+        <Style Selector="^.danger">
+            <Setter Property="Foreground" Value="{DynamicResource TextDanger}" />
+
+            <Style Selector="^ > TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextDanger}" />
+            </Style>
+
+            <Style Selector="^ > Svg">
+                <Setter Property="Css" Value="{DynamicResource SvgDangerStyle}" />
+            </Style>
+
+            <Style Selector="^ > SelectableTextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource TextDanger}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^.danger:pressed /template/ Border">
+            <Setter Property="Background" Value="{DynamicResource TextDangerPress}" />
+            <Setter Property="Opacity" Value="0.6" />
+        </Style>
+
+        <Style Selector="^.danger:pointerover">
+            <Setter Property="Background" Value="{DynamicResource TextDangerHover}" />
             <Setter Property="Opacity" Value="0.8" />
         </Style>
     </Style>
@@ -289,5 +326,4 @@
     <Style Selector="FlyoutPresenter.cardDetails TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
     </Style>
-
 </Styles>

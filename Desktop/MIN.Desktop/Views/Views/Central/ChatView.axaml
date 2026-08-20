@@ -71,20 +71,6 @@
 
                             <Button.Flyout>
                                 <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                    <MenuItem IsVisible="{Binding !IsHost}"
-                                              Header="Покинуть комнату"
-                                            Command="{Binding LeaveRoomCommand}">
-                                        <MenuItem.Icon>
-                                            <Svg Path="/Assets/Icons/leave.svg" />
-                                        </MenuItem.Icon>
-                                    </MenuItem>
-                                      <MenuItem IsVisible="{Binding IsHost}"
-                                              Header="Закрыть комнату"
-                                            Command="{Binding LeaveRoomCommand}">
-                                        <MenuItem.Icon>
-                                            <Svg Path="/Assets/Icons/leave.svg" />
-                                        </MenuItem.Icon>
-                                    </MenuItem>
                                     <MenuItem IsVisible="{Binding IsHost}"
                                             Header="Редактировать комнату"
                                             Command="{Binding EditRoomCommand}">
@@ -97,6 +83,25 @@
                                             Command="{Binding StartVoiceCallClickCommand}">
                                         <MenuItem.Icon>
                                             <Svg Path="/Assets/Icons/phone-call.svg" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+
+                                    <Separator />
+
+                                    <MenuItem IsVisible="{Binding !IsHost}"
+                                            Classes="danger"
+                                            Header="Покинуть комнату"
+                                            Command="{Binding LeaveRoomCommand}">
+                                        <MenuItem.Icon>
+                                            <Svg Path="/Assets/Icons/leave.svg" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                      <MenuItem IsVisible="{Binding IsHost}"
+                                            Classes="danger"
+                                             Header="Закрыть комнату"
+                                            Command="{Binding LeaveRoomCommand}">
+                                        <MenuItem.Icon>
+                                            <Svg Path="/Assets/Icons/leave.svg" />
                                         </MenuItem.Icon>
                                     </MenuItem>
                                 </MenuFlyout>
