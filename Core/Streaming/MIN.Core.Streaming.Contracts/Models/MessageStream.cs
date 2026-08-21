@@ -167,5 +167,15 @@ public sealed class MessageStream : IDisposable
         }
         disposed = true;
         fileStream?.Dispose();
+
+        if (tempFilePath != null && File.Exists(tempFilePath))
+        {
+            try
+            {
+                File.Delete(tempFilePath);
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
     }
 }

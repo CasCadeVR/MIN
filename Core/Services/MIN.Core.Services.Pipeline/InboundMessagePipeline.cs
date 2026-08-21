@@ -83,11 +83,11 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
 
             if (streamChunkHandler.CanHandle(plainData))
             {
-                await streamChunkHandler.HandleAsync(plainData, e, cts.Token);
+                await streamChunkHandler.HandleAsync(plainData, e, cancellationToken);
                 return;
             }
 
-            await messageHandler.HandleRawAsync(e, plainData, cts.Token);
+            await messageHandler.HandleRawAsync(e, plainData, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -103,7 +103,7 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
             e.BroadcastExcludeIds);
     }
 
-    private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
+    private async Task OnMessageAssembled(MessageAssembledEventArgs e, CancellationToken cancellationToken)
     {
         try
         {
@@ -112,7 +112,7 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
                 return;
             }
 
-            await messageHandler.HandleAssembledAsync(e, cts.Token);
+            await messageHandler.HandleAssembledAsync(e, cancellationToken);
         }
         catch (Exception ex)
         {

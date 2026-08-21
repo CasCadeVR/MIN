@@ -10,12 +10,17 @@ public interface IChunkBufferAssembler
     /// <summary>
     /// Событие завершения сборки сообщения
     /// </summary>
-    event EventHandler<MessageAssembledEventArgs>? MessageAssembled;
+    event Func<MessageAssembledEventArgs, CancellationToken, Task>? MessageAssembled;
 
     /// <summary>
     /// Событие запроса на отправку ACK
     /// </summary>
-    event EventHandler<ChunkReceivedEventArgs>? ChunkReceived;
+    event Func<ChunkReceivedEventArgs, CancellationToken, Task>? ChunkReceived;
+
+    /// <summary>
+    /// Поток провалился
+    /// </summary>
+    event Func<StreamFailedEventArgs, CancellationToken, Task>? OnStreamFailed;
 
     /// <summary>
     /// Обрабатывает входящий пакет

@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MIN.Chat.Events;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
@@ -129,7 +128,7 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
         roomScope.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent);
         roomScope.Subscribe<DescribableMessageReceivedEvent>(OnDescribableMessageReceivedEvent);
-        roomScope.Subscribe<ChatMessageDeletedEvent>(OnChatMessageDeleted);
+        roomScope.Subscribe<MessageDeletedEvent>(OnChatMessageDeleted);
         roomScope.Subscribe<RoomClosedEvent>(OnRoomLeft);
     }
 
@@ -150,7 +149,7 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
         Dispose();
     }
 
-    private async Task OnChatMessageDeleted(ChatMessageDeletedEvent eventMessage, CancellationToken cancellationToken)
+    private async Task OnChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (lastMessageId == eventMessage.MessageId)
         {

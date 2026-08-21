@@ -244,7 +244,25 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
         var fileSize = new FileInfo(filePath).Length;
         logger.Log($"Начинаю стриминг файла {Path.GetFileName(filePath)} ({fileSize} байт)");
 
-        await using var fileStream = File.OpenRead(filePath);
-        await messageSender.SendStreamAsync(fileStream, request.TransferId, roomId, context.ConnectionId, info.CancellationTokenSource.Token);
+        try
+        {
+            await using var fileStream = File.OpenRead(filePath);
+            await messageSender.SendStreamAsync(fileStream, request.TransferId, roomId, context.ConnectionId, info.CancellationTokenSource.Token);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Произошла ошибка во время самой передачи файла с id {request.TransferId}");
+
+            await eventBus.PublishAsync(new FileTransferFailedEvent
+            {
+                RoomId = info.RoomId,
+                TransferId = info.TransferId,
+                SenderId = identityService.SelfParticipant.Id,
+                FileMetadataId = info.FileMetadataId,
+                ErrorMessage = ex.Message,
+            });
+
+            fileTransferService.RemoveTransfer(info.TransferId);
+        }
     }
 }

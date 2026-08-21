@@ -22,6 +22,7 @@ using MIN.Core.Services.Pipeline;
 using MIN.Core.Stores.Factories;
 using MIN.Core.Stores.Registries;
 using MIN.Core.Stores.Services;
+using MIN.Core.Streaming;
 using MIN.Core.Streaming.Services;
 using MIN.Core.SubRooms.Services;
 using MIN.Core.Transport;

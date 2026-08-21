@@ -36,6 +36,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 
         chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
         chunkBufferAssembler.ChunkReceived += OnChunkReceived;
+        chunkBufferAssembler.OnStreamFailed += OnStreamFailed;
     }
 
     void IFileTransferService.RegisterTransfer(TransferInfo info)
@@ -48,6 +49,9 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     public bool TryGetTransferInfo(Guid transferId, out TransferInfo info)
         => activeTransfers.TryGetValue(transferId, out info!);
 
+    IEnumerable<TransferInfo> IFileTransferService.GetActiveTransfers()
+        => activeTransfers.Values;
+
     /// <inheritdoc />
     public void RemoveTransfer(Guid transferId)
     {
@@ -57,6 +61,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             chunkBufferAssembler.TryRemoveStream(transferId);
             info.CancellationTokenSource?.Cancel();
         }
+        pendingMetadata.TryRemove(transferId, out _);
     }
 
     void IFileTransferService.RegisterPendingMetadata(Guid transferId, string fileName)
@@ -83,6 +88,25 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 
     bool IFileTransferService.TryGetFileMetadata(Guid fileMetadataId, out FileMetadataInfo info)
         => fileMetadataRegistry.TryGetValue(fileMetadataId, out info!);
+
+    private async Task OnMessageAssembled(MessageAssembledEventArgs e, CancellationToken cancellationToken)
+    {
+        if (!e.IsRawPayload)
+        {
+            return;
+        }
+
+        if (e.FilePath == null)
+        {
+            await OnFileDataReceivedAsync(e.StreamId, e.Data ?? [], cancellationToken);
+        }
+        else
+        {
+            await OnRawFileReceivedAsync(e.StreamId, e.FilePath, cancellationToken);
+        }
+
+        logger.Log($"Сообщение собрано: StreamId={e.StreamId}, Size={e.Data?.Length ?? 0} байт");
+    }
 
     /// <inheritdoc />
     public async Task OnFileDataReceivedAsync(Guid transferId, byte[] data, CancellationToken cancellationToken = default)
@@ -113,7 +137,12 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             }, cancellationToken);
 
             RemoveTransfer(transferId);
-            await RemovePendingMetadata(transferId, filePath);
+
+            await eventBus.PublishAsync(new FilePendingMetaDataReceivedEvent()
+            {
+                TransferId = transferId,
+                FilePath = filePath,
+            }, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -125,32 +154,13 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
                 TransferId = transferId,
                 SenderId = info.SenderId,
                 ErrorMessage = ex.Message,
-            });
+            }, cancellationToken);
 
             RemoveTransfer(transferId);
         }
     }
 
-    private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
-    {
-        if (!e.IsRawPayload)
-        {
-            return;
-        }
-
-        if (e.FilePath != null)
-        {
-            await OnRawFileReceivedAsync(e.StreamId, e.FilePath);
-        }
-        else
-        {
-            await OnFileDataReceivedAsync(e.StreamId, e.Data ?? []);
-        }
-
-        logger.Log($"Сообщение собрано: StreamId={e.StreamId}, Size={e.Data?.Length ?? 0} байт");
-    }
-
-    private async Task OnRawFileReceivedAsync(Guid transferId, string tempFilePath)
+    private async Task OnRawFileReceivedAsync(Guid transferId, string tempFilePath, CancellationToken cancellationToken = default)
     {
         if (!TryGetTransferInfo(transferId, out var info))
         {
@@ -162,9 +172,11 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         var fileSize = new FileInfo(tempFilePath).Length;
         logger.Log($"Перемещаю файл {info.FileName} ({fileSize} байт) из временного пути для transfer {transferId}");
 
+        var movingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, info.CancellationTokenSource?.Token ?? default);
+
         try
         {
-            var finalFileName = await fileStorageService.MoveTempFileToRoomAsync(info.RoomId, tempFilePath, info.FileName);
+            var finalFileName = await fileStorageService.MoveTempFileToRoomAsync(info.RoomId, tempFilePath, info.FileName, movingCts.Token);
             var filePath = fileStorageService.GetFilePath(info.RoomId, finalFileName) ?? string.Empty;
             logger.Log($"Файл сохранён: {finalFileName} → {filePath}");
 
@@ -175,10 +187,16 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
                 FileMetadataId = info.FileMetadataId,
                 FileName = finalFileName,
                 FilePath = filePath,
-            });
+            }, cancellationToken);
 
             RemoveTransfer(transferId);
-            await RemovePendingMetadata(transferId, filePath);
+            pendingMetadata.TryRemove(transferId, out _);
+
+            await eventBus.PublishAsync(new FilePendingMetaDataReceivedEvent()
+            {
+                TransferId = transferId,
+                FilePath = filePath,
+            }, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -190,23 +208,31 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
                 TransferId = transferId,
                 SenderId = info.SenderId,
                 ErrorMessage = ex.Message,
-            });
+            }, cancellationToken);
 
             RemoveTransfer(transferId);
         }
     }
 
-    private async Task RemovePendingMetadata(Guid transferId, string filePath)
+    private async Task OnStreamFailed(StreamFailedEventArgs e, CancellationToken cancellationToken)
     {
-        pendingMetadata.TryRemove(transferId, out _);
-        await eventBus.PublishAsync(new FilePendingMetaDataReceivedEvent()
+        logger.Log($"Ошибка при передачи файла из потока {e.StreamId}: {e.ErrorMessage}");
+
+        if (TryGetTransferInfo(e.StreamId, out var info))
         {
-            TransferId = transferId,
-            FilePath = filePath,
-        });
+            await eventBus.PublishAsync(new FileTransferFailedEvent
+            {
+                RoomId = info.RoomId,
+                TransferId = info.TransferId,
+                SenderId = info.SenderId,
+                ErrorMessage = e.ErrorMessage,
+            }, cancellationToken);
+
+            RemoveTransfer(info.TransferId);
+        }
     }
 
-    private async void OnChunkReceived(object? sender, ChunkReceivedEventArgs e)
+    private async Task OnChunkReceived(ChunkReceivedEventArgs e, CancellationToken cancellationToken)
     {
         if (!activeTransfers.TryGetValue(e.StreamId, out _))
         {
@@ -218,7 +244,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             RoomId = e.RoomId,
             TransferId = e.StreamId,
             BytesReceived = e.ReceivedBytes,
-        });
+        }, cancellationToken);
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
@@ -230,9 +256,9 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         }
 
         disposed = true;
-        logger.Log("FileTransferService disposed, очищаю активные transfer'ы");
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
         chunkBufferAssembler.ChunkReceived -= OnChunkReceived;
+        chunkBufferAssembler.OnStreamFailed -= OnStreamFailed;
         activeTransfers.Clear();
         pendingMetadata.Clear();
         fileMetadataRegistry.Clear();

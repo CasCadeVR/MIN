@@ -1,7 +1,7 @@
-﻿using MIN.Chat.Events;
-using MIN.Chat.Messaging;
+﻿using MIN.Chat.Messaging;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
@@ -75,7 +75,7 @@ internal sealed class ChatDeleteHandler : IMessageHandler
 
         context.RoomContext.Messages.RemoveMessage(chatDeleteMessage.MessageIdToDelete);
 
-        await eventBus.PublishAsync(new ChatMessageDeletedEvent()
+        await eventBus.PublishAsync(new MessageDeletedEvent()
         {
             MessageId = chatDeleteMessage.MessageIdToDelete,
             RoomId = context.RoomContext.RoomId,

@@ -56,7 +56,7 @@ internal sealed class FileMetadataHandler : IMessageHandler
 
         logger.Log($"Получены метаданные файла: {metadata.FileName} ({metadata.FileSize} байт) от {metadata.SenderId}");
 
-        if (!metadata.AsDownloaded)
+        if (!metadata.AsDownloaded && context.Role == Role.Client)
         {
             var storageCopy = new FileMetadataMessage(metadata)
             {
@@ -120,6 +120,12 @@ internal sealed class FileMetadataHandler : IMessageHandler
             metadata.AsDownloaded = true;
             metadata.FilePath = e.FilePath;
             fileTransferService.RegisterFileMetadata(message.Id, roomId, metadata.FileName);
+
+            context.RoomContext.Messages.AddMessage(new FileMetadataMessage(metadata)
+            {
+                FilePath = null
+            });
+
             await messageRouter.RouteAsync(metadata, roomId, metadata.SenderId, context.CancellationToken);
         });
 
@@ -128,7 +134,7 @@ internal sealed class FileMetadataHandler : IMessageHandler
             TransferId = metadata.TransferId,
             FileMetadataId = metadata.Id,
             RoomId = roomId,
-            SenderId = selfId,
+            SenderId = metadata.SenderId,
             Direction = FileTransferDirection.Upload,
             FileName = metadata.FileName,
         };

@@ -189,7 +189,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.FileMetadataId != FileMetadataMessage.Id
-            || eventMessage.SenderId != localParticipant.Id)
+            || eventMessage.SenderId != localParticipant.Id || IsHost)
         {
             return;
         }

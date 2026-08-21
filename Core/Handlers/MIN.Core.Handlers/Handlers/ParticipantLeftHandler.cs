@@ -36,7 +36,7 @@ internal sealed class ParticipantLeftHandler : IMessageHandler
         context.RoomContext.Messages.AddMessage(message);
         context.RoomContext.Participants.RemoveParticipant(leavingParticipantId);
 
-        logger.Log($"Участник {participantLeftMessage.Participant.Name} вышел из комнаты");
+        logger.Log($"Участник {participantLeftMessage.Participant.Name} ({participantLeftMessage.Participant.Id}) вышел из комнаты");
 
         await eventBus.PublishAsync(new ParticipantLeftEvent()
         {

@@ -11,7 +11,7 @@ using MIN.Core.Transport.Contracts.Constants;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
-namespace MIN.Core.Streaming.Services;
+namespace MIN.Core.Streaming;
 
 /// <inheritdoc cref="IChunkBufferAssembler"/>
 public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
@@ -24,10 +24,13 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
     private bool disposed;
 
     /// <inheritdoc />
-    public event EventHandler<MessageAssembledEventArgs>? MessageAssembled;
+    public event Func<MessageAssembledEventArgs, CancellationToken, Task>? MessageAssembled;
 
     /// <inheritdoc />
-    public event EventHandler<ChunkReceivedEventArgs>? ChunkReceived;
+    public event Func<ChunkReceivedEventArgs, CancellationToken, Task>? ChunkReceived;
+
+    /// <inheritdoc />
+    public event Func<StreamFailedEventArgs, CancellationToken, Task>? OnStreamFailed;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChunkBufferAssembler"/>
@@ -70,12 +73,12 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
                     await SendAck(chunk.StreamId, chunk.Index, connectionId, serverConnectionId, cancellationToken);
                 }
 
-                OnMessageAssembled(chunk.StreamId, roomId, connectionId, serverConnectionId, chunk.Data.ToArray(), null, chunk.Flags.HasFlag(StreamChunkFlags.RawPayload));
+                OnMessageAssembled(chunk.StreamId, roomId, connectionId, chunk.Data.ToArray(), null, chunk.Flags.HasFlag(StreamChunkFlags.RawPayload), cancellationToken);
                 return;
             }
 
             var stream = activeStreams.GetOrAdd(chunk.StreamId, _ =>
-                   CreateMessageStream(chunk, roomId, connectionId));
+                   CreateMessageStream(chunk, roomId, connectionId, cancellationToken));
 
             if (stream.ConnectionId != connectionId)
             {
@@ -94,44 +97,50 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
                 await SendAck(chunk.StreamId, chunk.Index, connectionId, serverConnectionId, cancellationToken);
             }
 
-            ChunkReceived?.Invoke(this, new ChunkReceivedEventArgs
+            ChunkReceived?.Invoke(new ChunkReceivedEventArgs
             {
                 StreamId = stream.Id,
                 ReceivedBytes = stream.GottenChunks * TransportConstants.MessageBufferSize,
                 RoomId = roomId,
-            });
+            }, cancellationToken);
 
             var result = stream.AddChunk(chunk);
             if (result != null)
             {
                 logger.Log("Сообщение было собрано из потока");
                 var filePath = stream.GetTempFilePath();
-                OnMessageAssembled(chunk.StreamId, roomId, connectionId, serverConnectionId, result, filePath, stream.IsRawPayload);
+                OnMessageAssembled(chunk.StreamId, roomId, connectionId, result, filePath, stream.IsRawPayload, cancellationToken);
                 TryRemoveStream(chunk.StreamId);
             }
         }
         catch (Exception ex)
         {
             logger.Log($"Ошибка при добавлении пакета: {ex.Message}");
+            OnStreamFailed?.Invoke(new StreamFailedEventArgs()
+            {
+                RoomId = roomId,
+                StreamId = chunk.StreamId,
+                ErrorMessage = ex.Message,
+            }, cancellationToken);
             TryRemoveStream(chunk.StreamId);
             throw;
         }
     }
 
-    private MessageStream CreateMessageStream(StreamChunk startChunk, Guid roomId, Guid connectionId)
+    private MessageStream CreateMessageStream(StreamChunk startChunk, Guid roomId, Guid connectionId, CancellationToken cancellationToken)
     {
         var requiresAcks = startChunk.Flags.HasFlag(StreamChunkFlags.RequiresAcks);
         var isRawPayload = startChunk.Flags.HasFlag(StreamChunkFlags.RawPayload);
         var stream = new MessageStream(startChunk.StreamId, roomId, connectionId, startChunk.Total, requiresAcks, isRawPayload);
-        StartStreamTimer(stream);
+        StartStreamTimer(stream, cancellationToken);
         return stream;
     }
 
-    private void StartStreamTimer(MessageStream stream)
+    private void StartStreamTimer(MessageStream stream, CancellationToken cancellationToken)
     {
         var timer = new Timer(
             OnStreamTimeout,
-            stream.Id,
+            (stream.RoomId, stream.Id, cancellationToken),
             stream.CreatedAt.AddMilliseconds(StreamingConstants.DefaultStreamLifetimeMs) - DateTime.UtcNow,
             Timeout.InfiniteTimeSpan);
 
@@ -150,9 +159,15 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
 
     private void OnStreamTimeout(object? state)
     {
-        if (state is Guid streamId)
+        if (state is (Guid roomId, Guid streamId, CancellationToken cancellationToken))
         {
             logger.Log($"Поток {streamId} превысил время жизни");
+            OnStreamFailed?.Invoke(new StreamFailedEventArgs()
+            {
+                RoomId = roomId,
+                StreamId = streamId,
+                ErrorMessage = $"Поток превысил время жизни",
+            }, cancellationToken);
             TryRemoveStream(streamId);
         }
     }
@@ -189,7 +204,8 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
         }
     }
 
-    private void OnMessageAssembled(Guid streamId, Guid roomId, Guid connectionId, Guid? serverConnectionId, byte[] data, string? filePath, bool isRawPayload)
+    private void OnMessageAssembled(Guid streamId, Guid roomId, Guid connectionId,
+        byte[] data, string? filePath, bool isRawPayload, CancellationToken cancellationToken)
     {
         var args = new MessageAssembledEventArgs
         {
@@ -201,7 +217,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             IsRawPayload = isRawPayload,
         };
 
-        MessageAssembled?.Invoke(this, args);
+        MessageAssembled?.Invoke(args, cancellationToken);
     }
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
