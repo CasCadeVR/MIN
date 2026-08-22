@@ -65,7 +65,7 @@ public partial class ChatFileImagePreviewMessageViewModel : ChatFileBaseMessageV
             .FormatFileSize(FileMetadataMessage.FileSize)}";
 
         LoadImage(FileMetadataMessage.FilePath ?? string.Empty);
-        UpdateIconOutOfState();
+        UpdateDownloadState();
     }
 
     /// <inheritdoc />
@@ -115,10 +115,10 @@ public partial class ChatFileImagePreviewMessageViewModel : ChatFileBaseMessageV
     [RelayCommand]
     private void InteractionClick()
     {
-        if (IsDownloading)
+        if (IsTransfering)
         {
             InvokeCancelRequested();
-            IsDownloading = false;
+            IsTransfering = false;
             return;
         }
 

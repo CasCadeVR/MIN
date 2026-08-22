@@ -63,7 +63,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     public partial int DownloadProgress { get; set; }
 
     [ObservableProperty]
-    public partial bool IsDownloading { get; set; }
+    public partial bool IsTransfering { get; set; }
 
     [ObservableProperty]
     public partial FileDownloadState FileDownloadState { get; set; } = FileDownloadState.None;
@@ -110,7 +110,11 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
         FillLabels();
-        SubscribeToEvents(roomScope);
+
+        if (!(IsLocal && IsHost))
+        {
+            SubscribeToEvents(roomScope);
+        }
     }
 
     /// <summary>
@@ -163,7 +167,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
             return;
         }
 
-        IsDownloading = true;
+        IsTransfering = true;
 
         fileTransferProgressSubsciptionToken = roomScope.Subscribe((FileTransferProgressEvent e, CancellationToken _) =>
         {
@@ -181,7 +185,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
             return Task.CompletedTask;
         });
 
-        UpdateIconOutOfState();
+        UpdateDownloadState();
         OnTransferProgressUpdated("0",
             fileTransferFeatureCollection.FileHelperService.FormatFileSize(eventMessage.FileSize));
     }
@@ -189,14 +193,14 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.FileMetadataId != FileMetadataMessage.Id
-            || eventMessage.SenderId != localParticipant.Id || IsHost)
+            || eventMessage.SenderId != localParticipant.Id)
         {
             return;
         }
 
-        IsDownloading = false;
+        IsTransfering = false;
 
-        UpdateIconOutOfState();
+        UpdateDownloadState();
         OnTransferFailed(eventMessage.ErrorMessage ?? string.Empty);
 
         fileTransferProgressSubsciptionToken.Dispose();
@@ -210,21 +214,21 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         }
 
         downloaded = true;
-        FileMetadataMessage.FilePath = eventMessage.FilePath;
+        FileMetadataMessage.FilePath ??= eventMessage.FilePath;
         fileTransferProgressSubsciptionToken?.Dispose();
 
-        IsDownloading = false;
+        IsTransfering = false;
 
-        UpdateIconOutOfState();
+        UpdateDownloadState();
         OnTransferCompleted();
     }
 
     /// <summary>
-    /// Обновить иконку состояния файла
+    /// Обновить состояния файла
     /// </summary>
-    protected void UpdateIconOutOfState()
+    protected void UpdateDownloadState()
     {
-        FileDownloadState = IsDownloading
+        FileDownloadState = IsTransfering
             ? FileDownloadState.IsDownloading : downloaded
             ? FileDownloadState.Downloaded : FileDownloadState.NotDownloaded;
     }

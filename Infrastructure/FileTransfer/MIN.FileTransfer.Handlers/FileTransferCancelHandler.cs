@@ -1,4 +1,6 @@
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
@@ -6,6 +8,7 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Messaging;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
+using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
@@ -43,6 +46,17 @@ internal sealed class FileTransferCancelHandler : IMessageHandler
         if (fileTransferService.TryGetTransferInfo(cancel.TransferId, out var info))
         {
             logger.Log($"Transfer {cancel.TransferId} принадлежит комнате {info.RoomId}, файл: {info.FileName}");
+
+            if (info.Direction == FileTransferDirection.Upload && context.Role == Role.Client)
+            {
+                context.RoomContext.Messages.RemoveMessage(info.FileMetadataId);
+
+                await eventBus.PublishAsync(new MessageDeletedEvent
+                {
+                    RoomId = info.RoomId,
+                    MessageId = info.FileMetadataId,
+                });
+            }
 
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {

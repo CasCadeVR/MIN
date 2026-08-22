@@ -58,11 +58,7 @@ internal sealed class FileMetadataHandler : IMessageHandler
 
         if (!metadata.AsDownloaded && context.Role == Role.Client)
         {
-            var storageCopy = new FileMetadataMessage(metadata)
-            {
-                FilePath = null
-            };
-            context.RoomContext.Messages.AddMessage(storageCopy);
+            SaveMetadata(context, metadata);
         }
 
         var roomId = context.RoomContext.RoomId;
@@ -98,6 +94,7 @@ internal sealed class FileMetadataHandler : IMessageHandler
 
         if (isHosting && isSelf)
         {
+            SaveMetadata(context, metadata);
             return HandlerResult.Success();
         }
 
@@ -163,5 +160,14 @@ internal sealed class FileMetadataHandler : IMessageHandler
         });
 
         return HandlerResult.WithResponse(requestMessage, stopPropagation: true);
+    }
+
+    private void SaveMetadata(MessageContext context, FileMetadataMessage metadata)
+    {
+        var storageCopy = new FileMetadataMessage(metadata)
+        {
+            FilePath = null
+        };
+        context.RoomContext.Messages.AddMessage(storageCopy);
     }
 }

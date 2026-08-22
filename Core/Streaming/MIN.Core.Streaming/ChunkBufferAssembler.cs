@@ -5,6 +5,7 @@ using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Enums;
 using MIN.Core.Streaming.Contracts.Constants;
 using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Events.Receiving;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
 using MIN.Core.Transport.Contracts.Constants;
@@ -78,7 +79,7 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
             }
 
             var stream = activeStreams.GetOrAdd(chunk.StreamId, _ =>
-                   CreateMessageStream(chunk, roomId, connectionId, cancellationToken));
+                CreateMessageStream(chunk, roomId, connectionId, cancellationToken));
 
             if (stream.ConnectionId != connectionId)
             {
@@ -191,17 +192,22 @@ public sealed class ChunkBufferAssembler : IChunkBufferAssembler, IDisposable
     }
 
     /// <inheritdoc />
-    public void TryRemoveStream(Guid streamId)
+    public bool TryRemoveStream(Guid streamId)
     {
+        var found = false;
+
         if (activeStreams.TryRemove(streamId, out var stream))
         {
             stream.Dispose();
+            found = true;
         }
 
         if (streamTimers.TryRemove(streamId, out var timer))
         {
             timer.Dispose();
         }
+
+        return found;
     }
 
     private void OnMessageAssembled(Guid streamId, Guid roomId, Guid connectionId,

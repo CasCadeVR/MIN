@@ -1,4 +1,4 @@
-﻿namespace MIN.Core.Streaming.Contracts.Events;
+﻿namespace MIN.Core.Streaming.Contracts.Events.Receiving;
 
 /// <summary>
 /// Событие успешной сборки сообщения из пакетов

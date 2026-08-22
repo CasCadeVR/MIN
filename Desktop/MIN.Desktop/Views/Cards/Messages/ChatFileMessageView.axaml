@@ -44,8 +44,14 @@
 
                 <MenuItem Header="Удалить сообщение"
                     Command="{Binding DeleteMessageCommand}"
-                    IsVisible="{Binding IsLocal}"
                     Classes="danger">
+                     <MenuItem.IsVisible>
+                        <MultiBinding Converter="{StaticResource AndMultiConverter}">
+                            <Binding Path="IsLocal" />
+                            <Binding Path="!IsTransfering" />
+                        </MultiBinding>
+                    </MenuItem.IsVisible>
+
                     <MenuItem.Icon>
                         <Svg Path="/Assets/Icons/delete.svg" />
                     </MenuItem.Icon>
@@ -144,7 +150,7 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top"
                             Value="{Binding DownloadProgress}"
-                            IsVisible="{Binding IsDownloading}"/>
+                            IsVisible="{Binding IsTransfering}"/>
                     </Grid>
                 </DockPanel>
             </StackPanel>

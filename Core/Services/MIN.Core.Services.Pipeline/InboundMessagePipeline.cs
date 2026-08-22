@@ -6,7 +6,7 @@ using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Pipeline;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
-using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Events.Receiving;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;

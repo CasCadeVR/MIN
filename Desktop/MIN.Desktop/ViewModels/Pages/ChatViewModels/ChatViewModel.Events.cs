@@ -189,7 +189,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Direction == FileTransferDirection.Upload)
+        if (eventMessage.Direction == FileTransferDirection.Upload && IsHost)
         {
             var sanitizedSize = featureCollection.FileTransfer.FileHelperService.FormatFileSize(eventMessage.FileSize);
             AddStatus(new FileUploadingStatus(eventMessage.TransferId, eventMessage.FileName, eventMessage.Sender.Name, sanitizedSize));

@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Events.Receiving;
+using MIN.Core.Streaming.Contracts.Events.Sending;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
@@ -14,6 +16,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
 {
     private readonly IEventBus eventBus;
     private readonly IChunkBufferAssembler chunkBufferAssembler;
+    private readonly IStreamManager streamManager;
     private readonly IFileStorageService fileStorageService;
     private readonly ILoggerProvider logger;
     private readonly ConcurrentDictionary<Guid, TransferInfo> activeTransfers = new();
@@ -26,17 +29,23 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
     /// </summary>
     public FileTransferService(IEventBus eventBus,
         IChunkBufferAssembler chunkBufferAssembler,
+        IStreamManager streamManager,
         IFileStorageService fileStorageService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
         this.chunkBufferAssembler = chunkBufferAssembler;
+        this.streamManager = streamManager;
         this.fileStorageService = fileStorageService;
         this.logger = logger;
 
         chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
         chunkBufferAssembler.ChunkReceived += OnChunkReceived;
         chunkBufferAssembler.OnStreamFailed += OnStreamFailed;
+
+        streamManager.ChunkSended += OnChunkSended;
+        streamManager.OnStreamFailed += OnStreamFailed;
+        streamManager.OnStreamCompleted += OnStreamCompleted;
     }
 
     void IFileTransferService.RegisterTransfer(TransferInfo info)
@@ -108,6 +117,28 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         logger.Log($"Сообщение собрано: StreamId={e.StreamId}, Size={e.Data?.Length ?? 0} байт");
     }
 
+    private async Task OnStreamCompleted(StreamCompletedEventArgs e, CancellationToken cancellationToken)
+    {
+        if (!e.IsRawPayload)
+        {
+            return;
+        }
+
+        if (!TryGetTransferInfo(e.StreamId, out var info))
+        {
+            logger.Log($"Получены данные для неизвестного transfer {e.StreamId}, игнорирую");
+            return;
+        }
+
+        await eventBus.PublishAsync(new FileTransferCompletedEvent
+        {
+            RoomId = info.RoomId,
+            TransferId = e.StreamId,
+            FileMetadataId = info.FileMetadataId,
+            SenderId = info.SenderId,
+        }, cancellationToken);
+    }
+
     /// <inheritdoc />
     public async Task OnFileDataReceivedAsync(Guid transferId, byte[] data, CancellationToken cancellationToken = default)
     {
@@ -132,7 +163,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
                 RoomId = info.RoomId,
                 TransferId = transferId,
                 FileMetadataId = info.FileMetadataId,
-                FileName = finalFileName,
+                SenderId = info.SenderId,
                 FilePath = filePath,
             }, cancellationToken);
 
@@ -185,7 +216,7 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
                 RoomId = info.RoomId,
                 TransferId = transferId,
                 FileMetadataId = info.FileMetadataId,
-                FileName = finalFileName,
+                SenderId = info.SenderId,
                 FilePath = filePath,
             }, cancellationToken);
 
@@ -232,6 +263,20 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         }
     }
 
+    private async Task OnChunkSended(ChunkSendedEventArgs e, CancellationToken cancellationToken)
+    {
+        if (!activeTransfers.TryGetValue(e.StreamId, out _))
+        {
+            return;
+        }
+
+        await eventBus.PublishAsync(new FileTransferProgressEvent
+        {
+            RoomId = e.RoomId,
+            BytesReceived = e.ReceivedBytes,
+        }, cancellationToken);
+    }
+
     private async Task OnChunkReceived(ChunkReceivedEventArgs e, CancellationToken cancellationToken)
     {
         if (!activeTransfers.TryGetValue(e.StreamId, out _))
@@ -242,7 +287,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         await eventBus.PublishAsync(new FileTransferProgressEvent
         {
             RoomId = e.RoomId,
-            TransferId = e.StreamId,
             BytesReceived = e.ReceivedBytes,
         }, cancellationToken);
     }
@@ -259,6 +303,9 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
         chunkBufferAssembler.ChunkReceived -= OnChunkReceived;
         chunkBufferAssembler.OnStreamFailed -= OnStreamFailed;
+        streamManager.ChunkSended -= OnChunkSended;
+        streamManager.OnStreamCompleted -= OnStreamCompleted;
+        streamManager.OnStreamFailed -= OnStreamFailed;
         activeTransfers.Clear();
         pendingMetadata.Clear();
         fileMetadataRegistry.Clear();

@@ -73,6 +73,22 @@ public sealed class ChatFileService : IChatFileService
         }
 
         await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);
+
+        if (registry.IsHosting(roomId))
+        {
+            return;
+        }
+
+        await eventBus.PublishAsync(new FileTransferStartedEvent
+        {
+            RoomId = roomId,
+            TransferId = message.TransferId,
+            FileMetadataId = message.Id,
+            FileName = message.FileName,
+            FileSize = message.FileSize,
+            Sender = message.Sender,
+            Direction = FileTransferDirection.Upload,
+        }, cancellationToken);
     }
 
     async Task IChatFileService.RequestFileDownloadAsync(Guid roomId, FileMetadataMessage fileMetadataMessage, CancellationToken cancellationToken)
@@ -86,11 +102,11 @@ public sealed class ChatFileService : IChatFileService
 
             await eventBus.PublishAsync(new FileTransferCompletedEvent()
             {
-                FileName = fileMetadataMessage.FileName,
                 FileMetadataId = fileMetadataMessage.Id,
                 RoomId = roomId,
                 FilePath = fileMetadataMessage.FilePath!,
-                TransferId = fileMetadataMessage.TransferId
+                TransferId = fileMetadataMessage.TransferId,
+                SenderId = identityService.SelfParticipant.Id,
             }, cancellationToken);
             return;
         }

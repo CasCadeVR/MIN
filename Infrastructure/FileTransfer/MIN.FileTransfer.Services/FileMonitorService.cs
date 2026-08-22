@@ -1,8 +1,11 @@
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
+using MIN.Core.Services.Contracts.Interfaces.Moderation;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.FileTransfer.Events;
 using MIN.FileTransfer.Services.Contracts.Interfaces;
+using MIN.FileTransfer.Services.Contracts.Models.Enums;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Services;
@@ -13,6 +16,8 @@ namespace MIN.FileTransfer.Services;
 public sealed class FileMonitorService : IHostedService
 {
     private readonly IEventBus eventBus;
+    private readonly IRoomConnectionRegistry registry;
+    private readonly INetworkErrorHandler errorHandler;
     private readonly IFileTransferService fileTransferService;
     private readonly ILoggerProvider logger;
 
@@ -20,10 +25,14 @@ public sealed class FileMonitorService : IHostedService
     /// Инициализирует новый экземпляр <see cref="FileMonitorService"/>
     /// </summary>
     public FileMonitorService(IEventBus eventBus,
+        IRoomConnectionRegistry registry,
+        INetworkErrorHandler errorHandler,
         IFileTransferService fileTransferService,
         ILoggerProvider logger)
     {
         this.eventBus = eventBus;
+        this.registry = registry;
+        this.errorHandler = errorHandler;
         this.fileTransferService = fileTransferService;
         this.logger = logger;
     }
@@ -81,15 +90,15 @@ public sealed class FileMonitorService : IHostedService
 
     private async Task OnMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)
     {
-        //if (!registry.IsHosting(eventMessage.RoomId))
-        //{
-        //    return;
-        //}
-
         var activeTransfers = fileTransferService.GetActiveTransfers();
         foreach (var transfer in activeTransfers.Where(x => x.FileMetadataId == eventMessage.MessageId))
         {
-            var excuse = "Сообщения файла было удалено";
+            var excuse = $"Сообщения файла {transfer.FileName} было удалено";
+
+            if (registry.IsHosting(eventMessage.RoomId) && transfer.Direction == FileTransferDirection.Download)
+            {
+                await errorHandler.SendErrorAsync(excuse, transfer.SenderId, eventMessage.RoomId);
+            }
 
             logger.Log($"Ошибка при передаче файла из потока {transfer.TransferId}: {excuse}");
 
@@ -105,8 +114,5 @@ public sealed class FileMonitorService : IHostedService
         }
     }
 
-    Task IHostedService.StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
+    Task IHostedService.StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

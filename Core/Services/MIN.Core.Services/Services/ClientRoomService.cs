@@ -1,4 +1,5 @@
-﻿using MIN.Core.Cryptography.Contracts.Interfaces;
+﻿using MIN.Common.Core.Extensions;
+using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Extensions;
@@ -144,7 +145,7 @@ internal sealed class ClientRoomService
             return;
         }
 
-        logger.Log($"Я сам инициирую отключение от комнаты с id {roomId} с соединением {connectionId}: {reason}");
+        logger.Log($"Я сам инициирую отключение от комнаты с id {roomId} с соединением {connectionId}: {reason.GetDescription()}");
 
         // Transport will fire event, where it would cleanup further
         await transport.DisconnectAsync(connectionId, reason);

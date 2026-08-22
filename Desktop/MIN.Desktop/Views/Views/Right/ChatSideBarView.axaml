@@ -185,12 +185,12 @@
                                                             </MenuItem>
                                                             <MenuItem Header="Начать приватное общение"
                                                                 Command="{Binding TogglePrivateChatCommand}">
-                                                                    <MenuItem.IsVisible>
-                                                                <MultiBinding Converter="{StaticResource AndMultiConverter}">
-                                                                        <Binding Path="CanStartPrivateChat" />
-                                                                        <Binding Path="!IsSelected" />
-                                                                    </MultiBinding>
-                                                                </MenuItem.IsVisible>
+                                                                <MenuItem.IsVisible>
+                                                                    <MultiBinding Converter="{StaticResource AndMultiConverter}">
+                                                                            <Binding Path="CanStartPrivateChat" />
+                                                                            <Binding Path="!IsSelected" />
+                                                                        </MultiBinding>
+                                                                    </MenuItem.IsVisible>
                                                                 <MenuItem.Icon>
                                                                     <Svg Path="/Assets/Icons/private-chat.svg" />
                                                                 </MenuItem.Icon>

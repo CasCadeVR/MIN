@@ -14,20 +14,23 @@ public sealed record FileTransferCompletedEvent : BaseEvent, IRoomScopedEvent
     /// <summary>
     /// Идентификатор потока, по которому придёт файл
     /// </summary>
-    public Guid TransferId { get; set; }
+    public required Guid TransferId { get; set; }
 
     /// <summary>
     /// Идентификатор сообщения метаданных
     /// </summary>
-    public Guid FileMetadataId { get; set; }
+    public required Guid FileMetadataId { get; set; }
 
     /// <summary>
-    /// Название файла
+    /// Идентификатор инициатора файла
     /// </summary>
-    public string FileName { get; set; } = string.Empty;
+    public required Guid SenderId { get; set; }
 
     /// <summary>
     /// Путь к файлу
     /// </summary>
-    public string FilePath { get; set; } = string.Empty;
+    /// <remarks>
+    /// null если участник upload. Возьми из fileMetadata что ты отправил
+    /// </remarks>
+    public string? FilePath { get; set; }
 }

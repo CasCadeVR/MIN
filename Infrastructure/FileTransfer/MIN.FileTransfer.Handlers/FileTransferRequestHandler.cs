@@ -71,8 +71,8 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
                     RoomId = info.RoomId,
                     TransferId = info.TransferId,
                     FilePath = filePath,
-                    FileName = info.FileName,
                     FileMetadataId = info.FileMetadataId,
+                    SenderId = info.SenderId,
                 });
 
                 return HandlerResult.Success(stopPropagation: true);
@@ -96,7 +96,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
         }
         else
         {
-            return await HandleDownload(request, selfId, context);
+            return await HandleDownload(request, context);
         }
     }
 
@@ -146,7 +146,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
         return HandlerResult.Success(stopPropagation: true);
     }
 
-    private async Task<HandlerResult> HandleDownload(FileTransferRequestMessage request, Guid selfId, MessageContext context)
+    private async Task<HandlerResult> HandleDownload(FileTransferRequestMessage request, MessageContext context)
     {
         var roomId = context.RoomContext.RoomId;
 
@@ -159,7 +159,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
                 TransferId = request.TransferId,
                 FileMetadataId = request.FileMetadataId,
                 RoomId = roomId,
-                SenderId = selfId,
+                SenderId = request.SenderId,
                 Direction = FileTransferDirection.Download,
                 FileName = request.FileName,
             };

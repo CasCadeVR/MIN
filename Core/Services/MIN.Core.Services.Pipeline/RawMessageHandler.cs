@@ -8,7 +8,7 @@ using MIN.Core.Services.Contracts.Interfaces.Pipeline;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
-using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Events.Receiving;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Pipeline;

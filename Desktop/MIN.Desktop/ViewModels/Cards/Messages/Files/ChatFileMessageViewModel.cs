@@ -67,7 +67,7 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
     private void InteractionMouseEnter()
     {
         InteractionFileStatus = string.Empty;
-        UpdateIconOutOfState();
+        UpdateDownloadState();
     }
 
     [RelayCommand]
@@ -83,10 +83,10 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
     [RelayCommand]
     private void InteractionClick()
     {
-        if (IsDownloading)
+        if (IsTransfering)
         {
             InvokeCancelRequested();
-            IsDownloading = false;
+            IsTransfering = false;
             return;
         }
 
