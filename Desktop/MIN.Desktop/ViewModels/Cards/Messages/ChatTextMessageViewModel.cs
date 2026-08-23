@@ -48,7 +48,7 @@ public partial class ChatTextMessageViewModel : BaseTextContentChatMessageViewMo
     {
         if (clipboard != null)
         {
-            await clipboard.SetTextAsync(ChatMessage.Content);
+            await clipboard.SetTextAsync(IsEditing ? EditContent : ChatMessage.Content);
             InAppNotifier.Info("Скопировано в буфер обмена");
         }
     }

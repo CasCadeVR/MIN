@@ -39,12 +39,12 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseChatMess
     /// Текущий контент
     /// </summary>
     [ObservableProperty]
-    public partial string Content { get; set; } = string.Empty;
+    public partial string Content { get; set; }
 
     /// <summary>
     /// Пользователь захотел отредактировать сообщение
     /// </summary>
-    public Action<string>? OnEditRequested;
+    public Func<string, Task>? OnEditRequested;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
@@ -121,8 +121,14 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseChatMess
     /// Отредактировать сообщение
     /// </summary>
     [RelayCommand]
-    protected virtual void EditMessage()
+    protected virtual void ToggleEditingMessage()
     {
+        if (IsEditing)
+        {
+            CancelEditMessage();
+            return;
+        }
+
         EditContent = Content;
         IsEditing = true;
     }

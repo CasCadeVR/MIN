@@ -209,8 +209,8 @@ public partial class ChatViewModel : RoutableViewModelBase
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
         var card = new ChatTextMessageViewModel(msg, dialogService, timePadding, isSelf, isHost, removeHeaders, parentWindow.Clipboard);
-        card.OnDeleteRequested += async () => await OnMessageDeleteRequested(msg.Id);
-        card.OnEditRequested += async (newContent) => await OnMessageEditRequested(msg.Id, newContent);
+        card.OnDeleteRequested += () => OnMessageDeleteRequested(msg.Id);
+        card.OnEditRequested += (newContent) => OnMessageEditRequested(msg.Id, newContent);
 
         if (!withAppendOnTop)
         {
@@ -233,8 +233,8 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
-        card.OnDeleteRequested += async () => await OnMessageDeleteRequested(msg.Id);
-        card.OnEditRequested += async (newContent) => await OnMessageEditRequested(msg.Id, newContent);
+        card.OnDeleteRequested += () => OnMessageDeleteRequested(msg.Id);
+        card.OnEditRequested += (newContent) => OnMessageEditRequested(msg.Id, newContent);
 
         if (!withAppendOnTop)
         {
@@ -297,6 +297,8 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
+        card.OnDeleteRequested += () => OnMessageDeleteRequested(msg.Id);
+        card.OnEditRequested += (newContent) => OnMessageEditRequested(msg.Id, newContent);
 
         if (!withAppendOnTop)
         {

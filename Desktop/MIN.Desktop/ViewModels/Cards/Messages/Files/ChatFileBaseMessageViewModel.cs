@@ -272,4 +272,21 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChat
             Process.Start("xdg-open", dir);
         }
     }
+
+    /// <summary>
+    /// Сообщение отредактировано
+    /// </summary>
+    protected override async Task ConfirmEditMessage()
+    {
+        EditContent = EditContent.Trim();
+
+        if (Content != EditContent)
+        {
+            OnEditRequested?.Invoke(EditContent);
+        }
+        else
+        {
+            IsEditing = false;
+        }
+    }
 }

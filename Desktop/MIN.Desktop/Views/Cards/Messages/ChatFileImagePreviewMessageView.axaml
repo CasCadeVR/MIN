@@ -3,6 +3,7 @@
              xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:avagif="using:Avalonia.Labs.Gif"
              xmlns:modelsEnums="using:MIN.Desktop.Contracts.Models.Enums"
+             xmlns:focusBehaviours="using:MIN.Desktop.Infrastructure.Behaviors.Focus"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -36,10 +37,30 @@
                 </MenuItem>
 
                 <MenuItem Header="Редактировать"
-                    IsVisible="{Binding IsLocal}"
-                    Command="{Binding EditMessageCommand}">
+                    Command="{Binding ToggleEditingMessageCommand}">
+                    <MenuItem.IsVisible>
+                        <MultiBinding Converter="{StaticResource AndMultiConverter}">
+                            <Binding Path="IsLocal" />
+                            <Binding Path="!IsEditing" />
+                        </MultiBinding>
+                    </MenuItem.IsVisible>
+
                     <MenuItem.Icon>
                         <Svg Path="/Assets/Icons/pencil.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <MenuItem Header="Отменить редактирование"
+                    Command="{Binding ToggleEditingMessageCommand}">
+                    <MenuItem.IsVisible>
+                        <MultiBinding Converter="{StaticResource AndMultiConverter}">
+                            <Binding Path="IsLocal" />
+                            <Binding Path="IsEditing" />
+                        </MultiBinding>
+                    </MenuItem.IsVisible>
+
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/pencil-slash.svg" />
                     </MenuItem.Icon>
                 </MenuItem>
 
@@ -147,10 +168,9 @@
                     </Border>
                 </Panel>
 
-                 <DockPanel HorizontalSpacing="8"
-                    IsVisible="{Binding FileMetadataMessage.Content,
-                        Converter={converters:NonEqualityConverter},
-                        ConverterParameter={x:Null}}">
+                <DockPanel HorizontalSpacing="4"
+                    IsVisible="{Binding Content,
+                        Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                     <TextBlock
                         DockPanel.Dock="Right"
                         Classes="info"
@@ -161,8 +181,41 @@
 
                     <SelectableTextBlock
                         Classes="chat"
+                        Margin="4,0,0,4"
+                        IsVisible="{Binding !IsEditing}"
                         Text="{Binding Content}" />
                 </DockPanel>
+
+                <DockPanel HorizontalSpacing="4"
+                        IsVisible="{Binding IsEditing}">
+                        <Button
+                            DockPanel.Dock="Right"
+                            Classes="icon"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            HotKey="Escape"
+                            Command="{Binding CancelEditMessageCommand}">
+                             <Svg Path="/Assets/Icons/close.svg" />
+                        </Button>
+
+                        <Button
+                            DockPanel.Dock="Right"
+                            Classes="icon"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            HotKey="Enter"
+                            Command="{Binding ConfirmEditMessageCommand}">
+                             <Svg Path="/Assets/Icons/confirm.svg" />
+                        </Button>
+
+                        <TextBox
+                            focusBehaviours:FocusOnConditionTrueBehavior.Condition="{Binding IsEditing}"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            MaxLines="-1"
+                            Text="{Binding EditContent}">
+                        </TextBox>
+                    </DockPanel>
             </StackPanel>
         </Border>
     </Border>

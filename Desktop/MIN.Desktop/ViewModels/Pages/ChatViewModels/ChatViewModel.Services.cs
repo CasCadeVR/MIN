@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
@@ -123,36 +124,16 @@ public partial class ChatViewModel : RoutableViewModelBase
         => featureCollection.Voice.VoicePlayback.ChangeParticipantVolume(participantId, volume);
 
     private async Task OnVoiceCallLeaveRequested(int subRoomId)
-    {
-        try
-        {
-            await featureCollection.Chat.ChatVoiceService.LeaveCallAsync(roomId, subRoomId, appCts.Token);
-        }
-        catch (DirectoryNotFoundException e)
-        {
-            InAppNotifier.Error(e.Message);
-        }
-    }
+        => await featureCollection.Chat.ChatVoiceService.LeaveCallAsync(roomId, subRoomId, appCts.Token);
 
     private async Task RequestVoiceCallStateAsync()
-    {
-        try
-        {
-            await featureCollection.Chat.ChatVoiceService.RequestCallStateAsync(roomId, appCts.Token);
-        }
-        catch (DirectoryNotFoundException e)
-        {
-            InAppNotifier.Warning(e.Message);
-        }
-    }
+        => await featureCollection.Chat.ChatVoiceService.RequestCallStateAsync(roomId, appCts.Token);
 
     private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
-    {
-        await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
+        => await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
             fileMetadata,
             appCts.Token
         );
-    }
 
     private bool IsMessageValid() => !string.IsNullOrWhiteSpace(SendingMessage) || SomeFilesAttached;
 
@@ -189,7 +170,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         try
         {
-            if (!string.IsNullOrWhiteSpace(SendingMessage))
+            if (!string.IsNullOrWhiteSpace(SendingMessage) && AttachedFiles.Count == 0)
             {
                 await featureCollection.Chat.ChatTextService.SendTextMessageAsync(roomId,
                     SendingMessage.Trim(),
@@ -197,6 +178,8 @@ public partial class ChatViewModel : RoutableViewModelBase
                     appCts.Token
                 );
             }
+
+            var lastFile = AttachedFiles.LastOrDefault();
 
             foreach (var fileAttachement in AttachedFiles)
             {
@@ -221,6 +204,7 @@ public partial class ChatViewModel : RoutableViewModelBase
                 }
 
                 await featureCollection.Chat.ChatFileService.SendFileAsync(roomId,
+                   fileAttachement == lastFile ? SendingMessage : string.Empty,
                    fileAttachement.File.FileName,
                    fileAttachement.File.FilePath,
                    chatSideBarViewModel.PrivateChatParticipantId,

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Avalonia;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -62,7 +63,7 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     /// <summary>
     /// Пользователь захотел удалить сообщение
     /// </summary>
-    public Action? OnDeleteRequested;
+    public Func<Task>? OnDeleteRequested;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
