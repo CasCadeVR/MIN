@@ -57,6 +57,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated);
         roomScope.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated);
         roomScope.Subscribe<MessageDeletedEvent>(ChatMessageDeleted);
+        roomScope.Subscribe<MessageEditedEvent>(ChatMessageEdited);
 
         roomScope.Subscribe<PingMeasuredEvent>(OnPingMeasured);
         roomScope.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
@@ -265,6 +266,11 @@ public partial class ChatViewModel : RoutableViewModelBase
     private async Task ChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)
     {
         RemoveMessage(eventMessage.MessageId);
+    }
+
+    private async Task ChatMessageEdited(MessageEditedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        EditMessage(eventMessage.MessageId, eventMessage.Message);
     }
 
     private async Task OnPingMeasured(PingMeasuredEvent eventMessage, CancellationToken cancellationToken)

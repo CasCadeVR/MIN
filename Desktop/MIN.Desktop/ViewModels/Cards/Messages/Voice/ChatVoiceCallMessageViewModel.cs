@@ -70,14 +70,12 @@ public partial class ChatVoiceCallMessageViewModel : BaseChatMessageViewModel
         Thickness timePadding,
         bool isHostMessage,
         bool removeHeaders)
-        : base(voiceCallStartedMessage.Id,
+        : base(voiceCallStartedMessage,
             voiceCallStartedMessage.Sender.Name,
-            voiceCallStartedMessage.Timestamp,
             timePadding,
             localParticipant.Id == voiceCallStartedMessage.SenderId,
             isHostMessage,
-            removeHeaders,
-            voiceCallStartedMessage.RecipientId != null)
+            removeHeaders)
     {
         AsEnded = voiceCallStartedMessage.IsEnded;
         AsJoined = localParticipant.Id == voiceCallStartedMessage.SenderId && !AsEnded;

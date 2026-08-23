@@ -26,7 +26,8 @@
                     </MenuItem.Icon>
                 </MenuItem>
                 <MenuItem Header="Показать в проводнике"
-                        Command="{Binding ShowInFolderCommand}">
+                    IsVisible="{Binding Downloaded}"
+                    Command="{Binding ShowInFolderCommand}">
                     <MenuItem.Icon>
                         <Svg Path="/Assets/Icons/folder.svg" />
                     </MenuItem.Icon>
@@ -81,6 +82,9 @@
                     <TextBlock
                         DockPanel.Dock="Right"
                         Classes="info"
+                        IsVisible="{Binding FileMetadataMessage.Content,
+                            Converter={converters:EqualityConverter},
+                            ConverterParameter={x:Null}}"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Bottom"
                         Text="{Binding Timestamp}" />
@@ -152,6 +156,30 @@
                             Value="{Binding DownloadProgress}"
                             IsVisible="{Binding IsTransfering}"/>
                     </Grid>
+                </DockPanel>
+
+                <DockPanel HorizontalSpacing="8"
+                    IsVisible="{Binding FileMetadataMessage.Content,
+                        Converter={converters:NonEqualityConverter},
+                        ConverterParameter={x:Null}}">
+                    <TextBlock
+                        DockPanel.Dock="Right"
+                        Classes="info"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Text="{Binding Timestamp}" />
+
+                    <TextBlock
+                        DockPanel.Dock="Right"
+                        Classes="info"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        IsVisible="{Binding IsEdited}"
+                        Text="(изменено)" />
+
+                    <SelectableTextBlock
+                        Classes="chat"
+                        Text="{Binding Content}" />
                 </DockPanel>
             </StackPanel>
         </Border>

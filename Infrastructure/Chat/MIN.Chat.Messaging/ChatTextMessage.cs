@@ -9,7 +9,7 @@ namespace MIN.Chat.Messaging;
 /// <summary>
 /// Текстовое сообщение чата, отправляемое участником в комнату
 /// </summary>
-public sealed class ChatTextMessage : BaseMessage, IDescribable, IReplyable
+public sealed class ChatTextMessage : BaseContentMessage, IDescribable, IReplyable
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.ChatTextMessage;
@@ -24,11 +24,6 @@ public sealed class ChatTextMessage : BaseMessage, IDescribable, IReplyable
     /// Отправитель сообщения
     /// </summary>
     public ParticipantInfo Sender { get; set; } = null!;
-
-    /// <summary>
-    /// Содержимое сообщения
-    /// </summary>
-    public string Content { get; set; } = string.Empty;
 
     /// <inheritdoc />
     public Guid? ReplyToMessageId { get; set; }

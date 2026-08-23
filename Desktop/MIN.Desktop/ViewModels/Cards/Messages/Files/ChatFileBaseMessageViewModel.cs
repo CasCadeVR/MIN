@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models.Enums;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.FileTransfer.DI.FeatureCollection;
@@ -18,7 +19,7 @@ using MIN.FileTransfer.Messaging;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages.Files;
 
-public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageViewModel
+public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChatMessageViewModel
 {
     /// <summary>
     /// Функциональность для обмена файлов
@@ -44,10 +45,6 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     /// Закешированный формат
     /// </summary>
     readonly protected string cachedFormat;
-    /// <summary>
-    /// Файл загружен
-    /// </summary>
-    protected bool downloaded;
 
     /// <summary>
     /// Подкиска на прогресс скачивание
@@ -66,6 +63,9 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     public partial bool IsTransfering { get; set; }
 
     [ObservableProperty]
+    public partial bool Downloaded { get; set; }
+
+    [ObservableProperty]
     public partial FileDownloadState FileDownloadState { get; set; } = FileDownloadState.None;
 
     /// <summary>
@@ -82,6 +82,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     /// Инициализирует новый экземпляр <see cref="ChatFileBaseMessageViewModel"/>
     /// </summary>
     protected ChatFileBaseMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
+        IDialogService dialogService,
         IEventScope roomScope,
         FileMetadataMessage fileMetadataMessage,
         Thickness timePadding,
@@ -89,14 +90,14 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(fileMetadataMessage.Id,
+        : base(fileMetadataMessage,
+            fileMetadataMessage,
+            dialogService,
             fileMetadataMessage.Sender.Name,
-            fileMetadataMessage.Timestamp,
             timePadding,
             localParticipant.Id == fileMetadataMessage.Sender.Id,
             isHostMessage,
-            removeHeaders,
-            fileMetadataMessage.RecipientId != null)
+            removeHeaders)
     {
         this.fileTransferFeatureCollection = fileTransferFeatureCollection;
         this.localParticipant = localParticipant;
@@ -107,7 +108,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         cachedFormat = fileTransferFeatureCollection.FileHelperService
             .GetFileType(fileMetadataMessage.FileName);
 
-        downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
+        Downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
         FillLabels();
 
@@ -213,7 +214,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
             return;
         }
 
-        downloaded = true;
+        Downloaded = true;
         FileMetadataMessage.FilePath ??= eventMessage.FilePath;
         fileTransferProgressSubsciptionToken?.Dispose();
 
@@ -229,7 +230,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     protected void UpdateDownloadState()
     {
         FileDownloadState = IsTransfering
-            ? FileDownloadState.IsDownloading : downloaded
+            ? FileDownloadState.IsDownloading : Downloaded
             ? FileDownloadState.Downloaded : FileDownloadState.NotDownloaded;
     }
 

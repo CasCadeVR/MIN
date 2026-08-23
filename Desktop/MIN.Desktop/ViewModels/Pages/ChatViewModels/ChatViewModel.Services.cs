@@ -173,40 +173,16 @@ public partial class ChatViewModel : RoutableViewModelBase
     }
 
     private async Task SendSessionStartMessage(Session session)
-    {
-        try
-        {
-            await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, appCts.Token);
-        }
-        catch (DirectoryNotFoundException e)
-        {
-            InAppNotifier.Error(e.Message);
-        }
-    }
+        => await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, appCts.Token);
 
     private async Task SendVoiceCallStartMessage()
-    {
-        try
-        {
-            await featureCollection.Chat.ChatVoiceService.StartCallAsync(roomId, appCts.Token);
-        }
-        catch (DirectoryNotFoundException e)
-        {
-            InAppNotifier.Error(e.Message);
-        }
-    }
+        => await featureCollection.Chat.ChatVoiceService.StartCallAsync(roomId, appCts.Token);
 
     private async Task OnMessageDeleteRequested(Guid id)
-    {
-        try
-        {
-            await featureCollection.Chat.ChatMessageService.DeleteMessageAsync(roomId, id, appCts.Token);
-        }
-        catch (DirectoryNotFoundException e)
-        {
-            InAppNotifier.Error(e.Message);
-        }
-    }
+        => await featureCollection.Chat.ChatMessageService.DeleteMessageAsync(roomId, id, appCts.Token);
+
+    private async Task OnMessageEditRequested(Guid id, string newContent)
+        => await featureCollection.Chat.ChatMessageService.EditTextMessageAsync(roomId, id, newContent, appCts.Token);
 
     [RelayCommand(CanExecute = nameof(IsMessageValid))]
     private async Task SendMessage()

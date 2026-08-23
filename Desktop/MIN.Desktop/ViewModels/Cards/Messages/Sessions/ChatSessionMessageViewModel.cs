@@ -80,14 +80,12 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
         Thickness timePadding,
         bool isHostMessage,
         bool removeHeaders)
-        : base(sessionReadyMessage.Id,
+        : base(sessionReadyMessage,
             sessionReadyMessage.Sender.Name,
-            sessionReadyMessage.Timestamp,
             timePadding,
             localParticipant.Id == sessionReadyMessage.SenderId,
             isHostMessage,
-            removeHeaders,
-            sessionReadyMessage.RecipientId != null)
+            removeHeaders)
     {
 
         this.dialogService = dialogService;

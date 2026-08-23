@@ -9,7 +9,7 @@ namespace MIN.FileTransfer.Messaging;
 /// <summary>
 /// Сообщения мета-данные файла
 /// </summary>
-public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable, IMessageWithSecuredFields
+public class FileMetadataMessage : BaseContentMessage, IDescribable, IReplyable, IMessageWithSecuredFields
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.FileMetadata;

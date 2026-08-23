@@ -129,6 +129,7 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent);
         roomScope.Subscribe<DescribableMessageReceivedEvent>(OnDescribableMessageReceivedEvent);
         roomScope.Subscribe<MessageDeletedEvent>(OnChatMessageDeleted);
+        roomScope.Subscribe<MessageEditedEvent>(OnChatMessageEdited);
         roomScope.Subscribe<RoomClosedEvent>(OnRoomLeft);
     }
 
@@ -150,6 +151,14 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
     }
 
     private async Task OnChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (lastMessageId == eventMessage.MessageId)
+        {
+            GetLastMessage();
+        }
+    }
+
+    private async Task OnChatMessageEdited(MessageEditedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (lastMessageId == eventMessage.MessageId)
         {

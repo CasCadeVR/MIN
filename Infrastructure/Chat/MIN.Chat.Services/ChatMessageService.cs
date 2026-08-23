@@ -21,6 +21,13 @@ public sealed class ChatMessageService : IChatMessageService
         this.identityService = identityService;
     }
 
+    async Task IChatMessageService.EditTextMessageAsync(Guid roomId, Guid messageId, string newContent, CancellationToken cancellationToken)
+        => await messageRouter.RouteAsync(new ChatEditMessage
+        {
+            MessageIdToEdit = messageId,
+            NewContent = newContent,
+        }, roomId, identityService.SelfParticipant.Id, cancellationToken);
+
     async Task IChatMessageService.DeleteMessageAsync(Guid roomId, Guid messageId, CancellationToken cancellationToken)
         => await messageRouter.RouteAsync(new ChatDeleteMessage
         {

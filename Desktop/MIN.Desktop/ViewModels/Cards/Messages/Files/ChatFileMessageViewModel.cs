@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models.Enums;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.FileTransfer.DI.FeatureCollection;
@@ -26,6 +27,7 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
     /// Инициализирует новый экземпляр <see cref="ChatFileMessageViewModel"/>
     /// </summary>
     public ChatFileMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
+        IDialogService dialogService,
         IEventScope roomScope,
         FileMetadataMessage fileMetadataMessage,
         Thickness timePadding,
@@ -33,7 +35,7 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(fileTransferFeatureCollection, roomScope, fileMetadataMessage, timePadding,
+        : base(fileTransferFeatureCollection, dialogService, roomScope, fileMetadataMessage, timePadding,
             localParticipant, isHostMessage, removeHeaders, clipboard)
     { }
 
@@ -90,14 +92,14 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
             return;
         }
 
-        if (downloaded)
+        if (Downloaded)
         {
             var path = FileMetadataMessage.FilePath;
 
             if (!Path.Exists(path))
             {
                 InAppNotifier.Warning("Файл не нашёлся");
-                downloaded = false;
+                Downloaded = false;
                 return;
             }
 

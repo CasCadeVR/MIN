@@ -4,7 +4,7 @@ using Avalonia.Xaml.Interactivity;
 using CommunityToolkit.Mvvm.Messaging;
 using MIN.Desktop.Contracts.Models.ReferenceCommands.Layout;
 
-namespace MIN.Desktop.Infrastructure.Behaviors;
+namespace MIN.Desktop.Infrastructure.Behaviors.Focus;
 
 /// <summary>
 /// Фокусируется на <see cref="Behavior.AssociatedObject" /> когда его родитель показывается

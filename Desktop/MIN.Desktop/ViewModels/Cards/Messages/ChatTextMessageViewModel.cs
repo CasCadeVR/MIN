@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Chat.Messaging;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Infrastructure.Services;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages;
@@ -10,7 +11,7 @@ namespace MIN.Desktop.ViewModels.Cards.Messages;
 /// <summary>
 /// Текстовое сообщение участника
 /// </summary>
-public partial class ChatTextMessageViewModel : BaseChatMessageViewModel
+public partial class ChatTextMessageViewModel : BaseTextContentChatMessageViewModel
 {
     private readonly IClipboard? clipboard;
 
@@ -23,19 +24,20 @@ public partial class ChatTextMessageViewModel : BaseChatMessageViewModel
     /// Инициализирует новый экземпляр <see cref="ChatTextMessageViewModel"/>
     /// </summary>
     public ChatTextMessageViewModel(ChatTextMessage chatMessage,
+        IDialogService dialogService,
         Thickness timePadding,
         bool isLocal,
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(chatMessage.Id,
+        : base(chatMessage,
+            chatMessage,
+            dialogService,
             chatMessage.Sender.Name,
-            chatMessage.Timestamp,
             timePadding,
             isLocal,
             isHostMessage,
-            removeHeaders,
-            chatMessage.RecipientId != null)
+            removeHeaders)
     {
         ChatMessage = chatMessage;
         this.clipboard = clipboard;

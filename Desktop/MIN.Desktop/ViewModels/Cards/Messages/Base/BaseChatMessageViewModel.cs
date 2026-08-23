@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Base;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages;
@@ -11,29 +12,29 @@ namespace MIN.Desktop.ViewModels.Cards.Messages;
 public abstract partial class BaseChatMessageViewModel : CardViewModelBase
 {
     /// <summary>
-    /// Идентификатор сообщения
+    /// Сообщение
     /// </summary>
-    public Guid Id { get; }
+    public IMessage? Message { get; }
 
     /// <summary>
     /// Имя отправителя сообщения
     /// </summary>
-    public string SenderName { get; init; } = string.Empty;
+    public string SenderName { get; } = string.Empty;
 
     /// <summary>
     /// Время отправления
     /// </summary>
-    public string Timestamp { get; init; }
+    public string Timestamp { get; }
 
     /// <summary>
     /// Отправитель = хост
     /// </summary>
-    public bool IsHost { get; init; }
+    public bool IsHost { get; }
 
     /// <summary>
     /// Отправитель = ты
     /// </summary>
-    public bool IsLocal { get; init; }
+    public bool IsLocal { get; }
 
     /// <summary>
     /// Нужно ли убрать заголовки
@@ -41,7 +42,7 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     /// <remarks>
     /// Например если сообщение повторяется одним и тем же участником
     /// </remarks>
-    public bool RemoveHeaders { get; set; }
+    public bool RemoveHeaders { get; }
 
     /// <summary>
     /// Приватное ли сообщение
@@ -56,17 +57,12 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     /// <summary>
     /// Margin между сообщениями по прошедшему времени
     /// </summary>
-    public Thickness TimePadding { get; init; }
+    public Thickness TimePadding { get; }
 
     /// <summary>
     /// Пользователь захотел удалить сообщение
     /// </summary>
     public Action? OnDeleteRequested;
-
-    /// <summary>
-    /// Пользователь захотел отредактировать сообщение
-    /// </summary>
-    public Action? OnEditRequested;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
@@ -79,23 +75,21 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
     /// </summary>
-    public BaseChatMessageViewModel(Guid id,
+    public BaseChatMessageViewModel(IMessage message,
        string name,
-       DateTime time,
        Thickness timePadding,
        bool isLocal,
        bool isHost,
-       bool removeHeaders,
-       bool isPrivate)
+       bool removeHeaders)
     {
-        Id = id;
+        Message = message;
         SenderName = name;
-        Timestamp = time.ToShortTimeString();
+        Timestamp = message.Timestamp.ToShortTimeString();
         TimePadding = timePadding;
         IsLocal = isLocal;
         IsHost = isHost;
         RemoveHeaders = removeHeaders;
-        IsPrivate = isPrivate;
+        IsPrivate = !message.IsPublic;
     }
 
     /// <summary>
@@ -105,14 +99,5 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     protected virtual void DeleteMessage()
     {
         OnDeleteRequested?.Invoke();
-    }
-
-    /// <summary>
-    /// Отредактировать сообщение
-    /// </summary>
-    [RelayCommand]
-    protected virtual void EditMessage()
-    {
-        OnEditRequested?.Invoke();
     }
 }

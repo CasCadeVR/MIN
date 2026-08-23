@@ -103,12 +103,25 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private void RemoveMessage(Guid id)
     {
-        var existingCard = Messages.FirstOrDefault(x => x.Id == id);
+        var existingCard = Messages.FirstOrDefault(x => x.Message?.Id == id);
         if (existingCard == null)
         {
             return;
         }
         Messages.Remove(existingCard);
+    }
+
+    private void EditMessage(Guid id, IContentEditable newContent)
+    {
+        var existingCard = Messages.FirstOrDefault(x => x.Message?.Id == id);
+        if (existingCard == null)
+        {
+            return;
+        }
+        if (existingCard is BaseTextContentChatMessageViewModel baseTextContentChatMessageViewModel)
+        {
+            baseTextContentChatMessageViewModel.MessageEdited(newContent);
+        }
     }
 
     private void ShowLoadMoreLabel()
@@ -195,8 +208,9 @@ public partial class ChatViewModel : RoutableViewModelBase
         var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
-        var card = new ChatTextMessageViewModel(msg, timePadding, isSelf, isHost, removeHeaders, parentWindow.Clipboard);
+        var card = new ChatTextMessageViewModel(msg, dialogService, timePadding, isSelf, isHost, removeHeaders, parentWindow.Clipboard);
         card.OnDeleteRequested += async () => await OnMessageDeleteRequested(msg.Id);
+        card.OnEditRequested += async (newContent) => await OnMessageEditRequested(msg.Id, newContent);
 
         if (!withAppendOnTop)
         {
@@ -214,12 +228,13 @@ public partial class ChatViewModel : RoutableViewModelBase
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
         var card = new ChatFileMessageViewModel(featureCollection.FileTransfer,
-            roomScope, msg, timePadding,
+            dialogService, roomScope, msg, timePadding,
             localParticipant, isHost, removeHeaders, parentWindow.Clipboard);
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);
         card.OnCancelRequested += () => OnCancelRequested(msg);
         card.OnDeleteRequested += async () => await OnMessageDeleteRequested(msg.Id);
+        card.OnEditRequested += async (newContent) => await OnMessageEditRequested(msg.Id, newContent);
 
         if (!withAppendOnTop)
         {
@@ -277,7 +292,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var timePadding = CalculateTimePadding(msg.Timestamp);
 
         var card = new ChatFileImagePreviewMessageViewModel(featureCollection.FileTransfer,
-            roomScope, msg, timePadding,
+            dialogService, roomScope, msg, timePadding,
             localParticipant, isHost, removeHeaders, parentWindow.Clipboard);
 
         card.OnDownloadRequested += () => OnDownloadRequested(msg);

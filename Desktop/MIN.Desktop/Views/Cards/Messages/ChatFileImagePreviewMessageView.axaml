@@ -22,13 +22,14 @@
         <Border.ContextFlyout>
             <MenuFlyout Placement="BottomEdgeAlignedLeft">
                 <MenuItem Header="Скопировать имя файла"
-                        Command="{Binding CopyNameToClipboardCommand}">
+                    Command="{Binding CopyNameToClipboardCommand}">
                     <MenuItem.Icon>
                         <Svg Path="/Assets/Icons/copy.svg" />
                     </MenuItem.Icon>
                 </MenuItem>
                 <MenuItem Header="Показать в проводнике"
-                        Command="{Binding ShowInFolderCommand}">
+                    IsVisible="{Binding Downloaded}"
+                    Command="{Binding ShowInFolderCommand}">
                     <MenuItem.Icon>
                         <Svg Path="/Assets/Icons/folder.svg" />
                     </MenuItem.Icon>
@@ -145,6 +146,23 @@
                             Text="{Binding Timestamp}" />
                     </Border>
                 </Panel>
+
+                 <DockPanel HorizontalSpacing="8"
+                    IsVisible="{Binding FileMetadataMessage.Content,
+                        Converter={converters:NonEqualityConverter},
+                        ConverterParameter={x:Null}}">
+                    <TextBlock
+                        DockPanel.Dock="Right"
+                        Classes="info"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        IsVisible="{Binding IsEdited}"
+                        Text="(изменено)" />
+
+                    <SelectableTextBlock
+                        Classes="chat"
+                        Text="{Binding Content}" />
+                </DockPanel>
             </StackPanel>
         </Border>
     </Border>
