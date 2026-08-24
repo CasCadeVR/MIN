@@ -270,7 +270,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task ChatMessageEdited(MessageEditedEvent eventMessage, CancellationToken cancellationToken)
     {
-        EditMessage(eventMessage.MessageId, eventMessage.Message);
+        EditMessage(eventMessage.MessageId, eventMessage.Message.Content);
     }
 
     private async Task OnPingMeasured(PingMeasuredEvent eventMessage, CancellationToken cancellationToken)
@@ -302,7 +302,6 @@ public partial class ChatViewModel : RoutableViewModelBase
             if (!string.IsNullOrEmpty(e.ErrorMessage))
             {
                 NotifyIfNeeded(e.ErrorMessage);
-                InAppNotifier.Info(e.ErrorMessage);
             }
             await Disconnect();
         }

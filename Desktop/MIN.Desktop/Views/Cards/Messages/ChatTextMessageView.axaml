@@ -56,6 +56,15 @@
 
                 <Separator />
 
+                <MenuItem Header="Ответить"
+                    Command="{Binding DeleteMessageCommand}">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/answer.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
                 <MenuItem Header="Удалить сообщение"
                     Command="{Binding DeleteMessageCommand}"
                     IsVisible="{Binding IsLocal}"

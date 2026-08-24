@@ -16,7 +16,7 @@ public interface ILoggerProvider
     /// <summary>
     /// Залогировать
     /// </summary>
-    void Log(string message, LogLevel level = LogLevel.Information);
+    void Log(string message, LogLevel level = LogLevel.Information, Type? callerType = null);
 
     /// <summary>
     /// Получить историю логов

@@ -14,6 +14,11 @@ public sealed class MessageContext
     public RoomContext RoomContext { get; init; }
 
     /// <summary>
+    /// Идентификатор участника локального пользователя
+    /// </summary>
+    public Guid SelfId { get; init; }
+
+    /// <summary>
     /// Идентификатор соеднинения, по которому пришло сообщение
     /// </summary>
     public Guid ConnectionId { get; init; }
@@ -31,9 +36,10 @@ public sealed class MessageContext
     /// <summary>
     /// Инициализирует новый экзмепляр <see cref="MessageContext"/>
     /// </summary>
-    public MessageContext(RoomContext roomContext, Guid connectionId, Role role, CancellationToken cancellationToken)
+    public MessageContext(RoomContext roomContext, Guid selfId, Guid connectionId, Role role, CancellationToken cancellationToken)
     {
         RoomContext = roomContext;
+        SelfId = selfId;
         ConnectionId = connectionId;
         Role = role;
         CancellationToken = cancellationToken;

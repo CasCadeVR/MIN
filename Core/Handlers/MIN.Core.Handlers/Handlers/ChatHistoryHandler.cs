@@ -1,70 +1,66 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
+using MIN.Core.Handlers.Contracts.Exceptions;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless.RoomRelated.History;
 using MIN.Core.Stores.Contracts.Interfaces;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class ChatHistoryHandler : IMessageHandler
+internal sealed class ChatHistoryHandler : BaseHandler
 {
     private readonly IRoomStore roomStore;
-    private readonly IEventBus eventBus;
 
-    public ChatHistoryHandler(IRoomStore roomStore, IEventBus eventBus)
+    public ChatHistoryHandler(IRoomStore roomStore, ILoggerProvider logger) : base(logger)
     {
         this.roomStore = roomStore;
-        this.eventBus = eventBus;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
+    public override IEnumerable<MessageTypeTag> HandledTypes
         => [MessageTypeTag.ChatHistoryRequest, MessageTypeTag.ChatHistoryResponse];
 
-    int IMessageHandler.Priority => 2;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var roomId = context.RoomContext.RoomId;
 
-        if (message is ChatHistoryRequestMessage request)
+        switch (message)
         {
-            var totalCount = roomStore.GetRoomChatHistoryCountFor(request.SenderId, roomId);
-            var pageMessages = context.RoomContext
-                .Messages
-                .GetRecentHistory(request.Page, request.PageSize)
-                .ToList();
+            case ChatHistoryRequestMessage request:
+                var totalCount = roomStore.GetRoomChatHistoryCountFor(request.SenderId, roomId);
+                var pageMessages = context.RoomContext
+                    .Messages
+                    .GetRecentHistory(request.Page, request.PageSize)
+                    .ToList();
 
-            return HandlerResult.WithResponse(new ChatHistoryResponseMessage
-            {
-                Messages = pageMessages,
-                TotalCount = totalCount,
-                Page = request.Page,
-            }, stopPropagation: true);
-        }
-        else if (message is ChatHistoryResponseMessage response)
-        {
-            if (roomStore.GetRoomHostParticipantId(roomId) == response.SenderId
-                && context.Role == Role.Client)
-            {
-                foreach (var roomMessage in response.Messages)
+                return HandlerResult.WithResponse(new ChatHistoryResponseMessage
                 {
-                    context.RoomContext.Messages.AddMessage(roomMessage, appendOnStart: true);
+                    Messages = pageMessages,
+                    TotalCount = totalCount,
+                    Page = request.Page,
+                }, stopPropagation: true);
+
+            case ChatHistoryResponseMessage response:
+                if (roomStore.GetRoomHostParticipantId(roomId) == response.SenderId
+                    && context.Role == Role.Client)
+                {
+                    foreach (var roomMessage in response.Messages)
+                    {
+                        context.RoomContext.Messages.AddMessage(roomMessage, appendOnStart: true);
+                    }
                 }
-            }
 
-            await eventBus.PublishAsync(new ChatHistoryUpdatedEvent()
-            {
-                RoomId = roomId,
-                Message = response,
-            }, context.CancellationToken);
+                return HandlerResult.WithEvent(new ChatHistoryUpdatedEvent()
+                {
+                    RoomId = roomId,
+                    Message = response,
+                });
 
-            return HandlerResult.Success();
+            default:
+                throw new HandlerTypeMismatch(this, message);
         }
-
-        return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ChatHistoryHandler)} - {message.GetType()}");
     }
 }

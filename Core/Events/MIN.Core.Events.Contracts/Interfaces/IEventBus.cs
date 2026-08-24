@@ -10,7 +10,7 @@ public interface IEventBus
     /// <summary>
     /// Публикует событие в шину
     /// </summary>
-    Task PublishAsync<T>(T eventMessage, CancellationToken cancellationToken = default) where T : BaseEvent;
+    Task PublishAsync(BaseEvent eventMessage, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Подписывается на события указанного типа

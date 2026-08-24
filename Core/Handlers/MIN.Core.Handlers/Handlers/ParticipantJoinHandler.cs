@@ -2,7 +2,8 @@
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
+using MIN.Core.Handlers.Contracts.Exceptions;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
@@ -16,36 +17,32 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class ParticipantJoinHandler : IMessageHandler
+internal sealed class ParticipantJoinHandler : BaseHandler
 {
     private readonly IRoomStore roomStore;
     private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
-    private readonly ILoggerProvider logger;
 
     public ParticipantJoinHandler(
         IRoomStore roomStore,
         INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
         IEventBus eventBus,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.roomStore = roomStore;
         this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
         this.eventBus = eventBus;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
+    public override IEnumerable<MessageTypeTag> HandledTypes
         => [MessageTypeTag.RoomJoinRequest, MessageTypeTag.RoomJoinResponse,
             MessageTypeTag.ParticipantJoined, MessageTypeTag.ParticipantAccepted,
             MessageTypeTag.RoomJoinRejectAck];
 
-    int IMessageHandler.Priority => 3;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         switch (message)
         {
@@ -68,17 +65,17 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
 
                 return HandlerResult.WithResponse(new RoomJoinResponseMessage());
 
-            case RoomJoinResponseMessage roomJoinResponseMessage:
+            case RoomJoinResponseMessage _:
                 return HandlerResult.WithResponse(new ParticipantJoinedMessage()
                 {
                     Participant = new Participant(identityService.SelfParticipant)
                 });
 
-            case ParticipantAcceptedMessage participantAcceptedMessage:
+            case ParticipantAcceptedMessage _:
                 return HandlerResult.WithResponse(new RoomInfoRequestMessage());
 
             case ParticipantJoinedMessage participantJoinedMessage:
-                logger.Log($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomContext.RoomId}");
+                LogInfo($"Участник {participantJoinedMessage.Participant.Name} зашёл в комнату с id {context.RoomContext.RoomId}");
 
                 context.RoomContext.Participants.AddParticipant(participantJoinedMessage.Participant);
                 context.RoomContext.Messages.AddMessage(message);
@@ -97,7 +94,7 @@ internal sealed class ParticipantJoinHandler : IMessageHandler
                 return HandlerResult.Success();
 
             default:
-                return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ParticipantJoinHandler)} - {message.GetType()}");
+                throw new HandlerTypeMismatch(this, message);
         }
     }
 }

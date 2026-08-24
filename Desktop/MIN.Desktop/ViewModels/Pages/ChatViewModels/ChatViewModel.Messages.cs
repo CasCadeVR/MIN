@@ -111,7 +111,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         Messages.Remove(existingCard);
     }
 
-    private void EditMessage(Guid id, IContentEditable newContent)
+    private void EditMessage(Guid id, string newContent)
     {
         var existingCard = Messages.FirstOrDefault(x => x.Message?.Id == id);
         if (existingCard == null)

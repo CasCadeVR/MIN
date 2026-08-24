@@ -1,58 +1,38 @@
 ﻿using MIN.Chat.Messaging;
 using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Helpers.Contracts.Models.Enums;
 
 namespace MIN.Chat.Handlers;
 
-internal sealed class ChatDeleteHandler : IMessageHandler
+internal sealed class ChatDeleteHandler : BaseHandler
 {
     private readonly static List<MessageTypeTag> allowedMessagesToDelete = [MessageTypeTag.ChatTextMessage, MessageTypeTag.FileMetadata];
-
-    private readonly IEventBus eventBus;
-    private readonly INetworkErrorHandler errorHandler;
-    private readonly ILoggerProvider logger;
-
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ChatDeleteHandler"/>
     /// </summary>
-    public ChatDeleteHandler(IEventBus eventBus,
-        INetworkErrorHandler errorHandler,
-        ILoggerProvider logger)
+    public ChatDeleteHandler(ILoggerProvider logger) : base(logger) { }
+
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.MessageDelete];
+
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        this.eventBus = eventBus;
-        this.errorHandler = errorHandler;
-        this.logger = logger;
-    }
-
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.MessageDelete];
-
-    int IMessageHandler.Priority => 12;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
-    {
-        if (message is not ChatDeleteMessage chatDeleteMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(ChatTextHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ChatTextHandler)} - {message.GetType()}");
-        }
+        var chatDeleteMessage = (ChatDeleteMessage)message;
 
         var existingMessage = context.RoomContext.Messages.GetMessageById(chatDeleteMessage.MessageIdToDelete);
+
         if (existingMessage == null)
         {
-            logger.Log("Поступило сообщение на удаление, но его не нашлось в памяти", LogLevel.Warning);
+            LogWarning("Поступило сообщение на удаление, но его не нашлось в памяти");
 
             if (context.Role == Role.Host)
             {
-                await errorHandler.SendErrorAsync("Сообщение, которое вы хотели удалить, не найдено", message.SenderId, context.RoomContext.RoomId);
+                return HandlerResult.WithErrorHandled("Сообщение, которое вы хотели удалить, не найдено");
             }
 
             return HandlerResult.Success();
@@ -62,25 +42,21 @@ internal sealed class ChatDeleteHandler : IMessageHandler
         {
             if (existingMessage.SenderId != message.SenderId)
             {
-                await errorHandler.SendErrorAsync("Сообщение, которое вы хотели удалить, было отправлено не вами", message.SenderId, context.RoomContext.RoomId);
-                return HandlerResult.Success(stopPropagation: false);
+                return HandlerResult.WithErrorHandled("Сообщение, которое вы хотели удалить, было отправлено не вами");
             }
 
             if (!allowedMessagesToDelete.Contains(existingMessage.TypeTag))
             {
-                await errorHandler.SendErrorAsync("Сообщение, которое вы хотели удалить, не подлежит удалению", message.SenderId, context.RoomContext.RoomId);
-                return HandlerResult.Success();
+                return HandlerResult.WithErrorHandled("Сообщение, которое вы хотели удалить, не подлежит удалению");
             }
         }
 
         context.RoomContext.Messages.RemoveMessage(chatDeleteMessage.MessageIdToDelete);
 
-        await eventBus.PublishAsync(new MessageDeletedEvent()
+        return HandlerResult.WithEvent(new MessageDeletedEvent()
         {
             MessageId = chatDeleteMessage.MessageIdToDelete,
             RoomId = context.RoomContext.RoomId,
         });
-
-        return HandlerResult.Success();
     }
 }

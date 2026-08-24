@@ -72,14 +72,10 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseChatMess
     /// <summary>
     /// Пришла новая версия сообщения
     /// </summary>
-    public void MessageEdited(IContentEditable newContent)
+    public void MessageEdited(string newContent)
     {
-        if (Message is IContentEditable contentEditable)
-        {
-            contentEditable.Edit(newContent);
-            Content = newContent.Content;
-            IsEdited = newContent.IsEdited;
-        }
+        Content = newContent;
+        IsEdited = true;
         IsEditing = false;
     }
 

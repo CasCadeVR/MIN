@@ -114,6 +114,7 @@ internal sealed class ClientRoomService
 
             var selfHandshake = new HandshakeMessage()
             {
+                SenderId = selfParticipant.Id,
                 Participant = selfParticipant,
                 PublicKey = await encryptor.GetLocalPublicKey(),
                 Version = versionProvider.Version

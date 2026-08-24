@@ -77,6 +77,7 @@ internal sealed class ChatEditHandler : IMessageHandler
             contentEditable.IsEdited = true;
             contentEditable.EditedAt = DateTime.Now;
 
+            // TODO: Надо бы что-то предпринять, ибо это по сути вообще ничего не делает
             context.RoomContext.Messages.UpdateMessage(chatEditMessage.MessageIdToEdit, existingMessage);
 
             await eventBus.PublishAsync(new MessageEditedEvent()
