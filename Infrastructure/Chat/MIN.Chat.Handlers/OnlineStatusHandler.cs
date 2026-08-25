@@ -21,10 +21,10 @@ internal sealed class OnlineStatusHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        //if (message.SenderId == context.SelfId)
-        //{
-        //    return HandlerResult.Success();
-        //}
+        if (message.SenderId == context.SelfId)
+        {
+            return HandlerResult.Success();
+        }
 
         var onlineStatusChangedMessage = (OnlineStatusChangedMessage)message;
 
