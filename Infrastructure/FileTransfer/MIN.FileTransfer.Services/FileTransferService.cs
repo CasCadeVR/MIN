@@ -133,7 +133,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
         await eventBus.PublishAsync(new FileTransferCompletedEvent
         {
             RoomId = info.RoomId,
-            TransferId = e.StreamId,
             FileMetadataId = info.FileMetadataId,
             SenderId = info.SenderId,
         }, cancellationToken);
@@ -161,7 +160,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             await eventBus.PublishAsync(new FileTransferCompletedEvent
             {
                 RoomId = info.RoomId,
-                TransferId = transferId,
                 FileMetadataId = info.FileMetadataId,
                 SenderId = info.SenderId,
                 FilePath = filePath,
@@ -182,7 +180,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {
                 RoomId = info.RoomId,
-                TransferId = transferId,
                 SenderId = info.SenderId,
                 ErrorMessage = ex.Message,
             }, cancellationToken);
@@ -214,7 +211,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             await eventBus.PublishAsync(new FileTransferCompletedEvent
             {
                 RoomId = info.RoomId,
-                TransferId = transferId,
                 FileMetadataId = info.FileMetadataId,
                 SenderId = info.SenderId,
                 FilePath = filePath,
@@ -236,7 +232,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {
                 RoomId = info.RoomId,
-                TransferId = transferId,
                 SenderId = info.SenderId,
                 ErrorMessage = ex.Message,
             }, cancellationToken);
@@ -254,7 +249,6 @@ public sealed class FileTransferService : IFileTransferService, IDisposable
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {
                 RoomId = info.RoomId,
-                TransferId = info.TransferId,
                 SenderId = info.SenderId,
                 ErrorMessage = e.ErrorMessage,
             }, cancellationToken);

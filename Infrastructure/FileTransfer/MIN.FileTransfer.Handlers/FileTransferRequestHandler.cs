@@ -1,8 +1,7 @@
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
@@ -15,51 +14,38 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
-internal sealed class FileTransferRequestHandler : IMessageHandler
+internal sealed class FileTransferRequestHandler : BaseHandler
 {
     private readonly IFileTransferService fileTransferService;
     private readonly IFileStorageService fileStorageService;
     private readonly IMessageSender messageSender;
     private readonly IEventBus eventBus;
-    private readonly IIdentityService identityService;
-    private readonly ILoggerProvider logger;
 
     public FileTransferRequestHandler(IFileTransferService fileTransferService,
         IFileStorageService fileStorageService,
         IMessageSender messageSender,
         IEventBus eventBus,
-        IIdentityService identityService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.fileTransferService = fileTransferService;
         this.fileStorageService = fileStorageService;
         this.messageSender = messageSender;
         this.eventBus = eventBus;
-        this.identityService = identityService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.FileTransferRequest];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.FileTransferRequest];
 
-    int IMessageHandler.Priority => 5;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not FileTransferRequestMessage request)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(FileTransferRequestHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(FileTransferRequestHandler)} - {message.GetType()}");
-        }
+        var request = (FileTransferRequestMessage)message;
 
-        logger.Log($"Получен FileTransferRequest: TransferId={request.TransferId}, Direction={request.Direction}, FileName={request.FileName}");
+        LogInfo($"Получен FileTransferRequest: TransferId={request.TransferId}, Direction={request.Direction}, FileName={request.FileName}");
 
-        var selfId = identityService.SelfParticipant.Id;
-
-        if (message.SenderId == selfId && context.Role == Role.Host)
+        if (message.SenderId == context.SelfId && context.Role == Role.Host)
         {
             if (!fileTransferService.TryGetTransferInfo(request.TransferId, out var info))
             {
-                logger.Log($"Не найдена информация о transfer {request.TransferId}");
+                LogError($"Не найдена информация о transfer {request.TransferId}");
                 return HandlerResult.Failure($"Не найдена информация о transfer {request.TransferId}", stopPropagation: false);
             }
 
@@ -69,7 +55,6 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
                 await eventBus.PublishAsync(new FileTransferCompletedEvent
                 {
                     RoomId = info.RoomId,
-                    TransferId = info.TransferId,
                     FilePath = filePath,
                     FileMetadataId = info.FileMetadataId,
                     SenderId = info.SenderId,
@@ -81,7 +66,6 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {
                 RoomId = info.RoomId,
-                TransferId = request.TransferId,
                 SenderId = message.SenderId,
                 FileMetadataId = info.FileMetadataId,
                 ErrorMessage = "Файл был утерян",
@@ -92,7 +76,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
         if (request.Direction == FileTransferDirection.Upload)
         {
-            return await HandleUpload(request, selfId, context);
+            return await HandleUpload(request, context);
         }
         else
         {
@@ -100,26 +84,26 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
         }
     }
 
-    private async Task<HandlerResult> HandleUpload(FileTransferRequestMessage request, Guid selfId, MessageContext context)
+    private async Task<HandlerResult> HandleUpload(FileTransferRequestMessage request, MessageContext context)
     {
         var roomId = context.RoomContext.RoomId;
 
-        if (request.RecipientId != selfId)
+        if (request.RecipientId != context.SelfId)
         {
-            logger.Log($"Запрос на загрузку файла адресован не мне (мне: {selfId}, запрос: {request.RecipientId})");
+            LogInfo($"Запрос на загрузку файла адресован не мне (мне: {context.SelfId}, запрос: {request.RecipientId})");
             return HandlerResult.Failure("Запрос на загрузку файла адресован не мне", stopPropagation: false);
         }
 
         if (!fileTransferService.TryGetTransferInfo(request.TransferId, out var info))
         {
-            logger.Log($"Не найдена информация о transfer {request.TransferId}");
+            LogError($"Не найдена информация о transfer {request.TransferId}");
             return HandlerResult.Failure($"Не найдена информация о transfer {request.TransferId}", stopPropagation: false);
         }
 
         var filePath = ResolveFilePath(request.FileMetadataId, roomId, info.FileName);
         if (filePath == null)
         {
-            logger.Log($"Файл не найден для upload: {info.FileName} (TransferId: {request.TransferId})");
+            LogError($"Файл не найден для upload: {info.FileName} (TransferId: {request.TransferId})");
             var errorResponse = new FileTransferResponseMessage
             {
                 TransferId = request.TransferId,
@@ -131,7 +115,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
             return HandlerResult.Failure("Файл не найден во время загрузки", stopPropagation: true);
         }
 
-        logger.Log($"Начинаю загрузку файла {info.FileName} на сервер из: {filePath}");
+        LogInfo($"Начинаю загрузку файла {info.FileName} на сервер из: {filePath}");
 
         var response = new FileTransferResponseMessage
         {
@@ -152,7 +136,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
         if (!fileTransferService.TryGetTransferInfo(request.TransferId, out _))
         {
-            logger.Log($"Регистрирую новый download transfer для файла {request.FileName} (TransferId: {request.TransferId})");
+            LogInfo($"Регистрирую новый download transfer для файла {request.FileName} (TransferId: {request.TransferId})");
 
             var info = new TransferInfo
             {
@@ -168,13 +152,13 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
         }
         else
         {
-            logger.Log($"Transfer {request.TransferId} уже зарегистрирован, начинаю download");
+            LogInfo($"Transfer {request.TransferId} уже зарегистрирован, начинаю download");
         }
 
         var filePath = ResolveFilePath(request.FileMetadataId, roomId, request.FileName);
         if (filePath == null)
         {
-            logger.Log($"Файл не найден для download: {request.FileName} (TransferId: {request.TransferId})");
+            LogError($"Файл не найден для download: {request.FileName} (TransferId: {request.TransferId})");
             var errorResponse = new FileTransferResponseMessage
             {
                 TransferId = request.TransferId,
@@ -186,7 +170,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
             return HandlerResult.Failure("Файл не найден у хоста", stopPropagation: false, showErrorMessage: false);
         }
 
-        logger.Log($"Начинаю download файла {request.FileName} из: {filePath}");
+        LogInfo($"Начинаю download файла {request.FileName} из: {filePath}");
 
         var response = new FileTransferResponseMessage
         {
@@ -213,7 +197,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
             var filePath = fileStorageService.GetFilePath(roomId, fileName);
             if (filePath != null)
             {
-                logger.Log($"Файл найден в хранилище: {filePath}");
+                LogInfo($"Файл найден в хранилище: {filePath}");
                 return filePath;
             }
         }
@@ -222,7 +206,7 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
         if (originalPath != null && File.Exists(originalPath))
         {
-            logger.Log($"Файл найден по оригинальному пути: {originalPath}");
+            LogInfo($"Файл найден по оригинальному пути: {originalPath}");
             return originalPath;
         }
 
@@ -235,14 +219,14 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
 
         if (!fileTransferService.TryGetTransferInfo(request.TransferId, out var info))
         {
-            logger.Log($"Не найдена информация о передаче {request.TransferId} во время стриминга файла");
+            LogWarning($"Не найдена информация о передаче {request.TransferId} во время стриминга файла");
             return;
         }
 
         info.CancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
 
         var fileSize = new FileInfo(filePath).Length;
-        logger.Log($"Начинаю стриминг файла {Path.GetFileName(filePath)} ({fileSize} байт)");
+        LogInfo($"Начинаю стриминг файла {Path.GetFileName(filePath)} ({fileSize} байт)");
 
         try
         {
@@ -251,13 +235,12 @@ internal sealed class FileTransferRequestHandler : IMessageHandler
         }
         catch (Exception ex)
         {
-            logger.Log($"Произошла ошибка во время самой передачи файла с id {request.TransferId}");
+            LogError($"Произошла ошибка во время самой передачи файла с id {request.TransferId}");
 
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {
                 RoomId = info.RoomId,
-                TransferId = info.TransferId,
-                SenderId = identityService.SelfParticipant.Id,
+                SenderId = context.SelfId,
                 FileMetadataId = info.FileMetadataId,
                 ErrorMessage = ex.Message,
             });

@@ -58,7 +58,6 @@ public sealed class FileMonitorService : IHostedService
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {
                 RoomId = eventMessage.RoomId,
-                TransferId = transfer.TransferId,
                 SenderId = transfer.SenderId,
                 ErrorMessage = excuse,
             }, cancellationToken);
@@ -79,7 +78,6 @@ public sealed class FileMonitorService : IHostedService
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {
                 RoomId = eventMessage.RoomId,
-                TransferId = transfer.TransferId,
                 SenderId = transfer.SenderId,
                 ErrorMessage = excuse,
             }, cancellationToken);
@@ -105,7 +103,6 @@ public sealed class FileMonitorService : IHostedService
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {
                 RoomId = eventMessage.RoomId,
-                TransferId = transfer.TransferId,
                 SenderId = transfer.SenderId,
                 ErrorMessage = excuse,
             }, cancellationToken);

@@ -193,18 +193,18 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (eventMessage.Direction == FileTransferDirection.Upload && IsHost)
         {
             var sanitizedSize = featureCollection.FileTransfer.FileHelperService.FormatFileSize(eventMessage.FileSize);
-            AddStatus(new FileUploadingStatus(eventMessage.TransferId, eventMessage.FileName, eventMessage.Sender.Name, sanitizedSize));
+            AddStatus(new FileUploadingStatus(eventMessage.FileMetadataId, eventMessage.FileName, eventMessage.Sender.Name, sanitizedSize));
         }
     }
 
     private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
     {
-        RemoveStatus(eventMessage.TransferId);
+        RemoveStatus(eventMessage.FileMetadataId);
     }
 
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
     {
-        RemoveStatus(eventMessage.TransferId);
+        RemoveStatus(eventMessage.FileMetadataId);
     }
 
     #endregion

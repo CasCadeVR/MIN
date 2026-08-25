@@ -1,45 +1,26 @@
 ﻿using MIN.Chat.Events;
 using MIN.Chat.Messaging;
 using MIN.Core.Entities.Contracts.Extensions;
-using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Chat.Handlers;
 
-internal sealed class ChatTextHandler : IMessageHandler
+internal sealed class ChatTextHandler : BaseHandler
 {
-    private readonly IIdentityService identityService;
-    private readonly IEventBus eventBus;
-    private readonly ILoggerProvider logger;
-
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="ChatTextHandler"/>
     /// </summary>
-    public ChatTextHandler(IIdentityService identityService,
-        IEventBus eventBus,
-        ILoggerProvider logger)
+    public ChatTextHandler(ILoggerProvider logger) : base(logger) { }
+
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.ChatTextMessage];
+
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        this.identityService = identityService;
-        this.eventBus = eventBus;
-        this.logger = logger;
-    }
-
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.ChatTextMessage];
-
-    int IMessageHandler.Priority => 10;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
-    {
-        if (message is not ChatTextMessage chatTextMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(ChatTextHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ChatTextHandler)} - {message.GetType()}");
-        }
+        var chatTextMessage = (ChatTextMessage)message;
 
         if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
         {
@@ -47,11 +28,10 @@ internal sealed class ChatTextHandler : IMessageHandler
         }
 
         context.RoomContext.Messages.AddMessage(chatTextMessage);
-        var selfId = identityService.SelfParticipant.Id;
 
-        if (message.SenderId == selfId || message.RecipientId == selfId || message.IsPublic)
+        if (message.SenderId == context.SelfId || message.RecipientId == context.SelfId || message.IsPublic)
         {
-            await eventBus.PublishAsync(new ChatTextMessageReceivedEvent()
+            return HandlerResult.WithEvent(new ChatTextMessageReceivedEvent()
             {
                 Message = chatTextMessage,
                 RoomId = context.RoomContext.RoomId,

@@ -1,5 +1,5 @@
 ﻿using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -10,35 +10,27 @@ using MIN.Voice.Services.Contacts.Interfaces;
 
 namespace MIN.Voice.Handlers;
 
-internal sealed class VoiceCallEndHandler : IMessageHandler
+internal sealed class VoiceCallEndHandler : BaseHandler
 {
     private readonly IEventBus eventBus;
     private readonly IVoiceCallStateService voiceCallStateService;
-    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="VoiceCallEndHandler"/>
     /// </summary>
     public VoiceCallEndHandler(IEventBus eventBus,
         IVoiceCallStateService voiceCallStateService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.eventBus = eventBus;
         this.voiceCallStateService = voiceCallStateService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.VoiceCallEnded];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.VoiceCallEnded];
 
-    int IMessageHandler.Priority => 8;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not VoiceCallEndedMessage voiceCallEndedMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(VoiceCallEndHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(VoiceCallEndHandler)} - {message.GetType()}");
-        }
+        var voiceCallEndedMessage = (VoiceCallEndedMessage)message;
 
         var existingVoiceCallStartedMessageId = context.RoomContext.Messages.GetHistory()
             .OfType<VoiceCallStartedMessage>().FirstOrDefault(x => x.SubRoomId == voiceCallEndedMessage.SubRoomId)?.Id;
@@ -59,12 +51,10 @@ internal sealed class VoiceCallEndHandler : IMessageHandler
             });
         }
 
-        await eventBus.PublishAsync(new VoiceCallEndedEvent()
+        return HandlerResult.WithEvent(new VoiceCallEndedEvent()
         {
             RoomId = context.RoomContext.RoomId,
             SubRoomId = voiceCallEndedMessage.SubRoomId
         });
-
-        return HandlerResult.Success();
     }
 }

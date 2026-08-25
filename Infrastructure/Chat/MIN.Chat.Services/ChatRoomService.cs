@@ -7,7 +7,6 @@ using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.Stores.Contracts.Constants;
-using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Core.Transport.Contracts.Models;
@@ -19,7 +18,6 @@ namespace MIN.Chat.Services;
 public sealed class ChatRoomService : IChatRoomService
 {
     private readonly IMessageRouter messageRouter;
-    private readonly IRoomFactory roomFactory;
     private readonly IRoomConnectionRegistry registry;
     private readonly IRoomLifecycleManager lifecycleManager;
     private readonly INetworkErrorHandler networkErrorHandler;
@@ -30,7 +28,6 @@ public sealed class ChatRoomService : IChatRoomService
     /// Инициализирует новый экземпляр <see cref="ChatRoomService"/>
     /// </summary>
     public ChatRoomService(IMessageRouter messageRouter,
-        IRoomFactory roomFactory,
         IRoomConnectionRegistry registry,
         IRoomLifecycleManager lifecycleManager,
         INetworkErrorHandler networkErrorHandler,
@@ -38,7 +35,6 @@ public sealed class ChatRoomService : IChatRoomService
         IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
-        this.roomFactory = roomFactory;
         this.registry = registry;
         this.lifecycleManager = lifecycleManager;
         this.networkErrorHandler = networkErrorHandler;
@@ -48,13 +44,6 @@ public sealed class ChatRoomService : IChatRoomService
 
     async Task IChatRoomService.KickParticipantAsync(Guid roomId, Guid participantId, string reason, CancellationToken cancellationToken)
     {
-        roomFactory.TryGetContext(roomId, out var context);
-
-        if (context == null)
-        {
-            throw new ArgumentNullException("Не нашлась информация о комнате");
-        }
-
         if (!registry.IsHosting(roomId))
         {
             throw new InvalidOperationException("Ты не являешся хостом для этой комнаты");

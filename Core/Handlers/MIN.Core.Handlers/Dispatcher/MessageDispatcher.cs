@@ -98,7 +98,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
                 if (result.ErrorMessage != null)
                 {
-                    await errorHandler.SendErrorAsync(result.ErrorMessage, message.SenderId, context.RoomContext.RoomId, result.CriticalError);
+                    await errorHandler.SendErrorToConnectionAsync(result.ErrorMessage, context.ConnectionId, context.RoomContext.RoomId, result.CriticalError);
                     continue;
                 }
 

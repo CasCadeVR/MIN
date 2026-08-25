@@ -46,7 +46,7 @@ internal sealed class HandshakeHandler : BaseHandler
                         critical: true);
                 }
 
-                if (versionProvider.IsVersionCompatible(handshakeMessage.Version))
+                if (!versionProvider.IsVersionCompatible(handshakeMessage.Version))
                 {
                     var selfVersion = versionProvider.Version;
                     var clientOnOlderVersion = selfVersion > handshakeMessage.Version ? "Вы" : "Хост";

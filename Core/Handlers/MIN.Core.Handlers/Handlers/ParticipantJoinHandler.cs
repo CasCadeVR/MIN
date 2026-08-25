@@ -11,7 +11,6 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated.ParticipantRelated;
 using MIN.Core.Messaging.Stateless.RoomRelated.Join;
 using MIN.Core.Messaging.Stateless.RoomRelated.RoomInfo;
-using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 
@@ -20,19 +19,15 @@ namespace MIN.Core.Handlers.Handlers;
 internal sealed class ParticipantJoinHandler : BaseHandler
 {
     private readonly IRoomStore roomStore;
-    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
     private readonly IEventBus eventBus;
 
-    public ParticipantJoinHandler(
-        IRoomStore roomStore,
-        INetworkErrorHandler networkErrorHandler,
+    public ParticipantJoinHandler(IRoomStore roomStore,
         IIdentityService identityService,
         IEventBus eventBus,
         ILoggerProvider logger) : base(logger)
     {
         this.roomStore = roomStore;
-        this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
         this.eventBus = eventBus;
     }
@@ -51,16 +46,12 @@ internal sealed class ParticipantJoinHandler : BaseHandler
 
                 if (room.IsFull)
                 {
-                    await networkErrorHandler.SendErrorAsync("Комната заполнена. Попробуйте позже.",
-                        message.SenderId, context.RoomContext.RoomId, critical: true);
-                    return HandlerResult.Success();
+                    return HandlerResult.WithErrorHandled("Комната заполнена. Попробуйте позже.", critical: true);
                 }
 
                 if (context.RoomContext.Participants.TryGetParticipantById(roomJoinRequestMessage.SenderId, out _))
                 {
-                    await networkErrorHandler.SendErrorAsync("Такой участник в ней уже присутствует. Попробуйте позже.",
-                        message.SenderId, context.RoomContext.RoomId, critical: true);
-                    return HandlerResult.Success();
+                    return HandlerResult.WithErrorHandled("Такой участник в ней уже присутствует. Попробуйте позже.", critical: true);
                 }
 
                 return HandlerResult.WithResponse(new RoomJoinResponseMessage());

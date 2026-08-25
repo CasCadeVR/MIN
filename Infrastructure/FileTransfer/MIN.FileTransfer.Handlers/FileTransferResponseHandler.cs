@@ -1,7 +1,6 @@
 using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.FileTransfer.Events;
@@ -11,49 +10,37 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
-internal sealed class FileTransferResponseHandler : IMessageHandler
+internal sealed class FileTransferResponseHandler : BaseHandler
 {
     private readonly IEventBus eventBus;
     private readonly IFileTransferService fileTransferService;
-    private readonly IIdentityService identityService;
-    private readonly ILoggerProvider logger;
 
     public FileTransferResponseHandler(IEventBus eventBus,
         IFileTransferService fileTransferService,
-        IIdentityService identityService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.eventBus = eventBus;
         this.fileTransferService = fileTransferService;
-        this.identityService = identityService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.FileTransferResponse];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.FileTransferResponse];
 
-    int IMessageHandler.Priority => 5;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not FileTransferResponseMessage response)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(FileTransferResponseHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(FileTransferResponseHandler)} - {message.GetType()}");
-        }
+        var response = (FileTransferResponseMessage)message;
 
-        logger.Log($"Получен FileTransferResponse: TransferId={response.TransferId}, Success={response.Success}");
+        LogInfo($"Получен FileTransferResponse: TransferId={response.TransferId}, Success={response.Success}");
 
         if (!response.Success)
         {
-            logger.Log($"Transfer {response.TransferId} завершился ошибкой: {response.ErrorMessage ?? "Unknown error"}");
+            LogError($"Transfer {response.TransferId} завершился ошибкой: {response.ErrorMessage ?? "Unknown error"}");
 
             if (fileTransferService.TryGetTransferInfo(response.TransferId, out var info))
             {
                 await eventBus.PublishAsync(new FileTransferFailedEvent
                 {
                     RoomId = info.RoomId,
-                    TransferId = response.TransferId,
-                    SenderId = identityService.SelfParticipant.Id,
+                    SenderId = context.SelfId,
                     FileMetadataId = info.FileMetadataId,
                     ErrorMessage = response.ErrorMessage ?? "Unknown error",
                 });
@@ -66,11 +53,11 @@ internal sealed class FileTransferResponseHandler : IMessageHandler
 
         if (!fileTransferService.TryGetTransferInfo(response.TransferId, out _))
         {
-            logger.Log($"Не найдена информация о transfer {response.TransferId}, но Response успешен — ожидаю пакеты");
+            LogInfo($"Не найдена информация о transfer {response.TransferId}, но Response успешен — ожидаю пакеты");
         }
         else
         {
-            logger.Log($"Transfer {response.TransferId} подтверждён, ожидаю пакеты файла");
+            LogInfo($"Transfer {response.TransferId} подтверждён, ожидаю пакеты файла");
         }
 
         return HandlerResult.Success(stopPropagation: true);

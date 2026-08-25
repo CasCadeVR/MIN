@@ -1,4 +1,5 @@
-﻿using MIN.Core.Handlers.Contracts.Base;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -17,8 +18,9 @@ internal sealed class ErrorHandler : BaseHandler
     {
         var errorMessage = (ErrorMessage)message;
 
-        if (message.RecipientId != null && context.SelfId != message.RecipientId)
+        if (message.RecipientId != null && context.SelfId != message.RecipientId && context.Role == Role.Host)
         {
+            LogError($"Я, как хост, отправляю {context.RoomContext.Participants.GetParticipantById(message.SenderId).Name} ошибку: {errorMessage.Message}");
             return HandlerResult.Success();
         }
 

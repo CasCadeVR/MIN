@@ -12,11 +12,6 @@ public sealed record FileTransferCompletedEvent : BaseEvent, IRoomScopedEvent
     public Guid RoomId { get; init; }
 
     /// <summary>
-    /// Идентификатор потока, по которому придёт файл
-    /// </summary>
-    public required Guid TransferId { get; set; }
-
-    /// <summary>
     /// Идентификатор сообщения метаданных
     /// </summary>
     public required Guid FileMetadataId { get; set; }

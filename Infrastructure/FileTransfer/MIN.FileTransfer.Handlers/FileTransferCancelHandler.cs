@@ -1,7 +1,7 @@
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -13,40 +13,30 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.FileTransfer.Handlers;
 
-internal sealed class FileTransferCancelHandler : IMessageHandler
+internal sealed class FileTransferCancelHandler : BaseHandler
 {
     private readonly IEventBus eventBus;
     private readonly IFileTransferService fileTransferService;
-    private readonly ILoggerProvider logger;
 
     public FileTransferCancelHandler(
         IEventBus eventBus,
         IFileTransferService fileTransferService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.eventBus = eventBus;
         this.fileTransferService = fileTransferService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.FileTransferCancel];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.FileTransferCancel];
 
-    int IMessageHandler.Priority => 5;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not FileTransferCancelMessage cancel)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(FileTransferCancelHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(FileTransferCancelHandler)} - {message.GetType()}");
-        }
+        var cancel = (FileTransferCancelMessage)message;
 
-        logger.Log($"Получена отмена transfer {cancel.TransferId}: {cancel.Reason ?? "без причины"}");
+        LogInfo($"Получена отмена transfer {cancel.TransferId}: {cancel.Reason ?? "без причины"}");
 
         if (fileTransferService.TryGetTransferInfo(cancel.TransferId, out var info))
         {
-            logger.Log($"Transfer {cancel.TransferId} принадлежит комнате {info.RoomId}, файл: {info.FileName}");
-
             if (info.Direction == FileTransferDirection.Upload && context.Role == Role.Client)
             {
                 context.RoomContext.Messages.RemoveMessage(info.FileMetadataId);
@@ -61,14 +51,13 @@ internal sealed class FileTransferCancelHandler : IMessageHandler
             await eventBus.PublishAsync(new FileTransferFailedEvent
             {
                 RoomId = info.RoomId,
-                TransferId = cancel.TransferId,
                 FileMetadataId = info.FileMetadataId,
                 SenderId = message.SenderId,
                 ErrorMessage = cancel.Reason ?? "Передача отменена",
             });
         }
 
-        logger.Log($"Удаляю transfer {cancel.TransferId} из активных");
+        LogInfo($"Удаляю transfer {cancel.TransferId} из активных");
         fileTransferService.RemoveTransfer(cancel.TransferId);
 
         return HandlerResult.Success();

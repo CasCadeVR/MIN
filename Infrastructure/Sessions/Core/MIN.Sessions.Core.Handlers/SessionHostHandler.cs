@@ -1,13 +1,10 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Extensions;
-using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -20,56 +17,36 @@ using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Handlers;
 
-internal sealed class SessionHostHandler : IMessageHandler
+internal sealed class SessionHostHandler : BaseHandler
 {
     private readonly ISubRoomManager subRoomManager;
-    private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
     private readonly IMessageRouter messageRouter;
     private readonly ISessionScanner sessionScanner;
     private readonly ISessionProcessBridge sessionProcessBridge;
     private readonly ISessionProcessManager sessionProcessManager;
-    private readonly INetworkErrorHandler networkErrorHandler;
-    private readonly IIdentityService identityService;
-    private readonly ILoggerProvider logger;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="SessionHostHandler"/>
-    /// </summary>
     public SessionHostHandler(ISubRoomManager subRoomManager,
-        IEventBus eventBus,
         IMessageSender messageSender,
         IMessageRouter messageRouter,
         ISessionScanner sessionScanner,
         ISessionProcessBridge sessionProcessBridge,
         ISessionProcessManager sessionProcessManager,
-        INetworkErrorHandler networkErrorHandler,
-        IIdentityService identityService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.subRoomManager = subRoomManager;
-        this.eventBus = eventBus;
         this.messageSender = messageSender;
         this.messageRouter = messageRouter;
         this.sessionScanner = sessionScanner;
         this.sessionProcessBridge = sessionProcessBridge;
         this.sessionProcessManager = sessionProcessManager;
-        this.networkErrorHandler = networkErrorHandler;
-        this.identityService = identityService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionHostRequest];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.SessionHostRequest];
 
-    int IMessageHandler.Priority => 12;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not SessionHostRequestMessage sessionHostRequestMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(SessionHostHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionHostHandler)} - {message.GetType()}");
-        }
+        var sessionHostRequestMessage = (SessionHostRequestMessage)message;
 
         if (context.Role != Role.Host)
         {
@@ -86,8 +63,7 @@ internal sealed class SessionHostHandler : IMessageHandler
         if (sessionHostRequestMessage.SubRoomId != null
             && !subRoomManager.ActivateSubRoom(context.RoomContext.RoomId, sessionHostRequestMessage.SubRoomId.Value, senderParicipantInfo))
         {
-            await networkErrorHandler.SendErrorAsync("Хост не смог создать комнату", message.SenderId, context.RoomContext.RoomId);
-            return HandlerResult.Success();
+            return HandlerResult.WithErrorHandled("Хост не смог создать комнату");
         }
 
         var subRoomId = sessionHostRequestMessage.SubRoomId;
@@ -105,18 +81,16 @@ internal sealed class SessionHostHandler : IMessageHandler
         if (session == null)
         {
             subRoomManager.TryStopSubRoom(context.RoomContext.RoomId, subRoomId.Value, message.SenderId);
-            await networkErrorHandler.SendErrorAsync("У хоста не установлена программа сервера этой сессии", message.SenderId, context.RoomContext.RoomId);
-            return HandlerResult.Success();
+            return HandlerResult.WithErrorHandled("У хоста не установлена программа сервера этой сессии");
         }
 
         if (session.Version != sessionHostRequestMessage.SessionVersion)
         {
             subRoomManager.TryStopSubRoom(context.RoomContext.RoomId, subRoomId.Value, message.SenderId);
             var clientOnOlderVersion = session.Version > sessionHostRequestMessage.SessionVersion ? "Вы" : "Хост";
-            await networkErrorHandler.SendErrorAsync($"{clientOnOlderVersion} на устаревшей версии сессии: " +
+            return HandlerResult.WithErrorHandled($"{clientOnOlderVersion} на устаревшей версии сессии: " +
                 $"\nВаша версия сессии - {sessionHostRequestMessage.SessionVersion}" +
-                $"\nВерсия сессии хоста комнаты - {session.Version}", message.SenderId, context.RoomContext.RoomId);
-            return HandlerResult.Success();
+                $"\nВерсия сессии хоста комнаты - {session.Version}");
         }
 
         var processContext = new ProcessContext(context.RoomContext.RoomId, subRoomId.Value, SessionProcessRole.Server);
@@ -127,8 +101,7 @@ internal sealed class SessionHostHandler : IMessageHandler
         if (hostResult == false)
         {
             subRoomManager.TryStopSubRoom(context.RoomContext.RoomId, subRoomId.Value, message.SenderId);
-            await networkErrorHandler.SendErrorAsync("У хоста повреждёна или утеряна программа сервера", message.SenderId, context.RoomContext.RoomId);
-            return HandlerResult.Success();
+            return HandlerResult.WithErrorHandled("У хоста повреждёна или утеряна программа сервера");
         }
 
         if (isHosted)
@@ -148,16 +121,14 @@ internal sealed class SessionHostHandler : IMessageHandler
 
             await messageRouter.RouteAsync(hostReadyMessage, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
 
-            if (identityService.SelfParticipant.Id == message.SenderId)
+            if (context.SelfId == message.SenderId)
             {
-                await eventBus.PublishAsync(new SessionJoinResponseReceivedEvent()
+                return HandlerResult.WithEvent(new SessionJoinResponseReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
                     SubRoomId = subRoomId.Value,
                     Session = session,
                 });
-
-                return HandlerResult.Success();
             }
             else
             {
@@ -173,7 +144,7 @@ internal sealed class SessionHostHandler : IMessageHandler
             }
         }
 
-        if (identityService.SelfParticipant.Id == message.SenderId)
+        if (context.SelfId == message.SenderId)
         {
             await messageRouter.RouteAsync(new SessionJoinResponseMessage()
             {

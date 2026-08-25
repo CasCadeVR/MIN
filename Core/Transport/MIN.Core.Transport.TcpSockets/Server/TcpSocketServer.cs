@@ -109,6 +109,12 @@ internal sealed class TcpSocketServer : IAsyncDisposable
                     logger.Log($"Клиент {remoteEndPoint ?? "unknown"} прислал невалидную преамбалу, отклоняю");
                     return;
                 }
+
+                if (connections.ContainsKey(announcedId))
+                {
+                    logger.Log($"Произошла идентификаторов, отклоняю");
+                    return;
+                }
             }
             catch (OperationCanceledException)
             {

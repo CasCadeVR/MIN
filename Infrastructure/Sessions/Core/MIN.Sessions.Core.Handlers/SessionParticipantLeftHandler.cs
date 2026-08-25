@@ -1,5 +1,4 @@
-﻿using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+﻿using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -11,36 +10,24 @@ using MIN.Sessions.Core.Services.Contracts.Interfaces;
 
 namespace MIN.Sessions.Core.Handlers;
 
-internal sealed class SessionParticipantLeftHandler : IMessageHandler
+internal sealed class SessionParticipantLeftHandler : BaseHandler
 {
-    private readonly IEventBus eventBus;
     private readonly ISessionProcessBridge sessionProcessBridge;
-    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="SessionParticipantLeftHandler"/>
     /// </summary>
-    public SessionParticipantLeftHandler(IEventBus eventBus,
-        ISessionProcessBridge sessionProcessBridge,
-        ILoggerProvider logger)
+    public SessionParticipantLeftHandler(ISessionProcessBridge sessionProcessBridge,
+        ILoggerProvider logger) : base(logger)
     {
-        this.eventBus = eventBus;
         this.sessionProcessBridge = sessionProcessBridge;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionParticipantLeft];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.SessionParticipantLeft];
 
-    int IMessageHandler.Priority => 11;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not SessionParticipantLeftMessage sessionParticipantLeftMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(SessionParticipantLeftHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionParticipantLeftHandler)} - {message.GetType()}");
-        }
-
+        var sessionParticipantLeftMessage = (SessionParticipantLeftMessage)message;
         var roomId = context.RoomContext.RoomId;
         var subRoomId = sessionParticipantLeftMessage.SubRoomId;
         var participant = sessionParticipantLeftMessage.Participant;
@@ -66,13 +53,11 @@ internal sealed class SessionParticipantLeftHandler : IMessageHandler
             context.RoomContext.Messages.UpdateMessage(existing.Id, existing);
         }
 
-        await eventBus.PublishAsync(new SessionParticipantLeftEvent()
+        return HandlerResult.WithEvent(new SessionParticipantLeftEvent()
         {
             Participant = participant,
             SubRoomId = subRoomId,
             RoomId = roomId,
         });
-
-        return HandlerResult.Success();
     }
 }

@@ -1,10 +1,9 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
@@ -14,13 +13,11 @@ using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Handlers;
 
-internal sealed class SessionServerShutdownHandler : IMessageHandler
+internal sealed class SessionServerShutdownHandler : BaseHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly ISessionProcessManager sessionProcessManager;
     private readonly IMessageSender messageSender;
-    private readonly INetworkErrorHandler networkErrorHandler;
-    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="SessionServerShutdownHandler"/>
@@ -28,27 +25,18 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
     public SessionServerShutdownHandler(ISubRoomManager subRoomManager,
         ISessionProcessManager sessionProcessManager,
         IMessageSender messageSender,
-        INetworkErrorHandler networkErrorHandler,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.subRoomManager = subRoomManager;
         this.sessionProcessManager = sessionProcessManager;
         this.messageSender = messageSender;
-        this.networkErrorHandler = networkErrorHandler;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionServerShutdown];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.SessionServerShutdown];
 
-    int IMessageHandler.Priority => 8;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not SessionServerShutdownMessage sessionServerShutdownMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(SessionServerShutdownHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionServerShutdownHandler)} - {message.GetType()}");
-        }
+        var sessionServerShutdownMessage = (SessionServerShutdownMessage)message;
 
         var roomId = context.RoomContext.RoomId;
         var subRoomId = sessionServerShutdownMessage.SubRoomId;
@@ -60,16 +48,20 @@ internal sealed class SessionServerShutdownHandler : IMessageHandler
             var outOfSubRoomParticipants = context.RoomContext.Participants.GetParticipants()
                 .Select(x => x.Id).Except(subRoomManager.GetParticipantIds(roomId, subRoomId)).ToList();
 
-            if (!subRoomManager.TryStopSubRoom(roomId, subRoomId, sessionServerShutdownMessage.SenderId))
+            var subRoomInfo = subRoomManager.GetSubRoom(roomId, subRoomId);
+            var requesterStopped = sessionServerShutdownMessage.SenderId == subRoomInfo?.CreatorId;
+            var hostStopped = sessionServerShutdownMessage.SenderId == context.SelfId;
+
+            if (!requesterStopped && !hostStopped)
             {
-                await networkErrorHandler.SendErrorAsync(
-                    "Произошла попытка остановки сервера участником, не имеющего на это права, либо отправившего неккоректный id подкомнаты",
-                    message.SenderId, roomId);
-                return HandlerResult.Success();
+                LogError("Произошла попытка остановки сервера участником, не имеющего на это права, либо отправившего неккоректный id подкомнаты");
+                return HandlerResult.Failure("Произошла попытка остановки сервера участником, не имеющего на это права, либо отправившего неккоректный id подкомнаты");
             }
 
-            var informConnectionIds = outOfSubRoomParticipants.Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId);
-            await messageSender.BroadcastAsync(sessionServerShutdownMessage, roomId, informConnectionIds, context.CancellationToken);
+            subRoomManager.TryStopSubRoom(roomId, subRoomId, sessionServerShutdownMessage.SenderId);
+
+            var excludeConnectionIds = outOfSubRoomParticipants.Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId);
+            await messageSender.BroadcastAsync(sessionServerShutdownMessage, roomId, excludeConnectionIds, context.CancellationToken);
             return HandlerResult.Success(stopPropagation: true);
         }
 

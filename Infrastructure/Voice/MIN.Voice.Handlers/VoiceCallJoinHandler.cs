@@ -1,13 +1,13 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
+using MIN.Core.Handlers.Contracts.Exceptions;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -17,15 +17,13 @@ using MIN.Voice.Services.Contacts.Interfaces;
 
 namespace MIN.Voice.Handlers;
 
-internal sealed class VoiceCallJoinHandler : IMessageHandler
+internal sealed class VoiceCallJoinHandler : BaseHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
     private readonly IVoicePlaybackService voicePlaybackService;
-    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
-    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="VoiceCallJoinHandler"/>
@@ -34,25 +32,20 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
         IEventBus eventBus,
         IMessageRouter messageRouter,
         IVoicePlaybackService voicePlaybackService,
-        INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
         this.voicePlaybackService = voicePlaybackService;
-        this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes =>
+    public override IEnumerable<MessageTypeTag> HandledTypes =>
         [MessageTypeTag.VoiceCallJoinRequest, MessageTypeTag.VoiceCallEstablished];
 
-    int IMessageHandler.Priority => 15;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         switch (message)
         {
@@ -73,8 +66,7 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
 
                 if (subRoomInfo == null)
                 {
-                    await networkErrorHandler.SendErrorAsync("Такая подкомната не нашлась", message.SenderId, roomId);
-                    return HandlerResult.Success();
+                    return HandlerResult.WithErrorHandled("Такая подкомната не нашлась");
                 }
 
                 var senderParicipantInfo = sender!.ToParticipantInfo();
@@ -92,8 +84,7 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
                         _ => "Не удалось войти"
                     };
 
-                    await networkErrorHandler.SendErrorAsync(error, message.SenderId, roomId);
-                    return HandlerResult.Success();
+                    return HandlerResult.WithErrorHandled(error);
                 }
 
                 return HandlerResult.WithResponse(new VoiceCallEstablishedMessage()
@@ -134,7 +125,7 @@ internal sealed class VoiceCallJoinHandler : IMessageHandler
                 return HandlerResult.Success();
 
             default:
-                return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(VoiceCallJoinHandler)} - {message.GetType()}");
+                throw new HandlerTypeMismatch(this, message);
         }
     }
 }

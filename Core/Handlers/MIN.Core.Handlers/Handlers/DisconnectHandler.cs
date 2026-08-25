@@ -48,6 +48,7 @@ internal sealed class DisconnectHandler : BaseHandler
                 return HandlerResult.WithEvent(new DisconnectAckReceived()
                 {
                     ParticipantId = message.SenderId,
+                    ConnectionId = context.ConnectionId,
                     RoomId = context.RoomContext.RoomId,
                 });
 

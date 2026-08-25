@@ -1,8 +1,7 @@
 ﻿using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
@@ -13,13 +12,11 @@ using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Sessions.Core.Handlers;
 
-internal sealed class SessionLeaveHandler : IMessageHandler
+internal sealed class SessionLeaveHandler : BaseHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IMessageRouter messageRouter;
     private readonly IEventBus eventBus;
-    private readonly ILoggerProvider logger;
-    private readonly IIdentityService identityService;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="SessionLeaveHandler"/>
@@ -27,27 +24,18 @@ internal sealed class SessionLeaveHandler : IMessageHandler
     public SessionLeaveHandler(ISubRoomManager subRoomManager,
         IMessageRouter messageRouter,
         IEventBus eventBus,
-        IIdentityService identityService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.subRoomManager = subRoomManager;
         this.messageRouter = messageRouter;
         this.eventBus = eventBus;
-        this.identityService = identityService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionLeave];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.SessionLeave];
 
-    int IMessageHandler.Priority => 12;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not SessionLeaveMessage sessionLeaveMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(SessionLeaveHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionLeaveHandler)} - {message.GetType()}");
-        }
+        var sessionLeaveMessage = (SessionLeaveMessage)message;
 
         if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
         {
@@ -79,7 +67,7 @@ internal sealed class SessionLeaveHandler : IMessageHandler
             SubRoomId = sessionLeaveMessage.SubRoomId,
             Participant = sender!.ToParticipantInfo(),
             IsLast = isLast
-        }, roomId, identityService.SelfParticipant.Id, context.CancellationToken);
+        }, roomId, context.SelfId, context.CancellationToken);
 
         return HandlerResult.Success();
     }
