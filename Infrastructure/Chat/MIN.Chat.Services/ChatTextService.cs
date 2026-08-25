@@ -22,7 +22,7 @@ public sealed class ChatTextService : IChatTextService
         this.identityService = identityService;
     }
 
-    async Task IChatTextService.SendTextMessageAsync(Guid roomId, string content, Guid? recipientId, CancellationToken cancellationToken)
+    async Task IChatTextService.SendTextMessageAsync(Guid roomId, string content, Guid? recipientId, string? replyToDescription, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(content))
         {
@@ -34,6 +34,7 @@ public sealed class ChatTextService : IChatTextService
             Sender = identityService.SelfParticipant.ToParticipantInfo(),
             Content = content,
             RecipientId = recipientId,
+            ReplyToMessageDescription = replyToDescription,
         };
 
         await messageRouter.RouteAsync(message, roomId, identityService.SelfParticipant.Id, cancellationToken);

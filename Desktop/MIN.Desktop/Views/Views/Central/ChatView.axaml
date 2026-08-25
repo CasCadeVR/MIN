@@ -380,6 +380,29 @@
                                 <TextBlock VerticalAlignment="Center" Text="{Binding StatusContent}"/>
                             </StackPanel>
                         </Border>
+
+                        <Border Padding="0,0,0,2"
+                            Opacity="0.8"
+                            IsVisible="{Binding ReplyToPreview,
+                                Converter={converters:NonEqualityConverter},
+                                ConverterParameter={x:Null}}">
+
+                            <DockPanel VerticalAlignment="Center">
+                                <Button
+                                    VerticalAlignment="Center"
+                                    DockPanel.Dock="Right"
+                                    ToolTip.Tip="Отменить ответ"
+                                    Command="{Binding ResetReplyToCommand}"
+                                    Classes="icon">
+                                    <Svg Path="/Assets/Icons/close.svg" />
+                                </Button>
+
+                                <TextBlock VerticalAlignment="Center">
+                                    <TextBlock VerticalAlignment="Center" Text="Отвечает на: " />
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding ReplyToPreview}" />
+                                </TextBlock>
+                            </DockPanel>
+                        </Border>
                        
                         <DockPanel HorizontalSpacing="8" >
                             <Button

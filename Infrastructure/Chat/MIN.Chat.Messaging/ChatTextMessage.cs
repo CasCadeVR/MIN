@@ -26,7 +26,7 @@ public sealed class ChatTextMessage : BaseContentMessage, IDescribable, IReplyab
     public ParticipantInfo Sender { get; set; } = null!;
 
     /// <inheritdoc />
-    public Guid? ReplyToMessageId { get; set; }
+    public string? ReplyToMessageDescription { get; set; }
 
     string IDescribable.GetDescription() => $"{Sender.Name}: {Content}";
 }

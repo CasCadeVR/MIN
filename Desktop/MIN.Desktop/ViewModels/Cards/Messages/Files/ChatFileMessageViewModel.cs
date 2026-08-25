@@ -35,8 +35,8 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(fileTransferFeatureCollection, dialogService, roomScope, fileMetadataMessage, timePadding,
-            localParticipant, isHostMessage, removeHeaders, clipboard)
+        : base(fileTransferFeatureCollection, dialogService, roomScope, fileMetadataMessage,
+            timePadding, localParticipant, isHostMessage, removeHeaders, clipboard)
     { }
 
     /// <inheritdoc />

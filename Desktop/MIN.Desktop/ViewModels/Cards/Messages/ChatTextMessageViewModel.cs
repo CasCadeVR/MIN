@@ -37,6 +37,7 @@ public partial class ChatTextMessageViewModel : BaseTextContentChatMessageViewMo
         IClipboard? clipboard)
         : base(chatMessage,
             chatMessage,
+            chatMessage,
             dialogService,
             chatMessage.Sender.Name,
             timePadding,

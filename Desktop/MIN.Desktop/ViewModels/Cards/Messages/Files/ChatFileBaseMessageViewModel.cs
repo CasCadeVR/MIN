@@ -92,6 +92,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChat
         IClipboard? clipboard)
         : base(fileMetadataMessage,
             fileMetadataMessage,
+            fileMetadataMessage,
             dialogService,
             fileMetadataMessage.Sender.Name,
             timePadding,

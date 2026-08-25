@@ -211,6 +211,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var card = new ChatTextMessageViewModel(msg, dialogService, timePadding, isSelf, isHost, removeHeaders, parentWindow.Clipboard);
         card.OnDeleteRequested += () => OnMessageDeleteRequested(msg.Id);
         card.OnEditRequested += (newContent) => OnMessageEditRequested(msg.Id, newContent);
+        card.OnReplyRequested += () => SetReplyTo(msg);
 
         if (!withAppendOnTop)
         {
@@ -235,46 +236,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         card.OnCancelRequested += () => OnCancelRequested(msg);
         card.OnDeleteRequested += () => OnMessageDeleteRequested(msg.Id);
         card.OnEditRequested += (newContent) => OnMessageEditRequested(msg.Id, newContent);
-
-        if (!withAppendOnTop)
-        {
-            await InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
-        }
-
-        lastChatMessage = msg;
-        return card;
-    }
-
-    private async Task<ChatSessionMessageViewModel> CreateSessionMessageCard(SessionReadyMessage msg,
-           bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
-    {
-        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
-        var timePadding = CalculateTimePadding(msg.Timestamp);
-
-        var card = new ChatSessionMessageViewModel(featureCollection.Sessions,
-            roomScope, featureCollection.Core.EventBus, dialogService,
-            msg, localParticipant, timePadding, isHost, removeHeaders);
-        card.OnJoinRequested += () => OnSessionJoinRequested(msg);
-
-        if (!withAppendOnTop)
-        {
-            await InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
-        }
-
-        lastChatMessage = msg;
-        return card;
-    }
-
-    private async Task<ChatVoiceCallMessageViewModel> CreateVoiceMessageCard(VoiceCallStartedMessage msg,
-       bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
-    {
-        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
-        var timePadding = CalculateTimePadding(msg.Timestamp);
-
-        var card = new ChatVoiceCallMessageViewModel(roomScope, msg, localParticipant, timePadding, isHost, removeHeaders);
-
-        card.OnJoinRequested += () => OnVoiceCallJoinRequested(msg.SubRoomId);
-        card.OnLeaveRequested += () => OnVoiceCallLeaveRequested(msg.SubRoomId);
+        card.OnReplyRequested += () => SetReplyTo(msg);
 
         if (!withAppendOnTop)
         {
@@ -299,6 +261,48 @@ public partial class ChatViewModel : RoutableViewModelBase
         card.OnCancelRequested += () => OnCancelRequested(msg);
         card.OnDeleteRequested += () => OnMessageDeleteRequested(msg.Id);
         card.OnEditRequested += (newContent) => OnMessageEditRequested(msg.Id, newContent);
+        card.OnReplyRequested += () => SetReplyTo(msg);
+
+        if (!withAppendOnTop)
+        {
+            await InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+        }
+
+        lastChatMessage = msg;
+        return card;
+    }
+
+    private async Task<ChatSessionMessageViewModel> CreateSessionMessageCard(SessionReadyMessage msg,
+           bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
+    {
+        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
+        var timePadding = CalculateTimePadding(msg.Timestamp);
+
+        var card = new ChatSessionMessageViewModel(featureCollection.Sessions,
+            roomScope, featureCollection.Core.EventBus, dialogService,
+            msg, localParticipant, timePadding, isHost, removeHeaders);
+        card.OnJoinRequested += () => OnSessionJoinRequested(msg);
+        card.OnReplyRequested += () => SetReplyTo(msg);
+
+        if (!withAppendOnTop)
+        {
+            await InsertPrivateChatSystemMessageIfNeeded(msg.SenderId, msg.RecipientId, isCurrentPrivate);
+        }
+
+        lastChatMessage = msg;
+        return card;
+    }
+
+    private async Task<ChatVoiceCallMessageViewModel> CreateVoiceMessageCard(VoiceCallStartedMessage msg,
+       bool isSelf, bool isHost, bool isCurrentPrivate, bool withAppendOnTop)
+    {
+        var removeHeaders = isSelf || lastChatMessage?.SenderId == msg.SenderId;
+        var timePadding = CalculateTimePadding(msg.Timestamp);
+
+        var card = new ChatVoiceCallMessageViewModel(roomScope, msg, localParticipant, timePadding, isHost, removeHeaders);
+
+        card.OnJoinRequested += () => OnVoiceCallJoinRequested(msg.SubRoomId);
+        card.OnLeaveRequested += () => OnVoiceCallLeaveRequested(msg.SubRoomId);
 
         if (!withAppendOnTop)
         {
@@ -331,7 +335,6 @@ public partial class ChatViewModel : RoutableViewModelBase
     }
 
     #region Helper methods
-
 
     private Thickness CalculateTimePadding(DateTime timestamp)
     {

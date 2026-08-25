@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages"
              xmlns:focusBehaviours="using:MIN.Desktop.Infrastructure.Behaviors.Focus"
+             xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -57,7 +58,7 @@
                 <Separator />
 
                 <MenuItem Header="Ответить"
-                    Command="{Binding DeleteMessageCommand}">
+                    Command="{Binding SetAsReplyCommand}">
                     <MenuItem.Icon>
                         <Svg Path="/Assets/Icons/answer.svg" />
                     </MenuItem.Icon>
@@ -81,6 +82,14 @@
             Classes.self="{Binding IsLocal}">
 
             <StackPanel Spacing="8">
+                <Border Classes.self="{Binding IsLocal}"
+                    IsVisible="{Binding ReplyToDescription,
+                        Converter={converters:NonEqualityConverter},
+                        ConverterParameter={x:Null}}">
+                    <Button Padding="{DynamicResource PaddingSmall}"
+                        Content="{Binding ReplyToDescription}"/>
+                </Border>
+
                 <DockPanel HorizontalSpacing="8" IsVisible="{Binding !RemoveHeaders}">
                     <TextBlock
                         FontWeight="Bold"

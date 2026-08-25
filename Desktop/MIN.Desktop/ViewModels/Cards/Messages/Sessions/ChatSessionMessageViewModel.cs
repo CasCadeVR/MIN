@@ -11,6 +11,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.ViewModels.Cards.Messages.Base;
 using MIN.Desktop.ViewModels.Modals;
 using MIN.Sessions.Core.DI.FeatureCollection;
 using MIN.Sessions.Core.Events;
@@ -21,7 +22,7 @@ namespace MIN.Desktop.ViewModels.Cards.Messages.Sessions;
 /// <summary>
 /// Сообщение сессии участника
 /// </summary>
-public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDisposable
+public partial class ChatSessionMessageViewModel : BaseReplyableChatMessageViewModel, IDisposable
 {
     private readonly IDialogService dialogService = null!;
     private readonly int? maximumParticipants;
@@ -81,6 +82,7 @@ public partial class ChatSessionMessageViewModel : BaseChatMessageViewModel, IDi
         bool isHostMessage,
         bool removeHeaders)
         : base(sessionReadyMessage,
+            null,
             sessionReadyMessage.Sender.Name,
             timePadding,
             localParticipant.Id == sessionReadyMessage.SenderId,

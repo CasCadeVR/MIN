@@ -6,7 +6,7 @@
 public interface IReplyable
 {
     /// <summary>
-    /// Идентификатор сообщения, на которое дан ответ
+    /// Описание сообщения, на которое дан ответ
     /// </summary>
-    Guid? ReplyToMessageId { get; set; }
+    string? ReplyToMessageDescription { get; set; }
 }

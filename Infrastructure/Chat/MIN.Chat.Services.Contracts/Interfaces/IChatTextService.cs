@@ -8,5 +8,5 @@ public interface IChatTextService
     /// <summary>
     /// Отправить текстовое сообщение
     /// </summary>
-    Task SendTextMessageAsync(Guid roomId, string content, Guid? recipientId = null, CancellationToken cancellationToken = default);
+    Task SendTextMessageAsync(Guid roomId, string content, Guid? recipientId = null, string? replyToDescription = null, CancellationToken cancellationToken = default);
 }

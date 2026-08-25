@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.ViewModels.Cards.Messages.Base;
 using MIN.Desktop.ViewModels.Modals;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages;
@@ -13,7 +14,7 @@ namespace MIN.Desktop.ViewModels.Cards.Messages;
 /// <summary>
 /// Базовая view модель текстового сообщения, способное отредактироваться
 /// </summary>
-public abstract partial class BaseTextContentChatMessageViewModel : BaseChatMessageViewModel
+public abstract partial class BaseTextContentChatMessageViewModel : BaseReplyableChatMessageViewModel
 {
     private readonly IDialogService dialogService = null!;
 
@@ -56,6 +57,7 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseChatMess
     /// </summary>
     public BaseTextContentChatMessageViewModel(IMessage message,
         IContentEditable contentEditable,
+        IReplyable replyable,
         IDialogService dialogService,
         string name,
         Thickness timePadding,
@@ -63,6 +65,7 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseChatMess
         bool isHost,
         bool removeHeaders)
         : base(message,
+            replyable,
             name,
             timePadding,
             isLocal,

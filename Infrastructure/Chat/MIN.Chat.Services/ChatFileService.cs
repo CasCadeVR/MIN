@@ -37,7 +37,7 @@ public sealed class ChatFileService : IChatFileService
         this.identityService = identityService;
     }
 
-    async Task IChatFileService.SendFileAsync(Guid roomId, string content, string fileName, string filePath, Guid? recipientId, CancellationToken cancellationToken)
+    async Task IChatFileService.SendFileAsync(Guid roomId, string content, string fileName, string filePath, Guid? recipientId, string? replyToDescription, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(filePath) || !Path.Exists(filePath))
         {
@@ -56,6 +56,7 @@ public sealed class ChatFileService : IChatFileService
             FilePath = filePath,
             FileSize = fileFeatureCollection.FileHelperService.GetFileSize(filePath),
             RecipientId = recipientId,
+            ReplyToMessageDescription = replyToDescription,
         };
 
         if (!registry.IsHosting(roomId))

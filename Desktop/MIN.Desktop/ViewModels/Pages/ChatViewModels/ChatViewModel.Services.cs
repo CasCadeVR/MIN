@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Windows;
@@ -23,6 +24,12 @@ namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 public partial class ChatViewModel : RoutableViewModelBase
 {
     private Window parentWindow = null!;
+
+    /// <summary>
+    /// Превью ответа на вопрос (просто показать в строчке описание сообщения)
+    /// </summary>
+    [ObservableProperty]
+    public partial string? ReplyToPreview { get; set; }
 
     /// <summary>
     /// Отправляемое сообщение в textBox
@@ -61,6 +68,17 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             featureCollection.Helper.NotificationService.Notify(message, room.Name);
         }
+    }
+
+    private void SetReplyTo(IMessage message)
+    {
+        ReplyToPreview = (message as IDescribable)?.GetDescription();
+    }
+
+    [RelayCommand]
+    private void ResetReplyTo()
+    {
+        ReplyToPreview = null;
     }
 
     private async Task OnDownloadRequested(FileMetadataMessage fileMetadata)
@@ -175,6 +193,7 @@ public partial class ChatViewModel : RoutableViewModelBase
                 await featureCollection.Chat.ChatTextService.SendTextMessageAsync(roomId,
                     SendingMessage.Trim(),
                     chatSideBarViewModel.PrivateChatParticipantId,
+                    ReplyToPreview,
                     appCts.Token
                 );
             }
@@ -208,12 +227,14 @@ public partial class ChatViewModel : RoutableViewModelBase
                    fileAttachement.File.FileName,
                    fileAttachement.File.FilePath,
                    chatSideBarViewModel.PrivateChatParticipantId,
+                   ReplyToPreview,
                    appCts.Token
                );
             }
 
             AttachedFiles.Clear();
             SendingMessage = string.Empty;
+            ReplyToPreview = null;
         }
         catch (Exception ex)
         {
