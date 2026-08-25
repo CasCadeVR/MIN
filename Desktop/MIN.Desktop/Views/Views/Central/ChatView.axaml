@@ -372,10 +372,15 @@
                             </ScrollViewer>
                         </Border>
 
-                        <TextBlock Text="{Binding StatusContent}"
-                            Opacity="0.5"
-                            IsVisible="{Binding ShowStatus}"/>
-
+                        <Border Padding="0,0,0,2"
+                            Opacity="0.8"
+                            IsVisible="{Binding ShowStatus}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                                <Svg Path="/Assets/Icons/typing.svg"/>
+                                <TextBlock VerticalAlignment="Center" Text="{Binding StatusContent}"/>
+                            </StackPanel>
+                        </Border>
+                       
                         <DockPanel HorizontalSpacing="8" >
                             <Button
                                 VerticalAlignment="Bottom"

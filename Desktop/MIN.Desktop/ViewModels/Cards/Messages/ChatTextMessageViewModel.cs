@@ -18,7 +18,12 @@ public partial class ChatTextMessageViewModel : BaseTextContentChatMessageViewMo
     /// <summary>
     /// Содержимое сообщения
     /// </summary>
-    public ChatTextMessage ChatMessage { get; init; }
+    public ChatTextMessage ChatMessage { get; init; } = null!;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="ChatTextMessageViewModel"/>
+    /// </summary>
+    public ChatTextMessageViewModel() { }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatTextMessageViewModel"/>

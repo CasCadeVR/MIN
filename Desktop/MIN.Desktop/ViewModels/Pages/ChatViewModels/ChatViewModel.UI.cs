@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Contracts.Interfaces;
@@ -21,6 +22,8 @@ namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 public partial class ChatViewModel : RoutableViewModelBase
 {
     private readonly AvaloniaList<IDescribableStatus> currentStatuses = [];
+    private readonly List<ParticipantInfo> currentTypingParticipants = [];
+    private Guid currentTypingParticipantsStatusId;
 
     /// <summary>
     /// Приложенные файлы

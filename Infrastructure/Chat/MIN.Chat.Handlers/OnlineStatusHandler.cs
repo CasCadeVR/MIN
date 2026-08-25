@@ -1,6 +1,7 @@
 ﻿using MIN.Chat.Events;
 using MIN.Chat.Messaging;
 using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
@@ -20,6 +21,11 @@ internal sealed class OnlineStatusHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        //if (message.SenderId == context.SelfId)
+        //{
+        //    return HandlerResult.Success();
+        //}
+
         var onlineStatusChangedMessage = (OnlineStatusChangedMessage)message;
 
         if (context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var participant))
@@ -36,7 +42,8 @@ internal sealed class OnlineStatusHandler : BaseHandler
         {
             RoomId = context.RoomContext.RoomId,
             Status = onlineStatusChangedMessage.Status,
-            SenderId = message.SenderId,
+            Participant = participant?.ToParticipantInfo()
+                ?? context.RoomContext.Participants.GetParticipantById(message.SenderId).ToParticipantInfo(),
         });
     }
 }

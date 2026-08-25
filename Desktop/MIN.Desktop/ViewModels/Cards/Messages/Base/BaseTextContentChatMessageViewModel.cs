@@ -15,7 +15,7 @@ namespace MIN.Desktop.ViewModels.Cards.Messages;
 /// </summary>
 public abstract partial class BaseTextContentChatMessageViewModel : BaseChatMessageViewModel
 {
-    private readonly IDialogService dialogService;
+    private readonly IDialogService dialogService = null!;
 
     /// <summary>
     /// Идёт редактирование
@@ -39,12 +39,17 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseChatMess
     /// Текущий контент
     /// </summary>
     [ObservableProperty]
-    public partial string Content { get; set; }
+    public partial string Content { get; set; } = string.Empty;
 
     /// <summary>
     /// Пользователь захотел отредактировать сообщение
     /// </summary>
     public Func<string, Task>? OnEditRequested;
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="BaseTextContentChatMessageViewModel"/>
+    /// </summary>
+    public BaseTextContentChatMessageViewModel() { }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
