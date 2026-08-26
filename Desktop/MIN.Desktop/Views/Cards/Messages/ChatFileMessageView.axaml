@@ -108,6 +108,20 @@
                         DockPanel.Dock="Right" />
                 </DockPanel>
 
+                <Border Classes.self="{Binding IsLocal}"
+                    Opacity="0.7"
+                    IsVisible="{Binding ReplyToDescription,
+                        Converter={converters:NonEqualityConverter},
+                        ConverterParameter={x:Null}}">
+                    <Button Padding="{DynamicResource PaddingSmall}"
+                        Classes="no-background"
+                        HorizontalContentAlignment="{Binding IsLocal,
+                            Converter={converters:IsSelfBoolHorizontalToConverter}}"
+                        Content="{Binding ReplyToDescription,
+                            Converter={converters:TruncateWithEllipsisConverter},
+                            ConverterParameter=80}"/>
+                </Border>
+
                 <DockPanel HorizontalSpacing="8">
                     <TextBlock
                         DockPanel.Dock="Right"

@@ -71,7 +71,8 @@ public sealed class RoomStore : IRoomStore
     }
 
     private static int GetMessagesCountFor(RoomContext context, Guid participantId)
-        => context.Messages.GetHistory().Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId).Count();
+        => context.Messages.GetHistory()
+        .Where(x => x.IsPublic || x.RecipientId == participantId || x.SenderId == participantId).Count();
 
     Guid IRoomStore.GetRoomHostParticipantId(Guid roomId)
         => roomsById.TryGetValue(roomId, out var room) ? room.HostParticipant.Id : throw new KeyNotFoundException();

@@ -39,9 +39,14 @@ public interface IMessageStore
     IEnumerable<IMessage> GetHistory(int? page = null, int? pageSize = null);
 
     /// <summary>
-    /// Получить последнее сообщение
+    /// Получить последнее сообщение (внизу)
     /// </summary>
-    IMessage GetLastMessage();
+    IMessage? GetLastMessage();
+
+    /// <summary>
+    /// Получить первое сообщение (вверху)
+    /// </summary>
+    IMessage? GetFirstMessage();
 
     /// <summary>
     /// Удалить сообщение по Id

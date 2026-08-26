@@ -66,6 +66,15 @@
 
                 <Separator />
 
+                <MenuItem Header="Ответить"
+                    Command="{Binding SetAsReplyCommand}">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/answer.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
                 <MenuItem Header="Удалить сообщение"
                     Command="{Binding DeleteMessageCommand}"
                     Classes="danger">
@@ -100,6 +109,20 @@
                         Text="Хост"
                         DockPanel.Dock="Right" />
                 </DockPanel>
+
+                <Border Classes.self="{Binding IsLocal}"
+                    Opacity="0.7"
+                    IsVisible="{Binding ReplyToDescription,
+                        Converter={converters:NonEqualityConverter},
+                        ConverterParameter={x:Null}}">
+                    <Button Padding="{DynamicResource PaddingSmall}"
+                        Classes="no-background"
+                        HorizontalContentAlignment="{Binding IsLocal,
+                            Converter={converters:IsSelfBoolHorizontalToConverter}}"
+                        Content="{Binding ReplyToDescription,
+                            Converter={converters:TruncateWithEllipsisConverter},
+                            ConverterParameter=80}"/>
+                </Border>
 
                 <Panel>
                     <StackPanel>

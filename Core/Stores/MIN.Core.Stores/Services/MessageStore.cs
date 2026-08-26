@@ -74,11 +74,19 @@ public sealed class MessageStore : IMessageStore
         }
     }
 
-    IMessage IMessageStore.GetLastMessage()
+    IMessage? IMessageStore.GetLastMessage()
     {
         lock (messages)
         {
-            return messages.Last();
+            return messages.LastOrDefault();
+        }
+    }
+
+    IMessage? IMessageStore.GetFirstMessage()
+    {
+        lock (messages)
+        {
+            return messages.FirstOrDefault();
         }
     }
 

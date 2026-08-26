@@ -57,6 +57,8 @@ public partial class ChatViewModel : RoutableViewModelBase
         // Other
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated);
         roomScope.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated);
+        roomScope.Subscribe<ChatHistoryClearedEvent>(OnChatHistoryCleared);
+
         roomScope.Subscribe<MessageDeletedEvent>(ChatMessageDeleted);
         roomScope.Subscribe<MessageEditedEvent>(ChatMessageEdited);
         roomScope.Subscribe<OnlineStatusChangedEvent>(OnOnlineStatusChanged);
@@ -253,6 +255,20 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             ShowLoadMoreLabel();
         }
+    }
+
+    private async Task OnChatHistoryCleared(ChatHistoryClearedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        RemoveLoadMoreLabel();
+        Messages.Clear();
+        renderedMessageCount = 1;
+        MissedMessagesCount = 0;
+        loadedPage = 1;
+
+        await SendSystemMessage(new SystemTextMessage()
+        {
+            Content = (eventMessage.Message as IDescribable).GetDescription()
+        });
     }
 
     private async Task ChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)

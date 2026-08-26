@@ -88,6 +88,14 @@
 
                                     <Separator />
 
+                                    <MenuItem Classes="danger"
+                                            Header="Очистить историю сообщений"
+                                            Command="{Binding ClearHistoryUpToThisMomentCommand}">
+                                        <MenuItem.Icon>
+                                            <Svg Path="/Assets/Icons/clear.svg" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+
                                     <MenuItem IsVisible="{Binding !IsHost}"
                                             Classes="danger"
                                             Header="Покинуть комнату"
@@ -397,9 +405,12 @@
                                     <Svg Path="/Assets/Icons/close.svg" />
                                 </Button>
 
-                                <TextBlock VerticalAlignment="Center">
+                                <TextBlock MaxLines="3"
+                                    VerticalAlignment="Center">
                                     <TextBlock VerticalAlignment="Center" Text="Отвечает на: " />
-                                    <TextBlock VerticalAlignment="Center" Text="{Binding ReplyToPreview}" />
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding ReplyToPreview,
+                                        Converter={converters:TruncateWithEllipsisConverter},
+                                        ConverterParameter=80}" />
                                 </TextBlock>
                             </DockPanel>
                         </Border>

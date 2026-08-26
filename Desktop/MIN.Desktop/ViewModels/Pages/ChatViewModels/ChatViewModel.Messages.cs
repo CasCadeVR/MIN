@@ -3,16 +3,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Collections;
+using CommunityToolkit.Mvvm.Input;
 using MIN.Chat.Messaging;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Stores.Contracts.Constants;
+using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Cards.Messages;
 using MIN.Desktop.ViewModels.Cards.Messages.Files;
 using MIN.Desktop.ViewModels.Cards.Messages.Sessions;
 using MIN.Desktop.ViewModels.Cards.Messages.Voice;
+using MIN.Desktop.ViewModels.Modals;
 using MIN.FileTransfer.Messaging;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Voice.Messaging;
@@ -200,6 +203,26 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
 
         ShowLoadMoreLabel();
+    }
+
+    [RelayCommand]
+    private async Task ClearHistoryUpToThisMoment()
+    {
+        bool confirmation = await dialogService.ShowDialogAsync<DialogBoxViewModel>(model =>
+        {
+            model.Title = $"Очищение истории для комнаты {room.Name}";
+            model.Description = "Вы точно хотите очистить историю? "
+            + "\nЭто поможет снизить нагрузку."
+            + "\nПри перезаходе из комнаты история возобновиться.";
+            model.ButtonOptions = ButtonOptions.YesNo;
+        });
+
+        if (!confirmation)
+        {
+            return;
+        }
+
+        await OnHistoryClearRequested();
     }
 
     private async Task<ChatTextMessageViewModel> CreateTextMessageCard(ChatTextMessage msg,

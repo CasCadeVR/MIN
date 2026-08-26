@@ -190,6 +190,11 @@ public enum MessageTypeTag : byte
     /// </summary>
     OnlineStatusChanged = 72,
 
+    /// <summary>
+    /// Удаление истории чата
+    /// </summary>
+    ChatHistoryClear = 73,
+
     // ===== Сообщения управления комнатой (96-127) =====
 
     /// <summary>

@@ -150,8 +150,19 @@ public partial class ChatViewModel : RoutableViewModelBase
     private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
         => await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
             fileMetadata,
-            appCts.Token
-        );
+            appCts.Token);
+
+    private async Task OnHistoryClearRequested()
+    {
+        try
+        {
+            await featureCollection.Chat.ChatMessageService.ClearMessageHistoryAsync(roomId, appCts.Token);
+        }
+        catch (Exception ex)
+        {
+            InAppNotifier.Info(ex.Message);
+        }
+    }
 
     private bool IsMessageValid() => !string.IsNullOrWhiteSpace(SendingMessage) || SomeFilesAttached;
 

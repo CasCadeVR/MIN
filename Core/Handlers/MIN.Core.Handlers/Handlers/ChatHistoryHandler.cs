@@ -1,10 +1,13 @@
-﻿using MIN.Core.Entities.Contracts.Enums;
+﻿using MIN.Common.Core.Contracts.Interfaces;
+using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Exceptions;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.Stateless.RoomRelated.History;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -13,15 +16,19 @@ namespace MIN.Core.Handlers.Handlers;
 
 internal sealed class ChatHistoryHandler : BaseHandler
 {
+    private readonly IEventBus eventBus;
     private readonly IRoomStore roomStore;
 
-    public ChatHistoryHandler(IRoomStore roomStore, ILoggerProvider logger) : base(logger)
+    public ChatHistoryHandler(IEventBus eventBus,
+        IRoomStore roomStore,
+        ILoggerProvider logger) : base(logger)
     {
+        this.eventBus = eventBus;
         this.roomStore = roomStore;
     }
 
     public override IEnumerable<MessageTypeTag> HandledTypes
-        => [MessageTypeTag.ChatHistoryRequest, MessageTypeTag.ChatHistoryResponse];
+        => [MessageTypeTag.ChatHistoryRequest, MessageTypeTag.ChatHistoryResponse, MessageTypeTag.ChatHistoryClear];
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
@@ -57,6 +64,33 @@ internal sealed class ChatHistoryHandler : BaseHandler
                 {
                     RoomId = roomId,
                     Message = response,
+                });
+
+            case ChatHistoryClearMessage clearMessage:
+                var room = roomStore.GetRoom(roomId);
+                room.LocalRoomSettings.HistoryWipedOutUpTo = DateTime.Now;
+
+                var allMessages = context.RoomContext.Messages.GetHistory();
+
+                foreach (var messageToClear in allMessages)
+                {
+                    await eventBus.PublishAsync(new MessageDeletedEvent()
+                    {
+                        MessageId = messageToClear.Id,
+                        RoomId = roomId,
+                    }, context.CancellationToken);
+                }
+
+                context.RoomContext.Messages.ClearMessages();
+                context.RoomContext.Messages.AddMessage(new SystemTextMessage()
+                {
+                    Content = (clearMessage as IDescribable).GetDescription()
+                });
+
+                return HandlerResult.WithEvent(new ChatHistoryClearedEvent()
+                {
+                    RoomId = roomId,
+                    Message = clearMessage,
                 });
 
             default:

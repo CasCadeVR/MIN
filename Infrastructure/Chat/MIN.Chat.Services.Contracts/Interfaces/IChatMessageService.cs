@@ -14,4 +14,9 @@ public interface IChatMessageService
     /// Удалить сообщение
     /// </summary>
     Task DeleteMessageAsync(Guid roomId, Guid messageId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Очистить историю сообщений по текущее время
+    /// </summary>
+    Task ClearMessageHistoryAsync(Guid roomId, CancellationToken cancellationToken = default);
 }
