@@ -243,12 +243,18 @@ public partial class ChatViewModel : RoutableViewModelBase
     [RelayCommand]
     private async Task ClearHistoryUpToThisMoment()
     {
+        var message = "Вы точно хотите очистить историю? "
+            + "\nЭто поможет снизить нагрузку.";
+
+        if (!IsHost)
+        {
+            message += "\nПри перезаходе из комнаты история возобновиться.";
+        }
+
         bool confirmation = await dialogService.ShowDialogAsync<DialogBoxViewModel>(model =>
         {
             model.Title = $"Очищение истории для комнаты {room.Name}";
-            model.Description = "Вы точно хотите очистить историю? "
-            + "\nЭто поможет снизить нагрузку."
-            + "\nПри перезаходе из комнаты история возобновиться.";
+            model.Description = message;
             model.ButtonOptions = ButtonOptions.YesNo;
         });
 
