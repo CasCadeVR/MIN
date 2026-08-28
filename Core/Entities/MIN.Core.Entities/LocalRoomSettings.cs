@@ -16,4 +16,12 @@ public record LocalRoomSettings
     /// Настройки глобальности сети
     /// </summary>
     public NetworkOptions NetworkOptions { get; set; }
+
+    /// <summary>
+    /// Время последнего сообщения, перед которым испория была очищена
+    /// </summary>
+    /// <remarks>
+    /// null - если историю не очищали
+    /// </remarks>
+    public DateTime? HistoryWipedOutUpTo { get; set; }
 }

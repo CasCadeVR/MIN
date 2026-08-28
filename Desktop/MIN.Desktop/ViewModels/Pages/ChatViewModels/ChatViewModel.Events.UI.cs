@@ -338,6 +338,9 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         parentWindow.Activated -= Parent_Activated;
         parentWindow.Deactivated -= Parent_Deactivate;
+
+        featureCollection.Helper.NotificationService.OnNotificationClick -= OnNotificationClick;
+        featureCollection.Helper.NotificationService.NotificationTurnOffClicked -= NotificationTurnOffClicked;
     }
 
     private async void Parent_Deactivate(object? sender, EventArgs e)

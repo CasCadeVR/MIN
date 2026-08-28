@@ -1,4 +1,5 @@
-﻿using MIN.Core.Messaging.Contracts.Interfaces;
+﻿using MIN.Core.Events.Contracts.Models;
+using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Contracts.Models;
 
@@ -31,6 +32,11 @@ public sealed class HandlerResult
     /// Ответное сообщение (если требуется)
     /// </summary>
     public IMessage? Response { get; init; }
+
+    /// <summary>
+    /// Вызываемое событие (если требуется)
+    /// </summary>
+    public BaseEvent? ResultEvent { get; init; }
 
     /// <summary>
     /// Сообщение об ошибке (если не успешно)
@@ -69,5 +75,28 @@ public sealed class HandlerResult
             IsSuccess = true,
             StopPropagation = stopPropagation,
             Response = response
+        };
+
+    /// <summary>
+    /// Создаёт результат с вызыванием события
+    /// </summary>
+    public static HandlerResult WithEvent(BaseEvent resultEvent, bool stopPropagation = false)
+        => new()
+        {
+            IsSuccess = true,
+            StopPropagation = stopPropagation,
+            ResultEvent = resultEvent
+        };
+
+    /// <summary>
+    /// Создаёт результат с возвратом ошибки отправителю
+    /// </summary>
+    public static HandlerResult WithErrorHandled(string errorMessage, bool stopPropagation = false, bool critical = false)
+        => new()
+        {
+            IsSuccess = true,
+            StopPropagation = stopPropagation,
+            ErrorMessage = errorMessage,
+            CriticalError = critical,
         };
 }

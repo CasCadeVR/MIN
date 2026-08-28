@@ -1,12 +1,12 @@
 ﻿using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
+using MIN.Core.Handlers.Contracts.Exceptions;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -16,41 +16,32 @@ using MIN.Sessions.Core.Services.Contracts.Interfaces;
 
 namespace MIN.Sessions.Core.Handlers;
 
-internal sealed class SessionJoinHandler : IMessageHandler
+internal sealed class SessionJoinHandler : BaseHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
     private readonly ISessionScanner sessionScanner;
-    private readonly INetworkErrorHandler networkErrorHandler;
     private readonly IIdentityService identityService;
-    private readonly ILoggerProvider logger;
 
-    /// <summary>
-    /// Инициализирует новый экземлпяр <see cref="SessionJoinHandler"/>
-    /// </summary>
     public SessionJoinHandler(ISubRoomManager subRoomManager,
         IEventBus eventBus,
         IMessageRouter messageRouter,
         ISessionScanner sessionScanner,
-        INetworkErrorHandler networkErrorHandler,
         IIdentityService identityService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
         this.sessionScanner = sessionScanner;
-        this.networkErrorHandler = networkErrorHandler;
         this.identityService = identityService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionJoinRequest, MessageTypeTag.SessionJoinResponse];
+    public override IEnumerable<MessageTypeTag> HandledTypes
+        => [MessageTypeTag.SessionJoinRequest, MessageTypeTag.SessionJoinResponse];
 
-    int IMessageHandler.Priority => 15;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         switch (message)
         {
@@ -66,31 +57,27 @@ internal sealed class SessionJoinHandler : IMessageHandler
 
                 if (subRoomInfo == null)
                 {
-                    await networkErrorHandler.SendErrorAsync("Такая подкомната не нашлась", message.SenderId, roomId);
-                    return HandlerResult.Success();
+                    return HandlerResult.WithErrorHandled("Такая подкомната не нашлась");
                 }
 
                 var session = sessionScanner.GetSessionById(sessionJoinRequestMessage.SessionId);
 
                 if (session == null)
                 {
-                    await networkErrorHandler.SendErrorAsync("У хоста не установлена программа сервера этой сессии", message.SenderId, context.RoomContext.RoomId);
-                    return HandlerResult.Success();
+                    return HandlerResult.WithErrorHandled("У хоста не установлена программа сервера этой сессии");
                 }
 
                 if (session.Version != sessionJoinRequestMessage.SessionVersion)
                 {
                     var clientOnOlderVersion = session.Version > sessionJoinRequestMessage.SessionVersion ? "Вы" : "Хост";
-                    await networkErrorHandler.SendErrorAsync($"{clientOnOlderVersion} на устаревшей версии сессии: " +
+                    return HandlerResult.WithErrorHandled($"{clientOnOlderVersion} на устаревшей версии сессии: " +
                         $"\nВаша версия сессии - {sessionJoinRequestMessage.SessionVersion}" +
-                        $"\nВерсия сессии хоста комнаты - {session.Version}", message.SenderId, context.RoomContext.RoomId);
-                    return HandlerResult.Success();
+                        $"\nВерсия сессии хоста комнаты - {session.Version}");
                 }
 
                 if (session.MaximumParticipants.HasValue && subRoomInfo.Participants.Count >= session.MaximumParticipants)
                 {
-                    await networkErrorHandler.SendErrorAsync($"Сессия {session.Name} уже заполнена", message.SenderId, context.RoomContext.RoomId);
-                    return HandlerResult.Success();
+                    return HandlerResult.WithErrorHandled($"Сессия {session.Name} уже заполнена");
                 }
 
                 var senderParicipantInfo = sender!.ToParticipantInfo();
@@ -119,8 +106,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
                         _ => "Не удалось войти"
                     };
 
-                    await networkErrorHandler.SendErrorAsync(error, message.SenderId, roomId);
-                    return HandlerResult.Success();
+                    return HandlerResult.WithErrorHandled(error);
                 }
 
                 return HandlerResult.WithResponse(new SessionJoinResponseMessage()
@@ -163,7 +149,7 @@ internal sealed class SessionJoinHandler : IMessageHandler
                 return HandlerResult.Success();
 
             default:
-                return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionJoinHandler)} - {message.GetType()}");
+                throw new HandlerTypeMismatch(this, message);
         }
     }
 }

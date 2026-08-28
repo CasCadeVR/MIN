@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models.Enums;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.FileTransfer.DI.FeatureCollection;
@@ -26,6 +27,7 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
     /// Инициализирует новый экземпляр <see cref="ChatFileMessageViewModel"/>
     /// </summary>
     public ChatFileMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
+        IDialogService dialogService,
         IEventScope roomScope,
         FileMetadataMessage fileMetadataMessage,
         Thickness timePadding,
@@ -33,8 +35,8 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(fileTransferFeatureCollection, roomScope, fileMetadataMessage, timePadding,
-            localParticipant, isHostMessage, removeHeaders, clipboard)
+        : base(fileTransferFeatureCollection, dialogService, roomScope, fileMetadataMessage,
+            timePadding, localParticipant, isHostMessage, removeHeaders, clipboard)
     { }
 
     /// <inheritdoc />
@@ -67,7 +69,7 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
     private void InteractionMouseEnter()
     {
         InteractionFileStatus = string.Empty;
-        UpdateIconOutOfState();
+        UpdateDownloadState();
     }
 
     [RelayCommand]
@@ -83,21 +85,21 @@ public partial class ChatFileMessageViewModel : ChatFileBaseMessageViewModel
     [RelayCommand]
     private void InteractionClick()
     {
-        if (IsDownloading)
+        if (IsTransfering)
         {
             InvokeCancelRequested();
-            IsDownloading = false;
+            IsTransfering = false;
             return;
         }
 
-        if (downloaded)
+        if (Downloaded)
         {
             var path = FileMetadataMessage.FilePath;
 
             if (!Path.Exists(path))
             {
                 InAppNotifier.Warning("Файл не нашёлся");
-                downloaded = false;
+                Downloaded = false;
                 return;
             }
 

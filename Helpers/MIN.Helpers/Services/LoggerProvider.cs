@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models;
 using MIN.Helpers.Contracts.Models.Enums;
@@ -13,13 +14,27 @@ public class LoggerProvider : ILoggerProvider
     ///<inheritdoc cref="ILoggerProvider.OnLogReceived"/>
     public event EventHandler<LogItem>? OnLogReceived;
 
-    void ILoggerProvider.Log(string message, LogLevel level)
+    void ILoggerProvider.Log(string message, LogLevel level, Type? callerType)
     {
+        string? callerClass;
+        if (callerType == null)
+        {
+            var stackTrace = new StackTrace();
+            var frame = stackTrace.GetFrame(1);
+            callerClass = frame?.GetMethod()?.DeclaringType?.FullName ?? "Unknown";
+        }
+        else
+        {
+            callerClass = callerType.FullName ?? "Unknown";
+        }
+
         var formatted = new StringBuilder();
         formatted.Append(DateTime.Now.ToString("HH:mm:ss.fff"));
         formatted.Append(" - ");
         formatted.Append(Enum.GetName(level));
-        formatted.Append(" - ");
+        formatted.Append(" - [");
+        formatted.Append(callerClass);
+        formatted.Append("] ");
         formatted.Append(message);
         var result = formatted.ToString();
 

@@ -31,7 +31,7 @@ public interface IMessageStore
     /// <summary>
     /// Получить историю последних сообщений
     /// </summary>
-    IEnumerable<IMessage> GetRecentHistory(int page = 1, int pageSize = StoreConstants.MessagesPageSize);
+    IEnumerable<IMessage> GetRecentHistory(int pageSize = StoreConstants.MessagesPageSize);
 
     /// <summary>
     /// Получить историю сообщений
@@ -39,9 +39,24 @@ public interface IMessageStore
     IEnumerable<IMessage> GetHistory(int? page = null, int? pageSize = null);
 
     /// <summary>
-    /// Получить последнее сообщение
+    /// Получить все сообщения, старше по времени
     /// </summary>
-    IMessage GetLastMessage();
+    IEnumerable<IMessage> GetMessagesOlderThan(DateTime? oldestLoadedTimestamp, Guid? oldestLoadedMessageId, int pageSize = StoreConstants.MessagesPageSize);
+
+    /// <summary>
+    /// Получить последнее сообщение (внизу)
+    /// </summary>
+    IMessage? GetLastMessage();
+
+    /// <summary>
+    /// Получить первое сообщение (вверху)
+    /// </summary>
+    IMessage? GetFirstMessage();
+
+    /// <summary>
+    /// Удалить сообщение по Id
+    /// </summary>
+    void RemoveMessage(Guid id);
 
     /// <summary>
     /// Очистить сообщения из комнаты

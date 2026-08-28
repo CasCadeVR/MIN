@@ -64,7 +64,8 @@ public sealed class MessageRouter : IMessageRouter
         }
     }
 
-    private async Task PublishLocally(IMessage message, Guid roomId, Role role, IEnumerable<Guid>? broadcastExcludeIds, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async Task PublishLocally(IMessage message, Guid roomId, Role role, IEnumerable<Guid>? broadcastExcludeIds, CancellationToken cancellationToken)
         => await eventBus.PublishAsync(new LocalMessageReceivedEvent(message, roomId, role, broadcastExcludeIds), cancellationToken);
 
     private Guid GetHostConnectionId(Guid roomId, Guid hostId)

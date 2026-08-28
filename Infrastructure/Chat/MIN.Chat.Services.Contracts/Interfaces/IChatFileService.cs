@@ -10,7 +10,7 @@ public interface IChatFileService
     /// <summary>
     /// Отправить файл
     /// </summary>
-    Task SendFileAsync(Guid roomId, string fileName, string filePath, Guid? recipientId = null, CancellationToken cancellationToken = default);
+    Task SendFileAsync(Guid roomId, string content, string fileName, string filePath, Guid? recipientId = null, Guid? replyToId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Запросить загрузку файла

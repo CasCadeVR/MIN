@@ -5,13 +5,15 @@ using MIN.Core.Headers.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Enums;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Constants;
+using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Events.Sending;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Core.Streaming.Contracts.Models;
 using MIN.Core.Transport.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
 
-namespace MIN.Core.Streaming.Services;
+namespace MIN.Core.Streaming;
 
 /// <inheritdoc cref="IStreamManager"/>
 public sealed class StreamManager : IStreamManager, IDisposable
@@ -24,6 +26,15 @@ public sealed class StreamManager : IStreamManager, IDisposable
     private readonly ConcurrentDictionary<ChunkAckKey, PendingChunk> pendingChunks = new();
     private readonly ConcurrentDictionary<ChunkAckKey, Timer> ackTimers = new();
     private bool disposed;
+
+    /// <inheritdoc />
+    public event Func<ChunkSendedEventArgs, CancellationToken, Task>? ChunkSended;
+
+    /// <inheritdoc />
+    public event Func<StreamCompletedEventArgs, CancellationToken, Task>? OnStreamCompleted;
+
+    /// <inheritdoc />
+    public event Func<StreamFailedEventArgs, CancellationToken, Task>? OnStreamFailed;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="StreamManager"/>
@@ -57,6 +68,8 @@ public sealed class StreamManager : IStreamManager, IDisposable
 
         try
         {
+            long sentLength = 0;
+
             for (var i = 0; i < totalChunks; i++)
             {
                 var chunkStart = i * StreamingConstants.ChunkDataSize;
@@ -105,20 +118,49 @@ public sealed class StreamManager : IStreamManager, IDisposable
 
                 // Secure because of message assembling
                 await transport.SendAsync(encrypted, recipientConnectionId, serverConnectionId, MessageChannel.Secure, cancellationToken);
+                sentLength += encrypted.LongLength;
+                ChunkSended?.Invoke(new ChunkSendedEventArgs()
+                {
+                    RoomId = roomId,
+                    StreamId = streamId,
+                    ReceivedBytes = sentLength,
+                }, cancellationToken);
             }
 
             logger.Log($"Передача пакетов окончена");
+            OnStreamCompleted?.Invoke(new StreamCompletedEventArgs()
+            {
+                RoomId = roomId,
+                StreamId = streamId,
+                IsRawPayload = false,
+            }, cancellationToken);
             CleanForStream(streamId);
         }
-        catch (TaskCanceledException ex)
+        catch (OperationCanceledException ex)
         {
             logger.Log($"Передача пакетов была отменена: {ex.Message}", LogLevel.Warning);
+            OnStreamFailed?.Invoke(new StreamFailedEventArgs()
+            {
+                RoomId = roomId,
+                StreamId = streamId,
+                ErrorMessage = "Передача была отменена"
+            }, cancellationToken);
+            CleanForStream(streamId);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Передача пакетов провалилась: {ex.Message}", LogLevel.Error);
+            OnStreamFailed?.Invoke(new StreamFailedEventArgs()
+            {
+                RoomId = roomId,
+                StreamId = streamId,
+                ErrorMessage = "Передача пакетов провалилась"
+            }, cancellationToken);
             CleanForStream(streamId);
         }
     }
 
-    async Task IStreamManager.SendAsync(
-        Stream source,
+    async Task IStreamManager.SendAsync(Stream source,
         StreamOptions options,
         Guid roomId,
         Guid recipientConnectionId,
@@ -136,6 +178,7 @@ public sealed class StreamManager : IStreamManager, IDisposable
         try
         {
             var chunkIndex = 0;
+            long sentLength = 0;
             int bytesRead;
 
             while ((bytesRead = await source.ReadAsync(buffer, cancellationToken)) > 0)
@@ -185,13 +228,44 @@ public sealed class StreamManager : IStreamManager, IDisposable
                 // Secure because of message assembling
                 await transport.SendAsync(encrypted, recipientConnectionId, serverConnectionId, MessageChannel.Secure, cancellationToken);
                 chunkIndex++;
+                sentLength += encrypted.LongLength;
+                ChunkSended?.Invoke(new ChunkSendedEventArgs()
+                {
+                    RoomId = roomId,
+                    StreamId = streamId,
+                    ReceivedBytes = sentLength,
+                }, cancellationToken);
             }
 
+            logger.Log($"Передача пакетов окончена");
+            OnStreamCompleted?.Invoke(new StreamCompletedEventArgs()
+            {
+                RoomId = roomId,
+                StreamId = streamId,
+                IsRawPayload = true,
+            }, cancellationToken);
             CleanForStream(streamId);
         }
-        catch (TaskCanceledException ex)
+        catch (OperationCanceledException ex)
         {
-            logger.Log($"Передача пакетов была отменена: {ex.Message}");
+            logger.Log($"Передача пакетов была отменена: {ex.Message}", LogLevel.Warning);
+            OnStreamFailed?.Invoke(new StreamFailedEventArgs()
+            {
+                RoomId = roomId,
+                StreamId = streamId,
+                ErrorMessage = "Передача была отменена"
+            }, cancellationToken);
+            CleanForStream(streamId);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Передача пакетов провалилась: {ex.Message}", LogLevel.Warning);
+            OnStreamFailed?.Invoke(new StreamFailedEventArgs()
+            {
+                RoomId = roomId,
+                StreamId = streamId,
+                ErrorMessage = "Передача пакетов провалилась"
+            }, cancellationToken);
             CleanForStream(streamId);
         }
     }

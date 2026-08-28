@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using MIN.Core.Entities;
 using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Entities.Contracts.Models;
+using MIN.Core.Stores.Contracts.Constants;
 using MIN.Core.Transport.Contracts.Enum;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
@@ -97,25 +98,45 @@ public partial class ChatViewModel : RoutableViewModelBase
             ChangeView(chatSideBarViewModel);
         }
 
-        if (loadedPage == 1)
+        if (!hasScrolledHistory)
         {
             return;
         }
 
-        loadedPage = 1;
+        hasScrolledHistory = false;
         renderedMessageCount = 0;
-        var lastHistory = featureCollection.Core.RoomFactory
-            .GetOrCreateContext(roomId).Messages.GetRecentHistory();
+        maxRenderedMessages = StoreConstants.MessagesPageSize;
+        oldestLoadedTimestamp = null;
+        oldestLoadedMessageId = null;
 
-        await RenderMessages(lastHistory.ToList());
-        ShowLoadMoreLabel();
+        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
+        var lastHistory = context.Messages.GetRecentHistory().ToList();
+
+        await RenderMessages(lastHistory);
+
+        if (lastHistory.Count > 0)
+        {
+            var oldest = lastHistory[0];
+            oldestLoadedTimestamp = oldest.Timestamp;
+            oldestLoadedMessageId = oldest.Id;
+        }
+
+        var moreExists = context.Messages
+            .GetMessagesOlderThan(oldestLoadedTimestamp, oldestLoadedMessageId, 1)
+            .Any();
+
+        if (moreExists || context.Messages.GetMessageCount() < room.TotalMessageCount)
+        {
+            ShowLoadMoreLabel();
+        }
     }
 
     private void ActionOnNavigatedFrom(object? sender, EventArgs e)
     {
-        if (loadedPage > 1)
+        if (hasScrolledHistory)
         {
             Messages.Clear();
+            RemoveLoadMoreLabel();
         }
     }
 

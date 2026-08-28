@@ -22,7 +22,7 @@ public interface IChatRoomService
     /// <summary>
     /// Отправить запрос на обновление чата
     /// </summary>
-    Task SendChatHistoryRequest(Guid roomId, int page, CancellationToken cancellationToken = default);
+    Task SendChatHistoryRequest(Guid roomId, DateTime? oldestTimestamp, Guid? oldestMessageId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Настроить discovery по настройкам

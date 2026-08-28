@@ -71,20 +71,6 @@
 
                             <Button.Flyout>
                                 <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                    <MenuItem IsVisible="{Binding !IsHost}"
-                                              Header="Покинуть комнату"
-                                            Command="{Binding LeaveRoomCommand}">
-                                        <MenuItem.Icon>
-                                            <Svg Path="/Assets/Icons/leave.svg" />
-                                        </MenuItem.Icon>
-                                    </MenuItem>
-                                      <MenuItem IsVisible="{Binding IsHost}"
-                                              Header="Закрыть комнату"
-                                            Command="{Binding LeaveRoomCommand}">
-                                        <MenuItem.Icon>
-                                            <Svg Path="/Assets/Icons/leave.svg" />
-                                        </MenuItem.Icon>
-                                    </MenuItem>
                                     <MenuItem IsVisible="{Binding IsHost}"
                                             Header="Редактировать комнату"
                                             Command="{Binding EditRoomCommand}">
@@ -97,6 +83,33 @@
                                             Command="{Binding StartVoiceCallClickCommand}">
                                         <MenuItem.Icon>
                                             <Svg Path="/Assets/Icons/phone-call.svg" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+
+                                    <Separator />
+
+                                    <MenuItem Classes="danger"
+                                            Header="Очистить историю сообщений"
+                                            Command="{Binding ClearHistoryUpToThisMomentCommand}">
+                                        <MenuItem.Icon>
+                                            <Svg Path="/Assets/Icons/clear.svg" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+
+                                    <MenuItem IsVisible="{Binding !IsHost}"
+                                            Classes="danger"
+                                            Header="Покинуть комнату"
+                                            Command="{Binding LeaveRoomCommand}">
+                                        <MenuItem.Icon>
+                                            <Svg Path="/Assets/Icons/leave.svg" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                      <MenuItem IsVisible="{Binding IsHost}"
+                                            Classes="danger"
+                                             Header="Закрыть комнату"
+                                            Command="{Binding LeaveRoomCommand}">
+                                        <MenuItem.Icon>
+                                            <Svg Path="/Assets/Icons/leave.svg" />
                                         </MenuItem.Icon>
                                     </MenuItem>
                                 </MenuFlyout>
@@ -367,10 +380,41 @@
                             </ScrollViewer>
                         </Border>
 
-                        <TextBlock Text="{Binding StatusContent}"
-                            Opacity="0.5"
-                            IsVisible="{Binding ShowStatus}"/>
+                        <Border Padding="0,0,0,2"
+                            Opacity="0.8"
+                            IsVisible="{Binding ShowStatus}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                                <Svg Path="/Assets/Icons/typing.svg"/>
+                                <TextBlock VerticalAlignment="Center" Text="{Binding StatusContent}"/>
+                            </StackPanel>
+                        </Border>
 
+                        <Border Padding="0,0,0,2"
+                            Opacity="0.8"
+                            IsVisible="{Binding ReplyToPreview,
+                                Converter={converters:NonEqualityConverter},
+                                ConverterParameter={x:Null}}">
+
+                            <DockPanel VerticalAlignment="Center">
+                                <Button
+                                    VerticalAlignment="Center"
+                                    DockPanel.Dock="Right"
+                                    ToolTip.Tip="Отменить ответ"
+                                    Command="{Binding ResetReplyToCommand}"
+                                    Classes="icon">
+                                    <Svg Path="/Assets/Icons/close.svg" />
+                                </Button>
+
+                                <TextBlock MaxLines="3"
+                                    VerticalAlignment="Center">
+                                    <TextBlock VerticalAlignment="Center" Text="Отвечает на: " />
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding ReplyToPreview,
+                                        Converter={converters:TruncateWithEllipsisConverter},
+                                        ConverterParameter=80}" />
+                                </TextBlock>
+                            </DockPanel>
+                        </Border>
+                       
                         <DockPanel HorizontalSpacing="8" >
                             <Button
                                 VerticalAlignment="Bottom"

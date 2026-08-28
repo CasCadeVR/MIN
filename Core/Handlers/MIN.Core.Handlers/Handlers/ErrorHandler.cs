@@ -1,6 +1,6 @@
-﻿using MIN.Core.Handlers.Contracts;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless;
@@ -8,37 +8,23 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class ErrorHandler : IMessageHandler
+internal sealed class ErrorHandler : BaseHandler
 {
-    private readonly ILoggerProvider logger;
-    private readonly IIdentityService identityService;
+    public ErrorHandler(ILoggerProvider logger) : base(logger) { }
 
-    public ErrorHandler(ILoggerProvider logger,
-        IIdentityService identityService)
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.Error];
+
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        this.logger = logger;
-        this.identityService = identityService;
-    }
+        var errorMessage = (ErrorMessage)message;
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
-        => [MessageTypeTag.Error];
-
-    int IMessageHandler.Priority => 3;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
-    {
-        if (message is not ErrorMessage errorMessage)
+        if (message.RecipientId != null && context.SelfId != message.RecipientId && context.Role == Role.Host)
         {
-            logger.Log($"Неизвестный тип сообщения в {nameof(ErrorHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(ErrorHandler)} - {message.GetType()}");
-        }
-
-        if (message.RecipientId != null && identityService.SelfParticipant.Id != message.RecipientId)
-        {
+            LogError($"Я, как хост, отправляю {context.RoomContext.Participants.GetParticipantById(message.SenderId).Name} ошибку: {errorMessage.Message}");
             return HandlerResult.Success();
         }
 
-        logger.Log($"Ошибка, полученная от получателя {context.RoomContext.Participants.GetParticipantById(message.SenderId).Name}: {errorMessage.Message}");
+        LogError($"Ошибка, полученная от получателя {context.RoomContext.Participants.GetParticipantById(message.SenderId).Name}: {errorMessage.Message}");
         return HandlerResult.Failure(errorMessage.Message);
     }
 }

@@ -9,7 +9,7 @@ namespace MIN.FileTransfer.Messaging;
 /// <summary>
 /// Сообщения мета-данные файла
 /// </summary>
-public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable, IMessageWithSecuredFields
+public class FileMetadataMessage : BaseContentMessage, IDescribable, IReplyable, IMessageWithSecuredFields
 {
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.FileMetadata;
@@ -60,6 +60,9 @@ public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable, IMessa
     /// <inheritdoc />
     public Guid? ReplyToMessageId { get; set; }
 
+    /// <inheritdoc />
+    public string? ReplyToMessageDescription { get; set; }
+
     string IDescribable.GetDescription() => $"{Sender.Name}: {FileName}";
 
     void IMessageWithSecuredFields.Sanitize()
@@ -79,6 +82,9 @@ public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable, IMessa
     public FileMetadataMessage(FileMetadataMessage metadata)
     {
         Id = metadata.Id;
+        Content = metadata.Content;
+        IsEdited = metadata.IsEdited;
+        EditedAt = metadata.EditedAt;
         SenderId = metadata.SenderId;
         Sender = metadata.Sender;
         FileSize = metadata.FileSize;
@@ -86,6 +92,7 @@ public class FileMetadataMessage : BaseMessage, IDescribable, IReplyable, IMessa
         FilePath = metadata.FilePath;
         RecipientId = metadata.RecipientId;
         ReplyToMessageId = metadata.ReplyToMessageId;
+        ReplyToMessageDescription = metadata.ReplyToMessageDescription;
         TransferId = metadata.TransferId;
         AsDownloaded = metadata.AsDownloaded;
     }

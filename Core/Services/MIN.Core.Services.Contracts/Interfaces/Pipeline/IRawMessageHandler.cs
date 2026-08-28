@@ -1,5 +1,5 @@
 ﻿using MIN.Core.Services.Contracts.Events;
-using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Events.Receiving;
 
 namespace MIN.Core.Services.Contracts.Interfaces.Pipeline;
 

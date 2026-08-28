@@ -7,6 +7,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Transport.Contracts.Helpers;
 using MIN.Core.Transport.Contracts.Models;
 using MIN.Desktop.Contracts.Enums;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.Infrastructure.Validators;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Helpers.Services;
@@ -18,6 +19,8 @@ namespace MIN.Desktop.ViewModels.Modals;
 /// </summary>
 public partial class CreateRoomViewModel : ModalViewModelBase
 {
+    private int roomCurrentParticipantCount;
+
     [ObservableProperty]
     [Display(Name = "Имя комнаты")]
     [NotifyCanExecuteChangedFor(nameof(CreateCommand))]
@@ -119,6 +122,7 @@ public partial class CreateRoomViewModel : ModalViewModelBase
         IsNew = false;
         Room = room;
         Name = room.Name;
+        roomCurrentParticipantCount = room.ParticipantCount;
         RoomMaxPlayers = room.MaximumParticipants;
         NetworkOptions = networkOptions;
 
@@ -131,6 +135,12 @@ public partial class CreateRoomViewModel : ModalViewModelBase
     [RelayCommand(CanExecute = nameof(CanCreate))]
     private void Create()
     {
+        if (!IsNew && roomCurrentParticipantCount > RoomMaxPlayers)
+        {
+            InAppNotifier.Error("Вы не можете поставить максимальное количество участников меньше, чем их текущее кол-во");
+            return;
+        }
+
         Room.Name = Name;
 
         if (CollegePCNameParser.TryParseComputerName(Environment.MachineName, out var roomNumber, out var computerNumber))

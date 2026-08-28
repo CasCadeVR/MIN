@@ -125,15 +125,39 @@ public sealed class FileStorageService : IFileStorageService
 
         logger.Log($"Перемещаю временный файл: {tempFilePath} → {finalPath} ({new FileInfo(tempFilePath).Length} байт)");
 
-        await using (var source = File.OpenRead(tempFilePath))
-        await using (var destination = File.Create(finalPath))
+        cancellationToken.ThrowIfCancellationRequested();
+
+        try
         {
-            await source.CopyToAsync(destination, cancellationToken);
+            await using (var source = File.OpenRead(tempFilePath))
+            await using (var destination = File.Create(finalPath))
+            {
+                await source.CopyToAsync(destination, cancellationToken);
+            }
+
+            File.Delete(tempFilePath);
+        }
+        catch
+        {
+            TryDeleteFile(finalPath);
+            throw;
         }
 
-        File.Delete(tempFilePath);
         logger.Log($"Временный файл удалён: {tempFilePath}");
         return finalFileName;
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
     }
 
     private static string ResolveUniqueFileName(string directory, string fileName)

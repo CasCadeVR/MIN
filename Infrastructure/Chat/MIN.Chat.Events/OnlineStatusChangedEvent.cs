@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Contracts.Models;
 
@@ -15,10 +16,10 @@ public sealed record OnlineStatusChangedEvent : BaseEvent, IRoomScopedEvent
     /// <summary>
     /// Статус действия в сети
     /// </summary>
-    public OnlineStatus Status { get; set; }
+    public required OnlineStatus Status { get; set; }
 
     /// <summary>
-    /// Идентификатор участника, сменивший статус
+    /// Участник, сменивший статус
     /// </summary>
-    public Guid SenderId { get; init; }
+    public required ParticipantInfo Participant { get; init; }
 }

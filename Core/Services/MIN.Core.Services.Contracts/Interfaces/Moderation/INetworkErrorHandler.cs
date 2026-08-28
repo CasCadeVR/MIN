@@ -6,10 +6,18 @@
 public interface INetworkErrorHandler
 {
     /// <summary>
-    /// Отключить клиента, указав причину
+    /// Отправить ошибку для клиента, указав причину
     /// </summary>
     /// <remarks>
     /// если critical = true - нужно разорвать соединение
     /// </remarks>
     Task SendErrorAsync(string message, Guid recipientId, Guid roomId, bool critical = false, int timeoutMs = 5000);
+
+    /// <summary>
+    /// Отправить ошибку для соединения, указав причину
+    /// </summary>
+    /// <remarks>
+    /// если critical = true - нужно разорвать соединение
+    /// </remarks>
+    Task SendErrorToConnectionAsync(string message, Guid connectionId, Guid roomId, bool critical = false, int timeoutMs = 5000);
 }

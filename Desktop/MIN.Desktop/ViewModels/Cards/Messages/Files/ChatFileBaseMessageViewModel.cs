@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Models.Enums;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.FileTransfer.DI.FeatureCollection;
@@ -18,7 +19,7 @@ using MIN.FileTransfer.Messaging;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages.Files;
 
-public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageViewModel
+public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChatMessageViewModel
 {
     /// <summary>
     /// Функциональность для обмена файлов
@@ -44,10 +45,6 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     /// Закешированный формат
     /// </summary>
     readonly protected string cachedFormat;
-    /// <summary>
-    /// Файл загружен
-    /// </summary>
-    protected bool downloaded;
 
     /// <summary>
     /// Подкиска на прогресс скачивание
@@ -63,7 +60,10 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     public partial int DownloadProgress { get; set; }
 
     [ObservableProperty]
-    public partial bool IsDownloading { get; set; }
+    public partial bool IsTransfering { get; set; }
+
+    [ObservableProperty]
+    public partial bool Downloaded { get; set; }
 
     [ObservableProperty]
     public partial FileDownloadState FileDownloadState { get; set; } = FileDownloadState.None;
@@ -82,6 +82,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
     /// Инициализирует новый экземпляр <see cref="ChatFileBaseMessageViewModel"/>
     /// </summary>
     protected ChatFileBaseMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
+        IDialogService dialogService,
         IEventScope roomScope,
         FileMetadataMessage fileMetadataMessage,
         Thickness timePadding,
@@ -89,13 +90,15 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(fileMetadataMessage.Sender.Name,
-            fileMetadataMessage.Timestamp,
+        : base(fileMetadataMessage,
+            fileMetadataMessage,
+            fileMetadataMessage,
+            dialogService,
+            fileMetadataMessage.Sender.Name,
             timePadding,
             localParticipant.Id == fileMetadataMessage.Sender.Id,
             isHostMessage,
-            removeHeaders,
-            fileMetadataMessage.RecipientId != null)
+            removeHeaders)
     {
         this.fileTransferFeatureCollection = fileTransferFeatureCollection;
         this.localParticipant = localParticipant;
@@ -106,10 +109,14 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         cachedFormat = fileTransferFeatureCollection.FileHelperService
             .GetFileType(fileMetadataMessage.FileName);
 
-        downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
+        Downloaded = !string.IsNullOrEmpty(fileMetadataMessage.FilePath) || fileMetadataMessage.AsDownloaded;
 
         FillLabels();
-        SubscribeToEvents(roomScope);
+
+        if (!(IsLocal && IsHost))
+        {
+            SubscribeToEvents(roomScope);
+        }
     }
 
     /// <summary>
@@ -162,7 +169,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
             return;
         }
 
-        IsDownloading = true;
+        IsTransfering = true;
 
         fileTransferProgressSubsciptionToken = roomScope.Subscribe((FileTransferProgressEvent e, CancellationToken _) =>
         {
@@ -180,7 +187,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
             return Task.CompletedTask;
         });
 
-        UpdateIconOutOfState();
+        UpdateDownloadState();
         OnTransferProgressUpdated("0",
             fileTransferFeatureCollection.FileHelperService.FormatFileSize(eventMessage.FileSize));
     }
@@ -193,9 +200,9 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
             return;
         }
 
-        IsDownloading = false;
+        IsTransfering = false;
 
-        UpdateIconOutOfState();
+        UpdateDownloadState();
         OnTransferFailed(eventMessage.ErrorMessage ?? string.Empty);
 
         fileTransferProgressSubsciptionToken.Dispose();
@@ -208,23 +215,23 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
             return;
         }
 
-        downloaded = true;
-        FileMetadataMessage.FilePath = eventMessage.FilePath;
+        Downloaded = true;
+        FileMetadataMessage.FilePath ??= eventMessage.FilePath;
         fileTransferProgressSubsciptionToken?.Dispose();
 
-        IsDownloading = false;
+        IsTransfering = false;
 
-        UpdateIconOutOfState();
+        UpdateDownloadState();
         OnTransferCompleted();
     }
 
     /// <summary>
-    /// Обновить иконку состояния файла
+    /// Обновить состояния файла
     /// </summary>
-    protected void UpdateIconOutOfState()
+    protected void UpdateDownloadState()
     {
-        FileDownloadState = IsDownloading
-            ? FileDownloadState.IsDownloading : downloaded
+        FileDownloadState = IsTransfering
+            ? FileDownloadState.IsDownloading : Downloaded
             ? FileDownloadState.Downloaded : FileDownloadState.NotDownloaded;
     }
 
@@ -264,6 +271,23 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseChatMessageView
         else // unix
         {
             Process.Start("xdg-open", dir);
+        }
+    }
+
+    /// <summary>
+    /// Сообщение отредактировано
+    /// </summary>
+    protected override async Task ConfirmEditMessage()
+    {
+        EditContent = EditContent.Trim();
+
+        if (Content != EditContent)
+        {
+            OnEditRequested?.Invoke(EditContent);
+        }
+        else
+        {
+            IsEditing = false;
         }
     }
 }

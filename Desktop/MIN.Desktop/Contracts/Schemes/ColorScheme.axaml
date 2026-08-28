@@ -56,6 +56,9 @@
             <Color x:Key="TextDisabled">#52525B</Color>           <!-- Disabled / placeholder -->
             <Color x:Key="TextAccent">#6366F1</Color>             <!-- Accent-colored text (links, badges) -->
             <Color x:Key="TextOnPrimary">#FFFFFF</Color>          <!-- Text ON an accent button -->
+            <Color x:Key="TextDanger">#EF4444</Color>          <!-- Text ON an danger action button -->
+            <Color x:Key="TextDangerHover">#11EF4444</Color>          <!-- background ON hovered an danger action button -->
+            <Color x:Key="TextDangerPress">#11d53636</Color>          <!-- background ON pressed an danger action button -->
 
             <Color x:Key="TextOnCard">#FFFFFF</Color>          <!-- Text ON cards -->
             <Color x:Key="TextOnCardSelected">#FFFFFF</Color>          <!-- Text ON selected cards -->
@@ -112,6 +115,7 @@
             <x:String x:Key="SvgDefaultStyle">* { fill: #e9e9e9; stroke: #e9e9e9; }</x:String>
             <x:String x:Key="SvgAccentStyle">* { fill: #6366F1; stroke: #6366F1; }</x:String>
             <x:String x:Key="SvgPrimaryStyle">* { fill: #FFFFFF; stroke: #FFFFFF; }</x:String>
+            <x:String x:Key="SvgDangerStyle">* { fill: #EF4444; stroke: #EF4444; }</x:String>
             <x:String x:Key="SvgTextStyle">* { fill: #FFFFFF; stroke: #FFFFFF; }</x:String>
 
             <!-- *************** -->
@@ -185,6 +189,9 @@
             <Color x:Key="TextDisabled">#52525B</Color>           <!-- Disabled / placeholder -->
             <Color x:Key="TextAccent">#6366F1</Color>             <!-- Accent-colored text (links, badges) -->
             <Color x:Key="TextOnPrimary">#FFFFFF</Color>          <!-- Text ON an accent button -->
+            <Color x:Key="TextDanger">#EF4444</Color>          <!-- Text ON an danger action button -->
+            <Color x:Key="TextDangerHover">#11EF4444</Color>          <!-- background ON hovered an danger action button -->
+            <Color x:Key="TextDangerPress">#11d53636</Color>          <!-- background ON pressed an danger action button -->
 
             <Color x:Key="TextOnCard">#2C2C2E</Color>          <!-- Text ON cards -->
             <Color x:Key="TextOnCardSelected">#FFFFFF</Color>          <!-- Text ON selected cards -->
@@ -241,6 +248,7 @@
             <x:String x:Key="SvgDefaultStyle">* { fill: #595959; stroke: #595959; }</x:String>
             <x:String x:Key="SvgAccentStyle">* { fill: #6366F1; stroke: #6366F1; }</x:String>
             <x:String x:Key="SvgPrimaryStyle">* { fill: #FFFFFF; stroke: #FFFFFF; }</x:String>
+            <x:String x:Key="SvgDangerStyle">* { fill: #EF4444; stroke: #EF4444; }</x:String>
             <x:String x:Key="SvgTextStyle">* { fill: #2C2C2E; stroke: #2C2C2E; }</x:String>
 
             <!-- *************** -->

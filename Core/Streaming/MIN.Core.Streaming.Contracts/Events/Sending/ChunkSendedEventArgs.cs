@@ -1,9 +1,9 @@
-﻿namespace MIN.Core.Streaming.Contracts.Events;
+﻿namespace MIN.Core.Streaming.Contracts.Events.Sending;
 
 /// <summary>
-/// Событие запроса на отправку ACK
+/// Событие на отправления пакета данных
 /// </summary>
-public sealed class ChunkReceivedEventArgs : EventArgs
+public sealed class ChunkSendedEventArgs : EventArgs
 {
     /// <summary>
     /// Идентификатор потока

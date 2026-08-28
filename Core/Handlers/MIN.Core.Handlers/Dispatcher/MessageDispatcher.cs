@@ -1,12 +1,12 @@
-﻿using MIN.Core.Events.Contracts.Interfaces;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.Stores.Contracts.Registries.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Moderation;
 using MIN.Core.Stores.Contracts.Registries.Models;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Core.SubRooms.Contracts.Interfaces.Messages;
@@ -20,10 +20,9 @@ public sealed class MessageDispatcher : IMessageDispatcher
 {
     private readonly IEnumerable<IMessageHandler> handlers;
     private readonly IMessageSender messageSender;
-    private readonly IRoomConnectionRegistry registry;
     private readonly IEventBus eventBus;
     private readonly ISubRoomManager subRoomManager;
-    private readonly IIdentityService identityService;
+    private readonly INetworkErrorHandler errorHandler;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -31,26 +30,22 @@ public sealed class MessageDispatcher : IMessageDispatcher
     /// </summary>
     public MessageDispatcher(IEnumerable<IMessageHandler> handlers,
         IMessageSender messageSender,
-        IRoomConnectionRegistry registry,
         IEventBus eventBus,
         ISubRoomManager subRoomManager,
-        IIdentityService identityService,
+        INetworkErrorHandler errorHandler,
         ILoggerProvider logger)
     {
         this.handlers = handlers;
         this.messageSender = messageSender;
-        this.registry = registry;
         this.eventBus = eventBus;
         this.subRoomManager = subRoomManager;
-        this.identityService = identityService;
+        this.errorHandler = errorHandler;
         this.logger = logger;
     }
 
     /// <inheritdoc />
     public async Task DispatchAsync(IMessage message, MessageContext context, IEnumerable<Guid>? broadcastExcludeIds)
     {
-        var selfId = identityService.SelfParticipant.Id;
-
         var applicableHandlers = handlers
             .Where(h => h.HandledTypes.Contains(message.TypeTag))
             .OrderBy(h => h.Priority)
@@ -65,7 +60,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
         {
             try
             {
-                if (broadcastExcludeIds?.Contains(selfId) == true)
+                if (broadcastExcludeIds?.Contains(context.SelfId) == true && context.Role == Role.Host)
                 {
                     await HandleServerMessageRouting(message, context, broadcastExcludeIds);
                     continue;
@@ -78,14 +73,14 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     logger.Log($"Обработчик {handler.GetType().Name} провалился: {result.ErrorMessage}", LogLevel.Error);
                     if (result.ShowErrorMessage)
                     {
-                        await PublishErrorEvent(result.ErrorMessage!, result.CriticalError, context);
+                        await PublishErrorEvent(result.ErrorMessage ?? "Неизвестная ошибка", result.CriticalError, context);
                     }
                     continue;
                 }
 
                 if (result.Response != null)
                 {
-                    result.Response.SenderId = selfId;
+                    result.Response.SenderId = context.SelfId;
                     if (context.ConnectionId == CoreRegistryConstants.LocalConnectionId)
                     {
                         await DispatchAsync(result.Response, context, broadcastExcludeIds);
@@ -96,12 +91,23 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     }
                 }
 
+                if (result.ResultEvent != null)
+                {
+                    await eventBus.PublishAsync(result.ResultEvent, context.CancellationToken);
+                }
+
+                if (result.ErrorMessage != null)
+                {
+                    await errorHandler.SendErrorToConnectionAsync(result.ErrorMessage, context.ConnectionId, context.RoomContext.RoomId, result.CriticalError);
+                    continue;
+                }
+
                 if (result.StopPropagation)
                 {
                     break;
                 }
 
-                if (registry.IsHosting(context.RoomContext.RoomId))
+                if (context.Role == Role.Host)
                 {
                     await HandleServerMessageRouting(message, context, broadcastExcludeIds);
                 }
@@ -165,12 +171,10 @@ public sealed class MessageDispatcher : IMessageDispatcher
     }
 
     private async Task PublishErrorEvent(string message, bool needToDisconnect, MessageContext context)
-    {
-        await eventBus.PublishAsync(new ErrorOccurredEvent()
+        => await eventBus.PublishAsync(new ErrorOccurredEvent()
         {
             ErrorMessage = message,
             NeedToDisconnect = needToDisconnect,
             RoomId = context.RoomContext.RoomId
         }, context.CancellationToken);
-    }
 }

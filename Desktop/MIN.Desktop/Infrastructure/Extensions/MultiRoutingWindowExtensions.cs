@@ -151,13 +151,13 @@ public static class MultiRoutingWindowExtensions
                     break;
 
                 case ViewLayoutType.Central:
-                    screen.CentralViewModel = routableViewModel;
-                    rememberedCentral = null;
-
                     if (screen.CentralViewModel is IRoutableViewModel routabelCenter && routabelCenter != (IRoutableViewModel)routableViewModel)
                     {
                         routabelCenter.OnNavigatedFrom?.Invoke(routableViewModel, EventArgs.Empty);
                     }
+
+                    screen.CentralViewModel = routableViewModel;
+                    rememberedCentral = null;
 
                     routableViewModel.OnNavigatedTo?.Invoke(screen.CentralViewModel, EventArgs.Empty);
 

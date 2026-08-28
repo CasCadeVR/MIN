@@ -16,6 +16,17 @@
         Classes.private="{Binding IsPrivate}"
         Classes.selected="{Binding IsSelected}">
 
+        <Border.ContextFlyout>
+            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="Ответить"
+                    Command="{Binding SetAsReplyCommand}">
+                    <MenuItem.Icon>
+                        <Svg Path="/Assets/Icons/answer.svg" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuFlyout>
+        </Border.ContextFlyout>
+
         <Border Classes="message"
             MaxWidth="400"
             Padding="{DynamicResource PaddingMedium}"

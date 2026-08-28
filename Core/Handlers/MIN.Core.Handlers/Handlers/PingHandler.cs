@@ -1,51 +1,48 @@
 ﻿using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
+using MIN.Core.Handlers.Contracts.Exceptions;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless.RoomRelated.Ping;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class PingHandler : IMessageHandler
+internal sealed class PingHandler : BaseHandler
 {
     private readonly IEventBus eventBus;
 
-    public PingHandler(IEventBus eventBus)
+    public PingHandler(IEventBus eventBus, ILoggerProvider logger) : base(logger)
     {
         this.eventBus = eventBus;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
+    public override IEnumerable<MessageTypeTag> HandledTypes
         => [MessageTypeTag.Ping, MessageTypeTag.Pong];
 
-    int IMessageHandler.Priority => 0;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         switch (message)
         {
             case PingMessage _:
-                await NotifyPingService(context);
+                await eventBus.PublishAsync(GetNotificatonPingService(context), context.CancellationToken);
                 return HandlerResult.WithResponse(new PongMessage());
 
             case PongMessage _:
-                await NotifyPingService(context);
-                return HandlerResult.Success();
+                return HandlerResult.WithEvent(GetNotificatonPingService(context));
 
             default:
-                return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(PingHandler)} - {message.GetType()}");
+                throw new HandlerTypeMismatch(this, message);
         }
     }
 
-    private async Task NotifyPingService(MessageContext context)
-    {
-        await eventBus.PublishAsync(new PingPongReceivedEvent()
+    private static PingPongReceivedEvent GetNotificatonPingService(MessageContext context)
+        => new()
         {
             Role = context.Role,
             ConnectionId = context.ConnectionId,
             RoomId = context.RoomContext.RoomId,
-        }, context.CancellationToken);
-    }
+        };
 }

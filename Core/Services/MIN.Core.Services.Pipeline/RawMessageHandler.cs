@@ -2,13 +2,14 @@
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Headers.Contracts.Interfaces;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Serialization.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Pipeline;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
-using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Events.Receiving;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Services.Pipeline;
@@ -24,6 +25,7 @@ public sealed class RawMessageHandler : IRawMessageHandler
     private readonly IMessageEncryptor encryptor;
     private readonly IHeaderManager headerManager;
     private readonly IRoomFactory roomFactory;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     /// <summary>
@@ -35,6 +37,7 @@ public sealed class RawMessageHandler : IRawMessageHandler
         IMessageEncryptor encryptor,
         IHeaderManager headerManager,
         IRoomFactory roomFactory,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.registry = registry;
@@ -43,6 +46,7 @@ public sealed class RawMessageHandler : IRawMessageHandler
         this.encryptor = encryptor;
         this.headerManager = headerManager;
         this.roomFactory = roomFactory;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
@@ -71,13 +75,15 @@ public sealed class RawMessageHandler : IRawMessageHandler
         var context = roomFactory.GetOrCreateContext(e.RoomId);
         var actualData = plainData.AsSpan(1).ToArray();
         var message = serializer.Deserialize(actualData);
-        await dispatcher.DispatchAsync(message, new MessageContext(context, e.ConnectionId, registry.GetRole(e.RoomId), cancellationToken));
+        await dispatcher.DispatchAsync(message, new MessageContext(context, identityService.SelfParticipant.Id,
+            e.ConnectionId, registry.GetRole(e.RoomId), cancellationToken));
     }
 
     async Task IRawMessageHandler.HandleAssembledAsync(MessageAssembledEventArgs e, CancellationToken cancellationToken)
     {
         var context = roomFactory.GetOrCreateContext(e.RoomId);
         var message = serializer.Deserialize(e.Data!);
-        await dispatcher.DispatchAsync(message, new MessageContext(context, e.ConnectionId, registry.GetRole(e.RoomId), cancellationToken));
+        await dispatcher.DispatchAsync(message, new MessageContext(context, identityService.SelfParticipant.Id,
+            e.ConnectionId, registry.GetRole(e.RoomId), cancellationToken));
     }
 }

@@ -1,6 +1,6 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
-using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
+using MIN.Core.Handlers.Contracts.Exceptions;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -12,30 +12,23 @@ using MIN.Voice.Messaging;
 
 namespace MIN.Voice.Handlers;
 
-internal sealed class VoiceCallStateHandler : IMessageHandler
+internal sealed class VoiceCallStateHandler : BaseHandler
 {
     private readonly ISubRoomManager subRoomManager;
-    private readonly IEventBus eventBus;
-    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="VoiceCallStateHandler"/>
     /// </summary>
     public VoiceCallStateHandler(ISubRoomManager subRoomManager,
-        IEventBus eventBus,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.subRoomManager = subRoomManager;
-        this.eventBus = eventBus;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
+    public override IEnumerable<MessageTypeTag> HandledTypes
         => [MessageTypeTag.VoiceStateRequest, MessageTypeTag.VoiceStateResponse];
 
-    int IMessageHandler.Priority => 12;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         switch (message)
         {
@@ -51,9 +44,7 @@ internal sealed class VoiceCallStateHandler : IMessageHandler
                 }
 
                 var roomId = context.RoomContext.RoomId;
-
                 var allSubrooms = subRoomManager.GetRoomSubRooms(roomId);
-
                 var voiceCallSubroom = allSubrooms.FirstOrDefault(x => x.Purpose == SubRoomPurpose.Voice && x.IsActive);
 
                 var response = new VoiceCallStateResponseMessage()
@@ -70,9 +61,9 @@ internal sealed class VoiceCallStateHandler : IMessageHandler
                 return HandlerResult.WithResponse(response);
 
             case VoiceCallStateResponseMessage voiceCallStateResponseMessage:
-                logger.Log($"Получил инфу о текущем звонке: {voiceCallStateResponseMessage.ActiveSubRoomId ?? -1}");
+                LogInfo($"Получил инфу о текущем звонке: {voiceCallStateResponseMessage.ActiveSubRoomId ?? -1}");
 
-                await eventBus.PublishAsync(new VoiceCallStateReceivedEvent()
+                return HandlerResult.WithEvent(new VoiceCallStateReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
                     StartedAt = voiceCallStateResponseMessage.StartedAt,
@@ -81,10 +72,8 @@ internal sealed class VoiceCallStateHandler : IMessageHandler
                         .GetParticipantByIds(voiceCallStateResponseMessage.CallParticipantIds).ToList(),
                 });
 
-                return HandlerResult.Success();
-
             default:
-                return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(VoiceCallStateHandler)} - {message.GetType()}");
+                throw new HandlerTypeMismatch(this, message);
         }
     }
 }

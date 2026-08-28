@@ -1,9 +1,7 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Extensions;
-using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
@@ -12,50 +10,32 @@ using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Voice.Events;
 using MIN.Voice.Messaging;
-using MIN.Voice.Services.Contacts.Interfaces;
 
 namespace MIN.Voice.Handlers;
 
-internal sealed class VoiceCallStartHandler : IMessageHandler
+internal sealed class VoiceCallStartHandler : BaseHandler
 {
     private readonly ISubRoomManager subRoomManager;
-    private readonly IEventBus eventBus;
     private readonly IMessageSender messageSender;
     private readonly IMessageRouter messageRouter;
-    private readonly IIdentityService identityService;
-    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="VoiceCallStartHandler"/>
     /// </summary>
     public VoiceCallStartHandler(ISubRoomManager subRoomManager,
-        IEventBus eventBus,
         IMessageSender messageSender,
         IMessageRouter messageRouter,
-        IAudioCaptureService audioCaptureService,
-        IIdentityService identityService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.subRoomManager = subRoomManager;
-        this.eventBus = eventBus;
         this.messageSender = messageSender;
         this.messageRouter = messageRouter;
-        this.identityService = identityService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.VoiceCallStartRequest];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.VoiceCallStartRequest];
 
-    int IMessageHandler.Priority => 12;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not VoiceCallStartRequestMessage _)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(VoiceCallStartHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(VoiceCallStartHandler)} - {message.GetType()}");
-        }
-
         if (context.Role != Role.Host)
         {
             return HandlerResult.Failure($"Получил сообщение {message.GetType()} в {nameof(VoiceCallStartHandler)} как {context.Role}, хотя не должен был", stopPropagation: false);
@@ -79,15 +59,13 @@ internal sealed class VoiceCallStartHandler : IMessageHandler
 
         await messageRouter.RouteAsync(voiceCallStartedMessage, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
 
-        if (identityService.SelfParticipant.Id == message.SenderId)
+        if (context.SelfId == message.SenderId)
         {
-            await eventBus.PublishAsync(new VoiceCallEstablishedEvent()
+            return HandlerResult.WithEvent(new VoiceCallEstablishedEvent()
             {
                 RoomId = context.RoomContext.RoomId,
                 SubRoomId = subRoomId,
-            }, context.CancellationToken);
-
-            return HandlerResult.Success();
+            });
         }
         else
         {

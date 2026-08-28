@@ -1,6 +1,5 @@
-﻿using MIN.Core.Handlers.Contracts;
+﻿using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
@@ -13,42 +12,30 @@ using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Handlers;
 
-internal sealed class SessionSpecificHandler : IMessageHandler
+internal sealed class SessionSpecificHandler : BaseHandler
 {
     private readonly ISessionProcessBridge sessionProcessBridge;
-    private readonly IIdentityService identityService;
-    private readonly ILoggerProvider logger;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="SessionSpecificHandler"/>
     /// </summary>
     public SessionSpecificHandler(ISessionProcessBridge sessionProcessBridge,
-        IIdentityService identityService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.sessionProcessBridge = sessionProcessBridge;
-        this.identityService = identityService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionSpecific];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.SessionSpecific];
 
-    int IMessageHandler.Priority => 2;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not SessionSpecificMessage sessionSpecificMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(SessionLeaveHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionLeaveHandler)} - {message.GetType()}");
-        }
+        var sessionSpecificMessage = (SessionSpecificMessage)message;
 
-        var selfId = identityService.SelfParticipant.Id;
         var roomId = context.RoomContext.RoomId;
         var subRoomId = sessionSpecificMessage.SubRoomId;
 
-        if ((sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Server
-            && message.RecipientId != selfId && !message.IsPublic))
+        if (sessionSpecificMessage.SessionProcessRole == SessionProcessRole.Server
+            && message.RecipientId != context.SelfId && !message.IsPublic)
         {
             return HandlerResult.Success();
         }

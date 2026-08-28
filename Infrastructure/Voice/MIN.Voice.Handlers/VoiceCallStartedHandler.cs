@@ -1,5 +1,4 @@
-﻿using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+﻿using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -9,42 +8,26 @@ using MIN.Voice.Messaging;
 
 namespace MIN.Voice.Handlers;
 
-internal sealed class VoiceCallStartedHandler : IMessageHandler
+internal sealed class VoiceCallStartedHandler : BaseHandler
 {
-    private readonly IEventBus eventBus;
-    private readonly ILoggerProvider logger;
-
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="VoiceCallStartedHandler"/>
     /// </summary>
-    public VoiceCallStartedHandler(IEventBus eventBus,
-        ILoggerProvider logger)
+    public VoiceCallStartedHandler(ILoggerProvider logger) : base(logger) { }
+
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.VoiceCallStarted];
+
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        this.eventBus = eventBus;
-        this.logger = logger;
-    }
-
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.VoiceCallStarted];
-
-    int IMessageHandler.Priority => 15;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
-    {
-        if (message is not VoiceCallStartedMessage voiceCallStartedMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(VoiceCallStartedHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(VoiceCallStartedHandler)} - {message.GetType()}");
-        }
+        var voiceCallStartedMessage = (VoiceCallStartedMessage)message;
 
         context.RoomContext.Messages.AddMessage(voiceCallStartedMessage);
 
-        await eventBus.PublishAsync(new VoiceCallStartedEvent()
+        return HandlerResult.WithEvent(new VoiceCallStartedEvent()
         {
             Message = voiceCallStartedMessage,
             RoomId = context.RoomContext.RoomId,
             Participant = context.RoomContext.Participants.GetParticipantById(voiceCallStartedMessage.Sender.Id)
         });
-
-        return HandlerResult.Success();
     }
 }

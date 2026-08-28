@@ -1,5 +1,4 @@
-﻿using MIN.Core.Events.Contracts.Interfaces;
-using MIN.Core.Handlers.Contracts;
+﻿using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -9,41 +8,24 @@ using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 
 namespace MIN.Sessions.Core.Handlers;
 
-internal sealed class SessionReadyHandler : IMessageHandler
+internal sealed class SessionReadyHandler : BaseHandler
 {
-    private readonly IEventBus eventBus;
-    private readonly ILoggerProvider logger;
-
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="SessionReadyHandler"/>
     /// </summary>
-    public SessionReadyHandler(IEventBus eventBus,
-        ILoggerProvider logger)
+    public SessionReadyHandler(ILoggerProvider logger) : base(logger) { }
+
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.SessionReady];
+
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        this.eventBus = eventBus;
-        this.logger = logger;
-    }
-
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.SessionReady];
-
-    int IMessageHandler.Priority => 15;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
-    {
-        if (message is not SessionReadyMessage sessionReadyMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(SessionReadyHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(SessionReadyHandler)} - {message.GetType()}");
-        }
-
+        var sessionReadyMessage = (SessionReadyMessage)message;
         context.RoomContext.Messages.AddMessage(sessionReadyMessage);
 
-        await eventBus.PublishAsync(new SessionReadyMessageReceivedEvent()
+        return HandlerResult.WithEvent(new SessionReadyMessageReceivedEvent()
         {
             Message = sessionReadyMessage,
             RoomId = context.RoomContext.RoomId,
         });
-
-        return HandlerResult.Success();
     }
 }

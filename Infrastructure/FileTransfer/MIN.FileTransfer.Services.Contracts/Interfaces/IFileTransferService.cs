@@ -23,6 +23,11 @@ public interface IFileTransferService
     void RemoveTransfer(Guid transferId);
 
     /// <summary>
+    /// Получить все активные передачи файлов
+    /// </summary>
+    IEnumerable<TransferInfo> GetActiveTransfers();
+
+    /// <summary>
     /// Зарегистрировать входящие метаданные файла
     /// </summary>
     void RegisterPendingMetadata(Guid transferId, string fileName);

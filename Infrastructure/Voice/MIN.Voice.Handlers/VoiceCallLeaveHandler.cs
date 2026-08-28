@@ -1,8 +1,7 @@
 ﻿using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Extensions;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
-using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
@@ -12,38 +11,27 @@ using MIN.Voice.Messaging;
 
 namespace MIN.Voice.Handlers;
 
-internal sealed class VoiceCallLeaveHandler : IMessageHandler
+internal sealed class VoiceCallLeaveHandler : BaseHandler
 {
     private readonly ISubRoomManager subRoomManager;
     private readonly IMessageRouter messageRouter;
-    private readonly ILoggerProvider logger;
-    private readonly IIdentityService identityService;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="VoiceCallLeaveHandler"/>
     /// </summary>
     public VoiceCallLeaveHandler(ISubRoomManager subRoomManager,
         IMessageRouter messageRouter,
-        IIdentityService identityService,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.subRoomManager = subRoomManager;
         this.messageRouter = messageRouter;
-        this.identityService = identityService;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes => [MessageTypeTag.VoiceCallLeave];
+    public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.VoiceCallLeave];
 
-    int IMessageHandler.Priority => 12;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        if (message is not VoiceCallLeaveMessage voiceCallLeaveMessage)
-        {
-            logger.Log($"Неизвестный тип сообщения в {nameof(VoiceCallLeaveHandler)} - {message.GetType()}");
-            return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(VoiceCallLeaveHandler)} - {message.GetType()}");
-        }
+        var voiceCallLeaveMessage = (VoiceCallLeaveMessage)message;
 
         if (context.Role != Role.Host)
         {
@@ -66,14 +54,14 @@ internal sealed class VoiceCallLeaveHandler : IMessageHandler
         {
             SubRoomId = voiceCallLeaveMessage.SubRoomId,
             Participant = sender!.ToParticipantInfo(),
-        }, roomId, identityService.SelfParticipant.Id, context.CancellationToken);
+        }, roomId, context.SelfId, context.CancellationToken);
 
         if (!subRoomManager.LeaveSubRoom(roomId, voiceCallLeaveMessage.SubRoomId, message.SenderId))
         {
             await messageRouter.RouteAsync(new VoiceCallEndedMessage()
             {
                 SubRoomId = voiceCallLeaveMessage.SubRoomId,
-            }, roomId, identityService.SelfParticipant.Id, context.CancellationToken);
+            }, roomId, context.SelfId, context.CancellationToken);
         }
 
         return HandlerResult.Success();

@@ -24,9 +24,9 @@ public sealed class InMemoryEventBus : IEventBus, IAsyncDisposable
         this.logger = logger;
     }
 
-    async Task IEventBus.PublishAsync<T>(T eventMessage, CancellationToken cancellationToken)
+    async Task IEventBus.PublishAsync(BaseEvent eventMessage, CancellationToken cancellationToken)
     {
-        var eventType = typeof(T);
+        var eventType = eventMessage.GetType();
 
         if (!this.handlers.TryGetValue(eventType, out var handlers))
         {

@@ -90,10 +90,16 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     public partial int Ping { get; set; }
 
     /// <summary>
-    /// Являяется локальный пользователь хостом
+    /// Является локальный пользователь хостом
     /// </summary>
     [ObservableProperty]
     public partial bool IsHost { get; set; }
+
+    /// <summary>
+    /// Включены ли уведомления
+    /// </summary>
+    [ObservableProperty]
+    public partial bool NotificationsEnabled { get; set; }
 
     /// <summary>
     /// Открыта ли панель
@@ -130,6 +136,9 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
             };
         }
     }
+
+    partial void OnNotificationsEnabledChanged(bool value)
+        => Room.LocalRoomSettings.NotificationsEnabled = value;
 
     /// <summary>
     /// Подгрузить данные о комнате и перезагрузить страницу

@@ -17,6 +17,11 @@ public sealed record DisconnectAckReceived : BaseEvent, IRoomScopedEvent
     public Guid ParticipantId { get; init; }
 
     /// <summary>
+    /// Идентификатор соединения
+    /// </summary>
+    public Guid ConnectionId { get; init; }
+
+    /// <summary>
     /// Сообщение об ошибке
     /// </summary>
     public string ErrorMessage { get; init; } = string.Empty;

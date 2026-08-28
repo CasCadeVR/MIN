@@ -2,11 +2,12 @@
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts.Dispatcher;
 using MIN.Core.Handlers.Contracts.Models;
+using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Events;
 using MIN.Core.Services.Contracts.Interfaces.Pipeline;
 using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Models;
-using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Events.Receiving;
 using MIN.Core.Streaming.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Models.Enums;
@@ -25,6 +26,7 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
     private readonly IAckHandler ackHandler;
     private readonly IStreamChunkHandler streamChunkHandler;
     private readonly IRawMessageHandler messageHandler;
+    private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
 
     private CancellationTokenSource cts = null!;
@@ -42,6 +44,7 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
         IAckHandler ackHandler,
         IStreamChunkHandler streamChunkHandler,
         IRawMessageHandler messageHandler,
+        IIdentityService identityService,
         ILoggerProvider logger)
     {
         this.chunkBufferAssembler = chunkBufferAssembler;
@@ -51,6 +54,7 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
         this.ackHandler = ackHandler;
         this.streamChunkHandler = streamChunkHandler;
         this.messageHandler = messageHandler;
+        this.identityService = identityService;
         this.logger = logger;
     }
 
@@ -83,11 +87,11 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
 
             if (streamChunkHandler.CanHandle(plainData))
             {
-                await streamChunkHandler.HandleAsync(plainData, e, cts.Token);
+                await streamChunkHandler.HandleAsync(plainData, e, cancellationToken);
                 return;
             }
 
-            await messageHandler.HandleRawAsync(e, plainData, cts.Token);
+            await messageHandler.HandleRawAsync(e, plainData, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -99,11 +103,12 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
     {
         var context = roomFactory.GetOrCreateContext(e.RoomId);
         await dispatcher.DispatchAsync(e.Message,
-            new MessageContext(context, CoreRegistryConstants.LocalConnectionId, e.Role, cancellationToken),
+            new MessageContext(context, identityService.SelfParticipant.Id,
+            CoreRegistryConstants.LocalConnectionId, e.Role, cancellationToken),
             e.BroadcastExcludeIds);
     }
 
-    private async void OnMessageAssembled(object? sender, MessageAssembledEventArgs e)
+    private async Task OnMessageAssembled(MessageAssembledEventArgs e, CancellationToken cancellationToken)
     {
         try
         {
@@ -112,7 +117,7 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
                 return;
             }
 
-            await messageHandler.HandleAssembledAsync(e, cts.Token);
+            await messageHandler.HandleAssembledAsync(e, cancellationToken);
         }
         catch (Exception ex)
         {

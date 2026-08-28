@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.FileTransfer.Messaging;
@@ -45,6 +46,7 @@ public partial class ChatFileImagePreviewMessageViewModel : ChatFileBaseMessageV
     /// Инициализирует новый экземпляр <see cref="ChatFileImagePreviewMessageViewModel"/>
     /// </summary>
     public ChatFileImagePreviewMessageViewModel(IFileTransferFeatureCollection fileTransferFeatureCollection,
+        IDialogService dialogService,
         IEventScope roomScope,
         FileMetadataMessage fileMetadataMessage,
         Thickness timePadding,
@@ -52,20 +54,20 @@ public partial class ChatFileImagePreviewMessageViewModel : ChatFileBaseMessageV
         bool isHostMessage,
         bool removeHeaders,
         IClipboard? clipboard)
-        : base(fileTransferFeatureCollection, roomScope, fileMetadataMessage, timePadding,
-            localParticipant, isHostMessage, removeHeaders, clipboard)
+        : base(fileTransferFeatureCollection, dialogService, roomScope, fileMetadataMessage,
+            timePadding, localParticipant, isHostMessage, removeHeaders, clipboard)
     { }
 
     /// <inheritdoc />
     protected override void FillLabels()
     {
-        FileNameAndSize = downloaded
+        FileNameAndSize = Downloaded
             ? string.Empty
             : $"{FileMetadataMessage.FileName} {fileTransferFeatureCollection.FileHelperService
             .FormatFileSize(FileMetadataMessage.FileSize)}";
 
         LoadImage(FileMetadataMessage.FilePath ?? string.Empty);
-        UpdateIconOutOfState();
+        UpdateDownloadState();
     }
 
     /// <inheritdoc />
@@ -115,14 +117,14 @@ public partial class ChatFileImagePreviewMessageViewModel : ChatFileBaseMessageV
     [RelayCommand]
     private void InteractionClick()
     {
-        if (IsDownloading)
+        if (IsTransfering)
         {
             InvokeCancelRequested();
-            IsDownloading = false;
+            IsTransfering = false;
             return;
         }
 
-        if (!downloaded)
+        if (!Downloaded)
         {
             InvokeDownloadRequested();
         }

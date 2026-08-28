@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MIN.Chat.Events;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities;
+using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -33,21 +34,35 @@ public partial class ChatViewModel : RoutableViewModelBase
     private void SubscribeToEvents(IEventBus eventBus)
     {
         roomScope = eventBus.CreateScope(roomId);
+
+        // Text
         roomScope.Subscribe<ChatTextMessageReceivedEvent>(OnChatTextMessageReceived);
+
+        // Files
         roomScope.Subscribe<FileMetaDataMessageReceivedEvent>(OnFileMetaDataMessageReceived);
         roomScope.Subscribe<FileTransferStartedEvent>(OnFileTransferStarted);
         roomScope.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted);
         roomScope.Subscribe<FileTransferFailedEvent>(OnFileTransferFailed);
+
+        // Sessions
         roomScope.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived);
 
+        // Voice calls
         roomScope.Subscribe<VoiceCallStartedEvent>(OnVoiceCallStarted);
         roomScope.Subscribe<VoiceCallEndedEvent>(OnVoiceCallEnded);
         roomScope.Subscribe<VoiceParticipantJoinedEvent>(OnVoiceParticipantJoined);
         roomScope.Subscribe<VoiceParticipantLeftEvent>(OnVoiceParticipantLeft);
         roomScope.Subscribe<VoiceCallStateReceivedEvent>(VoiceCallStateReceived);
 
+        // Other
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdated);
         roomScope.Subscribe<ChatHistoryUpdatedEvent>(OnChatHistoryUpdated);
+        roomScope.Subscribe<ChatHistoryClearedEvent>(OnChatHistoryCleared);
+
+        roomScope.Subscribe<MessageDeletedEvent>(ChatMessageDeleted);
+        roomScope.Subscribe<MessageEditedEvent>(ChatMessageEdited);
+        roomScope.Subscribe<OnlineStatusChangedEvent>(OnOnlineStatusChanged);
+
         roomScope.Subscribe<PingMeasuredEvent>(OnPingMeasured);
         roomScope.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
         roomScope.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
@@ -56,29 +71,26 @@ public partial class ChatViewModel : RoutableViewModelBase
         errorToken = eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
     }
 
-    private async Task PublishNewDescribable(IDescribable describable, CancellationToken cancellationToken)
+    private async Task PublishNewDescribable(Guid id, IDescribable describable, CancellationToken cancellationToken)
         => await featureCollection.Core.EventBus.PublishAsync(new DescribableMessageReceivedEvent()
         {
             RoomId = roomId,
+            MessageId = id,
             DescribableMessage = describable
         }, cancellationToken);
 
     private async Task AddToChatFlowAndNotify<T>(T message, CancellationToken cancellationToken) where T : class, IMessage, IDescribable
     {
         await AddMessageToChatFlow(message);
-        await PublishNewDescribable(message, cancellationToken);
+        await PublishNewDescribable(message.Id, message, cancellationToken);
         NotifyIfNeeded(message);
     }
 
     private async Task OnChatTextMessageReceived(ChatTextMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
-    {
-        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
-    }
+        => await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
 
     private async Task OnSessionReadyMessageReceived(SessionReadyMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
-    {
-        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
-    }
+        => await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
 
     #region Voice chat related
 
@@ -172,28 +184,22 @@ public partial class ChatViewModel : RoutableViewModelBase
     #region File related
 
     private async Task OnFileMetaDataMessageReceived(FileMetaDataMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
-    {
-        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
-    }
+        => await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
 
     private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.Direction == FileTransferDirection.Upload)
+        if (eventMessage.Direction == FileTransferDirection.Upload && IsHost)
         {
             var sanitizedSize = featureCollection.FileTransfer.FileHelperService.FormatFileSize(eventMessage.FileSize);
-            AddStatus(new FileUploadingStatus(eventMessage.TransferId, eventMessage.FileName, eventMessage.Sender.Name, sanitizedSize));
+            AddStatus(new FileUploadingStatus(eventMessage.FileMetadataId, eventMessage.FileName, eventMessage.Sender.Name, sanitizedSize));
         }
     }
 
     private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
-    {
-        RemoveStatus(eventMessage.TransferId);
-    }
+        => RemoveStatus(eventMessage.FileMetadataId);
 
     private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
-    {
-        RemoveStatus(eventMessage.TransferId);
-    }
+        => RemoveStatus(eventMessage.FileMetadataId);
 
     #endregion
 
@@ -236,25 +242,97 @@ public partial class ChatViewModel : RoutableViewModelBase
         chatSideBarViewModel.UpdateStats(room);
     }
 
-    private async Task OnChatHistoryUpdated(ChatHistoryUpdatedEvent eventMessage, CancellationToken ct)
+    private async Task OnChatHistoryUpdated(ChatHistoryUpdatedEvent eventMessage, CancellationToken cancellationToken)
     {
         var e = eventMessage.Message;
 
-        loadedPage = e.Page;
         room.TotalMessageCount = e.TotalCount;
+        hasScrolledHistory = true;
+
         RemoveLoadMoreLabel();
         await RenderMessages(e.Messages, appendOnTop: true);
 
-        if (loadedPage * StoreConstants.MessagesPageSize < room.TotalMessageCount)
+        if (e.Messages.Count > 0)
+        {
+            var oldest = e.Messages[^1];
+            oldestLoadedTimestamp = oldest.Timestamp;
+            oldestLoadedMessageId = oldest.Id;
+        }
+
+        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
+        var moreInMemory = context.Messages
+            .GetMessagesOlderThan(oldestLoadedTimestamp, oldestLoadedMessageId, 1)
+            .Any();
+
+        if (moreInMemory || context.Messages.GetMessageCount() < room.TotalMessageCount)
         {
             ShowLoadMoreLabel();
         }
     }
 
-    private async Task OnPingMeasured(PingMeasuredEvent eventMessage, CancellationToken cancellationToken)
+    private async Task OnChatHistoryCleared(ChatHistoryClearedEvent eventMessage, CancellationToken cancellationToken)
     {
-        chatSideBarViewModel.UpdatePing(eventMessage.PingMs);
+        RemoveLoadMoreLabel();
+        Messages.Clear();
+        renderedMessageCount = 0;
+        MissedMessagesCount = 0;
+        maxRenderedMessages = StoreConstants.MessagesPageSize;
+        oldestLoadedTimestamp = null;
+        oldestLoadedMessageId = null;
+        hasScrolledHistory = false;
+
+        await SendSystemMessage(new SystemTextMessage()
+        {
+            Content = (eventMessage.Message as IDescribable).GetDescription()
+        }, countTowardCap: true);
     }
+
+    private async Task ChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)
+        => RemoveMessage(eventMessage.MessageId);
+
+    private async Task ChatMessageEdited(MessageEditedEvent eventMessage, CancellationToken cancellationToken)
+        => EditMessage(eventMessage.MessageId, eventMessage.Message.Content);
+
+    private async Task OnOnlineStatusChanged(OnlineStatusChangedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (currentTypingParticipants.Contains(eventMessage.Participant) && eventMessage.Status != OnlineStatus.Typing)
+        {
+            if (currentTypingParticipants.Remove(eventMessage.Participant) && currentTypingParticipants.Count == 0)
+            {
+                RemoveStatus(currentTypingParticipantsStatusId);
+            }
+
+            return;
+        }
+
+        if (eventMessage.Status != OnlineStatus.Typing)
+        {
+            return;
+        }
+
+        if (currentTypingParticipants.Count == 0)
+        {
+            currentTypingParticipantsStatusId = Guid.NewGuid();
+        }
+
+        currentTypingParticipants.Add(eventMessage.Participant);
+
+        if (currentTypingParticipants.Count > 1)
+        {
+            var existing = currentStatuses.FirstOrDefault(x => x.Id == currentTypingParticipantsStatusId);
+            if (existing is ParticipantTypingStatus typingStatus)
+            {
+                typingStatus.ParticipantNames = currentTypingParticipants.Select(x => x.Name).ToList();
+            }
+        }
+        else if (currentTypingParticipants.Count == 1)
+        {
+            AddStatus(new ParticipantTypingStatus(currentTypingParticipantsStatusId, currentTypingParticipants.Select(x => x.Name).ToList()));
+        }
+    }
+
+    private async Task OnPingMeasured(PingMeasuredEvent eventMessage, CancellationToken cancellationToken)
+        => chatSideBarViewModel.UpdatePing(eventMessage.PingMs);
 
     private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
     {
@@ -280,7 +358,6 @@ public partial class ChatViewModel : RoutableViewModelBase
             if (!string.IsNullOrEmpty(e.ErrorMessage))
             {
                 NotifyIfNeeded(e.ErrorMessage);
-                InAppNotifier.Info(e.ErrorMessage);
             }
             await Disconnect();
         }

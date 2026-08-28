@@ -126,7 +126,7 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
 
     private async Task OnOnlineStatusChanged(OnlineStatusChangedEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.SenderId == participant.Id)
+        if (eventMessage.Participant.Id == participant.Id)
         {
             ParticipantStatus = isSelf ? OnlineStatus.Online : eventMessage.Status;
             IsOffline = ParticipantStatus == OnlineStatus.Offline;

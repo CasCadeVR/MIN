@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
@@ -7,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Windows;
@@ -22,6 +24,13 @@ namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 public partial class ChatViewModel : RoutableViewModelBase
 {
     private Window parentWindow = null!;
+    private Guid? replyToPreviewId;
+
+    /// <summary>
+    /// Превью ответа на вопрос (просто показать в строчке описание сообщения)
+    /// </summary>
+    [ObservableProperty]
+    public partial string? ReplyToPreview { get; set; }
 
     /// <summary>
     /// Отправляемое сообщение в textBox
@@ -34,14 +43,20 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         parentWindow = MainWindowViewModel.GetWindow()!;
 
-        featureCollection.Helper.NotificationService.OnNotificationClick += () =>
-        {
-            parentWindow.WindowState = WindowState.Normal;
-            parentWindow.Focus();
-        };
+        featureCollection.Helper.NotificationService.OnNotificationClick += OnNotificationClick;
+        featureCollection.Helper.NotificationService.NotificationTurnOffClicked += NotificationTurnOffClicked;
+    }
 
-        featureCollection.Helper.NotificationService.NotificationTurnOffClicked += ()
-            => room.LocalRoomSettings.NotificationsEnabled = false;
+    private void OnNotificationClick()
+    {
+        parentWindow.WindowState = WindowState.Normal;
+        parentWindow.Focus();
+    }
+
+    private void NotificationTurnOffClicked()
+    {
+        room.LocalRoomSettings.NotificationsEnabled = false;
+        chatSideBarViewModel.NotificationsEnabled = false;
     }
 
     private void NotifyIfNeeded(IDescribable describable)
@@ -60,6 +75,19 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             featureCollection.Helper.NotificationService.Notify(message, room.Name);
         }
+    }
+
+    private void SetReplyTo(IMessage message)
+    {
+        replyToPreviewId = message.Id;
+        ReplyToPreview = (message as IDescribable)?.GetDescription();
+    }
+
+    [RelayCommand]
+    private void ResetReplyTo()
+    {
+        replyToPreviewId = null;
+        ReplyToPreview = null;
     }
 
     private async Task OnDownloadRequested(FileMetadataMessage fileMetadata)
@@ -123,35 +151,26 @@ public partial class ChatViewModel : RoutableViewModelBase
         => featureCollection.Voice.VoicePlayback.ChangeParticipantVolume(participantId, volume);
 
     private async Task OnVoiceCallLeaveRequested(int subRoomId)
-    {
-        try
-        {
-            await featureCollection.Chat.ChatVoiceService.LeaveCallAsync(roomId, subRoomId, appCts.Token);
-        }
-        catch (DirectoryNotFoundException e)
-        {
-            InAppNotifier.Error(e.Message);
-        }
-    }
+        => await featureCollection.Chat.ChatVoiceService.LeaveCallAsync(roomId, subRoomId, appCts.Token);
 
     private async Task RequestVoiceCallStateAsync()
+        => await featureCollection.Chat.ChatVoiceService.RequestCallStateAsync(roomId, appCts.Token);
+
+    private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
+        => await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
+            fileMetadata,
+            appCts.Token);
+
+    private async Task OnHistoryClearRequested()
     {
         try
         {
-            await featureCollection.Chat.ChatVoiceService.RequestCallStateAsync(roomId, appCts.Token);
+            await featureCollection.Chat.ChatMessageService.ClearMessageHistoryAsync(roomId, appCts.Token);
         }
-        catch (DirectoryNotFoundException e)
+        catch (Exception ex)
         {
-            InAppNotifier.Warning(e.Message);
+            InAppNotifier.Info(ex.Message);
         }
-    }
-
-    private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
-    {
-        await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
-            fileMetadata,
-            appCts.Token
-        );
     }
 
     private bool IsMessageValid() => !string.IsNullOrWhiteSpace(SendingMessage) || SomeFilesAttached;
@@ -173,42 +192,33 @@ public partial class ChatViewModel : RoutableViewModelBase
     }
 
     private async Task SendSessionStartMessage(Session session)
-    {
-        try
-        {
-            await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, appCts.Token);
-        }
-        catch (DirectoryNotFoundException e)
-        {
-            InAppNotifier.Error(e.Message);
-        }
-    }
+        => await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, appCts.Token);
 
     private async Task SendVoiceCallStartMessage()
-    {
-        try
-        {
-            await featureCollection.Chat.ChatVoiceService.StartCallAsync(roomId, appCts.Token);
-        }
-        catch (DirectoryNotFoundException e)
-        {
-            InAppNotifier.Error(e.Message);
-        }
-    }
+        => await featureCollection.Chat.ChatVoiceService.StartCallAsync(roomId, appCts.Token);
+
+    private async Task OnMessageDeleteRequested(Guid id)
+        => await featureCollection.Chat.ChatMessageService.DeleteMessageAsync(roomId, id, appCts.Token);
+
+    private async Task OnMessageEditRequested(Guid id, string newContent)
+        => await featureCollection.Chat.ChatMessageService.EditTextMessageAsync(roomId, id, newContent, appCts.Token);
 
     [RelayCommand(CanExecute = nameof(IsMessageValid))]
     private async Task SendMessage()
     {
         try
         {
-            if (!string.IsNullOrWhiteSpace(SendingMessage))
+            if (!string.IsNullOrWhiteSpace(SendingMessage) && AttachedFiles.Count == 0)
             {
-                await featureCollection.Chat.ChatTextService.SendMessageAsync(roomId,
+                await featureCollection.Chat.ChatTextService.SendTextMessageAsync(roomId,
                     SendingMessage.Trim(),
                     chatSideBarViewModel.PrivateChatParticipantId,
+                    replyToPreviewId,
                     appCts.Token
                 );
             }
+
+            var lastFile = AttachedFiles.LastOrDefault();
 
             foreach (var fileAttachement in AttachedFiles)
             {
@@ -233,15 +243,19 @@ public partial class ChatViewModel : RoutableViewModelBase
                 }
 
                 await featureCollection.Chat.ChatFileService.SendFileAsync(roomId,
+                   fileAttachement == lastFile ? SendingMessage : string.Empty,
                    fileAttachement.File.FileName,
                    fileAttachement.File.FilePath,
                    chatSideBarViewModel.PrivateChatParticipantId,
+                   replyToPreviewId,
                    appCts.Token
                );
             }
 
             AttachedFiles.Clear();
             SendingMessage = string.Empty;
+            replyToPreviewId = null;
+            ReplyToPreview = null;
         }
         catch (Exception ex)
         {

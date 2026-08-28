@@ -1,3 +1,5 @@
+using MIN.Core.Streaming.Contracts.Events;
+using MIN.Core.Streaming.Contracts.Events.Sending;
 using MIN.Core.Streaming.Contracts.Models;
 
 namespace MIN.Core.Streaming.Contracts.Interfaces;
@@ -7,6 +9,21 @@ namespace MIN.Core.Streaming.Contracts.Interfaces;
 /// </summary>
 public interface IStreamManager
 {
+    /// <summary>
+    /// Событие запроса на отправку ACK
+    /// </summary>
+    event Func<ChunkSendedEventArgs, CancellationToken, Task>? ChunkSended;
+
+    /// <summary>
+    /// Поток дошёл без проблем
+    /// </summary>
+    event Func<StreamCompletedEventArgs, CancellationToken, Task>? OnStreamCompleted;
+
+    /// <summary>
+    /// Поток провалился
+    /// </summary>
+    event Func<StreamFailedEventArgs, CancellationToken, Task>? OnStreamFailed;
+
     /// <summary>
     /// Отправляет данные через поток
     /// </summary>

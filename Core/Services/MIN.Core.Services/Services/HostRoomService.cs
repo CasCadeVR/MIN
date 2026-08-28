@@ -127,6 +127,7 @@ internal sealed class HostRoomService
         {
             return false;
         }
+        context.Connections.Unregister(e.ConnectionId);
 
         var hostParticipantId = roomStore.GetRoomHostParticipantId(roomId);
         var needToDisconnect = hostParticipantId == leavingParticipant.Id;
@@ -139,7 +140,6 @@ internal sealed class HostRoomService
         }
         else if (context.Participants.TryGetParticipantById(leavingParticipant.Id, out _))
         {
-            context.Connections.Unregister(e.ConnectionId);
             var participantLeftMessage = new ParticipantLeftMessage()
             {
                 Participant = leavingParticipant,
@@ -276,6 +276,28 @@ internal sealed class HostRoomService
         catch (ParticipantNotRegistredException ex)
         {
             logger.Log($"Не удалось кикнуть участника {ex.Message}", LogLevel.Warning);
+        }
+    }
+
+    public async Task KickConnectionAsync(Guid roomId, Guid connectionId, DisconnectReason reason)
+    {
+        if (!registry.TryGetServerConnectionIdByRoomId(roomId, out var serverConnectionId))
+        {
+            return;
+        }
+
+        if (!roomFactory.TryGetContext(roomId, out var context) || context == null)
+        {
+            return;
+        }
+
+        try
+        {
+            await transport.DisconnectClientAsync(connectionId, serverConnectionId, reason);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Не удалось кикнуть соединение {ex.Message}", LogLevel.Warning);
         }
     }
 }

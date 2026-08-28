@@ -20,6 +20,7 @@ public class ChatModule : Module
     {
         services.RegisterMultipleInterfacesAssignableFromAnchor<IMessage, IChatMessagingAnchor>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatRoomService>(ServiceLifetime.Singleton);
+        services.RegisterAsImplementedInterfaces<ChatMessageService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatTextService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatStatusService>(ServiceLifetime.Singleton);
         services.RegisterAsImplementedInterfaces<ChatFileService>(ServiceLifetime.Singleton);

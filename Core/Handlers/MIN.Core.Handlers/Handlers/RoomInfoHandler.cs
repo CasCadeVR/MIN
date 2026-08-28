@@ -1,7 +1,8 @@
 ﻿using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Events.Events;
-using MIN.Core.Handlers.Contracts;
+using MIN.Core.Handlers.Contracts.Base;
+using MIN.Core.Handlers.Contracts.Exceptions;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
@@ -11,77 +12,69 @@ using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
-internal sealed class RoomInfoHandler : IMessageHandler
+internal sealed class RoomInfoHandler : BaseHandler
 {
     private readonly IRoomStore roomStore;
     private readonly IEventBus eventBus;
-    private readonly ILoggerProvider logger;
 
     public RoomInfoHandler(IRoomStore roomStore,
         IEventBus eventBus,
-        ILoggerProvider logger)
+        ILoggerProvider logger) : base(logger)
     {
         this.roomStore = roomStore;
         this.eventBus = eventBus;
-        this.logger = logger;
     }
 
-    IEnumerable<MessageTypeTag> IMessageHandler.HandledTypes
+    public override IEnumerable<MessageTypeTag> HandledTypes
         => [MessageTypeTag.RoomInfoRequest, MessageTypeTag.RoomInfoResponse, MessageTypeTag.RoomInfoUpdated];
 
-    int IMessageHandler.Priority => 1;
-
-    async Task<HandlerResult> IMessageHandler.HandleAsync(IMessage message, MessageContext context)
+    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var roomId = context.RoomContext.RoomId;
 
-        if (message is RoomInfoRequestMessage roomInfoRequest)
+        switch (message)
         {
-            logger.Log($"Отправляю информацию о комнате с id {roomId}");
-            return HandlerResult.WithResponse(new RoomInfoResponseMessage()
-            {
-                Room = roomStore.GetRoomFor(message.SenderId, roomId),
-            });
+            case RoomInfoRequestMessage _:
+                LogInfo($"Отправляю информацию о комнате с id {roomId}");
+                return HandlerResult.WithResponse(new RoomInfoResponseMessage()
+                {
+                    Room = roomStore.GetRoomFor(message.SenderId, roomId),
+                });
+
+            case RoomInfoResponseMessage roomInfoResponse:
+                roomStore.Register(roomInfoResponse.Room);
+
+                var history = roomInfoResponse.Room.ChatHistory;
+                foreach (var roomMessage in history)
+                {
+                    context.RoomContext.Messages.AddMessage(roomMessage);
+                }
+
+                LogInfo($"Получил информацию о комнате с id {roomInfoResponse.Room.Id} сообщений {roomInfoResponse.Room.TotalMessageCount}");
+
+                await eventBus.PublishAsync(new RoomStateChangedEvent()
+                {
+                    Room = roomInfoResponse.Room,
+                }, context.CancellationToken);
+
+                return HandlerResult.WithEvent(new RoomJoinedEvent()
+                {
+                    RoomId = roomInfoResponse.Room.Id,
+                    RoomInfo = new RoomInfo(roomInfoResponse.Room),
+                });
+
+            case RoomInfoUpdatedMessage roomInfoUpdated:
+                var existingRoom = roomStore.GetRoom(roomId);
+                existingRoom.Name = roomInfoUpdated.Room.Name;
+                existingRoom.MaximumParticipants = roomInfoUpdated.Room.MaximumParticipants;
+
+                return HandlerResult.WithEvent(new RoomInfoUpdatedMessageEvent()
+                {
+                    RoomInfo = roomInfoUpdated.Room,
+                });
+
+            default:
+                throw new HandlerTypeMismatch(this, message);
         }
-        else if (message is RoomInfoResponseMessage roomInfoResponse)
-        {
-            roomStore.Register(roomInfoResponse.Room);
-
-            var history = roomInfoResponse.Room.ChatHistory.AsEnumerable().Reverse();
-            foreach (var roomMessage in history)
-            {
-                context.RoomContext.Messages.AddMessage(roomMessage);
-            }
-
-            logger.Log($"Получил информацию о комнате с id {roomInfoResponse.Room.Id} сообщений {roomInfoResponse.Room.TotalMessageCount}");
-
-            await eventBus.PublishAsync(new RoomStateChangedEvent()
-            {
-                Room = roomInfoResponse.Room,
-            }, context.CancellationToken);
-
-            await eventBus.PublishAsync(new RoomJoinedEvent()
-            {
-                RoomId = roomInfoResponse.Room.Id,
-                RoomInfo = new RoomInfo(roomInfoResponse.Room),
-            });
-
-            return HandlerResult.Success();
-        }
-        else if (message is RoomInfoUpdatedMessage roomInfoUpdated)
-        {
-            var existingRoom = roomStore.GetRoom(roomId);
-            existingRoom.Name = roomInfoUpdated.Room.Name;
-            existingRoom.MaximumParticipants = roomInfoUpdated.Room.MaximumParticipants;
-
-            await eventBus.PublishAsync(new RoomInfoUpdatedMessageEvent()
-            {
-                RoomInfo = roomInfoUpdated.Room,
-            }, context.CancellationToken);
-
-            return HandlerResult.Success();
-        }
-
-        return HandlerResult.Failure($"Неизвестный тип сообщения в {nameof(RoomInfoHandler)} - {message.GetType()}");
     }
 }
