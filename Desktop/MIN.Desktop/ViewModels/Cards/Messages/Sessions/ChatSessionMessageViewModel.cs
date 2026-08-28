@@ -83,6 +83,7 @@ public partial class ChatSessionMessageViewModel : BaseReplyableChatMessageViewM
         bool removeHeaders)
         : base(sessionReadyMessage,
             null,
+            dialogService,
             sessionReadyMessage.Sender.Name,
             timePadding,
             localParticipant.Id == sessionReadyMessage.SenderId,

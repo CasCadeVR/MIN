@@ -55,7 +55,7 @@
                             Margin="0,0,8,0"
                             Text="Уведомления" />
                         <ToggleSwitch
-                            IsChecked="{Binding Room.LocalRoomSettings.NotificationsEnabled}" />
+                            IsChecked="{Binding NotificationsEnabled}" />
                     </StackPanel>
                 </Border>
 

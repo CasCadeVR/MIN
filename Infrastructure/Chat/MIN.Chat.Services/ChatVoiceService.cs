@@ -49,7 +49,7 @@ public sealed class ChatVoiceService : IChatVoiceService
             if (registry.IsHosting(roomId))
             {
                 // Костыль, но я реально хз как там исправить
-                await Task.Delay(10, cancellationToken);
+                await Task.Delay(50, cancellationToken);
             }
         }
 
@@ -67,7 +67,7 @@ public sealed class ChatVoiceService : IChatVoiceService
             if (registry.IsHosting(roomId))
             {
                 // Костыль, но я реально хз как там исправить
-                await Task.Delay(10, cancellationToken);
+                await Task.Delay(50, cancellationToken);
             }
         }
 

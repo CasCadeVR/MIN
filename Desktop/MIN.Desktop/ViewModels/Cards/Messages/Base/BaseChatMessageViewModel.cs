@@ -3,7 +3,10 @@ using System.Threading.Tasks;
 using Avalonia;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Enums;
+using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Base;
+using MIN.Desktop.ViewModels.Modals;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages;
 
@@ -12,6 +15,8 @@ namespace MIN.Desktop.ViewModels.Cards.Messages;
 /// </summary>
 public abstract partial class BaseChatMessageViewModel : CardViewModelBase
 {
+    private readonly IDialogService? dialogService;
+
     /// <summary>
     /// Сообщение
     /// </summary>
@@ -86,12 +91,14 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
     /// </summary>
     public BaseChatMessageViewModel(IMessage message,
+       IDialogService? dialogService,
        string name,
        Thickness timePadding,
        bool isLocal,
        bool isHost,
        bool removeHeaders)
     {
+        this.dialogService = dialogService;
         Message = message;
         SenderName = name;
         Timestamp = message.Timestamp.ToShortTimeString();
@@ -106,8 +113,24 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     /// Удалить сообщение
     /// </summary>
     [RelayCommand]
-    protected virtual void DeleteMessage()
+    protected virtual async Task DeleteMessage()
     {
-        OnDeleteRequested?.Invoke();
+        if (dialogService == null)
+        {
+            OnDeleteRequested?.Invoke();
+            return;
+        }
+
+        bool confirmation = await dialogService.ShowDialogAsync<DialogBoxViewModel>(model =>
+        {
+            model.Title = "Удаление сообщения";
+            model.Description = $"Хотите удалить это сообщение?";
+            model.ButtonOptions = ButtonOptions.YesNo;
+        });
+
+        if (confirmation)
+        {
+            OnDeleteRequested?.Invoke();
+        }
     }
 }

@@ -9,6 +9,8 @@ namespace MIN.Core.Cryptography;
 /// <inheritdoc cref="IKeyProvider"/>
 public sealed class KeyProvider : IKeyProvider, IDisposable
 {
+    private const string ProtectorKey = "MIN.Core.Cryptography.KeyProtection";
+
     private readonly IKeyStorage storage;
     private readonly IDataProtector protector;
     private KeyPair? cachedKeys;
@@ -21,7 +23,7 @@ public sealed class KeyProvider : IKeyProvider, IDisposable
     public KeyProvider(IKeyStorage storage, IDataProtectionProvider dataProtection)
     {
         this.storage = storage;
-        protector = dataProtection.CreateProtector("MIN.Core.Cryptography.KeyProtection");
+        protector = dataProtection.CreateProtector(ProtectorKey);
     }
 
     /// <inheritdoc />
@@ -56,8 +58,7 @@ public sealed class KeyProvider : IKeyProvider, IDisposable
         }
     }
 
-    /// <inheritdoc />
-    public async Task<ECDiffieHellman> GetEcdhPrivateKeyAsync()
+    private async Task<ECDiffieHellman> GetEcdhPrivateKeyAsync()
     {
         var keys = await GetLocalKeysAsync();
         var decryptedPem = Unprotect(keys.EncryptedEcdhPrivateKeyPem);
@@ -91,14 +92,10 @@ public sealed class KeyProvider : IKeyProvider, IDisposable
     }
 
     async Task IKeyProvider.SavePartnerPublicKeyAsync(Guid partnerId, byte[] partnerPublicKeyBytes)
-    {
-        await storage.SavePartnerPublicKeyAsync(partnerId, partnerPublicKeyBytes);
-    }
+        => await storage.SavePartnerPublicKeyAsync(partnerId, partnerPublicKeyBytes);
 
     async Task<byte[]?> IKeyProvider.GetPartnerPublicKeyAsync(Guid partnerId)
-    {
-        return await storage.LoadPartnerPublicKeyAsync(partnerId);
-    }
+        => await storage.LoadPartnerPublicKeyAsync(partnerId);
 
     private KeyPair GenerateNewKeys()
     {

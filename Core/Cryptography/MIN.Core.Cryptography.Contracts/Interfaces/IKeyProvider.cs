@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using MIN.Core.Cryptography.Contracts.Models;
+﻿using MIN.Core.Cryptography.Contracts.Models;
 
 namespace MIN.Core.Cryptography.Contracts.Interfaces;
 
@@ -12,11 +11,6 @@ public interface IKeyProvider
     /// Получить или сгенерировать локальную пару ключей
     /// </summary>
     Task<KeyPair> GetLocalKeysAsync();
-
-    /// <summary>
-    /// Получить приватный ECDH-ключ для вычисления общего секрета
-    /// </summary>
-    Task<ECDiffieHellman> GetEcdhPrivateKeyAsync();
 
     /// <summary>
     /// Вычислить общий секрет с собеседником по его публичному ECDH-ключу

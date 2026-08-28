@@ -3,6 +3,7 @@ using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Desktop.Contracts.Interfaces;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages.Base;
 
@@ -42,12 +43,14 @@ public abstract partial class BaseReplyableChatMessageViewModel : BaseChatMessag
     /// </summary>
     public BaseReplyableChatMessageViewModel(IMessage message,
        IReplyable? replyable,
+       IDialogService dialogService,
        string name,
        Thickness timePadding,
        bool isLocal,
        bool isHost,
        bool removeHeaders)
         : base(message,
+            dialogService,
             name,
             timePadding,
             isLocal,

@@ -71,6 +71,7 @@ public partial class ChatVoiceCallMessageViewModel : BaseChatMessageViewModel
         bool isHostMessage,
         bool removeHeaders)
         : base(voiceCallStartedMessage,
+            null,
             voiceCallStartedMessage.Sender.Name,
             timePadding,
             localParticipant.Id == voiceCallStartedMessage.SenderId,

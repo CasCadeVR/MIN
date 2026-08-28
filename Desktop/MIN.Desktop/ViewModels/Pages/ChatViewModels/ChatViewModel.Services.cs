@@ -43,14 +43,20 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         parentWindow = MainWindowViewModel.GetWindow()!;
 
-        featureCollection.Helper.NotificationService.OnNotificationClick += () =>
-        {
-            parentWindow.WindowState = WindowState.Normal;
-            parentWindow.Focus();
-        };
+        featureCollection.Helper.NotificationService.OnNotificationClick += OnNotificationClick;
+        featureCollection.Helper.NotificationService.NotificationTurnOffClicked += NotificationTurnOffClicked;
+    }
 
-        featureCollection.Helper.NotificationService.NotificationTurnOffClicked += ()
-            => room.LocalRoomSettings.NotificationsEnabled = false;
+    private void OnNotificationClick()
+    {
+        parentWindow.WindowState = WindowState.Normal;
+        parentWindow.Focus();
+    }
+
+    private void NotificationTurnOffClicked()
+    {
+        room.LocalRoomSettings.NotificationsEnabled = false;
+        chatSideBarViewModel.NotificationsEnabled = false;
     }
 
     private void NotifyIfNeeded(IDescribable describable)

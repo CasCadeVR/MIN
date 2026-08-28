@@ -4,10 +4,8 @@ using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
 using MIN.Desktop.ViewModels.Cards.Messages.Base;
-using MIN.Desktop.ViewModels.Modals;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages;
 
@@ -16,8 +14,6 @@ namespace MIN.Desktop.ViewModels.Cards.Messages;
 /// </summary>
 public abstract partial class BaseTextContentChatMessageViewModel : BaseReplyableChatMessageViewModel
 {
-    private readonly IDialogService dialogService = null!;
-
     /// <summary>
     /// Идёт редактирование
     /// </summary>
@@ -66,13 +62,13 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseReplyabl
         bool removeHeaders)
         : base(message,
             replyable,
+            dialogService,
             name,
             timePadding,
             isLocal,
             isHost,
             removeHeaders)
     {
-        this.dialogService = dialogService;
         Content = contentEditable.Content;
         IsEdited = contentEditable.IsEdited;
     }
@@ -100,17 +96,7 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseReplyabl
 
         if (EditContent == string.Empty)
         {
-            bool confirmation = await dialogService.ShowDialogAsync<DialogBoxViewModel>(model =>
-            {
-                model.Title = "Удаление сообщения";
-                model.Description = $"Хотите удалить это сообщение?";
-                model.ButtonOptions = ButtonOptions.YesNo;
-            });
-
-            if (confirmation)
-            {
-                OnDeleteRequested?.Invoke();
-            }
+            await DeleteMessage();
             return;
         }
 
