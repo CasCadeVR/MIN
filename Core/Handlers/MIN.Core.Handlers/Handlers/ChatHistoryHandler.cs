@@ -38,16 +38,17 @@ internal sealed class ChatHistoryHandler : BaseHandler
         {
             case ChatHistoryRequestMessage request:
                 var totalCount = roomStore.GetRoomChatHistoryCountFor(request.SenderId, roomId);
-                var pageMessages = context.RoomContext
+                var olderMessages = context.RoomContext
                     .Messages
-                    .GetRecentHistory(request.Page, request.PageSize)
+                    .GetMessagesOlderThan(request.OldestTimestamp, request.OldestMessageId, request.PageSize)
                     .ToList();
 
                 return HandlerResult.WithResponse(new ChatHistoryResponseMessage
                 {
-                    Messages = pageMessages,
+                    Messages = olderMessages,
                     TotalCount = totalCount,
-                    Page = request.Page,
+                    OldestTimestamp = request.OldestTimestamp,
+                    OldestMessageId = request.OldestMessageId,
                 }, stopPropagation: true);
 
             case ChatHistoryResponseMessage response:

@@ -30,10 +30,10 @@ public sealed class MessageStore : IMessageStore
     {
         lock (messages)
         {
-            var existing = messages.FirstOrDefault(p => p.Id == id);
-            if (existing != null)
+            var index = messages.FindIndex(p => p.Id == id);
+            if (index >= 0)
             {
-                existing = message;
+                messages[index] = message;
             }
         }
     }
@@ -46,15 +46,15 @@ public sealed class MessageStore : IMessageStore
         }
     }
 
-    IEnumerable<IMessage> IMessageStore.GetRecentHistory(int page, int pageSize)
+    IEnumerable<IMessage> IMessageStore.GetRecentHistory(int pageSize)
     {
         lock (messages)
         {
             return messages
                 .AsEnumerable()
                 .Reverse()
-                .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                .Reverse()
                 .ToList();
         }
     }
@@ -63,7 +63,7 @@ public sealed class MessageStore : IMessageStore
     {
         lock (messages)
         {
-            var resultMessages = messages.AsEnumerable().Reverse();
+            var resultMessages = messages.AsEnumerable();
 
             if (page.HasValue && pageSize.HasValue)
             {
@@ -72,6 +72,37 @@ public sealed class MessageStore : IMessageStore
 
             return resultMessages;
         }
+    }
+
+    IEnumerable<IMessage> IMessageStore.GetMessagesOlderThan(DateTime? oldestLoadedTimestamp, Guid? oldestLoadedMessageId, int pageSize)
+    {
+        lock (messages)
+        {
+            IEnumerable<IMessage> query = messages;
+
+            if (oldestLoadedTimestamp.HasValue)
+            {
+                query = query.Where(m => IsOlderThanAnchor(m, oldestLoadedTimestamp.Value, oldestLoadedMessageId));
+            }
+
+            return query
+                .Reverse()
+                .Take(pageSize)
+                .ToList();
+        }
+    }
+
+    private static bool IsOlderThanAnchor(IMessage m, DateTime anchorTimestamp, Guid? anchorId)
+    {
+        if (m.Timestamp != anchorTimestamp)
+        {
+            return m.Timestamp < anchorTimestamp;
+        }
+
+        // Тай-брейк при равных Timestamp: Guid как таковой не даёт хронологического порядка,
+        // но обеспечивает детерминированность, чтобы не потерять и не задублировать сообщения
+        // с одинаковой меткой времени.
+        return anchorId.HasValue && m.Id.CompareTo(anchorId.Value) < 0;
     }
 
     IMessage? IMessageStore.GetLastMessage()

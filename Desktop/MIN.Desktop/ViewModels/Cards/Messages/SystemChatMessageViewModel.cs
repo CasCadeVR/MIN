@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using MIN.Core.Messaging.Contracts.Interfaces;
 
 namespace MIN.Desktop.ViewModels.Cards.Messages;
 
@@ -23,6 +24,11 @@ public partial class SystemChatMessageViewModel : BaseChatMessageViewModel
     /// Инициализирует новый экземпляр <see cref="SystemChatMessageViewModel"/>
     /// </summary>
     public SystemChatMessageViewModel() : base() { }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="SystemChatMessageViewModel"/>
+    /// </summary>
+    public SystemChatMessageViewModel(IMessage message) : base(message) { }
 
     [RelayCommand]
     private async Task Click()

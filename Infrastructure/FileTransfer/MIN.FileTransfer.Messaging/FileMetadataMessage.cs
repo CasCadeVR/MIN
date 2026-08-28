@@ -58,6 +58,9 @@ public class FileMetadataMessage : BaseContentMessage, IDescribable, IReplyable,
     public bool AsDownloaded { get; set; }
 
     /// <inheritdoc />
+    public Guid? ReplyToMessageId { get; set; }
+
+    /// <inheritdoc />
     public string? ReplyToMessageDescription { get; set; }
 
     string IDescribable.GetDescription() => $"{Sender.Name}: {FileName}";
@@ -88,6 +91,7 @@ public class FileMetadataMessage : BaseContentMessage, IDescribable, IReplyable,
         FileName = metadata.FileName;
         FilePath = metadata.FilePath;
         RecipientId = metadata.RecipientId;
+        ReplyToMessageId = metadata.ReplyToMessageId;
         ReplyToMessageDescription = metadata.ReplyToMessageDescription;
         TransferId = metadata.TransferId;
         AsDownloaded = metadata.AsDownloaded;

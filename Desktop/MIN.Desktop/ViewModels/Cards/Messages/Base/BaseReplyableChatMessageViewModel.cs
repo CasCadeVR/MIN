@@ -12,6 +12,11 @@ namespace MIN.Desktop.ViewModels.Cards.Messages.Base;
 public abstract partial class BaseReplyableChatMessageViewModel : BaseChatMessageViewModel
 {
     /// <summary>
+    /// Идентификатор сообщения, на которое дан ответ
+    /// </summary>
+    public Guid? ReplyToMessageId;
+
+    /// <summary>
     /// Описание того сообщение, на которое это сообщение послужило ответом на него
     /// </summary>
     [ObservableProperty]
@@ -21,6 +26,11 @@ public abstract partial class BaseReplyableChatMessageViewModel : BaseChatMessag
     /// Сообщение выбрано в качестве создания на него ответа
     /// </summary>
     public Action? OnReplyRequested;
+
+    /// <summary>
+    /// Это сообщение имеет ответ
+    /// </summary>
+    public bool HasReply => ReplyToMessageId != null;
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
@@ -45,11 +55,29 @@ public abstract partial class BaseReplyableChatMessageViewModel : BaseChatMessag
             removeHeaders)
     {
         ReplyToDescription = replyable?.ReplyToMessageDescription;
+        ReplyToMessageId = replyable?.ReplyToMessageId;
     }
 
     [RelayCommand]
     private void SetAsReply()
     {
         OnReplyRequested?.Invoke();
+    }
+
+    /// <summary>
+    /// Пометить сообщение как удалённое
+    /// </summary>
+    public void ResetReplyAsDeleted()
+    {
+        ReplyToMessageId = null;
+        ReplyToDescription = "Сообщение было удалено";
+    }
+
+    /// <summary>
+    /// Обновить описание
+    /// </summary>
+    public void SetNewDescription(string? description)
+    {
+        ReplyToDescription = description;
     }
 }

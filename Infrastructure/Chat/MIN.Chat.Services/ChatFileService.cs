@@ -1,8 +1,10 @@
 ﻿using MIN.Chat.Services.Contracts.Interfaces;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Stores.Contracts.Interfaces;
 using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.FileTransfer.DI.FeatureCollection;
 using MIN.FileTransfer.Events;
@@ -16,6 +18,7 @@ namespace MIN.Chat.Services;
 public sealed class ChatFileService : IChatFileService
 {
     private readonly IMessageRouter messageRouter;
+    private readonly IRoomFactory roomFactory;
     private readonly IRoomConnectionRegistry registry;
     private readonly IEventBus eventBus;
     private readonly IFileTransferFeatureCollection fileFeatureCollection;
@@ -26,18 +29,20 @@ public sealed class ChatFileService : IChatFileService
     /// </summary>
     public ChatFileService(IMessageRouter messageRouter,
         IRoomConnectionRegistry registry,
+        IRoomFactory roomFactory,
         IEventBus eventBus,
         IFileTransferFeatureCollection fileFeatureCollection,
         IIdentityService identityService)
     {
         this.messageRouter = messageRouter;
         this.registry = registry;
+        this.roomFactory = roomFactory;
         this.eventBus = eventBus;
         this.fileFeatureCollection = fileFeatureCollection;
         this.identityService = identityService;
     }
 
-    async Task IChatFileService.SendFileAsync(Guid roomId, string content, string fileName, string filePath, Guid? recipientId, string? replyToDescription, CancellationToken cancellationToken)
+    async Task IChatFileService.SendFileAsync(Guid roomId, string content, string fileName, string filePath, Guid? recipientId, Guid? replyToId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(filePath) || !Path.Exists(filePath))
         {
@@ -45,6 +50,9 @@ public sealed class ChatFileService : IChatFileService
         }
 
         var transferId = Guid.NewGuid();
+
+        var replyToMessage = roomFactory.GetOrCreateContext(roomId).Messages.GetMessageById(replyToId ?? Guid.Empty);
+        var replyToDescription = (replyToMessage as IDescribable)?.GetDescription();
 
         var message = new FileMetadataMessage
         {
@@ -56,6 +64,7 @@ public sealed class ChatFileService : IChatFileService
             FilePath = filePath,
             FileSize = fileFeatureCollection.FileHelperService.GetFileSize(filePath),
             RecipientId = recipientId,
+            ReplyToMessageId = replyToId,
             ReplyToMessageDescription = replyToDescription,
         };
 

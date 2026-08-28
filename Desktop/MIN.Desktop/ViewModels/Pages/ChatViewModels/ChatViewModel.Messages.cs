@@ -12,6 +12,7 @@ using MIN.Core.Stores.Contracts.Constants;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.ViewModels.Base;
 using MIN.Desktop.ViewModels.Cards.Messages;
+using MIN.Desktop.ViewModels.Cards.Messages.Base;
 using MIN.Desktop.ViewModels.Cards.Messages.Files;
 using MIN.Desktop.ViewModels.Cards.Messages.Sessions;
 using MIN.Desktop.ViewModels.Cards.Messages.Voice;
@@ -27,6 +28,8 @@ namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 /// </summary>
 public partial class ChatViewModel : RoutableViewModelBase
 {
+    private int maxRenderedMessages = StoreConstants.MessagesPageSize;
+
     /// <summary>
     /// Список сообщений для отображения в UI
     /// </summary>
@@ -36,9 +39,12 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private Guid? lastPrivateChatParticipantId;
     private IMessage? lastChatMessage;
-    private int loadedPage = 1;
+    private bool hasScrolledHistory;
     private SystemChatMessageViewModel? loadMoreLabel;
     private int renderedMessageCount;
+
+    private DateTime? oldestLoadedTimestamp;
+    private Guid? oldestLoadedMessageId;
 
     private async Task AddMessageToChatFlow(IMessage message, bool appendOnTop = false, bool countTowardCap = true)
     {
@@ -73,7 +79,7 @@ public partial class ChatViewModel : RoutableViewModelBase
                 break;
 
             case IDescribable d:
-                messageCard = CreateDescribableLabel(d);
+                messageCard = CreateDescribableLabel(d, message);
                 break;
             default:
                 return;
@@ -111,7 +117,18 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             return;
         }
+
         Messages.Remove(existingCard);
+        renderedMessageCount--;
+
+        var replyables = Messages.OfType<BaseReplyableChatMessageViewModel>();
+        foreach (var replyable in replyables)
+        {
+            if (replyable.HasReply && replyable.ReplyToMessageId == id)
+            {
+                replyable.ResetReplyAsDeleted();
+            }
+        }
     }
 
     private void EditMessage(Guid id, string newContent)
@@ -124,6 +141,14 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (existingCard is BaseTextContentChatMessageViewModel baseTextContentChatMessageViewModel)
         {
             baseTextContentChatMessageViewModel.MessageEdited(newContent);
+        }
+        var replyables = Messages.OfType<BaseReplyableChatMessageViewModel>();
+        foreach (var replyable in replyables)
+        {
+            if (replyable.HasReply && replyable.ReplyToMessageId == id)
+            {
+                replyable.SetNewDescription((existingCard.Message as IDescribable)?.GetDescription());
+            }
         }
     }
 
@@ -140,7 +165,6 @@ public partial class ChatViewModel : RoutableViewModelBase
         };
 
         loadMoreLabel.OnClicked += OnLoadMoreClicked;
-
         Messages.Insert(0, loadMoreLabel);
     }
 
@@ -161,34 +185,43 @@ public partial class ChatViewModel : RoutableViewModelBase
     private async Task OnLoadMoreClicked()
     {
         var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
-        var memoryCount = context.Messages.GetMessageCount();
 
-        if (memoryCount < room.TotalMessageCount)
+        var olderInMemory = context.Messages
+            .GetMessagesOlderThan(oldestLoadedTimestamp, oldestLoadedMessageId)
+            .ToList();
+
+        maxRenderedMessages += StoreConstants.MessagesPageSize;
+
+        if (olderInMemory.Count < StoreConstants.MessagesPageSize
+            && context.Messages.GetMessageCount() < room.TotalMessageCount)
         {
-            await featureCollection.Chat.ChatRoomService.SendChatHistoryRequest(roomId, loadedPage + 1, appCts.Token);
+            await featureCollection.Chat.ChatRoomService.SendChatHistoryRequest(
+                roomId, oldestLoadedTimestamp, oldestLoadedMessageId, appCts.Token);
+            return;
         }
-        else
+
+        RemoveLoadMoreLabel();
+
+        await RenderMessages(olderInMemory, appendOnTop: true);
+        hasScrolledHistory = true;
+
+        if (olderInMemory.Count > 0)
         {
-            var pageMessages = context.Messages
-                .GetRecentHistory(loadedPage + 1, StoreConstants.MessagesPageSize)
-                .ToList();
+            oldestLoadedTimestamp = olderInMemory[^1].Timestamp;
+            oldestLoadedMessageId = olderInMemory[^1].Id;
+        }
 
-            loadedPage++;
-            RemoveLoadMoreLabel();
-            await RenderMessages(pageMessages, appendOnTop: true);
+        var stillMoreExists = context.Messages
+            .GetMessagesOlderThan(oldestLoadedTimestamp, oldestLoadedMessageId, 1)
+            .Any();
 
-            if (loadedPage * StoreConstants.MessagesPageSize < memoryCount)
-            {
-                ShowLoadMoreLabel();
-            }
+        if (stillMoreExists || context.Messages.GetMessageCount() < room.TotalMessageCount)
+        {
+            ShowLoadMoreLabel();
         }
     }
 
-    private bool ShouldTrimExcessMessages()
-    {
-        var maxVisible = loadedPage * StoreConstants.MessagesPageSize;
-        return renderedMessageCount >= maxVisible;
-    }
+    private bool ShouldTrimExcessMessages() => renderedMessageCount >= maxRenderedMessages;
 
     private void ReplaceOldestWithLoadMore()
     {
@@ -196,6 +229,8 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             if (Messages[i] != loadMoreLabel)
             {
+                oldestLoadedTimestamp = Messages[i + 1].Message?.Timestamp;
+                oldestLoadedMessageId = Messages[i + 1].Message?.Id;
                 Messages.RemoveAt(i);
                 renderedMessageCount--;
                 break;
@@ -338,7 +373,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private static SystemChatMessageViewModel CreateSystemMessageLabel(SystemTextMessage msg)
     {
-        var card = new SystemChatMessageViewModel()
+        var card = new SystemChatMessageViewModel(msg)
         {
             Text = msg.Content,
             IsPrivate = msg.RecipientId != null,
@@ -347,9 +382,9 @@ public partial class ChatViewModel : RoutableViewModelBase
         return card;
     }
 
-    private static SystemChatMessageViewModel CreateDescribableLabel(IDescribable describable)
+    private static SystemChatMessageViewModel CreateDescribableLabel(IDescribable describable, IMessage message)
     {
-        var card = new SystemChatMessageViewModel()
+        var card = new SystemChatMessageViewModel(message)
         {
             Text = describable.GetDescription(),
         };

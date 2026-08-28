@@ -1,4 +1,5 @@
 ﻿using MIN.Chat.Messaging;
+using MIN.Common.Core.Contracts.Interfaces;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Events.Events;
 using MIN.Core.Handlers.Contracts.Base;
@@ -56,6 +57,15 @@ internal sealed class ChatEditHandler : BaseHandler
 
             // TODO: Надо бы что-то предпринять, ибо это по сути вообще ничего не делает
             context.RoomContext.Messages.UpdateMessage(chatEditMessage.MessageIdToEdit, existingMessage);
+
+            var replyables = context.RoomContext.Messages.GetHistory().OfType<IReplyable>();
+            foreach (var replyable in replyables)
+            {
+                if (replyable.ReplyToMessageId == chatEditMessage.MessageIdToEdit)
+                {
+                    replyable.ReplyToMessageDescription = (contentEditable as IDescribable)?.GetDescription();
+                }
+            }
 
             return HandlerResult.WithEvent(new MessageEditedEvent()
             {

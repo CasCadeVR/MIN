@@ -246,12 +246,25 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         var e = eventMessage.Message;
 
-        loadedPage = e.Page;
         room.TotalMessageCount = e.TotalCount;
+        hasScrolledHistory = true;
+
         RemoveLoadMoreLabel();
         await RenderMessages(e.Messages, appendOnTop: true);
 
-        if (loadedPage * StoreConstants.MessagesPageSize < room.TotalMessageCount)
+        if (e.Messages.Count > 0)
+        {
+            var oldest = e.Messages[^1];
+            oldestLoadedTimestamp = oldest.Timestamp;
+            oldestLoadedMessageId = oldest.Id;
+        }
+
+        var context = featureCollection.Core.RoomFactory.GetOrCreateContext(roomId);
+        var moreInMemory = context.Messages
+            .GetMessagesOlderThan(oldestLoadedTimestamp, oldestLoadedMessageId, 1)
+            .Any();
+
+        if (moreInMemory || context.Messages.GetMessageCount() < room.TotalMessageCount)
         {
             ShowLoadMoreLabel();
         }
@@ -261,14 +274,17 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         RemoveLoadMoreLabel();
         Messages.Clear();
-        renderedMessageCount = 1;
+        renderedMessageCount = 0;
         MissedMessagesCount = 0;
-        loadedPage = 1;
+        maxRenderedMessages = StoreConstants.MessagesPageSize;
+        oldestLoadedTimestamp = null;
+        oldestLoadedMessageId = null;
+        hasScrolledHistory = false;
 
         await SendSystemMessage(new SystemTextMessage()
         {
             Content = (eventMessage.Message as IDescribable).GetDescription()
-        });
+        }, countTowardCap: true);
     }
 
     private async Task ChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)

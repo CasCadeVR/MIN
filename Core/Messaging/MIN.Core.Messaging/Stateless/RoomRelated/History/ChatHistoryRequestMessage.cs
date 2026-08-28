@@ -18,9 +18,14 @@ public sealed class ChatHistoryRequestMessage : BaseMessage
     public override bool RequireStreamAcks => true;
 
     /// <summary>
-    /// Страница
+    /// С какого момента подгрузить
     /// </summary>
-    public int Page { get; set; }
+    public DateTime? OldestTimestamp { get; set; }
+
+    /// <summary>
+    /// Идентификатор самого старого сообщения
+    /// </summary>
+    public Guid? OldestMessageId { get; set; }
 
     /// <summary>
     /// Размер страницы

@@ -44,7 +44,7 @@ internal sealed class RoomInfoHandler : BaseHandler
             case RoomInfoResponseMessage roomInfoResponse:
                 roomStore.Register(roomInfoResponse.Room);
 
-                var history = roomInfoResponse.Room.ChatHistory.AsEnumerable().Reverse();
+                var history = roomInfoResponse.Room.ChatHistory;
                 foreach (var roomMessage in history)
                 {
                     context.RoomContext.Messages.AddMessage(roomMessage);

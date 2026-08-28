@@ -11,6 +11,8 @@ namespace MIN.Chat.Messaging;
 /// </summary>
 public sealed class ChatTextMessage : BaseContentMessage, IDescribable, IReplyable
 {
+    private readonly static int descriptionLength = 100;
+
     /// <inheritdoc />
     public override MessageTypeTag TypeTag => MessageTypeTag.ChatTextMessage;
 
@@ -26,7 +28,14 @@ public sealed class ChatTextMessage : BaseContentMessage, IDescribable, IReplyab
     public ParticipantInfo Sender { get; set; } = null!;
 
     /// <inheritdoc />
+    public Guid? ReplyToMessageId { get; set; }
+
+    /// <inheritdoc />
     public string? ReplyToMessageDescription { get; set; }
 
-    string IDescribable.GetDescription() => $"{Sender.Name}: {Content}";
+    string IDescribable.GetDescription()
+    {
+        var text = $"{Sender.Name}: {Content}";
+        return text.Length <= descriptionLength ? text : text[..descriptionLength] + "...";
+    }
 }

@@ -29,7 +29,12 @@ public class ChatHistoryResponseMessage : BaseMessage
     public int TotalCount { get; set; }
 
     /// <summary>
-    /// Страница
+    /// С какого времени подгружены сообщения
     /// </summary>
-    public int Page { get; set; }
+    public DateTime? OldestTimestamp { get; set; }
+
+    /// <summary>
+    /// Идентификатор самого последнего сообщения
+    /// </summary>
+    public Guid? OldestMessageId { get; set; }
 }

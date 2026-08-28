@@ -93,6 +93,11 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseReplyabl
     [RelayCommand]
     protected virtual async Task ConfirmEditMessage()
     {
+        if (!IsEditing)
+        {
+            return;
+        }
+
         if (EditContent == string.Empty)
         {
             bool confirmation = await dialogService.ShowDialogAsync<DialogBoxViewModel>(model =>
@@ -143,6 +148,11 @@ public abstract partial class BaseTextContentChatMessageViewModel : BaseReplyabl
     [RelayCommand]
     protected virtual void CancelEditMessage()
     {
+        if (!IsEditing)
+        {
+            return;
+        }
+
         IsEditing = false;
     }
 }

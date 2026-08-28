@@ -24,6 +24,7 @@ namespace MIN.Desktop.ViewModels.Pages.ChatViewModels;
 public partial class ChatViewModel : RoutableViewModelBase
 {
     private Window parentWindow = null!;
+    private Guid? replyToPreviewId;
 
     /// <summary>
     /// Превью ответа на вопрос (просто показать в строчке описание сообщения)
@@ -72,12 +73,14 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private void SetReplyTo(IMessage message)
     {
+        replyToPreviewId = message.Id;
         ReplyToPreview = (message as IDescribable)?.GetDescription();
     }
 
     [RelayCommand]
     private void ResetReplyTo()
     {
+        replyToPreviewId = null;
         ReplyToPreview = null;
     }
 
@@ -204,7 +207,7 @@ public partial class ChatViewModel : RoutableViewModelBase
                 await featureCollection.Chat.ChatTextService.SendTextMessageAsync(roomId,
                     SendingMessage.Trim(),
                     chatSideBarViewModel.PrivateChatParticipantId,
-                    ReplyToPreview,
+                    replyToPreviewId,
                     appCts.Token
                 );
             }
@@ -238,13 +241,14 @@ public partial class ChatViewModel : RoutableViewModelBase
                    fileAttachement.File.FileName,
                    fileAttachement.File.FilePath,
                    chatSideBarViewModel.PrivateChatParticipantId,
-                   ReplyToPreview,
+                   replyToPreviewId,
                    appCts.Token
                );
             }
 
             AttachedFiles.Clear();
             SendingMessage = string.Empty;
+            replyToPreviewId = null;
             ReplyToPreview = null;
         }
         catch (Exception ex)

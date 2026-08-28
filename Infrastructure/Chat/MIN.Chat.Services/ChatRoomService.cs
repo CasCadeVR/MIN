@@ -52,16 +52,13 @@ public sealed class ChatRoomService : IChatRoomService
         await networkErrorHandler.SendErrorAsync(reason, participantId, roomId, critical: true);
     }
 
-    async Task IChatRoomService.SendChatHistoryRequest(Guid roomId, int page, CancellationToken cancellationToken)
-    {
-        var request = new ChatHistoryRequestMessage
+    async Task IChatRoomService.SendChatHistoryRequest(Guid roomId, DateTime? oldestTimestamp, Guid? oldestMessageId, CancellationToken cancellationToken)
+        => await messageRouter.RouteAsync(new ChatHistoryRequestMessage
         {
-            Page = page,
+            OldestTimestamp = oldestTimestamp,
+            OldestMessageId = oldestMessageId,
             PageSize = StoreConstants.MessagesPageSize,
-        };
-
-        await messageRouter.RouteAsync(request, roomId, identityService.SelfParticipant.Id, cancellationToken);
-    }
+        }, roomId, identityService.SelfParticipant.Id, cancellationToken);
 
     async Task IChatRoomService.SendUpdatedRoomInfoAsync(RoomInfo updatedRoomInfo, CancellationToken cancellationToken)
     {

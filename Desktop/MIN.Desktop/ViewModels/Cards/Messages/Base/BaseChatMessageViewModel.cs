@@ -76,6 +76,15 @@ public abstract partial class BaseChatMessageViewModel : CardViewModelBase
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
     /// </summary>
+    public BaseChatMessageViewModel(IMessage message)
+    {
+        Message = message;
+        Timestamp = message.Timestamp.ToShortTimeString();
+    }
+
+    /// <summary>
+    /// Инициализирует новый экземпляр <see cref="BaseChatMessageViewModel"/>
+    /// </summary>
     public BaseChatMessageViewModel(IMessage message,
        string name,
        Thickness timePadding,

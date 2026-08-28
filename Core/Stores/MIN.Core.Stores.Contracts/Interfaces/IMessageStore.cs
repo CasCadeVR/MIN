@@ -31,12 +31,17 @@ public interface IMessageStore
     /// <summary>
     /// Получить историю последних сообщений
     /// </summary>
-    IEnumerable<IMessage> GetRecentHistory(int page = 1, int pageSize = StoreConstants.MessagesPageSize);
+    IEnumerable<IMessage> GetRecentHistory(int pageSize = StoreConstants.MessagesPageSize);
 
     /// <summary>
     /// Получить историю сообщений
     /// </summary>
     IEnumerable<IMessage> GetHistory(int? page = null, int? pageSize = null);
+
+    /// <summary>
+    /// Получить все сообщения, старше по времени
+    /// </summary>
+    IEnumerable<IMessage> GetMessagesOlderThan(DateTime? oldestLoadedTimestamp, Guid? oldestLoadedMessageId, int pageSize = StoreConstants.MessagesPageSize);
 
     /// <summary>
     /// Получить последнее сообщение (внизу)
