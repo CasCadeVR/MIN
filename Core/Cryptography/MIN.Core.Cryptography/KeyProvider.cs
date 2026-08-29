@@ -1,17 +1,19 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
-using MIN.Core.Cryptography.Contracts.Interfaces;
 using MIN.Core.Cryptography.Contracts.Models;
+using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Cryptography;
 
-/// <inheritdoc cref="IKeyProvider"/>
-public sealed class KeyProvider : IKeyProvider, IDisposable
+/// <summary>
+/// Помошник с ключами
+/// </summary>
+public sealed class KeyProvider : IDisposable
 {
     private const string ProtectorKey = "MIN.Core.Cryptography.KeyProtection";
 
-    private readonly IKeyStorage storage;
+    private readonly FileSystemKeyStorage storage;
     private readonly IDataProtector protector;
     private KeyPair? cachedKeys;
     private readonly SemaphoreSlim cacheLock = new(1, 1);
@@ -20,13 +22,17 @@ public sealed class KeyProvider : IKeyProvider, IDisposable
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="KeyProvider"/>
     /// </summary>
-    public KeyProvider(IKeyStorage storage, IDataProtectionProvider dataProtection)
+    public KeyProvider(IDataProtectionProvider dataProtection,
+       IAppDataProvider appDataProvider,
+       ILoggerProvider logger)
     {
-        this.storage = storage;
+        storage = new FileSystemKeyStorage(appDataProvider, logger);
         protector = dataProtection.CreateProtector(ProtectorKey);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Получить или сгенерировать локальную пару ключей
+    /// </summary>
     public async Task<KeyPair> GetLocalKeysAsync()
     {
         if (cachedKeys != null)
@@ -68,7 +74,10 @@ public sealed class KeyProvider : IKeyProvider, IDisposable
         return ecdh;
     }
 
-    async Task<byte[]> IKeyProvider.ComputeSharedSecretAsync(byte[] partnerPublicKeyBytes)
+    /// <summary>
+    /// Вычислить общий секрет с собеседником по его публичному ECDH-ключу
+    /// </summary>
+    public async Task<byte[]> ComputeSharedSecretAsync(byte[] partnerPublicKeyBytes)
     {
         using var myEcdh = await GetEcdhPrivateKeyAsync();
 
@@ -91,10 +100,16 @@ public sealed class KeyProvider : IKeyProvider, IDisposable
         return aesKey;
     }
 
-    async Task IKeyProvider.SavePartnerPublicKeyAsync(Guid partnerId, byte[] partnerPublicKeyBytes)
+    /// <summary>
+    /// Сохранить публичный ключ собеседника
+    /// </summary>
+    public async Task SavePartnerPublicKeyAsync(Guid partnerId, byte[] partnerPublicKeyBytes)
         => await storage.SavePartnerPublicKeyAsync(partnerId, partnerPublicKeyBytes);
 
-    async Task<byte[]?> IKeyProvider.GetPartnerPublicKeyAsync(Guid partnerId)
+    /// <summary>
+    /// Получить сохранённый публичный ключ собеседника
+    /// </summary>
+    public async Task<byte[]?> GetPartnerPublicKeyAsync(Guid partnerId)
         => await storage.LoadPartnerPublicKeyAsync(partnerId);
 
     private KeyPair GenerateNewKeys()
@@ -133,6 +148,7 @@ public sealed class KeyProvider : IKeyProvider, IDisposable
         }
 
         cacheLock.Dispose();
+        storage.Dispose();
         disposed = true;
     }
 }
