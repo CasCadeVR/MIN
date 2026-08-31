@@ -29,8 +29,10 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     private readonly IMinFeatureCollection featureCollection;
     private readonly SettingsSideBarViewModel settingsSideBarViewModel;
     private readonly DiscoveryViewModel discoveryViewModel;
+    private readonly TrayService trayService;
     private readonly Dictionary<Guid, ChatViewModel> activeChatViews = [];
     private readonly List<RecentRoomCardViewModel> allRooms = [];
+    private readonly List<RoomInfo> savedRooms = [];
     private readonly ParticipantInfo localParticipant = null!;
     private RecentRoomCardViewModel? selectedRecentRoomCardViewModel;
 
@@ -69,11 +71,13 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
     /// </summary>
     public MainSideBarViewModel(IMinFeatureCollection featureCollection,
         SettingsSideBarViewModel settingsSideBarViewModel,
-        DiscoveryViewModel discoveryViewModel)
+        DiscoveryViewModel discoveryViewModel,
+        TrayService trayService)
     {
         this.featureCollection = featureCollection;
         this.settingsSideBarViewModel = settingsSideBarViewModel;
         this.discoveryViewModel = discoveryViewModel;
+        this.trayService = trayService;
 
         if (!Design.IsDesignMode)
         {
@@ -84,6 +88,8 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
 
             this.RegisterMessageListener<LayoutModeChangedReferenceCommand, MainSideBarViewModel>((msg, _) =>
                 IsNavigationMode = msg.Layout == WindowLayout.Narrow);
+
+            trayService.NavigateToRoom += NavigateToChatView;
 
             SubscribeToEvents();
             InitializeLayoutStyles();
@@ -157,9 +163,18 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
             }
         };
 
+        savedRooms.Add(roomInfo);
+        trayService.UpdateRooms(savedRooms);
+
         allRooms.Add(card);
         RecentRooms.Add(card);
         SelectChatCard(card);
+    }
+
+    private void NavigateToChatView(Guid roomId)
+    {
+        var card = allRooms.FirstOrDefault(x => x.RoomId == roomId);
+        card?.SelectItem();
     }
 
     private void UnregisterChat(Guid roomId)
@@ -169,6 +184,12 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
 
         if (room != null)
         {
+            var roomInfo = savedRooms.FirstOrDefault(x => x.Id == roomId);
+            if (roomInfo != null)
+            {
+                savedRooms.Remove(roomInfo);
+                trayService.UpdateRooms(savedRooms);
+            }
             RecentRooms.Remove(room);
             allRooms.Remove(room);
             room.Dispose();
