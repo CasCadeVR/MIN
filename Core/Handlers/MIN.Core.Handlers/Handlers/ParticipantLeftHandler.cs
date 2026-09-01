@@ -25,6 +25,8 @@ internal sealed class ParticipantLeftHandler : BaseHandler
 
         LogInfo($"Участник {participantLeftMessage.Participant.Name} ({participantLeftMessage.Participant.Id}) вышел из комнаты");
 
+        await Task.CompletedTask;
+
         return HandlerResult.WithEvent(new ParticipantLeftEvent()
         {
             RoomId = context.RoomContext.RoomId,

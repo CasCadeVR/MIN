@@ -251,7 +251,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         }
     }
 
-    private async Task OnRoomDiscovered(RoomDiscoveredEvent e, CancellationToken cancellationToken)
+    private Task OnRoomDiscovered(RoomDiscoveredEvent e, CancellationToken cancellationToken)
     {
         clipboard ??= MainWindowViewModel.GetWindow()?.Clipboard;
 
@@ -272,6 +272,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
 
             DiscoveredRooms.Add(card);
         }
+        return Task.CompletedTask;
     }
 
     private async Task OnRoomJoin(IEndpoint endpoint)

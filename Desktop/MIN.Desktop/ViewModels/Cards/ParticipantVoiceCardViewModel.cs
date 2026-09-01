@@ -101,16 +101,17 @@ public partial class ParticipantVoiceCardViewModel : CardViewModelBase
         roomScope.Subscribe<VoiceMuteStateChangedEvent>(OnVoiceMuteStateChanged);
     }
 
-    private async Task OnVoiceDataReceived(VoiceDataReceivedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnVoiceDataReceived(VoiceDataReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.ParticipantId == participant.Id)
         {
             Talking = true;
             talkingTimer.Start();
         }
+        return Task.CompletedTask;
     }
 
-    private async Task OnVoiceMuteStateChanged(VoiceMuteStateChangedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnVoiceMuteStateChanged(VoiceMuteStateChangedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.ParticipantId == participant.Id)
         {
@@ -121,6 +122,7 @@ public partial class ParticipantVoiceCardViewModel : CardViewModelBase
                 talkingTimer.Stop();
             }
         }
+        return Task.CompletedTask;
     }
 
     [RelayCommand]

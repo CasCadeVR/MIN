@@ -23,6 +23,8 @@ internal sealed class VoiceCallStartedHandler : BaseHandler
 
         context.RoomContext.Messages.AddMessage(voiceCallStartedMessage);
 
+        await Task.CompletedTask;
+
         return HandlerResult.WithEvent(new VoiceCallStartedEvent()
         {
             Message = voiceCallStartedMessage,

@@ -62,12 +62,13 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     /// <summary>
     /// Запустить сервер
     /// </summary>
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         listener.Start();
         acceptLoop = Task.Run(AcceptLoopAsync, cancellationToken);
         logger.Log($"Стартанул сервер на порту: {Port}");
+        return Task.CompletedTask;
     }
 
     private async Task AcceptLoopAsync()

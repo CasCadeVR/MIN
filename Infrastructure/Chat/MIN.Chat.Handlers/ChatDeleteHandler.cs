@@ -22,6 +22,8 @@ internal sealed class ChatDeleteHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         var chatDeleteMessage = (ChatDeleteMessage)message;
 
         var existingMessage = context.RoomContext.Messages.GetMessageById(chatDeleteMessage.MessageIdToDelete);

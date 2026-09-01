@@ -54,15 +54,16 @@ public class VoiceCallMonitor : IHostedService
         this.logger = logger;
     }
 
-    async Task IHostedService.StartAsync(CancellationToken cancellationToken)
+    Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         eventBus.Subscribe<RoomClosedEvent>(OnRoomClosed);
         eventBus.Subscribe<VoiceCallEstablishedEvent>(OnVoiceCallEstablished);
         eventBus.Subscribe<VoiceCallLeftEvent>(OnVoiceCallLeft);
         eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
+        return Task.CompletedTask;
     }
 
-    private async Task OnRoomClosed(RoomClosedEvent e, CancellationToken cancellationToken)
+    private Task OnRoomClosed(RoomClosedEvent e, CancellationToken cancellationToken)
     {
         var voiceContext = voiceCallStateService.GetRoomVoiceCallContext();
 
@@ -73,6 +74,8 @@ public class VoiceCallMonitor : IHostedService
             voiceDataTransmitter.End();
             voicePlaybackService.Clear();
         }
+
+        return Task.CompletedTask;
     }
 
     private async Task OnVoiceCallEstablished(VoiceCallEstablishedEvent e, CancellationToken cancellationToken)

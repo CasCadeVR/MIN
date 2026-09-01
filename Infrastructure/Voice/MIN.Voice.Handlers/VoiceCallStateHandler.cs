@@ -30,6 +30,8 @@ internal sealed class VoiceCallStateHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         switch (message)
         {
             case VoiceCallStateRequestMessage _:

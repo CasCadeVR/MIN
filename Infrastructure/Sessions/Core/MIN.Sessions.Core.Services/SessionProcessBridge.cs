@@ -172,15 +172,16 @@ public class SessionProcessBridge : ISessionProcessBridge
         await processTransport.SendAsync(data, context, cancellationToken);
     }
 
-    async Task ISessionProcessBridge.StopListeningAsync(CancellationToken cancellationToken)
+    Task ISessionProcessBridge.StopListeningAsync(CancellationToken cancellationToken)
     {
         if (disposed)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         disposed = true;
         cts?.Cancel();
         cts?.Dispose();
+        return Task.CompletedTask;
     }
 }

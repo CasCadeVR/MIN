@@ -20,6 +20,8 @@ internal sealed class ChatTextHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         var chatTextMessage = (ChatTextMessage)message;
 
         if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))

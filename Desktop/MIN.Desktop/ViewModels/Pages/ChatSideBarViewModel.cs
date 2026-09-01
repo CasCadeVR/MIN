@@ -143,7 +143,7 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
     /// <summary>
     /// Подгрузить данные о комнате и перезагрузить страницу
     /// </summary>
-    public async Task LoadRoomDataAndRefresh(Room room, ParticipantInfo localParticipant)
+    public Task LoadRoomDataAndRefresh(Room room, ParticipantInfo localParticipant)
     {
         this.localParticipant = localParticipant;
         Room = room;
@@ -151,6 +151,7 @@ public partial class ChatSideBarViewModel : RoutableViewModelBase
 
         UpdateStats(room);
         UpdateParticipantFlow(room.CurrentParticipants);
+        return Task.CompletedTask;
     }
 
     /// <summary>

@@ -42,6 +42,8 @@ internal sealed class VoiceDataHandler : BaseHandler
             voicePlaybackService.PlaySamples(message.SenderId, voiceData.SequenceNumber, voiceData.Data);
         }
 
+        await Task.CompletedTask;
+
         return HandlerResult.WithEvent(new VoiceDataReceivedEvent()
         {
             RoomId = context.RoomContext.RoomId,

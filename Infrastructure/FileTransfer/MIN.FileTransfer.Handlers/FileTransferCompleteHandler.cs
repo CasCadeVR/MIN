@@ -25,6 +25,7 @@ internal sealed class FileTransferCompleteHandler : BaseHandler
         var complete = (FileTransferCompleteMessage)message;
         LogInfo($"Transfer {complete.TransferId} завершён, очищаю информацию");
         fileTransferService.RemoveTransfer(complete.TransferId);
+        await Task.CompletedTask;
         return HandlerResult.Success();
     }
 }

@@ -40,6 +40,8 @@ internal sealed class VoiceCallParticipantLeftHandler : BaseHandler
             voicePlaybackService.RemoveParticipant(participant.Id);
         }
 
+        await Task.CompletedTask;
+
         return HandlerResult.WithEvent(new VoiceParticipantLeftEvent()
         {
             Participant = participant,

@@ -21,6 +21,8 @@ internal sealed class VoiceMuteStateHandler : BaseHandler
     {
         var voiceMuteStateChangedMessage = (VoiceMuteStateChangedMessage)message;
 
+        await Task.CompletedTask;
+
         return HandlerResult.WithEvent(new VoiceMuteStateChangedEvent()
         {
             RoomId = context.RoomContext.RoomId,

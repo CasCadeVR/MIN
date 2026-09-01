@@ -133,40 +133,46 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
         roomScope.Subscribe<RoomClosedEvent>(OnRoomLeft);
     }
 
-    private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
         currentAmount++;
         UpdateParticipantsInfo();
+        return Task.CompletedTask;
     }
 
-    private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
         currentAmount--;
         UpdateParticipantsInfo();
+        return Task.CompletedTask;
     }
 
-    private async Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
     {
         Dispose();
+        return Task.CompletedTask;
     }
 
-    private async Task OnChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (lastMessageId == eventMessage.MessageId)
         {
             GetLastMessage();
         }
+        return Task.CompletedTask;
     }
 
-    private async Task OnChatMessageEdited(MessageEditedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnChatMessageEdited(MessageEditedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (lastMessageId == eventMessage.MessageId)
         {
             GetLastMessage();
         }
+
+        return Task.CompletedTask;
     }
 
-    private async Task OnDescribableMessageReceivedEvent(DescribableMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnDescribableMessageReceivedEvent(DescribableMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (!IsSelected)
         {
@@ -175,15 +181,17 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
         LastMessageReceivedAt = DateTime.Now;
         LastMessageContent = eventMessage.DescribableMessage.GetDescription();
         lastMessageId = eventMessage.MessageId;
+        return Task.CompletedTask;
     }
 
-    private async Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
+    private Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
         RoomName = eventMessage.RoomInfo.Name;
         roomInfo.Name = eventMessage.RoomInfo.Name;
         maximumAmount = eventMessage.RoomInfo.MaximumParticipants;
 
         UpdateParticipantsInfo();
+        return Task.CompletedTask;
     }
 
     private void UpdateParticipantsInfo()

@@ -118,42 +118,46 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase
         errorToken = eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
     }
 
-    private async Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.RoomId != room.Id)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         IsConnecting = false;
+        return Task.CompletedTask;
     }
 
-    private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
         room.ParticipantCount++;
         ManageConnectButtonAccessability();
+        return Task.CompletedTask;
     }
 
-    private async Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
         room.ParticipantCount--;
         ManageConnectButtonAccessability();
+        return Task.CompletedTask;
     }
 
-    private async Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (asHost)
         {
             Dispose();
-            return;
+            return Task.CompletedTask;
         }
 
         joined = false;
         room.ParticipantCount--;
         ManageConnectButtonAccessability();
+        return Task.CompletedTask;
     }
 
-    private async Task OnRoomJoined(RoomJoinedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnRoomJoined(RoomJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
         IsConnecting = false;
         joined = true;
@@ -163,6 +167,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase
         room.ParticipantCount = eventMessage.RoomInfo.ParticipantCount;
 
         ManageConnectButtonAccessability();
+        return Task.CompletedTask;
     }
 
     private async Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)

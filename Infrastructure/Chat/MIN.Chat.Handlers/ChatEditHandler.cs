@@ -21,6 +21,8 @@ internal sealed class ChatEditHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         var chatEditMessage = (ChatEditMessage)message;
 
         var existingMessage = context.RoomContext.Messages.GetMessageById(chatEditMessage.MessageIdToEdit);

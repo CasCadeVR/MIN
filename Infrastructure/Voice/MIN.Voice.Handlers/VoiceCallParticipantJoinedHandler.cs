@@ -40,6 +40,8 @@ internal sealed class VoiceCallParticipantJoinedHandler : BaseHandler
             voicePlaybackService.AddParticipant(participant.Id);
         }
 
+        await Task.CompletedTask;
+
         return HandlerResult.WithEvent(new VoiceParticipantJoinedEvent()
         {
             Participant = context.RoomContext.Participants.GetParticipantById(participant.Id),

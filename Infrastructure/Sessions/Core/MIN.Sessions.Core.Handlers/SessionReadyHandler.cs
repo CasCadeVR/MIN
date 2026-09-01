@@ -22,6 +22,8 @@ internal sealed class SessionReadyHandler : BaseHandler
         var sessionReadyMessage = (SessionReadyMessage)message;
         context.RoomContext.Messages.AddMessage(sessionReadyMessage);
 
+        await Task.CompletedTask;
+
         return HandlerResult.WithEvent(new SessionReadyMessageReceivedEvent()
         {
             Message = sessionReadyMessage,
