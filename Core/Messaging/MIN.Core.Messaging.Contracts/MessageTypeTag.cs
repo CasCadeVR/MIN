@@ -248,9 +248,14 @@ public enum MessageTypeTag : byte
     HostMigration = 105,
 
     /// <summary>
-    /// Изменение состояния комнаты.
+    /// Сообщение о выходе из комнаты.
     /// </summary>
-    RoomStateChanged = 106,
+    RoomLeave = 106,
+
+    /// <summary>
+    /// Подтерждение выхода из комнаты.
+    /// </summary>
+    RoomLeaveAck = 107,
 
     // ===== Сообщения для передачи файлов (128-142) =====
 

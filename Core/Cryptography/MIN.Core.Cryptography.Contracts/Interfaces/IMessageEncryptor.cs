@@ -18,6 +18,12 @@ public interface IMessageEncryptor
     Task InitializeSessionWithPartnerAsync(Guid partnerId, byte[] partnerPublicKey);
 
     /// <summary>
+    /// Попытаться получить сохранённый ключ участника
+    /// </summary>
+    /// <param name="partnerId">Идентификатор партнёра (участника)</param>
+    bool TryInitializeSessionFromStoredAsync(Guid partnerId);
+
+    /// <summary>
     /// Получить свой публичный ключ
     /// </summary>
     Task<byte[]> GetLocalPublicKey();

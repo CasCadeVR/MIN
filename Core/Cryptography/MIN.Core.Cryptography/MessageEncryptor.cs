@@ -38,6 +38,15 @@ public class MessageEncryptor : IMessageEncryptor, IDisposable
         await keyProvider.SavePartnerPublicKeyAsync(partnerId, partnerPublicKey);
     }
 
+    bool IMessageEncryptor.TryInitializeSessionFromStoredAsync(Guid partnerId)
+    {
+        var key = keyProvider.GetPartnerPublicKeyAsync(partnerId);
+        if (key != null)
+        {
+            return
+        }
+    }
+
     async Task<byte[]> IMessageEncryptor.GetLocalPublicKey()
     {
         var keys = await keyProvider.GetLocalKeysAsync();

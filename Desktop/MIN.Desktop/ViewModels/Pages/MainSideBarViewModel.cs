@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -164,7 +165,7 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
         };
 
         savedRooms.Add(roomInfo);
-        trayService.UpdateRooms(savedRooms);
+        Dispatcher.UIThread.Post(() => trayService.UpdateRooms(savedRooms));
 
         allRooms.Add(card);
         RecentRooms.Add(card);
@@ -188,7 +189,7 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
             if (roomInfo != null)
             {
                 savedRooms.Remove(roomInfo);
-                trayService.UpdateRooms(savedRooms);
+                Dispatcher.UIThread.Post(() => trayService.UpdateRooms(savedRooms));
             }
             RecentRooms.Remove(room);
             allRooms.Remove(room);

@@ -100,6 +100,29 @@ public sealed class KeyProvider : IDisposable
         return aesKey;
     }
 
+    // Loads stored partner key, derives shared secret. No file writes, no overwrite.
+    // Returns null when: no stored key, or stored key corrupt (ImportSubjectPublicKeyInfo throws → catch + log warning).
+    /// <summary>
+    /// Загружает ключ партнёра и расчитывает секрет
+    /// </summary>
+    public async Task<byte[]?> TryComputeStoredSharedSecretAsync(Guid partnerId, CancellationToken ct = default)
+    {
+        var key = await GetPartnerPublicKeyAsync(partnerId);
+        if (key == null)
+        {
+            return null;
+        }
+
+        return await ComputeSharedSecretAsync(key);
+    }
+
+    // SHA-256 over the raw SPKI bytes → 32-byte fingerprint. Static, pure, deterministic
+    // (SPKI encoding is stable for the same key across restarts).
+    public static byte[] ComputeKeyFingerprint(byte[] publicKeyBytes)
+    {
+
+    }
+
     /// <summary>
     /// Сохранить публичный ключ собеседника
     /// </summary>
