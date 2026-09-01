@@ -17,6 +17,8 @@ internal sealed class ParticipantLeftHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         var participantLeftMessage = (ParticipantLeftMessage)message;
 
         var leavingParticipantId = participantLeftMessage.Participant.Id;
@@ -24,8 +26,6 @@ internal sealed class ParticipantLeftHandler : BaseHandler
         context.RoomContext.Participants.RemoveParticipant(leavingParticipantId);
 
         LogInfo($"Участник {participantLeftMessage.Participant.Name} ({participantLeftMessage.Participant.Id}) вышел из комнаты");
-
-        await Task.CompletedTask;
 
         return HandlerResult.WithEvent(new ParticipantLeftEvent()
         {

@@ -69,16 +69,16 @@ internal sealed class UdpSocketConnection : BaseConnection, IAsyncDisposable
         }
     }
 
-    public async ValueTask StopAsync(DisconnectReason reason)
+    public ValueTask StopAsync(DisconnectReason reason)
     {
         if (disposed)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         disposed = true;
         writeLock.Dispose();
-        await Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>

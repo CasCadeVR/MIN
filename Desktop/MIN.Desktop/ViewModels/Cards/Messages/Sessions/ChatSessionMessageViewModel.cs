@@ -109,38 +109,37 @@ public partial class ChatSessionMessageViewModel : BaseReplyableChatMessageViewM
         roomScope.Subscribe<SessionParticipantLeftEvent>(OnSessionParticipantLeft);
     }
 
-    private async Task OnSessionRescanCompletedEvent(SessionRescanCompletedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnSessionRescanCompletedEvent(SessionRescanCompletedEvent eventMessage, CancellationToken cancellationToken)
     {
         asDownloaded = eventMessage.DownloadedSessions.ContainsKey(SessionMessage.Session.SessionId);
-
         UpdateStats();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
-    private async Task OnSessionParticipantJoined(SessionParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnSessionParticipantJoined(SessionParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.SubRoomId != SessionMessage.SubRoomId)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         currentAmount++;
 
         UpdateStats();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
-    private async Task OnSessionParticipantLeft(SessionParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnSessionParticipantLeft(SessionParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.SubRoomId != SessionMessage.SubRoomId)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         currentAmount--;
 
         UpdateStats();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     private void FillLabels()

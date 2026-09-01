@@ -29,6 +29,8 @@ internal sealed class VoiceCallParticipantJoinedHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         var voiceParticipantJoinedMessage = (VoiceParticipantJoinedMessage)message;
 
         var roomId = context.RoomContext.RoomId;
@@ -39,8 +41,6 @@ internal sealed class VoiceCallParticipantJoinedHandler : BaseHandler
         {
             voicePlaybackService.AddParticipant(participant.Id);
         }
-
-        await Task.CompletedTask;
 
         return HandlerResult.WithEvent(new VoiceParticipantJoinedEvent()
         {

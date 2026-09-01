@@ -30,6 +30,8 @@ internal sealed class VoiceDataHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         var voiceData = (VoiceDataMessage)message;
 
         if (!voiceCallStateService.IsInVoiceCall(context.RoomContext.RoomId, voiceData.SubRoomId) && context.Role == Role.Host)
@@ -41,8 +43,6 @@ internal sealed class VoiceDataHandler : BaseHandler
         {
             voicePlaybackService.PlaySamples(message.SenderId, voiceData.SequenceNumber, voiceData.Data);
         }
-
-        await Task.CompletedTask;
 
         return HandlerResult.WithEvent(new VoiceDataReceivedEvent()
         {

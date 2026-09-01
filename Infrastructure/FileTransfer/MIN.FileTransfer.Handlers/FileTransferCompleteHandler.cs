@@ -22,10 +22,10 @@ internal sealed class FileTransferCompleteHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
         var complete = (FileTransferCompleteMessage)message;
         LogInfo($"Transfer {complete.TransferId} завершён, очищаю информацию");
         fileTransferService.RemoveTransfer(complete.TransferId);
-        await Task.CompletedTask;
         return HandlerResult.Success();
     }
 }

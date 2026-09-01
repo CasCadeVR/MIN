@@ -19,11 +19,10 @@ internal sealed class VoiceCallStartedHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        var voiceCallStartedMessage = (VoiceCallStartedMessage)message;
-
-        context.RoomContext.Messages.AddMessage(voiceCallStartedMessage);
-
         await Task.CompletedTask;
+
+        var voiceCallStartedMessage = (VoiceCallStartedMessage)message;
+        context.RoomContext.Messages.AddMessage(voiceCallStartedMessage);
 
         return HandlerResult.WithEvent(new VoiceCallStartedEvent()
         {

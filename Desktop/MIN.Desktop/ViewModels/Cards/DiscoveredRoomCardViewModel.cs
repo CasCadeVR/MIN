@@ -170,11 +170,11 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase
         return Task.CompletedTask;
     }
 
-    private async Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
+    private Task OnRoomInfoUpdatedMessageEvent(RoomInfoUpdatedMessageEvent eventMessage, CancellationToken ct)
     {
         if (eventMessage.RoomInfo.Id != room.Id)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         room.Name = eventMessage.RoomInfo.Name;
@@ -182,7 +182,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase
         room.ParticipantCount = eventMessage.RoomInfo.ParticipantCount;
 
         ManageConnectButtonAccessability();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     private void ManageConnectButtonAccessability()

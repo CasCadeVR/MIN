@@ -19,9 +19,9 @@ internal sealed class VoiceMuteStateHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        var voiceMuteStateChangedMessage = (VoiceMuteStateChangedMessage)message;
-
         await Task.CompletedTask;
+
+        var voiceMuteStateChangedMessage = (VoiceMuteStateChangedMessage)message;
 
         return HandlerResult.WithEvent(new VoiceMuteStateChangedEvent()
         {

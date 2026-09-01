@@ -98,7 +98,14 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
                 if (result.ErrorMessage != null)
                 {
-                    await errorHandler.SendErrorToConnectionAsync(result.ErrorMessage, context.ConnectionId, context.RoomContext.RoomId, result.CriticalError);
+                    if (context.Role == Role.Host)
+                    {
+                        await PublishErrorEvent(result.ErrorMessage, needToDisconnect: false, context);
+                    }
+                    else
+                    {
+                        await errorHandler.SendErrorToConnectionAsync(result.ErrorMessage, context.ConnectionId, context.RoomContext.RoomId, result.CriticalError);
+                    }
                     continue;
                 }
 

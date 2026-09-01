@@ -29,6 +29,8 @@ internal sealed class VoiceCallParticipantLeftHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         var voiceParticipantLeftMessage = (VoiceParticipantLeftMessage)message;
 
         var roomId = context.RoomContext.RoomId;
@@ -39,8 +41,6 @@ internal sealed class VoiceCallParticipantLeftHandler : BaseHandler
         {
             voicePlaybackService.RemoveParticipant(participant.Id);
         }
-
-        await Task.CompletedTask;
 
         return HandlerResult.WithEvent(new VoiceParticipantLeftEvent()
         {

@@ -19,10 +19,10 @@ internal sealed class SessionReadyHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         var sessionReadyMessage = (SessionReadyMessage)message;
         context.RoomContext.Messages.AddMessage(sessionReadyMessage);
-
-        await Task.CompletedTask;
 
         return HandlerResult.WithEvent(new SessionReadyMessageReceivedEvent()
         {

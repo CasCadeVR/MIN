@@ -16,17 +16,17 @@ internal sealed class ErrorHandler : BaseHandler
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        await Task.CompletedTask;
+
         var errorMessage = (ErrorMessage)message;
 
         if (message.RecipientId != null && context.SelfId != message.RecipientId && context.Role == Role.Host)
         {
             LogError($"Я, как хост, отправляю {context.RoomContext.Participants.GetParticipantById(message.SenderId).Name} ошибку: {errorMessage.Message}");
-            await Task.CompletedTask;
             return HandlerResult.Success();
         }
 
         LogError($"Ошибка, полученная от получателя {context.RoomContext.Participants.GetParticipantById(message.SenderId).Name}: {errorMessage.Message}");
-        await Task.CompletedTask;
         return HandlerResult.Failure(errorMessage.Message);
     }
 }
