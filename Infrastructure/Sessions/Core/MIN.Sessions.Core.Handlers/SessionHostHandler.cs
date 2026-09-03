@@ -8,7 +8,6 @@ using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.Ipc;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
@@ -59,11 +58,27 @@ internal sealed class SessionHostHandler : BaseHandler
         }
 
         var senderParicipantInfo = sender!.ToParticipantInfo();
+        var roomId = context.RoomContext.RoomId;
 
         if (sessionHostRequestMessage.SubRoomId != null
-            && !subRoomManager.ActivateSubRoom(context.RoomContext.RoomId, sessionHostRequestMessage.SubRoomId.Value, senderParicipantInfo))
+            && !subRoomManager.ActivateSubRoom(roomId, sessionHostRequestMessage.SubRoomId.Value, senderParicipantInfo))
         {
-            return HandlerResult.WithErrorHandled("Хост не смог создать комнату");
+            return HandlerResult.WithErrorHandled("Хост не смог создать подкомнату");
+        }
+
+        var session = sessionScanner.GetSessionById(sessionHostRequestMessage.SessionId);
+
+        if (session == null)
+        {
+            return HandlerResult.WithErrorHandled("У хоста не установлена программа сервера этой сессии");
+        }
+
+        if (session.Version != sessionHostRequestMessage.SessionVersion)
+        {
+            var clientOnOlderVersion = session.Version > sessionHostRequestMessage.SessionVersion ? "Вы" : "Хост";
+            return HandlerResult.WithErrorHandled($"{clientOnOlderVersion} на устаревшей версии сессии: " +
+                $"\nВаша версия сессии - {sessionHostRequestMessage.SessionVersion}" +
+                $"\nВерсия сессии хоста комнаты - {session.Version}");
         }
 
         var subRoomId = sessionHostRequestMessage.SubRoomId;
@@ -71,36 +86,19 @@ internal sealed class SessionHostHandler : BaseHandler
 
         if (subRoomId == null)
         {
-            var subRoomInfo = subRoomManager.HostSubRoom(context.RoomContext.RoomId, senderParicipantInfo, SubRoomPurpose.Activity);
+            var subRoomInfo = subRoomManager.HostSubRoom(roomId, senderParicipantInfo, SubRoomPurpose.Activity, session.MaximumParticipants);
             isHosted = true;
             subRoomId = subRoomInfo.Id;
         }
 
-        var session = sessionScanner.GetSessionById(sessionHostRequestMessage.SessionId);
-
-        if (session == null)
-        {
-            subRoomManager.TryStopSubRoom(context.RoomContext.RoomId, subRoomId.Value, message.SenderId);
-            return HandlerResult.WithErrorHandled("У хоста не установлена программа сервера этой сессии");
-        }
-
-        if (session.Version != sessionHostRequestMessage.SessionVersion)
-        {
-            subRoomManager.TryStopSubRoom(context.RoomContext.RoomId, subRoomId.Value, message.SenderId);
-            var clientOnOlderVersion = session.Version > sessionHostRequestMessage.SessionVersion ? "Вы" : "Хост";
-            return HandlerResult.WithErrorHandled($"{clientOnOlderVersion} на устаревшей версии сессии: " +
-                $"\nВаша версия сессии - {sessionHostRequestMessage.SessionVersion}" +
-                $"\nВерсия сессии хоста комнаты - {session.Version}");
-        }
-
-        var processContext = new ProcessContext(context.RoomContext.RoomId, subRoomId.Value, SessionProcessRole.Server);
+        var processContext = new ProcessContext(roomId, subRoomId.Value, SessionProcessRole.Server);
 
         var hostResult = await sessionProcessManager.StartAsync(session,
             processContext, context.CancellationToken);
 
         if (hostResult == false)
         {
-            subRoomManager.TryStopSubRoom(context.RoomContext.RoomId, subRoomId.Value, message.SenderId);
+            subRoomManager.TryStopSubRoom(roomId, subRoomId.Value, message.SenderId);
             return HandlerResult.WithErrorHandled("У хоста повреждёна или утеряна программа сервера");
         }
 
@@ -119,21 +117,23 @@ internal sealed class SessionHostHandler : BaseHandler
             await sessionProcessBridge.SendIpcMessage(new ParticipantConnectedMessage(senderParicipantInfo.Id.ToString(), senderParicipantInfo.Name),
                 processContext, message.SenderId, context.CancellationToken);
 
-            await messageRouter.RouteAsync(hostReadyMessage, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
+            await messageRouter.RouteAsync(hostReadyMessage, roomId, message.SenderId, context.CancellationToken);
 
             if (context.SelfId == message.SenderId)
             {
-                return HandlerResult.WithEvent(new SessionJoinResponseReceivedEvent()
+                await messageRouter.RouteAsync(new SessionJoinResponseMessage()
                 {
-                    RoomId = context.RoomContext.RoomId,
+                    NeedToAnnounce = false,
+                    SessionId = session.SessionId,
                     SubRoomId = subRoomId.Value,
-                    Session = session,
-                });
+                }, context.RoomContext.RoomId, context.SelfId, context.CancellationToken);
+
+                return HandlerResult.Success();
             }
             else
             {
                 // sending him ready as he didnt received by sender filtering
-                await messageSender.SendAsync(hostReadyMessage, context.RoomContext.RoomId, context.ConnectionId, context.CancellationToken);
+                await messageSender.SendAsync(hostReadyMessage, roomId, context.ConnectionId, context.CancellationToken);
 
                 return HandlerResult.WithResponse(new SessionJoinResponseMessage()
                 {
@@ -151,7 +151,7 @@ internal sealed class SessionHostHandler : BaseHandler
                 NeedToAnnounce = true,
                 SessionId = session.SessionId,
                 SubRoomId = subRoomId.Value,
-            }, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
+            }, roomId, context.SelfId, context.CancellationToken);
         }
         else
         {
@@ -160,7 +160,7 @@ internal sealed class SessionHostHandler : BaseHandler
                 NeedToAnnounce = true,
                 SessionId = session.SessionId,
                 SubRoomId = subRoomId.Value,
-            }, context.RoomContext.RoomId, context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId), context.CancellationToken);
+            }, roomId, context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId), context.CancellationToken);
         }
 
         return HandlerResult.Success();

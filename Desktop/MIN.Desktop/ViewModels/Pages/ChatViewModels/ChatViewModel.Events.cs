@@ -46,6 +46,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         // Sessions
         roomScope.Subscribe<SessionReadyMessageReceivedEvent>(OnSessionReadyMessageReceived);
+        roomScope.Subscribe<SessionJoinResponseReceivedEvent>(OnSessionJoinResponseReceived);
 
         // Voice calls
         roomScope.Subscribe<VoiceCallStartedEvent>(OnVoiceCallStarted);
@@ -91,6 +92,12 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task OnSessionReadyMessageReceived(SessionReadyMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
         => await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
+
+    private Task OnSessionJoinResponseReceived(SessionJoinResponseReceivedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        InAppNotifier.Info($"Идёт запуск сессии \"{eventMessage.Session.Name}\"... Это может занять некоторое время");
+        return Task.CompletedTask;
+    }
 
     #region Voice chat related
 

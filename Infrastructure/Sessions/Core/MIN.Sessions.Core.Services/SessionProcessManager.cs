@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.Stores.Contracts.Registries.Interfaces;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
@@ -15,7 +16,7 @@ namespace MIN.Sessions.Core.Services;
 /// <inheritdoc cref="ISessionProcessManager"/>
 public class SessionProcessManager : ISessionProcessManager
 {
-    private const int ProcessWaitingTimeOutMs = 5000;
+    private const int ProcessWaitingTimeOutMs = 30_000;
 
     private readonly Dictionary<ProcessContext, Process> pendingProcesses = [];
     private readonly Dictionary<ProcessContext, Process> runningProcesses = [];
@@ -23,6 +24,7 @@ public class SessionProcessManager : ISessionProcessManager
     private readonly IMessageRouter messageRouter;
     private readonly ISessionProcessBridge processBridge;
     private readonly ISessionTransportFactory transportFactory;
+    private readonly IRoomConnectionRegistry registry;
     private readonly ISubRoomManager subRoomManager;
     private readonly IIdentityService identityService;
     private readonly ILoggerProvider logger;
@@ -35,6 +37,7 @@ public class SessionProcessManager : ISessionProcessManager
     public SessionProcessManager(IMessageRouter messageRouter,
         ISessionProcessBridge processBridge,
         ISessionTransportFactory transportFactory,
+        IRoomConnectionRegistry registry,
         ISubRoomManager subRoomManager,
         IIdentityService identityService,
         ILoggerProvider logger)
@@ -42,6 +45,7 @@ public class SessionProcessManager : ISessionProcessManager
         this.messageRouter = messageRouter;
         this.processBridge = processBridge;
         this.transportFactory = transportFactory;
+        this.registry = registry;
         this.subRoomManager = subRoomManager;
         this.identityService = identityService;
         this.logger = logger;
@@ -52,6 +56,7 @@ public class SessionProcessManager : ISessionProcessManager
         var fullPath = context.Role == SessionProcessRole.Client
             ? session.GetClientPath()
             : session.GetServerPath();
+
         logger.Log($"Стартую {session.Name} как {context.Role}");
 
         if (!Path.Exists(fullPath))
@@ -94,6 +99,7 @@ public class SessionProcessManager : ISessionProcessManager
         pendingProcesses[context] = startedProcess;
 
         var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
         await processTransport.WaitForConnectionAsync(context, ProcessWaitingTimeOutMs, connectCts.Token);
         var readySuccess = await processBridge.WaitForReadyMessage(context, ProcessWaitingTimeOutMs, connectCts.Token);
         pendingProcesses.Remove(context);
