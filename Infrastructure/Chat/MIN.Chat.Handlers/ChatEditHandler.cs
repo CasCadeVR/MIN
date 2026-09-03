@@ -57,7 +57,6 @@ internal sealed class ChatEditHandler : BaseHandler
             contentEditable.IsEdited = true;
             contentEditable.EditedAt = DateTime.Now;
 
-            // TODO: Надо бы что-то предпринять, ибо это по сути вообще ничего не делает
             context.RoomContext.Messages.UpdateMessage(chatEditMessage.MessageIdToEdit, existingMessage);
 
             var replyables = context.RoomContext.Messages.GetHistory().OfType<IReplyable>();
