@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages.Files"
              xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:MIN.Desktop.Infrastructure.Behaviors"
              xmlns:avagif="using:Avalonia.Labs.Gif"
              xmlns:modelsEnums="using:MIN.Desktop.Contracts.Models.Enums"
              xmlns:focusBehaviours="using:MIN.Desktop.Infrastructure.Behaviors.Focus"
@@ -206,39 +208,43 @@
                         Classes="chat"
                         Margin="4,0,0,4"
                         IsVisible="{Binding !IsEditing}"
-                        Text="{Binding Content}" />
+                        Text="{Binding Content}">
+                        <i:Interaction.Behaviors>
+                            <behaviors:CustomContextMenuBehavior />
+                        </i:Interaction.Behaviors>
+                    </SelectableTextBlock>
                 </DockPanel>
 
                 <DockPanel HorizontalSpacing="4"
-                        IsVisible="{Binding IsEditing}">
-                        <Button
-                            DockPanel.Dock="Right"
-                            Classes="icon"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Bottom"
-                            HotKey="Escape"
-                            Command="{Binding CancelEditMessageCommand}">
-                             <Svg Path="/Assets/Icons/close.svg" />
-                        </Button>
+                    IsVisible="{Binding IsEditing}">
+                    <Button
+                        DockPanel.Dock="Right"
+                        Classes="icon"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        HotKey="Escape"
+                        Command="{Binding CancelEditMessageCommand}">
+                            <Svg Path="/Assets/Icons/close.svg" />
+                    </Button>
 
-                        <Button
-                            DockPanel.Dock="Right"
-                            Classes="icon"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Bottom"
-                            HotKey="Enter"
-                            Command="{Binding ConfirmEditMessageCommand}">
-                             <Svg Path="/Assets/Icons/confirm.svg" />
-                        </Button>
+                    <Button
+                        DockPanel.Dock="Right"
+                        Classes="icon"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        HotKey="Enter"
+                        Command="{Binding ConfirmEditMessageCommand}">
+                            <Svg Path="/Assets/Icons/confirm.svg" />
+                    </Button>
 
-                        <TextBox
-                            focusBehaviours:FocusOnConditionTrueBehavior.Condition="{Binding IsEditing}"
-                            TextWrapping="Wrap"
-                            AcceptsReturn="True"
-                            MaxLines="-1"
-                            Text="{Binding EditContent}">
-                        </TextBox>
-                    </DockPanel>
+                    <TextBox
+                        focusBehaviours:FocusOnConditionTrueBehavior.Condition="{Binding IsEditing}"
+                        TextWrapping="Wrap"
+                        AcceptsReturn="True"
+                        MaxLines="-1"
+                        Text="{Binding EditContent}">
+                    </TextBox>
+                </DockPanel>
             </StackPanel>
         </Border>
     </Border>

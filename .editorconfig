@@ -3,6 +3,7 @@
 # You can learn more about editorconfig here: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
 [*.cs]
 dotnet_diagnostic.MA0053.severity = suggestion
+dotnet_diagnostic.CS1998.severity = error
 # Report public classes without inheritors (default: false)
 MA0053.public_class_should_be_sealed = true
 # Report class without inheritors even if there is virtual members (default: false)

@@ -155,12 +155,12 @@ internal sealed class SessionHostHandler : BaseHandler
         }
         else
         {
-            await messageSender.SendAsync(new SessionJoinResponseMessage()
+            return HandlerResult.WithResponse(new SessionJoinResponseMessage()
             {
                 NeedToAnnounce = true,
                 SessionId = session.SessionId,
                 SubRoomId = subRoomId.Value,
-            }, roomId, context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId), context.CancellationToken);
+            });
         }
 
         return HandlerResult.Success();

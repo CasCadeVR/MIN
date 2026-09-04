@@ -10,7 +10,6 @@ using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Transport.Contracts.Enums;
@@ -122,13 +121,6 @@ internal sealed class SessionJoinHandler : BaseHandler
                 {
                     return HandlerResult.Failure($"У вас не установлена сессия с id {sessionJoinResponseMessage.SessionId}");
                 }
-
-                await eventBus.PublishAsync(new SessionJoinResponseReceivedEvent()
-                {
-                    RoomId = roomId,
-                    SubRoomId = sessionJoinResponseMessage.SubRoomId,
-                    Session = responseSession,
-                });
 
                 var clientResult = await sessionProcessManager.StartAsync(responseSession,
                     new ProcessContext(roomId, sessionJoinResponseMessage.SubRoomId, SessionProcessRole.Client),

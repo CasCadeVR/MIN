@@ -176,6 +176,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         var choosingForm = await dialogService.ShowDialogAsync<SessionChoosingViewModel>();
         if (choosingForm! == true)
         {
+            InAppNotifier.Info($"Сессия \"{choosingForm!.SelectedSession!.Name}\" запускается, это может занять некоторе время");
             await SendSessionStartMessage(choosingForm!.SelectedSession!);
         }
     }

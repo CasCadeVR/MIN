@@ -64,7 +64,7 @@ internal sealed class SessionParticipantJoinedHandler : BaseHandler
                     SubRoomId = subRoomId
                 }, roomId, context.SelfId, context.CancellationToken);
 
-                return HandlerResult.Success();
+                return HandlerResult.Success(stopPropagation: true);
             }
         }
 

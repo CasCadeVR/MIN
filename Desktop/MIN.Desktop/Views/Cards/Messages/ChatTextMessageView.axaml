@@ -1,5 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:MIN.Desktop.Infrastructure.Behaviors"
              xmlns:focusBehaviours="using:MIN.Desktop.Infrastructure.Behaviors.Focus"
              xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -19,7 +21,7 @@
         Classes.selected="{Binding IsSelected}">
 
        <Border.ContextFlyout>
-            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+            <MenuFlyout Placement="Pointer">
                 <MenuItem Header="Скопировать текст"
                     Command="{Binding CopyToClipboardCommand}">
                     <MenuItem.Icon>
@@ -128,7 +130,11 @@
                     <SelectableTextBlock
                         Classes="chat"
                         IsVisible="{Binding !IsEditing}"
-                        Text="{Binding Content}" />
+                        Text="{Binding Content}">
+                        <i:Interaction.Behaviors>
+                            <behaviors:CustomContextMenuBehavior />
+                        </i:Interaction.Behaviors>
+                    </SelectableTextBlock>
                     
                     <DockPanel HorizontalSpacing="4"
                         IsVisible="{Binding IsEditing}">
