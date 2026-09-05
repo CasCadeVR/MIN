@@ -19,10 +19,8 @@ internal sealed class ChatEditHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.MessageEdit];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        await Task.CompletedTask;
-
         var chatEditMessage = (ChatEditMessage)message;
 
         var existingMessage = context.RoomContext.Messages.GetMessageById(chatEditMessage.MessageIdToEdit);
@@ -32,22 +30,22 @@ internal sealed class ChatEditHandler : BaseHandler
 
             if (context.Role == Role.Host)
             {
-                return HandlerResult.WithErrorHandled("Сообщение, которое вы хотели отредактировать, не найдено");
+                return Task.FromResult(HandlerResult.WithErrorHandled("Сообщение, которое вы хотели отредактировать, не найдено"));
             }
 
-            return HandlerResult.Success();
+            return Task.FromResult(HandlerResult.Success());
         }
 
         if (context.Role == Role.Host)
         {
             if (existingMessage.SenderId != message.SenderId)
             {
-                return HandlerResult.WithErrorHandled("Сообщение, которое вы хотели отредактировать, было отправлено не вами");
+                return Task.FromResult(HandlerResult.WithErrorHandled("Сообщение, которое вы хотели отредактировать, было отправлено не вами"));
             }
 
             if (existingMessage is not IContentEditable)
             {
-                return HandlerResult.WithErrorHandled("Сообщение, которое вы хотели отредактировать, не может быть отредактировано");
+                return Task.FromResult(HandlerResult.WithErrorHandled("Сообщение, которое вы хотели отредактировать, не может быть отредактировано"));
             }
         }
 
@@ -68,14 +66,9 @@ internal sealed class ChatEditHandler : BaseHandler
                 }
             }
 
-            return HandlerResult.WithEvent(new MessageEditedEvent()
-            {
-                MessageId = chatEditMessage.MessageIdToEdit,
-                Message = contentEditable,
-                RoomId = context.RoomContext.RoomId,
-            });
+            return Task.FromResult(HandlerResult.WithEvent(new MessageEditedEvent() { MessageId = chatEditMessage.MessageIdToEdit, Message = contentEditable, RoomId = context.RoomContext.RoomId }));
         }
 
-        return HandlerResult.Success();
+        return Task.FromResult(HandlerResult.Success());
     }
 }

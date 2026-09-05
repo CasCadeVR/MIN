@@ -211,6 +211,14 @@ public class SessionProcessManager : ISessionProcessManager
         {
             process.Exited -= currentExitHandler;
         }
+        else if (!clearAnnounce)
+        {
+            await eventBus.PublishAsync(new SessionProcessEndedEvent()
+            {
+                RoomId = context.RoomId,
+                SubRoomId = context.SubRoomId,
+            });
+        }
 
         await processBridge.SendCloseMessage(context);
 
@@ -231,11 +239,5 @@ public class SessionProcessManager : ISessionProcessManager
             transportFactory.Destroy(transports[context]);
             processBridge.UnregisterTransport(context);
         }
-
-        await eventBus.PublishAsync(new SessionProcessEndedEvent()
-        {
-            RoomId = context.RoomId,
-            SubRoomId = context.SubRoomId,
-        });
     }
 }

@@ -65,7 +65,7 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         {
             while (!cancellationTokenSource.Token.IsCancellationRequested && IsConnected)
             {
-                var message = await ReadMessageAsync(cancellationTokenSource.Token);
+                var message = await ReadFrameAsync(stream, cancellationTokenSource.Token);
                 OnRawMessageReceived(message);
             }
         }
@@ -113,9 +113,6 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         return data;
     }
 
-    private async Task<byte[]> ReadMessageAsync(CancellationToken ct)
-        => await ReadFrameAsync(stream, ct);
-
     /// <summary>
     /// Отправляет данные
     /// </summary>
@@ -150,7 +147,7 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         Disconnected?.Invoke(this, reason);
     }
 
-    public async ValueTask StopAsync(DisconnectReason reason)
+    private async Task StopCoreAsync()
     {
         if (disposed)
         {
@@ -158,18 +155,29 @@ internal sealed class TcpSocketConnection : BaseConnection, IAsyncDisposable
         }
 
         disposed = true;
+
+        await cancellationTokenSource.CancelAsync();
+        await stream.DisposeAsync();
+
+        client.Dispose();
+        writeLock.Dispose();
+        cancellationTokenSource.Dispose();
+    }
+
+    public async ValueTask StopAsync(DisconnectReason reason)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
         disconnectReason = reason;
-        cancellationTokenSource.Cancel();
+        await StopCoreAsync();
 
         if (receiveLoop != null)
         {
             await receiveLoop.WaitAsync(TimeSpan.FromSeconds(3));
         }
-
-        stream.Dispose();
-        client.Dispose();
-        writeLock.Dispose();
-        cancellationTokenSource.Dispose();
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>

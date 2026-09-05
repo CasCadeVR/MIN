@@ -20,10 +20,8 @@ internal sealed class ChatDeleteHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.MessageDelete];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        await Task.CompletedTask;
-
         var chatDeleteMessage = (ChatDeleteMessage)message;
 
         var existingMessage = context.RoomContext.Messages.GetMessageById(chatDeleteMessage.MessageIdToDelete);
@@ -34,22 +32,22 @@ internal sealed class ChatDeleteHandler : BaseHandler
 
             if (context.Role == Role.Host)
             {
-                return HandlerResult.WithErrorHandled("Сообщение, которое вы хотели удалить, не найдено");
+                return Task.FromResult(HandlerResult.WithErrorHandled("Сообщение, которое вы хотели удалить, не найдено"));
             }
 
-            return HandlerResult.Success();
+            return Task.FromResult(HandlerResult.Success());
         }
 
         if (context.Role == Role.Host)
         {
             if (existingMessage.SenderId != message.SenderId)
             {
-                return HandlerResult.WithErrorHandled("Сообщение, которое вы хотели удалить, было отправлено не вами");
+                return Task.FromResult(HandlerResult.WithErrorHandled("Сообщение, которое вы хотели удалить, было отправлено не вами"));
             }
 
             if (!allowedMessagesToDelete.Contains(existingMessage.TypeTag))
             {
-                return HandlerResult.WithErrorHandled("Сообщение, которое вы хотели удалить, не подлежит удалению");
+                return Task.FromResult(HandlerResult.WithErrorHandled("Сообщение, которое вы хотели удалить, не подлежит удалению"));
             }
         }
 
@@ -65,10 +63,10 @@ internal sealed class ChatDeleteHandler : BaseHandler
             }
         }
 
-        return HandlerResult.WithEvent(new MessageDeletedEvent()
+        return Task.FromResult(HandlerResult.WithEvent(new MessageDeletedEvent()
         {
             MessageId = chatDeleteMessage.MessageIdToDelete,
             RoomId = context.RoomContext.RoomId,
-        });
+        }));
     }
 }

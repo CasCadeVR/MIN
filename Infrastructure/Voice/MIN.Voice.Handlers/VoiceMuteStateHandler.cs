@@ -17,17 +17,14 @@ internal sealed class VoiceMuteStateHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.VoiceMuteState];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        await Task.CompletedTask;
-
         var voiceMuteStateChangedMessage = (VoiceMuteStateChangedMessage)message;
-
-        return HandlerResult.WithEvent(new VoiceMuteStateChangedEvent()
+        return Task.FromResult(HandlerResult.WithEvent(new VoiceMuteStateChangedEvent()
         {
             RoomId = context.RoomContext.RoomId,
             Muted = voiceMuteStateChangedMessage.IsMuted,
             ParticipantId = voiceMuteStateChangedMessage.SenderId,
-        });
+        }));
     }
 }

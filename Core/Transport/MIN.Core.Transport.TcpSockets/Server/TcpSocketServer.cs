@@ -23,6 +23,7 @@ internal sealed class TcpSocketServer : IAsyncDisposable
 
     private CancellationTokenSource? cts;
     private Task? acceptLoop;
+    private bool disposed;
 
     /// <summary>
     /// Порт подключения
@@ -159,13 +160,33 @@ internal sealed class TcpSocketServer : IAsyncDisposable
     }
 
     private void OnConnectionMessage(TcpSocketConnection conn, byte[] msg)
-        => OnMessageReceived?.Invoke(this, (conn, msg));
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        OnMessageReceived?.Invoke(this, (conn, msg));
+    }
 
     private void OnConnectionDisconnected(TcpSocketConnection conn, DisconnectReason reason)
-        => ConnectionDisconnected?.Invoke(this, (conn, reason));
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        ConnectionDisconnected?.Invoke(this, (conn, reason));
+    }
 
     public async ValueTask DisposeAsync()
     {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
         cts?.Cancel();
 
         await PortForwardingHelper.UnmapPortAsync(Port, Protocol.Tcp);
@@ -177,10 +198,10 @@ internal sealed class TcpSocketServer : IAsyncDisposable
 
         listener.Stop();
 
-        foreach (var connection in connections.Values)
-        {
-            await connection.DisposeAsync();
-        }
+        var connectionsToDispose = connections.Values.ToArray();
+        connections.Clear();
+
+        await Task.WhenAll(connectionsToDispose.Select(c => c.DisposeAsync().AsTask()));
 
         connectionSlots.Dispose();
         cts?.Dispose();

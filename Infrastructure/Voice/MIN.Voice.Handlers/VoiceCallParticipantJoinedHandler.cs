@@ -27,10 +27,8 @@ internal sealed class VoiceCallParticipantJoinedHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.VoiceParticipantJoined];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        await Task.CompletedTask;
-
         var voiceParticipantJoinedMessage = (VoiceParticipantJoinedMessage)message;
 
         var roomId = context.RoomContext.RoomId;
@@ -42,11 +40,11 @@ internal sealed class VoiceCallParticipantJoinedHandler : BaseHandler
             voicePlaybackService.AddParticipant(participant.Id);
         }
 
-        return HandlerResult.WithEvent(new VoiceParticipantJoinedEvent()
+        return Task.FromResult(HandlerResult.WithEvent(new VoiceParticipantJoinedEvent()
         {
             Participant = context.RoomContext.Participants.GetParticipantById(participant.Id),
             SubRoomId = subRoomId,
             RoomId = roomId,
-        });
+        }));
     }
 }

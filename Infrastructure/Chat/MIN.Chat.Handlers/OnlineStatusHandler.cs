@@ -19,13 +19,11 @@ internal sealed class OnlineStatusHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.OnlineStatusChanged];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        await Task.CompletedTask;
-
         if (message.SenderId == context.SelfId)
         {
-            return HandlerResult.Success();
+            return Task.FromResult(HandlerResult.Success());
         }
 
         var onlineStatusChangedMessage = (OnlineStatusChangedMessage)message;
@@ -40,12 +38,12 @@ internal sealed class OnlineStatusHandler : BaseHandler
             }
         }
 
-        return HandlerResult.WithEvent(new OnlineStatusChangedEvent()
+        return Task.FromResult(HandlerResult.WithEvent(new OnlineStatusChangedEvent()
         {
             RoomId = context.RoomContext.RoomId,
             Status = onlineStatusChangedMessage.Status,
             Participant = participant?.ToParticipantInfo()
                 ?? context.RoomContext.Participants.GetParticipantById(message.SenderId).ToParticipantInfo(),
-        });
+        }));
     }
 }
