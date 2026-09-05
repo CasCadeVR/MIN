@@ -73,7 +73,8 @@ public sealed class MessageDispatcher : IMessageDispatcher
                     logger.Log($"Обработчик {handler.GetType().Name} провалился: {result.ErrorMessage}", LogLevel.Error);
                     if (result.ShowErrorMessage)
                     {
-                        await PublishErrorEvent(result.ErrorMessage ?? "Неизвестная ошибка", result.CriticalError, context);
+                        await PublishErrorEvent(result.ErrorMessage ?? "Неизвестная ошибка",
+                            needToDisconnect: context.Role == Role.Client && result.CriticalError, context);
                     }
                     continue;
                 }
@@ -98,7 +99,14 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
                 if (result.ErrorMessage != null)
                 {
-                    await errorHandler.SendErrorToConnectionAsync(result.ErrorMessage, context.ConnectionId, context.RoomContext.RoomId, result.CriticalError);
+                    if (context.Role == Role.Host)
+                    {
+                        await PublishErrorEvent(result.ErrorMessage, needToDisconnect: false, context);
+                    }
+                    else
+                    {
+                        await errorHandler.SendErrorToConnectionAsync(result.ErrorMessage, context.ConnectionId, context.RoomContext.RoomId, result.CriticalError);
+                    }
                     continue;
                 }
 
@@ -115,7 +123,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
             catch (Exception ex)
             {
                 logger.Log($"Handler {handler.GetType().Name} threw exception: {ex.Message}", LogLevel.Error);
-                await PublishErrorEvent(ex.Message, needToDisconnect: true, context);
+                await PublishErrorEvent(ex.Message, needToDisconnect: context.Role == Role.Client, context);
             }
         }
     }

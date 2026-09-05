@@ -11,6 +11,7 @@ using MIN.Core.Entities.Contracts.Models;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Desktop.Contracts.Enums;
 using MIN.Desktop.Contracts.Interfaces;
+using MIN.Desktop.Infrastructure.Services;
 using MIN.Desktop.ViewModels.Cards.Messages.Base;
 using MIN.Desktop.ViewModels.Modals;
 using MIN.Sessions.Core.DI.FeatureCollection;
@@ -59,6 +60,12 @@ public partial class ChatSessionMessageViewModel : BaseReplyableChatMessageViewM
     public partial bool CanJoin { get; set; }
 
     /// <summary>
+    /// Учавствует ли пользователь уже в сессии
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsJoined { get; set; }
+
+    /// <summary>
     /// Доступна ли сессия
     /// </summary>
     [ObservableProperty]
@@ -105,42 +112,68 @@ public partial class ChatSessionMessageViewModel : BaseReplyableChatMessageViewM
     private void SubscribeToEvents(IEventScope roomScope, IEventBus eventBus)
     {
         rescanToken = eventBus.Subscribe<SessionRescanCompletedEvent>(OnSessionRescanCompletedEvent);
+        roomScope.Subscribe<SessionProcessStartedEvent>(OnSessionProcessStarted);
+        roomScope.Subscribe<SessionProcessEndedEvent>(OnSessionProcessEnded);
         roomScope.Subscribe<SessionParticipantJoinedEvent>(OnSessionParticipantJoined);
         roomScope.Subscribe<SessionParticipantLeftEvent>(OnSessionParticipantLeft);
     }
 
-    private async Task OnSessionRescanCompletedEvent(SessionRescanCompletedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnSessionRescanCompletedEvent(SessionRescanCompletedEvent eventMessage, CancellationToken cancellationToken)
     {
         asDownloaded = eventMessage.DownloadedSessions.ContainsKey(SessionMessage.Session.SessionId);
-
         UpdateStats();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
-    private async Task OnSessionParticipantJoined(SessionParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnSessionProcessStarted(SessionProcessStartedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.SubRoomId != SessionMessage.SubRoomId)
         {
-            return;
+            return Task.CompletedTask;
+        }
+
+        IsJoined = true;
+        InAppNotifier.Info($"Идёт запуск сессии \"{eventMessage.Session.Name}\"... Это может занять некоторое время");
+        UpdateStats();
+        return Task.CompletedTask;
+    }
+
+    private Task OnSessionProcessEnded(SessionProcessEndedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.SubRoomId != SessionMessage.SubRoomId)
+        {
+            return Task.CompletedTask;
+        }
+
+        IsJoined = false;
+        UpdateStats();
+        return Task.CompletedTask;
+    }
+
+    private Task OnSessionParticipantJoined(SessionParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        if (eventMessage.SubRoomId != SessionMessage.SubRoomId)
+        {
+            return Task.CompletedTask;
         }
 
         currentAmount++;
 
         UpdateStats();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
-    private async Task OnSessionParticipantLeft(SessionParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnSessionParticipantLeft(SessionParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.SubRoomId != SessionMessage.SubRoomId)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         currentAmount--;
 
         UpdateStats();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     private void FillLabels()
@@ -165,9 +198,10 @@ public partial class ChatSessionMessageViewModel : BaseReplyableChatMessageViewM
 
         JoinButtonStateText = (!asDownloaded
             ? "Скачать сессию"
+            : IsJoined ? "Вы учавствуете"
             : isFull ? "Заполнено" : "Присоединиться") + $" (Учавствуют: {participantsRatio})";
 
-        CanJoin = !maximumParticipants.HasValue || !isFull;
+        CanJoin = (!maximumParticipants.HasValue || !isFull) && !IsJoined;
         IsNotAvailable = currentAmount <= 0 || isFull;
     }
 
@@ -176,6 +210,8 @@ public partial class ChatSessionMessageViewModel : BaseReplyableChatMessageViewM
     {
         if (asDownloaded)
         {
+            CanJoin = false;
+            IsJoined = true;
             OnJoinRequested?.Invoke();
             return;
         }

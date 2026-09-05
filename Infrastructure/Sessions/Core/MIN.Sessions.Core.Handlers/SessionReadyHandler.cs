@@ -17,15 +17,15 @@ internal sealed class SessionReadyHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.SessionReady];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var sessionReadyMessage = (SessionReadyMessage)message;
         context.RoomContext.Messages.AddMessage(sessionReadyMessage);
 
-        return HandlerResult.WithEvent(new SessionReadyMessageReceivedEvent()
+        return Task.FromResult(HandlerResult.WithEvent(new SessionReadyMessageReceivedEvent()
         {
             Message = sessionReadyMessage,
             RoomId = context.RoomContext.RoomId,
-        });
+        }));
     }
 }

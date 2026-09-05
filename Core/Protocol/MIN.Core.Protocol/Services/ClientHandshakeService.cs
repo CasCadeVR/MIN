@@ -36,6 +36,7 @@ public sealed class ClientHandshakeService : IClientHandshake
             {
                 return;
             }
+
             transport.RawMessageReceived -= RawMessageReceivedHandler;
 
             var response = Encoding.UTF8.GetString(e.Data);
@@ -80,23 +81,43 @@ public sealed class ClientHandshakeService : IClientHandshake
 
         transport.ConnectionStateChanged += ConnectionStateChangedHandler;
 
-        var request = Encoding.UTF8.GetBytes(ProtocolConstants.ResponseStarter);
-        logger.Log($"Protocol client: отправляю запрос на соединение {connectionId}");
-        await Task.Delay(10, cancellationToken); // даём серверу время осознать
-        await transport.SendAsync(request, connectionId, null, MessageChannel.Secure, cancellationToken);
-
         try
         {
-            var timeout = TimeSpan.FromSeconds(ProtocolConstants.ClientSideTimeout);
-            var result = await tcs.Task.WaitAsync(timeout, cancellationToken);
-            return result;
-        }
-        catch (TimeoutException)
-        {
-            transport.RawMessageReceived -= RawMessageReceivedHandler;
-            transport.ConnectionStateChanged -= ConnectionStateChangedHandler;
-            logger.Log($"Protocol client: таймаут ожидания ответа от {connectionId}");
-            return new PreambleResult { IsSuccess = false, ErrorMessage = "Время ожидания ответа вышло" };
+            var request = Encoding.UTF8.GetBytes(ProtocolConstants.ResponseStarter);
+            logger.Log($"Protocol client: отправляю запрос на соединение {connectionId}");
+            await Task.Delay(ProtocolConstants.ClientSideWarmupDelayMs, cancellationToken); // даём серверу время осознать
+
+            for (var attempt = 0; attempt < ProtocolConstants.ClientSideRetryAmount; attempt++)
+            {
+                await transport.SendAsync(request, connectionId, null, MessageChannel.Secure, cancellationToken);
+
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(ProtocolConstants.ClientSidePerTryTimeout));
+
+                try
+                {
+                    var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(-1, cts.Token));
+                    if (completedTask == tcs.Task)
+                    {
+                        var result = await tcs.Task;
+                        return result;
+                    }
+                    logger.Log($"Protocol client: таймаут ожидания ответа от {connectionId}, попытка {attempt + 1}");
+                }
+                catch (OperationCanceledException) when (cts.Token.IsCancellationRequested)
+                {
+                    logger.Log($"Protocol client: таймаут ожидания ответа от {connectionId}, попытка {attempt + 1}");
+                }
+
+                if (attempt < ProtocolConstants.ClientSideRetryAmount - 1)
+                {
+                    var delaySeconds = attempt + 1;
+                    await Task.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken);
+                }
+            }
+
+            logger.Log($"Protocol client: все попытки истекли, соединение {connectionId} не отвечает");
+            return new PreambleResult { IsSuccess = false, ErrorMessage = "Время ожидания ответа вышло после всех попыток" };
         }
         finally
         {

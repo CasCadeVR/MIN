@@ -249,7 +249,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         }
     }
 
-    private async Task OnRoomDiscovered(RoomDiscoveredEvent e, CancellationToken cancellationToken)
+    private Task OnRoomDiscovered(RoomDiscoveredEvent e, CancellationToken cancellationToken)
     {
         clipboard ??= MainWindowViewModel.GetWindow()?.Clipboard;
 
@@ -265,11 +265,15 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
             card.Clicked += async (origin) =>
             {
                 await OnRoomJoin(discoveryInfo.Endpoints.First(x => x.Origin == origin));
-                card?.IsConnecting = false;
+                if (card != null)
+                {
+                    card.IsConnecting = false;
+                }
             };
 
             DiscoveredRooms.Add(card);
         }
+        return Task.CompletedTask;
     }
 
     private async Task OnRoomJoin(IEndpoint endpoint)
@@ -308,7 +312,10 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
 
             connectionResult = await featureCollection.Core.Lifecycle.ConnectAsync(endpoint, connectCts.Token);
 
-            loadingVm?.RoomId = connectionResult.RoomId;
+            if (loadingVm != null)
+            {
+                loadingVm.RoomId = connectionResult.RoomId;
+            }
         }
         catch (Exception ex)
         {

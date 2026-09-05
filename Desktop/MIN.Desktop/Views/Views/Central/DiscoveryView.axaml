@@ -52,7 +52,7 @@
                                 IsVisible="{Binding !isDiscovering}">
 
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Найти комнаты" />
+                                    <TextBlock Text="Найти" />
 
                                     <TextBlock Text=" локально"
                                                 IsVisible="{Binding ChosenMethod, Converter={converters:EqualityConverter},
@@ -72,7 +72,7 @@
 
                             <Svg
                                 Height="18"
-                                Margin="16,0,0,0"
+                                Margin="8,0,0,0"
                                 Path="/Assets/Icons/loading.svg"
                                 Classes="primary rotating"
                                 VerticalAlignment="Center"

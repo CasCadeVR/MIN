@@ -259,7 +259,7 @@ public static class MultiRoutingWindowExtensions
     /// <summary>
     /// Закрыть окно
     /// </summary>
-    public static async Task CloseAsync(this IMultiRoutingWindow screen, ViewLayoutType viewLayoutType)
+    public static Task CloseAsync(this IMultiRoutingWindow screen, ViewLayoutType viewLayoutType)
     {
         switch (viewLayoutType)
         {
@@ -283,6 +283,7 @@ public static class MultiRoutingWindowExtensions
 
                 break;
         }
+        return Task.CompletedTask;
     }
 
     private static void ResetRelated(IMultiRoutingWindow screen)

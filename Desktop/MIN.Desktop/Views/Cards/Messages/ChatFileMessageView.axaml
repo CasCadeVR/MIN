@@ -1,5 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:vm="using:MIN.Desktop.ViewModels.Cards.Messages.Files"
+             xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:behaviors="using:MIN.Desktop.Infrastructure.Behaviors"
              xmlns:converters="using:MIN.Desktop.Infrastructure.Converters"
              xmlns:focusBehaviours="using:MIN.Desktop.Infrastructure.Behaviors.Focus"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -223,7 +225,11 @@
                         Classes="chat"
                         Margin="4,0,0,4"
                         IsVisible="{Binding !IsEditing}"
-                        Text="{Binding Content}" />
+                        Text="{Binding Content}">
+                        <i:Interaction.Behaviors>
+                            <behaviors:CustomContextMenuBehavior />
+                        </i:Interaction.Behaviors>
+                    </SelectableTextBlock>
                 </DockPanel>
 
                 <DockPanel HorizontalSpacing="4"

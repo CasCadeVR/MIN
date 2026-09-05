@@ -34,6 +34,11 @@ public record SubRoomInfo
     public List<ParticipantInfo> Participants { get; init; } = [];
 
     /// <summary>
+    /// Максимальное количество участников
+    /// </summary>
+    public int? MaximumParticipants { get; init; }
+
+    /// <summary>
     /// Дата создания
     /// </summary>
     public DateTime CreatedAt { get; init; } = DateTime.Now;

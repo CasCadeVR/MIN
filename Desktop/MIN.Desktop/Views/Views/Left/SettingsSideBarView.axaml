@@ -10,7 +10,7 @@
              Padding="{DynamicResource PaddingPage}"
              DockPanel.Dock="Left"
              MinWidth="320"
-             MaxWidth="320"
+             MaxWidth="600"
              x:Class="MIN.Desktop.Views.Left.SettingsSideBarView">
 
     <Design.DataContext>
@@ -69,13 +69,15 @@
 
                     <!-- Udp port -->
                     <Grid ColumnDefinitions="*, Auto">
-                        <TextBlock Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Grid.Column="0"
+                               HorizontalAlignment="Left"
+                               MaxWidth="170"
+                               VerticalAlignment="Center">
                             UDP Порт комнат (Лучше не менять, по умолчанию 42069)
                         </TextBlock>
 
                         <TextBox Text="{Binding DiscoveryPort,
                             Converter={converters:IntToStringConverter}}"
-                            MaxWidth="120"
                             Grid.Column="1"/>
                     </Grid>
 
@@ -95,9 +97,11 @@
 
                     <DockPanel HorizontalSpacing="12">
                         <TextBlock VerticalAlignment="Center">Микрофон</TextBlock>
-                        <ComboBox ItemsSource="{Binding InputDevices}"
+                        <ComboBox MaxWidth="160"
+                                  MinWidth="160"
+                                  ItemsSource="{Binding InputDevices}"
                                   SelectedIndex="{Binding Settings.InputDeviceNumber}"
-                                  HorizontalAlignment="Stretch"/>
+                                  HorizontalAlignment="Right"/>
                     </DockPanel>
 
                     <TextBlock Text="{Binding #inputVolumeSlider.Value, StringFormat='Громкость микрофона: {0:F0}%'}" />
@@ -108,16 +112,20 @@
 
                     <DockPanel HorizontalSpacing="12">
                         <TextBlock VerticalAlignment="Center">Шумоподавление</TextBlock>
-                        <ComboBox ItemsSource="{Binding NoiseReductions}"
+                        <ComboBox MaxWidth="120"
+                                  MinWidth="120"
+                                  ItemsSource="{Binding NoiseReductions}"
                                   SelectedIndex="{Binding ChoosenNoiseReduction}"
-                                  HorizontalAlignment="Stretch"/>
+                                  HorizontalAlignment="Right"/>
                     </DockPanel>
 
                     <DockPanel HorizontalSpacing="12">
                         <TextBlock VerticalAlignment="Center">Динамики</TextBlock>
-                        <ComboBox ItemsSource="{Binding OutputDevices}"
+                        <ComboBox MaxWidth="170"
+                                  MinWidth="170"
+                                  ItemsSource="{Binding OutputDevices}"
                                   SelectedIndex="{Binding Settings.OutputDeviceNumber}"
-                                  HorizontalAlignment="Stretch"/>
+                                  HorizontalAlignment="Right"/>
                     </DockPanel>
 
                     <TextBlock Text="{Binding #outputVolumeSlider.Value, StringFormat='Громкость динамиков: {0:F0}%'}" />
@@ -131,8 +139,11 @@
                         Открыть логи
                     </Button>
 
-                    <TextBlock VerticalAlignment="Center">
-                        Чисто для разраба, но можете и сами понаблюдать по приколу
+                    <TextBlock Classes="info"
+                               MaxWidth="220"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center">
+                        Для разраба, при ошибке сообщите в https://github.com/MIN-Corp/MIN/issues
                     </TextBlock>
 
                     <!-- Cache cleanup -->
@@ -143,7 +154,10 @@
                         Очистить кэш
                     </Button>
 
-                    <TextBlock VerticalAlignment="Center">
+                    <TextBlock Classes="info"
+                               MaxWidth="170"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center">
                         Обычно нужен при неправильных настройках в кэше
                     </TextBlock>
 
@@ -155,7 +169,8 @@
                         Обновить список сессий
                     </Button>
 
-                    <TextBlock VerticalAlignment="Center">
+                    <TextBlock Classes="info"
+                               VerticalAlignment="Center">
                         Когда вы установили новую сессию
                     </TextBlock>
                 </StackPanel>

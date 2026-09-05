@@ -14,17 +14,17 @@ internal sealed class ErrorHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.Error];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var errorMessage = (ErrorMessage)message;
 
         if (message.RecipientId != null && context.SelfId != message.RecipientId && context.Role == Role.Host)
         {
             LogError($"Я, как хост, отправляю {context.RoomContext.Participants.GetParticipantById(message.SenderId).Name} ошибку: {errorMessage.Message}");
-            return HandlerResult.Success();
+            return Task.FromResult(HandlerResult.Success());
         }
 
         LogError($"Ошибка, полученная от получателя {context.RoomContext.Participants.GetParticipantById(message.SenderId).Name}: {errorMessage.Message}");
-        return HandlerResult.Failure(errorMessage.Message);
+        return Task.FromResult(HandlerResult.Failure(errorMessage.Message));
     }
 }

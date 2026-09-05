@@ -143,6 +143,11 @@ public enum MessageTypeTag : byte
     /// </summary>
     SessionServerShutdown = 56,
 
+    /// <summary>
+    /// Ошибка захода сессии.
+    /// </summary>
+    SessionJoinFailed = 57,
+
     // ===== Сообщения чата (64-95) =====
 
     /// <summary>

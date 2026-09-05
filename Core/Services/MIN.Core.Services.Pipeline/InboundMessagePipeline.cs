@@ -58,13 +58,13 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
         this.logger = logger;
     }
 
-    async Task IHostedService.StartAsync(CancellationToken cancellationToken)
+    Task IHostedService.StartAsync(CancellationToken cancellationToken)
     {
         cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         localRawMessageToken = eventBus.Subscribe<RoomRawMessageReceivedEvent>(OnRoomRawMessageReceived);
         localMessageToken = eventBus.Subscribe<LocalMessageReceivedEvent>(OnLocalMessageRecieved);
         chunkBufferAssembler.MessageAssembled += OnMessageAssembled;
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     private async Task OnRoomRawMessageReceived(RoomRawMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
@@ -126,13 +126,13 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async Task StopAsync(CancellationToken cancellationToken = default)
+    public Task StopAsync(CancellationToken cancellationToken = default)
     {
         chunkBufferAssembler.MessageAssembled -= OnMessageAssembled;
 
         if (disposed)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         localRawMessageToken.Dispose();
@@ -140,7 +140,7 @@ public sealed class InboundMessagePipeline : IHostedService, IAsyncDisposable
         disposed = true;
         cts?.Cancel();
         cts?.Dispose();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>

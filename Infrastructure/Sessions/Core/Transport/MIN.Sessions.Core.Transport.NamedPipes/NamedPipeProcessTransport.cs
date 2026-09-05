@@ -25,7 +25,6 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         return Task.CompletedTask;
     }
 
-
     string ISessionProcessTransport.GetConnectionString() =>
         JsonSerializer.Serialize(new ConnectionInfo
         {
@@ -47,12 +46,13 @@ public sealed class NamedPipeProcessTransport : ISessionProcessTransport
         try
         {
             await server.WaitForConnectionAsync(connectionCts.Token);
+
+            connections.TryAdd(context, server);
+            writeLocks.TryAdd(context, new(1, 1));
+            readLocks.TryAdd(context, new(1, 1));
+            _ = ReadLoopAsync(context, server, cts.Token);
         }
         catch (OperationCanceledException) { }
-        connections.TryAdd(context, server);
-        writeLocks.TryAdd(context, new(1, 1));
-        readLocks.TryAdd(context, new(1, 1));
-        _ = ReadLoopAsync(context, server, cts.Token);
     }
 
     bool ISessionProcessTransport.IsConnectionExists(ProcessContext context)

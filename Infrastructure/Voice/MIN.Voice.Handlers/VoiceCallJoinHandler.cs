@@ -80,7 +80,6 @@ internal sealed class VoiceCallJoinHandler : BaseHandler
                         SubRoomJoinOutcome.RoomNotFound => "Комната не нашлась",
                         SubRoomJoinOutcome.SubRoomNotFound => "Нету информации о подкомнате",
                         SubRoomJoinOutcome.AlreadyJoined => "Вы уже учавствуете в звонке",
-                        SubRoomJoinOutcome.SubRoomNotActive => "Звонок нельзя активировать, только начать новый",
                         _ => "Не удалось войти"
                     };
 

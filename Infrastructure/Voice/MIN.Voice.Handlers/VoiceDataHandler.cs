@@ -28,13 +28,13 @@ internal sealed class VoiceDataHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.VoiceData];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var voiceData = (VoiceDataMessage)message;
 
         if (!voiceCallStateService.IsInVoiceCall(context.RoomContext.RoomId, voiceData.SubRoomId) && context.Role == Role.Host)
         {
-            return HandlerResult.Success();
+            return Task.FromResult(HandlerResult.Success());
         }
 
         if (context.SelfId != message.SenderId)
@@ -42,10 +42,10 @@ internal sealed class VoiceDataHandler : BaseHandler
             voicePlaybackService.PlaySamples(message.SenderId, voiceData.SequenceNumber, voiceData.Data);
         }
 
-        return HandlerResult.WithEvent(new VoiceDataReceivedEvent()
+        return Task.FromResult(HandlerResult.WithEvent(new VoiceDataReceivedEvent()
         {
             RoomId = context.RoomContext.RoomId,
             ParticipantId = message.SenderId
-        });
+        }));
     }
 }

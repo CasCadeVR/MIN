@@ -51,7 +51,7 @@ public partial class LoadingViewModel : ModalViewModelBase
     /// <summary>
     /// Подгрузить данные о комнате и перезагрузить
     /// </summary>
-    public async Task LoadRoomDataAndRefresh(Action<Room?> onRoomReady,
+    public Task LoadRoomDataAndRefresh(Action<Room?> onRoomReady,
         CancellationTokenSource cts,
         int timeoutMs = 10000)
     {
@@ -61,6 +61,7 @@ public partial class LoadingViewModel : ModalViewModelBase
 
         this.onRoomReady = onRoomReady;
         this.cts = cts;
+        return Task.CompletedTask;
     }
 
     private void OnTimeout(object? sender, EventArgs e)
@@ -81,11 +82,11 @@ public partial class LoadingViewModel : ModalViewModelBase
         errorToken = eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
     }
 
-    private async Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnErrorOccured(ErrorOccurredEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.RoomId != RoomId)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         onRoomReady.Invoke(null!);
@@ -93,13 +94,14 @@ public partial class LoadingViewModel : ModalViewModelBase
         {
             CloseByCode();
         });
+        return Task.CompletedTask;
     }
 
-    private async Task OnRoomStateChangedEventReceived(RoomStateChangedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnRoomStateChangedEventReceived(RoomStateChangedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.Room.Id != RoomId)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         gotRoom = true;
@@ -109,6 +111,7 @@ public partial class LoadingViewModel : ModalViewModelBase
             InAppNotifier.Success($"Подключение к комнате {eventMessage.Room.Name} прошло успешно!");
         });
         onRoomReady.Invoke(eventMessage.Room);
+        return Task.CompletedTask;
     }
 
     /// <summary>

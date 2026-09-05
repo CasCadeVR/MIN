@@ -12,7 +12,7 @@ public class SubRoomManager : ISubRoomManager
 {
     private readonly ConcurrentDictionary<Guid, SubRoomState> rooms = new();
 
-    SubRoomInfo ISubRoomManager.HostSubRoom(Guid roomId, ParticipantInfo creator, SubRoomPurpose purpose)
+    SubRoomInfo ISubRoomManager.HostSubRoom(Guid roomId, ParticipantInfo creator, SubRoomPurpose purpose, int? maximum)
     {
         var room = rooms.GetOrAdd(roomId, _ => new SubRoomState());
 
@@ -26,6 +26,7 @@ public class SubRoomManager : ISubRoomManager
                 IsActive = true,
                 CreatorId = creator.Id,
                 Participants = [creator],
+                MaximumParticipants = maximum,
                 CreatedAt = DateTime.Now
             };
             room.SubRooms[subRoom.Id] = subRoom;
@@ -58,7 +59,7 @@ public class SubRoomManager : ISubRoomManager
                 return false;
             }
 
-            subRoom.Participants.Add(participant);
+            //subRoom.Participants.Add(participant);
             subRoom.IsActive = true;
             return true;
         }
@@ -78,14 +79,14 @@ public class SubRoomManager : ISubRoomManager
                 return SubRoomJoinOutcome.SubRoomNotFound;
             }
 
-            if (!subRoom.IsActive)
-            {
-                return SubRoomJoinOutcome.SubRoomNotActive;
-            }
-
             if (subRoom.Participants.Any(p => p.Id == participant.Id))
             {
                 return SubRoomJoinOutcome.AlreadyJoined;
+            }
+
+            if (subRoom.Participants.Count >= subRoom.MaximumParticipants)
+            {
+                return SubRoomJoinOutcome.MaximumParticipants;
             }
 
             subRoom.Participants.Add(participant);
