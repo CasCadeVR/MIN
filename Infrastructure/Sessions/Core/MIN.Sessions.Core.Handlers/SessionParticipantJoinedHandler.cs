@@ -1,7 +1,11 @@
-﻿using MIN.Core.Handlers.Contracts.Base;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
+using MIN.Core.Services.Contracts.Interfaces.Messaging;
+using MIN.Core.SubRooms.Contracts.Enums;
+using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
 using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.Ipc;
@@ -12,14 +16,20 @@ namespace MIN.Sessions.Core.Handlers;
 
 internal sealed class SessionParticipantJoinedHandler : BaseHandler
 {
+    private readonly ISubRoomManager subRoomManager;
     private readonly ISessionProcessBridge sessionProcessBridge;
+    private readonly IMessageRouter messageRouter;
 
     /// <summary>
     /// Инициализирует новый экземлпяр <see cref="SessionParticipantJoinedHandler"/>
     /// </summary>
-    public SessionParticipantJoinedHandler(ISessionProcessBridge sessionProcessBridge,
+    public SessionParticipantJoinedHandler(ISubRoomManager subRoomManager,
+        ISessionProcessBridge sessionProcessBridge,
+        IMessageRouter messageRouter,
         ILoggerProvider logger) : base(logger)
     {
+        this.subRoomManager = subRoomManager;
+        this.messageRouter = messageRouter;
         this.sessionProcessBridge = sessionProcessBridge;
     }
 
@@ -32,6 +42,31 @@ internal sealed class SessionParticipantJoinedHandler : BaseHandler
         var roomId = context.RoomContext.RoomId;
         var subRoomId = sessionParticipantJoinedMessage.SubRoomId;
         var participant = sessionParticipantJoinedMessage.Participant;
+
+        if (context.Role == Role.Host)
+        {
+            var joinResult = subRoomManager.TryJoinSubRoom(roomId, sessionParticipantJoinedMessage.SubRoomId, participant);
+
+            if (joinResult != SubRoomJoinOutcome.Success)
+            {
+                var error = joinResult switch
+                {
+                    SubRoomJoinOutcome.RoomNotFound => "Комната не нашлась",
+                    SubRoomJoinOutcome.SubRoomNotFound => "Нету информации о подкомнате",
+                    SubRoomJoinOutcome.AlreadyJoined => "Вы уже учавствуете в этой сессии",
+                    SubRoomJoinOutcome.MaximumParticipants => "Достигнут лимит участия в этой сессии",
+                    _ => "Не удалось войти"
+                };
+
+                await messageRouter.RouteAsync(new SessionJoinFailedMessage()
+                {
+                    Message = error,
+                    SubRoomId = subRoomId
+                }, roomId, context.SelfId, context.CancellationToken);
+
+                return HandlerResult.Success(stopPropagation: true);
+            }
+        }
 
         var processContexts = sessionProcessBridge.GetConnections(roomId, subRoomId);
 

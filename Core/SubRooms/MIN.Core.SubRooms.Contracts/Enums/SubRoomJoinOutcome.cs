@@ -21,9 +21,9 @@ public enum SubRoomJoinOutcome
     AlreadyJoined,
 
     /// <summary>
-    /// Подкомната не активна
+    /// Достигнут лимит участников
     /// </summary>
-    SubRoomNotActive,
+    MaximumParticipants,
 
     /// <summary>
     /// Успешно вошёл

@@ -186,8 +186,6 @@ internal sealed class HostRoomService
         roomCancellationTokenSources[roomId] = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         var context = roomFactory.GetOrCreateContext(roomId);
-
-
         context.Connections.RegisterLocalParticipant(localParticipant);
 
         roomStore.Register(room);

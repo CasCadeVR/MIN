@@ -27,7 +27,7 @@ internal sealed class VoiceCallParticipantLeftHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.VoiceParticipantLeft];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var voiceParticipantLeftMessage = (VoiceParticipantLeftMessage)message;
 
@@ -40,11 +40,11 @@ internal sealed class VoiceCallParticipantLeftHandler : BaseHandler
             voicePlaybackService.RemoveParticipant(participant.Id);
         }
 
-        return HandlerResult.WithEvent(new VoiceParticipantLeftEvent()
+        return Task.FromResult(HandlerResult.WithEvent(new VoiceParticipantLeftEvent()
         {
             Participant = participant,
             SubRoomId = subRoomId,
             RoomId = roomId,
-        });
+        }));
     }
 }

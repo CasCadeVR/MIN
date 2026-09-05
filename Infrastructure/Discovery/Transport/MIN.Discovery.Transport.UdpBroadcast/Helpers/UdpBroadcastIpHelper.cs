@@ -47,6 +47,12 @@ internal class UdpBroadcastIpHelper : IDisposable
 
             return cachedAddresses;
         }
+        catch
+        {
+            cachedAddresses = GetAllBroadcastChannels();
+            await storage.SaveBroadcastAddressesAsync(cachedAddresses);
+            return cachedAddresses;
+        }
         finally
         {
             cacheLock.Release();
@@ -57,8 +63,7 @@ internal class UdpBroadcastIpHelper : IDisposable
     {
         var result = new HashSet<IPAddress>
         {
-            // Always include the limited broadcast as a fallback
-            IPAddress.Broadcast // 255.255.255.255
+            IPAddress.Broadcast
         };
 
         foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
@@ -83,7 +88,6 @@ internal class UdpBroadcastIpHelper : IDisposable
 
                 if (ip.IPv4Mask == null || ip.PrefixLength >= 31)
                 {
-                    // /31, /32 or missing mask -> point-to-point or invalid, skip
                     continue;
                 }
 

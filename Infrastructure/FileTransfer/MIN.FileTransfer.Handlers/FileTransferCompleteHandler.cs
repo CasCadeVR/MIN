@@ -20,11 +20,11 @@ internal sealed class FileTransferCompleteHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.FileTransferComplete];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var complete = (FileTransferCompleteMessage)message;
         LogInfo($"Transfer {complete.TransferId} завершён, очищаю информацию");
         fileTransferService.RemoveTransfer(complete.TransferId);
-        return HandlerResult.Success();
+        return Task.FromResult(HandlerResult.Success());
     }
 }

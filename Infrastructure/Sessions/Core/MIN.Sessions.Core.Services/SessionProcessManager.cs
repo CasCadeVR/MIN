@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
+using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
+using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
 using MIN.Sessions.Core.Services.Contracts.Models;
@@ -15,12 +17,13 @@ namespace MIN.Sessions.Core.Services;
 /// <inheritdoc cref="ISessionProcessManager"/>
 public class SessionProcessManager : ISessionProcessManager
 {
-    private const int ProcessWaitingTimeOutMs = 5000;
+    private const int ProcessWaitingTimeOutMs = 30_000;
 
     private readonly Dictionary<ProcessContext, Process> pendingProcesses = [];
     private readonly Dictionary<ProcessContext, Process> runningProcesses = [];
     private readonly Dictionary<ProcessContext, ISessionProcessTransport> transports = [];
     private readonly IMessageRouter messageRouter;
+    private readonly IEventBus eventBus;
     private readonly ISessionProcessBridge processBridge;
     private readonly ISessionTransportFactory transportFactory;
     private readonly ISubRoomManager subRoomManager;
@@ -33,6 +36,7 @@ public class SessionProcessManager : ISessionProcessManager
     /// Инициализирует новый экземпляр <see cref="SessionProcessManager"/>
     /// </summary>
     public SessionProcessManager(IMessageRouter messageRouter,
+        IEventBus eventBus,
         ISessionProcessBridge processBridge,
         ISessionTransportFactory transportFactory,
         ISubRoomManager subRoomManager,
@@ -40,6 +44,7 @@ public class SessionProcessManager : ISessionProcessManager
         ILoggerProvider logger)
     {
         this.messageRouter = messageRouter;
+        this.eventBus = eventBus;
         this.processBridge = processBridge;
         this.transportFactory = transportFactory;
         this.subRoomManager = subRoomManager;
@@ -51,8 +56,19 @@ public class SessionProcessManager : ISessionProcessManager
     {
         var fullPath = context.Role == SessionProcessRole.Client
             ? session.GetClientPath()
-            : session.GetServerPath();
+        : session.GetServerPath();
+
         logger.Log($"Стартую {session.Name} как {context.Role}");
+
+        if (context.Role == SessionProcessRole.Client)
+        {
+            await eventBus.PublishAsync(new SessionProcessStartedEvent()
+            {
+                RoomId = context.RoomId,
+                SubRoomId = context.SubRoomId,
+                Session = session,
+            }, cancellationToken);
+        }
 
         if (!Path.Exists(fullPath))
         {
@@ -94,6 +110,7 @@ public class SessionProcessManager : ISessionProcessManager
         pendingProcesses[context] = startedProcess;
 
         var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
         await processTransport.WaitForConnectionAsync(context, ProcessWaitingTimeOutMs, connectCts.Token);
         var readySuccess = await processBridge.WaitForReadyMessage(context, ProcessWaitingTimeOutMs, connectCts.Token);
         pendingProcesses.Remove(context);
@@ -131,6 +148,12 @@ public class SessionProcessManager : ISessionProcessManager
         }
         else
         {
+            await eventBus.PublishAsync(new SessionProcessEndedEvent()
+            {
+                RoomId = context.RoomId,
+                SubRoomId = context.SubRoomId,
+            }, cancellationToken);
+
             await messageRouter.RouteAsync(new SessionLeaveMessage()
             {
                 SubRoomId = context.SubRoomId,
@@ -188,13 +211,21 @@ public class SessionProcessManager : ISessionProcessManager
         {
             process.Exited -= currentExitHandler;
         }
+        else if (!clearAnnounce)
+        {
+            await eventBus.PublishAsync(new SessionProcessEndedEvent()
+            {
+                RoomId = context.RoomId,
+                SubRoomId = context.SubRoomId,
+            });
+        }
 
-        await processBridge.SendCloseMessage(context, CancellationToken.None);
+        await processBridge.SendCloseMessage(context);
 
         var exited = await Task.WhenAny(
-            process.WaitForExitAsync(CancellationToken.None),
+            process.WaitForExitAsync(),
             Task.Delay(ProcessWaitingTimeOutMs)
-        ) == process.WaitForExitAsync(CancellationToken.None);
+        ) == process.WaitForExitAsync();
 
         if (exited)
         {
@@ -204,7 +235,7 @@ public class SessionProcessManager : ISessionProcessManager
         else
         {
             process.Kill();
-            await process.WaitForExitAsync(CancellationToken.None);
+            await process.WaitForExitAsync();
             transportFactory.Destroy(transports[context]);
             processBridge.UnregisterTransport(context);
         }

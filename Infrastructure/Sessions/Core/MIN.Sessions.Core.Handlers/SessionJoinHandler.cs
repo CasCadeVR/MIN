@@ -1,4 +1,5 @@
-﻿using MIN.Core.Entities.Contracts.Extensions;
+﻿using MIN.Core.Entities.Contracts.Enums;
+using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Events.Contracts.Interfaces;
 using MIN.Core.Handlers.Contracts.Base;
 using MIN.Core.Handlers.Contracts.Exceptions;
@@ -7,30 +8,33 @@ using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Services.Contracts.Interfaces.Messaging;
-using MIN.Core.SubRooms.Contracts.Enums;
 using MIN.Core.SubRooms.Contracts.Interfaces;
 using MIN.Helpers.Contracts.Interfaces;
-using MIN.Sessions.Core.Events;
 using MIN.Sessions.Core.Messaging.OutOfSubRoom;
 using MIN.Sessions.Core.Services.Contracts.Interfaces;
+using MIN.Sessions.Core.Transport.Contracts.Enums;
+using MIN.Sessions.Core.Transport.Contracts.Models;
 
 namespace MIN.Sessions.Core.Handlers;
 
 internal sealed class SessionJoinHandler : BaseHandler
 {
+    private readonly ISessionProcessManager sessionProcessManager;
     private readonly ISubRoomManager subRoomManager;
     private readonly IEventBus eventBus;
     private readonly IMessageRouter messageRouter;
     private readonly ISessionScanner sessionScanner;
     private readonly IIdentityService identityService;
 
-    public SessionJoinHandler(ISubRoomManager subRoomManager,
+    public SessionJoinHandler(ISessionProcessManager sessionProcessManager,
+        ISubRoomManager subRoomManager,
         IEventBus eventBus,
         IMessageRouter messageRouter,
         ISessionScanner sessionScanner,
         IIdentityService identityService,
         ILoggerProvider logger) : base(logger)
     {
+        this.sessionProcessManager = sessionProcessManager;
         this.subRoomManager = subRoomManager;
         this.eventBus = eventBus;
         this.messageRouter = messageRouter;
@@ -39,19 +43,25 @@ internal sealed class SessionJoinHandler : BaseHandler
     }
 
     public override IEnumerable<MessageTypeTag> HandledTypes
-        => [MessageTypeTag.SessionJoinRequest, MessageTypeTag.SessionJoinResponse];
+        => [MessageTypeTag.SessionJoinRequest, MessageTypeTag.SessionJoinResponse, MessageTypeTag.SessionJoinFailed];
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
+        var roomId = context.RoomContext.RoomId;
+
         switch (message)
         {
             case SessionJoinRequestMessage sessionJoinRequestMessage:
+                if (context.Role != Role.Host)
+                {
+                    return HandlerResult.Failure($"Получил сообщение {message.GetType()} в {nameof(SessionJoinHandler)} как {context.Role}, хотя не должен был",
+                        stopPropagation: false);
+                }
+
                 if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
                 {
                     return HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false, critical: true);
                 }
-
-                var roomId = context.RoomContext.RoomId;
 
                 var subRoomInfo = subRoomManager.GetSubRoom(roomId, sessionJoinRequestMessage.SubRoomId);
 
@@ -80,33 +90,21 @@ internal sealed class SessionJoinHandler : BaseHandler
                     return HandlerResult.WithErrorHandled($"Сессия {session.Name} уже заполнена");
                 }
 
-                var senderParicipantInfo = sender!.ToParticipantInfo();
-
-                var joinResult = subRoomManager.TryJoinSubRoom(roomId, sessionJoinRequestMessage.SubRoomId, senderParicipantInfo);
-
-                if (joinResult != SubRoomJoinOutcome.Success)
+                if (subRoomInfo.Participants.Any(x => x.Id == sender!.Id))
                 {
-                    if (joinResult == SubRoomJoinOutcome.SubRoomNotActive)
+                    return HandlerResult.WithErrorHandled("Вы уже учавствуете в этой сессии");
+                }
+
+                if (!subRoomInfo.IsActive)
+                {
+                    await messageRouter.RouteAsync(new SessionHostRequestMessage()
                     {
-                        await messageRouter.RouteAsync(new SessionHostRequestMessage()
-                        {
-                            SubRoomId = subRoomInfo.Id,
-                            SessionId = sessionJoinRequestMessage.SessionId,
-                            SessionVersion = sessionJoinRequestMessage.SessionVersion,
-                        }, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
+                        SubRoomId = subRoomInfo.Id,
+                        SessionId = sessionJoinRequestMessage.SessionId,
+                        SessionVersion = sessionJoinRequestMessage.SessionVersion,
+                    }, context.RoomContext.RoomId, message.SenderId, context.CancellationToken);
 
-                        return HandlerResult.Success();
-                    }
-
-                    var error = joinResult switch
-                    {
-                        SubRoomJoinOutcome.RoomNotFound => "Комната не нашлась",
-                        SubRoomJoinOutcome.SubRoomNotFound => "Нету информации о подкомнате",
-                        SubRoomJoinOutcome.AlreadyJoined => "Вы уже учавствуете в этой сессии",
-                        _ => "Не удалось войти"
-                    };
-
-                    return HandlerResult.WithErrorHandled(error);
+                    return HandlerResult.Success();
                 }
 
                 return HandlerResult.WithResponse(new SessionJoinResponseMessage()
@@ -124,12 +122,14 @@ internal sealed class SessionJoinHandler : BaseHandler
                     return HandlerResult.Failure($"У вас не установлена сессия с id {sessionJoinResponseMessage.SessionId}");
                 }
 
-                await eventBus.PublishAsync(new SessionJoinResponseReceivedEvent()
+                var clientResult = await sessionProcessManager.StartAsync(responseSession,
+                    new ProcessContext(roomId, sessionJoinResponseMessage.SubRoomId, SessionProcessRole.Client),
+                    context.CancellationToken);
+
+                if (clientResult == false)
                 {
-                    RoomId = context.RoomContext.RoomId,
-                    SubRoomId = sessionJoinResponseMessage.SubRoomId,
-                    Session = responseSession,
-                });
+                    return HandlerResult.Failure($"У вас повреждёна или утеряна программа для {responseSession.Name}");
+                }
 
                 if (!sessionJoinResponseMessage.NeedToAnnounce)
                 {
@@ -144,9 +144,14 @@ internal sealed class SessionJoinHandler : BaseHandler
                     Participant = selfParticipant,
                 };
 
-                await messageRouter.RouteAsync(sessionParticipantJoinedMessage, context.RoomContext.RoomId, selfParticipant.Id, context.CancellationToken);
+                await messageRouter.RouteAsync(sessionParticipantJoinedMessage, roomId, selfParticipant.Id, context.CancellationToken);
 
                 return HandlerResult.Success();
+
+            case SessionJoinFailedMessage sessionJoinFailedMessage:
+                await sessionProcessManager.StopAsync(new ProcessContext(roomId, sessionJoinFailedMessage.SubRoomId, SessionProcessRole.Client));
+
+                return HandlerResult.Failure($"Не удалось запустить сессию: {sessionJoinFailedMessage.Message}");
 
             default:
                 throw new HandlerTypeMismatch(this, message);

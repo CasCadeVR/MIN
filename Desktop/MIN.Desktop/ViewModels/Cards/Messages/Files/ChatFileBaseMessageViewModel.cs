@@ -162,11 +162,11 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChat
         roomScope.Subscribe<FileTransferCompletedEvent>(OnFileTransferCompleted);
     }
 
-    private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.FileMetadataId != FileMetadataMessage.Id)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         IsTransfering = true;
@@ -190,14 +190,15 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChat
         UpdateDownloadState();
         OnTransferProgressUpdated("0",
             fileTransferFeatureCollection.FileHelperService.FormatFileSize(eventMessage.FileSize));
+        return Task.CompletedTask;
     }
 
-    private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.FileMetadataId != FileMetadataMessage.Id
             || eventMessage.SenderId != localParticipant.Id)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         IsTransfering = false;
@@ -206,13 +207,14 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChat
         OnTransferFailed(eventMessage.ErrorMessage ?? string.Empty);
 
         fileTransferProgressSubsciptionToken.Dispose();
+        return Task.CompletedTask;
     }
 
-    private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.FileMetadataId != FileMetadataMessage.Id)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         Downloaded = true;
@@ -223,6 +225,7 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChat
 
         UpdateDownloadState();
         OnTransferCompleted();
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -246,18 +249,18 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChat
     }
 
     [RelayCommand]
-    private async Task ShowInFolder()
+    private Task ShowInFolder()
     {
         if (!Path.Exists(FileMetadataMessage.FilePath))
         {
             InAppNotifier.Warning("Файл не нашёлся");
-            return;
+            return Task.CompletedTask;
         }
 
         var dir = Path.GetDirectoryName(FileMetadataMessage.FilePath);
         if (string.IsNullOrEmpty(dir))
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -272,12 +275,13 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChat
         {
             Process.Start("xdg-open", dir);
         }
+        return Task.CompletedTask;
     }
 
     /// <summary>
     /// Сообщение отредактировано
     /// </summary>
-    protected override async Task ConfirmEditMessage()
+    protected override Task ConfirmEditMessage()
     {
         EditContent = EditContent.Trim();
 
@@ -289,5 +293,6 @@ public abstract partial class ChatFileBaseMessageViewModel : BaseTextContentChat
         {
             IsEditing = false;
         }
+        return Task.CompletedTask;
     }
 }

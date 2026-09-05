@@ -106,7 +106,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
     }
 
-    private async Task OnVoiceCallEnded(VoiceCallEndedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnVoiceCallEnded(VoiceCallEndedEvent eventMessage, CancellationToken cancellationToken)
     {
         VoiceChatParticipants.Clear();
         IsMuted = false;
@@ -114,9 +114,10 @@ public partial class ChatViewModel : RoutableViewModelBase
         activeVoiceChatSubroomId = null;
         IsInVoiceChat = false;
         IsVoiceChatActive = false;
+        return Task.CompletedTask;
     }
 
-    private async Task VoiceCallStateReceived(VoiceCallStateReceivedEvent eventMessage, CancellationToken cancellationToken)
+    private Task VoiceCallStateReceived(VoiceCallStateReceivedEvent eventMessage, CancellationToken cancellationToken)
     {
         VoiceChatParticipants.Clear();
         callStartedAt = eventMessage.StartedAt;
@@ -131,18 +132,20 @@ public partial class ChatViewModel : RoutableViewModelBase
             AddToVoiceChatParticipant(participant);
         }
         loadingTcs.SetResult();
+        return Task.CompletedTask;
     }
 
-    private async Task OnVoiceParticipantJoined(VoiceParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnVoiceParticipantJoined(VoiceParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.Participant.Id == localParticipant.Id)
         {
             IsInVoiceChat = true;
         }
         AddToVoiceChatParticipant(eventMessage.Participant);
+        return Task.CompletedTask;
     }
 
-    private async Task OnVoiceParticipantLeft(VoiceParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnVoiceParticipantLeft(VoiceParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.Participant.Id == localParticipant.Id)
         {
@@ -155,6 +158,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             VoiceChatParticipants.Remove(voiceParticipant);
             voiceParticipant.Dispose();
         }
+        return Task.CompletedTask;
     }
 
     private void AddToVoiceChatParticipant(Participant participant)
@@ -186,20 +190,28 @@ public partial class ChatViewModel : RoutableViewModelBase
     private async Task OnFileMetaDataMessageReceived(FileMetaDataMessageReceivedEvent eventMessage, CancellationToken cancellationToken)
         => await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
 
-    private async Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnFileTransferStarted(FileTransferStartedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.Direction == FileTransferDirection.Upload && IsHost)
         {
             var sanitizedSize = featureCollection.FileTransfer.FileHelperService.FormatFileSize(eventMessage.FileSize);
             AddStatus(new FileUploadingStatus(eventMessage.FileMetadataId, eventMessage.FileName, eventMessage.Sender.Name, sanitizedSize));
         }
+        return Task.CompletedTask;
     }
 
-    private async Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
-        => RemoveStatus(eventMessage.FileMetadataId);
+    private Task OnFileTransferCompleted(FileTransferCompletedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        RemoveStatus(eventMessage.FileMetadataId);
+        return Task.CompletedTask;
+    }
 
-    private async Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
-        => RemoveStatus(eventMessage.FileMetadataId);
+
+    private Task OnFileTransferFailed(FileTransferFailedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        RemoveStatus(eventMessage.FileMetadataId);
+        return Task.CompletedTask;
+    }
 
     #endregion
 
@@ -287,13 +299,19 @@ public partial class ChatViewModel : RoutableViewModelBase
         }, countTowardCap: true);
     }
 
-    private async Task ChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)
-        => RemoveMessage(eventMessage.MessageId);
+    private Task ChatMessageDeleted(MessageDeletedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        RemoveMessage(eventMessage.MessageId);
+        return Task.CompletedTask;
+    }
 
-    private async Task ChatMessageEdited(MessageEditedEvent eventMessage, CancellationToken cancellationToken)
-        => EditMessage(eventMessage.MessageId, eventMessage.Message.Content);
+    private Task ChatMessageEdited(MessageEditedEvent eventMessage, CancellationToken cancellationToken)
+    {
+        EditMessage(eventMessage.MessageId, eventMessage.Message.Content);
+        return Task.CompletedTask;
+    }
 
-    private async Task OnOnlineStatusChanged(OnlineStatusChangedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnOnlineStatusChanged(OnlineStatusChangedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (currentTypingParticipants.Contains(eventMessage.Participant) && eventMessage.Status != OnlineStatus.Typing)
         {
@@ -302,12 +320,12 @@ public partial class ChatViewModel : RoutableViewModelBase
                 RemoveStatus(currentTypingParticipantsStatusId);
             }
 
-            return;
+            return Task.CompletedTask;
         }
 
         if (eventMessage.Status != OnlineStatus.Typing)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (currentTypingParticipants.Count == 0)
@@ -329,10 +347,14 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             AddStatus(new ParticipantTypingStatus(currentTypingParticipantsStatusId, currentTypingParticipants.Select(x => x.Name).ToList()));
         }
+        return Task.CompletedTask;
     }
 
-    private async Task OnPingMeasured(PingMeasuredEvent eventMessage, CancellationToken cancellationToken)
-        => chatSideBarViewModel.UpdatePing(eventMessage.PingMs);
+    private Task OnPingMeasured(PingMeasuredEvent eventMessage, CancellationToken cancellationToken)
+    {
+        chatSideBarViewModel.UpdatePing(eventMessage.PingMs);
+        return Task.CompletedTask;
+    }
 
     private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
     {

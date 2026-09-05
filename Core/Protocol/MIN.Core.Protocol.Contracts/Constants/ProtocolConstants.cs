@@ -13,9 +13,19 @@ public class ProtocolConstants
     public const string ResponseStarter = ConnectionPreamble.Magic;
 
     /// <summary>
-    /// Таймаут ожидания подключения со стороны клиента
+    /// Таймаут ожидания попытки подключения со стороны клиента
     /// </summary>
-    public const int ClientSideTimeout = 5;
+    public const int ClientSidePerTryTimeout = 3;
+
+    /// <summary>
+    /// Количество даваемых для клиента попыток перед тем как обозначить сервер как таймут
+    /// </summary>
+    public const int ClientSideRetryAmount = 5;
+
+    /// <summary>
+    /// Сколько дать миллисекунд хосту
+    /// </summary>
+    public const int ClientSideWarmupDelayMs = 20;
 
     /// <summary>
     /// Таймаут ожидания подключения со стороны хоста

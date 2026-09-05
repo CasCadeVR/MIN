@@ -12,10 +12,11 @@ public class VoicePlaybackService : IVoicePlaybackService
 {
     private readonly Dictionary<Guid, ParticipantVoiceEntry> channels = [];
     private readonly IVoiceCodec codec;
+    private readonly IAudioDeviceService audioDeviceService;
     private readonly ISettingsProvider settingsProvider;
     private readonly ILoggerProvider logger;
     private readonly object sync = new();
-    private readonly PlaybackDeviceContext? deviceContext;
+    private PlaybackDeviceContext? deviceContext;
     private float appVolume;
 
     /// <summary>
@@ -27,25 +28,9 @@ public class VoicePlaybackService : IVoicePlaybackService
         ILoggerProvider logger)
     {
         this.codec = codec;
+        this.audioDeviceService = audioDeviceService;
         this.settingsProvider = settingsProvider;
         this.logger = logger;
-
-        var settings = settingsProvider.GetSettings();
-        appVolume = settings.OutputDeviceVolume / 100.0f;
-
-        try
-        {
-            var outputDevices = audioDeviceService.GetOutputDevices();
-            var deviceName = settings.OutputDeviceNumber >= 0 && settings.OutputDeviceNumber < outputDevices.Count
-                ? outputDevices[settings.OutputDeviceNumber].Name
-                : null;
-
-            deviceContext = new PlaybackDeviceContext(deviceName);
-        }
-        catch (Exception ex)
-        {
-            logger.Log($"Не удалось инициализировать устройство воспроизведения: {ex.Message}");
-        }
 
         settingsProvider.OnSettingsSaved += () =>
         {
@@ -74,6 +59,33 @@ public class VoicePlaybackService : IVoicePlaybackService
         };
     }
 
+    private PlaybackDeviceContext? EnsureDeviceContext()
+    {
+        if (deviceContext != null)
+        {
+            return deviceContext;
+        }
+
+        var settings = settingsProvider.GetSettings();
+        appVolume = settings.OutputDeviceVolume / 100.0f;
+
+        try
+        {
+            var outputDevices = audioDeviceService.GetOutputDevices();
+            var deviceName = settings.OutputDeviceNumber >= 0 && settings.OutputDeviceNumber < outputDevices.Count
+                ? outputDevices[settings.OutputDeviceNumber].Name
+                : null;
+
+            deviceContext = new PlaybackDeviceContext(deviceName);
+            return deviceContext;
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Не удалось инициализировать устройство воспроизведения: {ex.Message}");
+        }
+        return null;
+    }
+
     /// <inheritdoc />
     public void AddParticipant(Guid participantId)
     {
@@ -84,7 +96,8 @@ public class VoicePlaybackService : IVoicePlaybackService
                 return;
             }
 
-            if (deviceContext == null)
+            var context = EnsureDeviceContext();
+            if (context == null)
             {
                 logger.Log($"Не удалось создать канал воспроизведения для {participantId}: устройство воспроизведения не инициализировано");
                 return;
@@ -95,7 +108,7 @@ public class VoicePlaybackService : IVoicePlaybackService
 
             try
             {
-                var channel = new ParticipantChannel(codec, deviceContext, appVolume);
+                var channel = new ParticipantChannel(codec, context, appVolume);
 
                 void volumeHandler(object? _, PropertyChangedEventArgs e)
                 {
@@ -149,6 +162,7 @@ public class VoicePlaybackService : IVoicePlaybackService
             ParticipantChannel? channel;
             lock (sync)
             {
+                EnsureDeviceContext();
                 channels.TryGetValue(participantId, out var entry);
                 channel = entry?.Channel;
             }

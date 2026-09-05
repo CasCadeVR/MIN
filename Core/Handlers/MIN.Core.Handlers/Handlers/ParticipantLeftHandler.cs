@@ -15,7 +15,7 @@ internal sealed class ParticipantLeftHandler : BaseHandler
     public override IEnumerable<MessageTypeTag> HandledTypes
         => [MessageTypeTag.ParticipantLeft];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var participantLeftMessage = (ParticipantLeftMessage)message;
 
@@ -25,10 +25,10 @@ internal sealed class ParticipantLeftHandler : BaseHandler
 
         LogInfo($"Участник {participantLeftMessage.Participant.Name} ({participantLeftMessage.Participant.Id}) вышел из комнаты");
 
-        return HandlerResult.WithEvent(new ParticipantLeftEvent()
+        return Task.FromResult(HandlerResult.WithEvent(new ParticipantLeftEvent()
         {
             RoomId = context.RoomContext.RoomId,
             Message = participantLeftMessage,
-        });
+        }));
     }
 }

@@ -56,34 +56,15 @@ public class SessionMonitor : IHostedService
         await sessionProcessBridge.StartListeningAsync(cancellationToken);
 
         eventBus.Subscribe<RoomClosedEvent>(OnRoomClosed);
-        eventBus.Subscribe<SessionJoinResponseReceivedEvent>(OnJoinResponseReceived);
         eventBus.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
         eventBus.Subscribe<SessionDeactivatedEvent>(OnSessionDeactivated);
     }
 
     private async Task OnRoomClosed(RoomClosedEvent e, CancellationToken cancellationToken)
-    {
-        await sessionProcessManager.StopForRoomAsync(e.RoomId);
-    }
-
-    private async Task OnJoinResponseReceived(SessionJoinResponseReceivedEvent e, CancellationToken cancellationToken)
-    {
-        var hostResult = await sessionProcessManager.StartAsync(e.Session,
-            new ProcessContext(e.RoomId, e.SubRoomId, SessionProcessRole.Client), cancellationToken);
-
-        if (hostResult == false)
-        {
-            await eventBus.PublishAsync(new ErrorOccurredEvent()
-            {
-                ErrorMessage = $"У вас повреждёна или утеряна программа для {e.Session.Name}"
-            }, cancellationToken);
-        }
-    }
+        => await sessionProcessManager.StopForRoomAsync(e.RoomId);
 
     private async Task OnSessionDeactivated(SessionDeactivatedEvent e, CancellationToken cancellationToken)
-    {
-        await sessionProcessManager.StopAsync(new ProcessContext(e.RoomId, e.SubRoomId, SessionProcessRole.Server));
-    }
+        => await sessionProcessManager.StopAsync(new ProcessContext(e.RoomId, e.SubRoomId, SessionProcessRole.Server));
 
     private async Task OnParticipantLeft(ParticipantLeftEvent e, CancellationToken cancellationToken)
     {

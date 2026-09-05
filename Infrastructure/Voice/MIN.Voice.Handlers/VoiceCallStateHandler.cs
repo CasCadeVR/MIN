@@ -28,19 +28,19 @@ internal sealed class VoiceCallStateHandler : BaseHandler
     public override IEnumerable<MessageTypeTag> HandledTypes
         => [MessageTypeTag.VoiceStateRequest, MessageTypeTag.VoiceStateResponse];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         switch (message)
         {
             case VoiceCallStateRequestMessage _:
                 if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
                 {
-                    return HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false, critical: true);
+                    return Task.FromResult(HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false, critical: true));
                 }
 
                 if (context.Role != Role.Host)
                 {
-                    return HandlerResult.Failure($"Получил сообщение {message.GetType()} в {nameof(VoiceCallStateHandler)} как {context.Role}, хотя не должен был", stopPropagation: false);
+                    return Task.FromResult(HandlerResult.Failure($"Получил сообщение {message.GetType()} в {nameof(VoiceCallStateHandler)} как {context.Role}, хотя не должен был", stopPropagation: false));
                 }
 
                 var roomId = context.RoomContext.RoomId;
@@ -58,19 +58,19 @@ internal sealed class VoiceCallStateHandler : BaseHandler
                     response.CallParticipantIds = voiceCallSubroom.Participants.Select(x => x.Id).ToList();
                 }
 
-                return HandlerResult.WithResponse(response);
+                return Task.FromResult(HandlerResult.WithResponse(response));
 
             case VoiceCallStateResponseMessage voiceCallStateResponseMessage:
                 LogInfo($"Получил инфу о текущем звонке: {voiceCallStateResponseMessage.ActiveSubRoomId ?? -1}");
 
-                return HandlerResult.WithEvent(new VoiceCallStateReceivedEvent()
+                return Task.FromResult(HandlerResult.WithEvent(new VoiceCallStateReceivedEvent()
                 {
                     RoomId = context.RoomContext.RoomId,
                     StartedAt = voiceCallStateResponseMessage.StartedAt,
                     ActiveSubRoomId = voiceCallStateResponseMessage.ActiveSubRoomId,
                     CallParticipants = context.RoomContext.Participants
                         .GetParticipantByIds(voiceCallStateResponseMessage.CallParticipantIds).ToList(),
-                });
+                }));
 
             default:
                 throw new HandlerTypeMismatch(this, message);

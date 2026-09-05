@@ -124,13 +124,14 @@ public partial class ParticipantCardViewModel : CardViewModelBase, IDisposable
         roomScope.Subscribe<OnlineStatusChangedEvent>(OnOnlineStatusChanged);
     }
 
-    private async Task OnOnlineStatusChanged(OnlineStatusChangedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnOnlineStatusChanged(OnlineStatusChangedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (eventMessage.Participant.Id == participant.Id)
         {
             ParticipantStatus = isSelf ? OnlineStatus.Online : eventMessage.Status;
             IsOffline = ParticipantStatus == OnlineStatus.Offline;
         }
+        return Task.CompletedTask;
     }
 
     /// <summary>

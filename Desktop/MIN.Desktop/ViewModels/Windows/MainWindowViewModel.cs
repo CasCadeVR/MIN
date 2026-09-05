@@ -153,12 +153,13 @@ public partial class MainWindowViewModel : ViewModelBase, IMultiRoutingWindow
 
         if (!Design.IsDesignMode)
         {
-            Task.Run(async () =>
+            Task.Run(() =>
             {
                 if (!NetworkHelper.HasInternetConnectivity())
                 {
                     InAppNotifier.Warning("Launcher may not be connected to internet");
                 }
+                return Task.CompletedTask;
             });
         }
 

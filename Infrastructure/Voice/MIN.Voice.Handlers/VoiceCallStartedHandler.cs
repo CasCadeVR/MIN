@@ -17,17 +17,16 @@ internal sealed class VoiceCallStartedHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.VoiceCallStarted];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var voiceCallStartedMessage = (VoiceCallStartedMessage)message;
-
         context.RoomContext.Messages.AddMessage(voiceCallStartedMessage);
 
-        return HandlerResult.WithEvent(new VoiceCallStartedEvent()
+        return Task.FromResult(HandlerResult.WithEvent(new VoiceCallStartedEvent()
         {
             Message = voiceCallStartedMessage,
             RoomId = context.RoomContext.RoomId,
             Participant = context.RoomContext.Participants.GetParticipantById(voiceCallStartedMessage.Sender.Id)
-        });
+        }));
     }
 }

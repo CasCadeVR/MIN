@@ -8,6 +8,7 @@
         Width="300"
         SizeToContent="Height"
         Topmost="True"
+        ShowActivated="False"
         ShowInTaskbar="False"
         WindowDecorations="None"
         WindowStartupLocation="Manual"

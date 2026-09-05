@@ -178,6 +178,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     private async Task SendSelfStatusChangedMessage(OnlineStatus newStatus)
     {
 #if DEBUG
+        await Task.CompletedTask;
         return;
 #else
         try

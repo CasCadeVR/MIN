@@ -102,20 +102,20 @@ public partial class ChatVoiceCallMessageViewModel : BaseChatMessageViewModel
     private void OnCallTimerTick(object? sender, EventArgs e)
         => CallDuration = DateTime.Now - voiceCallStartedMessage.Timestamp;
 
-    private async Task OnVoiceCallEnded(VoiceCallEndedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnVoiceCallEnded(VoiceCallEndedEvent eventMessage, CancellationToken cancellationToken)
     {
         callTimer.Stop();
         callTimer.Tick -= OnCallTimerTick;
         AsEnded = true;
         Description = (voiceCallStartedMessage as IDescribable).GetDescription();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
-    private async Task OnVoiceCallEstablished(VoiceCallEstablishedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnVoiceCallEstablished(VoiceCallEstablishedEvent eventMessage, CancellationToken cancellationToken)
     {
         AsRejected = false;
         AsJoined = true;
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     [RelayCommand]

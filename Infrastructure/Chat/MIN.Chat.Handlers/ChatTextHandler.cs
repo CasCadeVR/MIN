@@ -18,27 +18,27 @@ internal sealed class ChatTextHandler : BaseHandler
 
     public override IEnumerable<MessageTypeTag> HandledTypes => [MessageTypeTag.ChatTextMessage];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
         var chatTextMessage = (ChatTextMessage)message;
 
         if (!context.RoomContext.Participants.TryGetParticipantById(message.SenderId, out var sender))
         {
-            return HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false, critical: true);
+            return Task.FromResult(HandlerResult.Failure("Получил сообщение от неизвестного отправителя", stopPropagation: false, critical: true));
         }
 
         context.RoomContext.Messages.AddMessage(chatTextMessage);
 
         if (message.SenderId == context.SelfId || message.RecipientId == context.SelfId || message.IsPublic)
         {
-            return HandlerResult.WithEvent(new ChatTextMessageReceivedEvent()
+            return Task.FromResult(HandlerResult.WithEvent(new ChatTextMessageReceivedEvent()
             {
                 Message = chatTextMessage,
                 RoomId = context.RoomContext.RoomId,
-                Sender = sender!.ToParticipantInfo(),
-            });
+                Sender = sender!.ToParticipantInfo()
+            }));
         }
 
-        return HandlerResult.Success();
+        return Task.FromResult(HandlerResult.Success());
     }
 }

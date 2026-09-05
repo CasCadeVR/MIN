@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using MIN.Desktop.ViewModels.Pages.ChatViewModels;
@@ -10,6 +11,8 @@ namespace MIN.Desktop.Views.Central;
 /// </summary>
 public partial class ChatView : RoutableViewBase<ChatViewModel>
 {
+    private const double BottomThresholdPercent = 0.5;
+
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatView"/>
     /// </summary>
@@ -47,11 +50,13 @@ public partial class ChatView : RoutableViewBase<ChatViewModel>
         }
 
         var sv = MessagesScroller;
+        var threshold = BottomThresholdPercent * sv.Viewport.Height;
+        threshold = Math.Min(threshold, sv.Viewport.Height * 0.5);
 
         if (e.ExtentDelta.Y > 0)
         {
             var wasAtBottom = sv.Offset.Y + sv.Viewport.Height
-                >= sv.Extent.Height - e.ExtentDelta.Y - 5;
+                              >= sv.Extent.Height - e.ExtentDelta.Y - threshold;
 
             if (wasAtBottom)
             {
@@ -59,7 +64,8 @@ public partial class ChatView : RoutableViewBase<ChatViewModel>
             }
         }
 
-        var atBottom = sv.Offset.Y + sv.Viewport.Height >= sv.Extent.Height - 5;
+        var atBottom = sv.Offset.Y + sv.Viewport.Height
+                       >= sv.Extent.Height - threshold;
         vm.IsAtBottom = atBottom;
     }
 }

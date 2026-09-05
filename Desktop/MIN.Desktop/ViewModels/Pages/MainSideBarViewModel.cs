@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -92,9 +93,16 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
 
     private void SubscribeToEvents()
     {
-        featureCollection.Core.EventBus.Subscribe<ErrorOccurredEvent>(async (e, _) => InAppNotifier.Error(e.ErrorMessage));
-        featureCollection.Core.EventBus.Subscribe<RoomClosedEvent>(async (e, _) =>
-        UnregisterChat(e.RoomId));
+        featureCollection.Core.EventBus.Subscribe<ErrorOccurredEvent>((e, _) =>
+        {
+            InAppNotifier.Error(e.ErrorMessage);
+            return Task.CompletedTask;
+        });
+        featureCollection.Core.EventBus.Subscribe<RoomClosedEvent>((e, _) =>
+        {
+            UnregisterChat(e.RoomId);
+            return Task.CompletedTask;
+        });
     }
 
     /// <summary>
