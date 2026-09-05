@@ -15,6 +15,7 @@ public sealed class KeyProvider : IDisposable
 
     private readonly FileSystemKeyStorage storage;
     private readonly IDataProtector protector;
+    private readonly ILoggerProvider logger;
     private KeyPair? cachedKeys;
     private readonly SemaphoreSlim cacheLock = new(1, 1);
     private bool disposed;
@@ -28,19 +29,20 @@ public sealed class KeyProvider : IDisposable
     {
         storage = new FileSystemKeyStorage(appDataProvider, logger);
         protector = dataProtection.CreateProtector(ProtectorKey);
+        this.logger = logger;
     }
 
     /// <summary>
     /// Получить или сгенерировать локальную пару ключей
     /// </summary>
-    public async Task<KeyPair> GetLocalKeysAsync()
+    public async Task<KeyPair> GetLocalKeysAsync(CancellationToken cancellationToken = default)
     {
         if (cachedKeys != null)
         {
             return cachedKeys;
         }
 
-        await cacheLock.WaitAsync();
+        await cacheLock.WaitAsync(cancellationToken);
         try
         {
             if (cachedKeys != null)
@@ -48,12 +50,12 @@ public sealed class KeyProvider : IDisposable
                 return cachedKeys;
             }
 
-            cachedKeys = await storage.LoadLocalKeyPairAsync();
+            cachedKeys = await storage.LoadLocalKeyPairAsync(cancellationToken);
 
             if (cachedKeys == null)
             {
                 cachedKeys = GenerateNewKeys();
-                await storage.SaveLocalKeyPairAsync(cachedKeys);
+                await storage.SaveLocalKeyPairAsync(cachedKeys, cancellationToken);
             }
 
             return cachedKeys;
@@ -64,9 +66,9 @@ public sealed class KeyProvider : IDisposable
         }
     }
 
-    private async Task<ECDiffieHellman> GetEcdhPrivateKeyAsync()
+    private async Task<ECDiffieHellman> GetEcdhPrivateKeyAsync(CancellationToken cancellationToken = default)
     {
-        var keys = await GetLocalKeysAsync();
+        var keys = await GetLocalKeysAsync(cancellationToken);
         var decryptedPem = Unprotect(keys.EncryptedEcdhPrivateKeyPem);
         var ecdh = ECDiffieHellman.Create();
         ecdh.ImportFromPem(decryptedPem);
@@ -77,9 +79,9 @@ public sealed class KeyProvider : IDisposable
     /// <summary>
     /// Вычислить общий секрет с собеседником по его публичному ECDH-ключу
     /// </summary>
-    public async Task<byte[]> ComputeSharedSecretAsync(byte[] partnerPublicKeyBytes)
+    public async Task<byte[]> ComputeSharedSecretAsync(byte[] partnerPublicKeyBytes, CancellationToken cancellationToken = default)
     {
-        using var myEcdh = await GetEcdhPrivateKeyAsync();
+        using var myEcdh = await GetEcdhPrivateKeyAsync(cancellationToken);
 
         using var partnerEcdh = ECDiffieHellman.Create();
         partnerEcdh.ImportSubjectPublicKeyInfo(partnerPublicKeyBytes, out _);
@@ -100,27 +102,43 @@ public sealed class KeyProvider : IDisposable
         return aesKey;
     }
 
-    // Loads stored partner key, derives shared secret. No file writes, no overwrite.
-    // Returns null when: no stored key, or stored key corrupt (ImportSubjectPublicKeyInfo throws → catch + log warning).
     /// <summary>
-    /// Загружает ключ партнёра и расчитывает секрет
+    /// Вычислить общий секрет из сохранённого публичного ключа собеседника
     /// </summary>
-    public async Task<byte[]?> TryComputeStoredSharedSecretAsync(Guid partnerId, CancellationToken ct = default)
+    /// <returns>Общий секрет или null, если ключ не сохранён или повреждён</returns>
+    public async Task<byte[]?> TryComputeStoredSharedSecretAsync(Guid partnerId, CancellationToken cancellationToken = default)
     {
-        var key = await GetPartnerPublicKeyAsync(partnerId);
-        if (key == null)
+        var storedKey = await storage.LoadPartnerPublicKeyAsync(partnerId, cancellationToken);
+        if (storedKey == null)
         {
             return null;
         }
 
-        return await ComputeSharedSecretAsync(key);
+        try
+        {
+            return await ComputeSharedSecretAsync(storedKey, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.Log($"Сохранённый ключ партнёра {partnerId} повреждён: {ex.Message}",
+                Helpers.Contracts.Models.Enums.LogLevel.Warning);
+            return null;
+        }
     }
 
-    // SHA-256 over the raw SPKI bytes → 32-byte fingerprint. Static, pure, deterministic
-    // (SPKI encoding is stable for the same key across restarts).
+    /// <summary>
+    /// Вычислить отпечаток публичного ключа (SHA-256 от SPKI-байтов, детерминирован между сессиями)
+    /// </summary>
     public static byte[] ComputeKeyFingerprint(byte[] publicKeyBytes)
     {
+        ArgumentNullException.ThrowIfNull(publicKeyBytes);
 
+        if (publicKeyBytes.Length == 0)
+        {
+            throw new ArgumentException("Публичный ключ пуст", nameof(publicKeyBytes));
+        }
+
+        return SHA256.HashData(publicKeyBytes);
     }
 
     /// <summary>
@@ -132,7 +150,7 @@ public sealed class KeyProvider : IDisposable
     /// <summary>
     /// Получить сохранённый публичный ключ собеседника
     /// </summary>
-    public async Task<byte[]?> GetPartnerPublicKeyAsync(Guid partnerId)
+    public async Task<byte[]?> GetPartnerPublicKeyAsync(Guid partnerId, CancellationToken cancellationToken = default)
         => await storage.LoadPartnerPublicKeyAsync(partnerId);
 
     private KeyPair GenerateNewKeys()

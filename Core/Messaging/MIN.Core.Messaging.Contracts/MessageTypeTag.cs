@@ -69,6 +69,16 @@ public enum MessageTypeTag : byte
     /// </summary>
     FastChannelConnectResponse = 9,
 
+    /// <summary>
+    /// Запрос на получение публичного ключа
+    /// </summary>
+    PublicKeyRequest = 10,
+
+    /// <summary>
+    /// Ответ на получение публичного ключа
+    /// </summary>
+    PublicKeyResponse = 11,
+
     // ===== Сообщения обнаружения (32-47) =====
 
     /// <summary>

@@ -38,14 +38,34 @@ public class MessageEncryptor : IMessageEncryptor, IDisposable
         await keyProvider.SavePartnerPublicKeyAsync(partnerId, partnerPublicKey);
     }
 
-    bool IMessageEncryptor.TryInitializeSessionFromStoredAsync(Guid partnerId)
+    async Task<bool> IMessageEncryptor.TryInitializeSessionFromStoredAsync(Guid partnerId)
     {
-        var key = keyProvider.GetPartnerPublicKeyAsync(partnerId);
-        if (key != null)
+        if (sharedSecrets.ContainsKey(partnerId))
         {
-            return
+            return true;
         }
+
+        var sharedSecret = await keyProvider.TryComputeStoredSharedSecretAsync(partnerId);
+
+        if (sharedSecret == null)
+        {
+            logger.Log($"Не удалось ", LogLevel.Error);
+            return false;
+        }
+
+        sharedSecrets[partnerId] = sharedSecret;
+        return true;
     }
+
+    async Task<byte[]?> IMessageEncryptor.TryGetPartnerKeyFingerprintAsync(Guid partnerId)
+    {
+        var storedKey = await keyProvider.GetPartnerPublicKeyAsync(partnerId);
+
+        return storedKey == null ? null : KeyProvider.ComputeKeyFingerprint(storedKey);
+    }
+
+    byte[] IMessageEncryptor.ComputeKeyFingerprint(byte[] publicKey)
+        => KeyProvider.ComputeKeyFingerprint(publicKey);
 
     async Task<byte[]> IMessageEncryptor.GetLocalPublicKey()
     {
