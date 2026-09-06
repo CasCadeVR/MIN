@@ -1,4 +1,5 @@
 ﻿using MIN.Core.Cryptography.Contracts.Interfaces;
+using MIN.Core.Cryptography.Contracts.Models;
 using MIN.Core.Entities.Contracts.Enums;
 using MIN.Core.Entities.Contracts.Extensions;
 using MIN.Core.Handlers.Contracts.Base;
@@ -7,7 +8,6 @@ using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Identity.Contracts.Interfaces;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
-using MIN.Core.Messaging.RoomRelated;
 using MIN.Core.Messaging.Stateless.FastChannelConnect;
 using MIN.Core.Messaging.Stateless.Handshake;
 using MIN.Core.Stores.Contracts.Interfaces;
@@ -35,7 +35,7 @@ internal sealed class HandshakeHandler : BaseHandler
     }
 
     public override IEnumerable<MessageTypeTag> HandledTypes
-        => [MessageTypeTag.Handshake, MessageTypeTag.HandshakeAck];
+        => [MessageTypeTag.Handshake, MessageTypeTag.HandshakeAck, MessageTypeTag.PublicKeyRequest, MessageTypeTag.PublicKeyResponse];
 
     protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
         => message switch
@@ -49,11 +49,13 @@ internal sealed class HandshakeHandler : BaseHandler
 
     private async Task<HandlerResult> HandleHandshake(HandshakeMessage handshakeMessage, MessageContext context)
     {
-        if (!context.RoomContext.Connections.TryRegister(context.ConnectionId, handshakeMessage.Participant))
+        if (context.RoomContext.Connections.ConnectionExists(context.ConnectionId))
         {
             return HandlerResult.WithErrorHandled("Произошла коллизия идентификаторов соединения. Попробуйте ещё раз.",
                 critical: true);
         }
+
+        context.RoomContext.Connections.Register(context.ConnectionId, handshakeMessage.Participant);
 
         if (!versionProvider.IsVersionCompatible(handshakeMessage.Version))
         {
@@ -87,10 +89,12 @@ internal sealed class HandshakeHandler : BaseHandler
 
     private async Task<HandlerResult> HandleHandshakeAck(HandshakeAckMessage handshakeAckMessage, MessageContext context)
     {
-        if (!context.RoomContext.Connections.TryRegister(context.ConnectionId, handshakeAckMessage.Participant))
+        if (context.RoomContext.Connections.ConnectionExists(context.ConnectionId))
         {
             return HandlerResult.Failure("Произошла коллизия идентификаторов соединения с хостом. Попробуйте ещё раз.");
         }
+
+        context.RoomContext.Connections.Register(context.ConnectionId, handshakeAckMessage.Participant);
 
         var hostId = handshakeAckMessage.Participant.Id;
         var keyNegotiation = await NegotiateKeyAsync(hostId,
@@ -126,13 +130,7 @@ internal sealed class HandshakeHandler : BaseHandler
 
         if (hadStoredKey)
         {
-            var warning = new SystemTextMessage()
-            {
-                Content = $"Участник сменил ключ шифрования. Соединение защищено новым ключом.",
-            };
-
-            context.RoomContext.Messages.AddMessage(warning);
-            LogWarning($"Партнёр {partnerId} сменил публичный ключ");
+            LogWarning($"Партнёр {partnerId} сменил ключ шифрования. Соединение защищено новым ключом.");
         }
         else
         {
@@ -202,11 +200,5 @@ internal sealed class HandshakeHandler : BaseHandler
         {
             AddressOrigin = savedRoom.ConnectionAddresses.First().Origin
         });
-    }
-
-    private sealed class KeyNegotiationResult
-    {
-        public bool NeedFullKey { get; init; }
-        public bool SendFullKey { get; init; }
     }
 }

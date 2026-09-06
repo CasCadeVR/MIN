@@ -135,6 +135,11 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
 
     private Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
+        if (eventMessage.IsRejoin)
+        {
+            return Task.CompletedTask;
+        }
+
         currentAmount++;
         UpdateParticipantsInfo();
         return Task.CompletedTask;
@@ -142,6 +147,11 @@ public partial class RecentRoomCardViewModel : CardViewModelBase
 
     private Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
+        if (!eventMessage.Message.IsLeftRoom)
+        {
+            return Task.CompletedTask;
+        }
+
         currentAmount--;
         UpdateParticipantsInfo();
         return Task.CompletedTask;

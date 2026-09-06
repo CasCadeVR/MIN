@@ -219,7 +219,10 @@ public partial class ChatViewModel : RoutableViewModelBase
 
     private async Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
-        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
+        if (!eventMessage.IsRejoin)
+        {
+            await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
+        }
         chatSideBarViewModel.UpdateParticipantFlow(room.CurrentParticipants);
     }
 
@@ -231,7 +234,10 @@ public partial class ChatViewModel : RoutableViewModelBase
             chatSideBarViewModel.PrivateChatParticipantId = null;
         }
 
-        await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
+        if (eventMessage.Message.IsLeftRoom)
+        {
+            await AddToChatFlowAndNotify(eventMessage.Message, cancellationToken);
+        }
 
         chatSideBarViewModel.UpdateParticipantFlow(room.CurrentParticipants);
     }

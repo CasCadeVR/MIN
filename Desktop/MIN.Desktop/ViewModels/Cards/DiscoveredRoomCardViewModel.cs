@@ -131,6 +131,11 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase
 
     private Task OnParticipantJoined(ParticipantJoinedEvent eventMessage, CancellationToken cancellationToken)
     {
+        if (eventMessage.IsRejoin)
+        {
+            return Task.CompletedTask;
+        }
+
         room.ParticipantCount++;
         ManageConnectButtonAccessability();
         return Task.CompletedTask;
@@ -138,6 +143,11 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase
 
     private Task OnParticipantLeft(ParticipantLeftEvent eventMessage, CancellationToken cancellationToken)
     {
+        if (!eventMessage.Message.IsLeftRoom)
+        {
+            return Task.CompletedTask;
+        }
+
         room.ParticipantCount--;
         ManageConnectButtonAccessability();
         return Task.CompletedTask;
