@@ -32,7 +32,7 @@ public class Room : IRoomData
     public int TotalMessageCount { get; set; }
 
     /// <inheritdoc />
-    public bool IsOnline { get; set; }
+    public bool IsOnline { get; set; } = true;
 
     /// <inheritdoc />
     public DateTime CreatedAt { get; set; } = DateTime.Now;

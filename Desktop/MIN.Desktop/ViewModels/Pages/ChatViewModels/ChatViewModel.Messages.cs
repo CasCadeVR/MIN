@@ -196,7 +196,7 @@ public partial class ChatViewModel : RoutableViewModelBase
             && context.Messages.GetMessageCount() < room.TotalMessageCount)
         {
             await featureCollection.Chat.ChatRoomService.SendChatHistoryRequest(
-                roomId, oldestLoadedTimestamp, oldestLoadedMessageId, appCts.Token);
+                roomId, oldestLoadedTimestamp, oldestLoadedMessageId, roomCts.Token);
             return;
         }
 
@@ -419,7 +419,7 @@ public partial class ChatViewModel : RoutableViewModelBase
 
         if (needsToNotify)
         {
-            await PublishNewDescribable(systemMessage.Id, systemMessage, appCts.Token);
+            await PublishNewDescribable(systemMessage.Id, systemMessage, roomCts.Token);
             NotifyIfNeeded(systemMessage);
         }
     }

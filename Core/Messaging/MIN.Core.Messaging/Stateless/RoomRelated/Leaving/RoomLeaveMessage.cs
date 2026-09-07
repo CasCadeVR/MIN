@@ -13,10 +13,5 @@ public sealed class RoomLeaveMessage : BaseMessage
 
     /// <inheritdoc />
     public override bool IsPublic => false;
-
-    /// <summary>
-    /// Причина выхода
-    /// </summary>
-    public string Reason { get; set; } = string.Empty;
 }
 

@@ -4,28 +4,35 @@ using MIN.Core.Handlers.Contracts.Models;
 using MIN.Core.Messaging.Contracts;
 using MIN.Core.Messaging.Contracts.Interfaces;
 using MIN.Core.Messaging.Stateless.RoomRelated.Leaving;
+using MIN.Core.Services.Contracts.Interfaces.Lifecycle;
 using MIN.Helpers.Contracts.Interfaces;
 
 namespace MIN.Core.Handlers.Handlers;
 
 internal sealed class RoomLeavingHandler : BaseHandler
 {
-    public RoomLeavingHandler(ILoggerProvider logger) : base(logger) { }
+    private readonly IRoomLifecycleManager lifecycle;
+
+    public RoomLeavingHandler(IRoomLifecycleManager lifecycle,
+        ILoggerProvider logger) : base(logger)
+    {
+        this.lifecycle = lifecycle;
+    }
 
     public override IEnumerable<MessageTypeTag> HandledTypes
         => [MessageTypeTag.RoomLeave, MessageTypeTag.RoomLeaveAck];
 
-    protected override async Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
+    protected override Task<HandlerResult> HandleAsync(IMessage message, MessageContext context)
     {
-        var roomId = context.RoomContext.RoomId;
-
         switch (message)
         {
             case RoomLeaveMessage _:
-                return HandlerResult.WithResponse(new RoomLeaveMessageAckMessage());
+                lifecycle.MarkParticipantAsLeftRoom(context.RoomContext.RoomId, message.SenderId);
+                return Task.FromResult(HandlerResult.WithResponse(new RoomLeaveMessageAckMessage()));
 
             case RoomLeaveMessageAckMessage _:
-                return HandlerResult.Success();
+                lifecycle.CompleteRoomLeaveAck(context.RoomContext.RoomId);
+                return Task.FromResult(HandlerResult.Success(stopPropagation: true));
 
             default:
                 throw new HandlerTypeMismatch(this, message);

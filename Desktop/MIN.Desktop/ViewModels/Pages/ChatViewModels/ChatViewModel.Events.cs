@@ -66,7 +66,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         roomScope.Subscribe<PingMeasuredEvent>(OnPingMeasured);
         roomScope.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
         roomScope.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
-        roomScope.Subscribe<ConnectionStatusChangedEvent>(OnConnectionStatusChanged);
+        roomScope.Subscribe<RoomWentOfflineEvent>(OnRoomWentOffline);
 
         errorToken = eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
     }
@@ -362,18 +362,16 @@ public partial class ChatViewModel : RoutableViewModelBase
         return Task.CompletedTask;
     }
 
-    private async Task OnConnectionStatusChanged(ConnectionStatusChangedEvent eventMessage, CancellationToken cancellationToken)
+    private async Task OnRoomWentOffline(RoomWentOfflineEvent eventMessage, CancellationToken cancellationToken)
     {
-        if (eventMessage.NeedToDisconnect)
+        IsOnline = false;
+        ClearParentFormEvents();
+        if (!string.IsNullOrEmpty(eventMessage.Reason))
         {
-            ClearParentFormEvents();
-            if (!string.IsNullOrEmpty(eventMessage.LeavingMessage))
-            {
-                NotifyIfNeeded(eventMessage.LeavingMessage);
-                InAppNotifier.Info(eventMessage.LeavingMessage);
-            }
-            await Disconnect();
+            NotifyIfNeeded(eventMessage.Reason);
+            InAppNotifier.Info(eventMessage.Reason);
         }
+        await Disconnect(false);
     }
 
     #endregion
@@ -382,12 +380,13 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         if (e.NeedToDisconnect)
         {
+            IsOnline = false;
             ClearParentFormEvents();
             if (!string.IsNullOrEmpty(e.ErrorMessage))
             {
                 NotifyIfNeeded(e.ErrorMessage);
             }
-            await Disconnect();
+            await Disconnect(false);
         }
     }
 }

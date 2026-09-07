@@ -178,7 +178,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         }
         catch (OperationCanceledException)
         {
-            await featureCollection.Core.Lifecycle.StopHostingAsync(roomInfo.Id);
+            await featureCollection.Core.Lifecycle.ForgetHostingAsync(roomInfo.Id);
             await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomInfo.Id);
             InAppNotifier.Info("Создание комнаты было отменено");
             ChangeView(this);
@@ -186,7 +186,7 @@ public partial class DiscoveryViewModel : RoutableViewModelBase
         }
         catch (Exception ex)
         {
-            await featureCollection.Core.Lifecycle.StopHostingAsync(roomInfo.Id);
+            await featureCollection.Core.Lifecycle.ForgetHostingAsync(roomInfo.Id);
             await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomInfo.Id);
             InAppNotifier.Error($"Не удалось создать комнату: {ex.Message}");
             ChangeView(this);

@@ -44,6 +44,6 @@ public enum DisconnectReason
     /// <summary>
     /// Участник намеренно вышел из комнаты (забыл её)
     /// </summary>
-    [Description("Участник покинул комнату")]
+    [Description("Комната забыта")]
     LeftRoom,
 }

@@ -113,7 +113,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase
         roomScope.Subscribe<ParticipantJoinedEvent>(OnParticipantJoined);
         roomScope.Subscribe<ParticipantLeftEvent>(OnParticipantLeft);
         roomScope.Subscribe<RoomInfoUpdatedMessageEvent>(OnRoomInfoUpdatedMessageEvent);
-        roomScope.Subscribe<RoomClosedEvent>(OnRoomLeft);
+        roomScope.Subscribe<RoomDestroyedEvent>(OnRoomDestroyed);
         roomScope.Subscribe<RoomJoinedEvent>(OnRoomJoined);
         errorToken = eventBus.Subscribe<ErrorOccurredEvent>(OnErrorOccured);
     }
@@ -153,7 +153,7 @@ public partial class DiscoveredRoomCardViewModel : CardViewModelBase
         return Task.CompletedTask;
     }
 
-    private Task OnRoomLeft(RoomClosedEvent eventMessage, CancellationToken cancellationToken)
+    private Task OnRoomDestroyed(RoomDestroyedEvent eventMessage, CancellationToken cancellationToken)
     {
         if (asHost)
         {

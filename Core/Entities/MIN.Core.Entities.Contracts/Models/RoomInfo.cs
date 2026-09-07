@@ -29,7 +29,7 @@ public record RoomInfo : IRoomData
     public int MaximumParticipants { get; set; }
 
     /// <inheritdoc />
-    public bool IsOnline { get; set; }
+    public bool IsOnline { get; set; } = true;
 
     /// <inheritdoc />
     public ParticipantInfo HostParticipant { get; set; } = null!;

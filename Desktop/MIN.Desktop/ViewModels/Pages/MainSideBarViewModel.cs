@@ -105,7 +105,7 @@ public partial class MainSideBarViewModel : RoutableViewModelBase
             InAppNotifier.Error(e.ErrorMessage);
             return Task.CompletedTask;
         });
-        featureCollection.Core.EventBus.Subscribe<RoomClosedEvent>((e, _) =>
+        featureCollection.Core.EventBus.Subscribe<RoomDestroyedEvent>((e, _) =>
         {
             UnregisterChat(e.RoomId);
             return Task.CompletedTask;
