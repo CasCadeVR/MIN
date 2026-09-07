@@ -99,7 +99,7 @@ public sealed class MessageDispatcher : IMessageDispatcher
 
                 if (result.ErrorMessage != null)
                 {
-                    if (context.Role == Role.Host)
+                    if (message.SenderId == context.SelfId && context.Role == Role.Host)
                     {
                         await PublishErrorEvent(result.ErrorMessage, needToDisconnect: false, context);
                     }
@@ -133,17 +133,24 @@ public sealed class MessageDispatcher : IMessageDispatcher
         if (message.IsPublic)
         {
             var roomParticipantsIds = context.RoomContext.Participants.GetParticipants().Select(x => x.Id);
-            var senderConnectionId = context.RoomContext.Connections.GetConnectionIdFromParticipantId(message.SenderId);
+            var excludeConnectionIds = new List<Guid>();
 
-            var excludeConnectionIds = new List<Guid>
+            if (context.RoomContext.Connections.TryGetConnectionIdFromParticipantId(message.SenderId, out var senderConnectionId))
             {
-                senderConnectionId
-            }.Concat(broadcastExcludeIds?.Where(roomParticipantsIds.Contains).Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId) ?? []).ToList();
+                excludeConnectionIds.Add(senderConnectionId);
+            }
+
+            excludeConnectionIds.AddRange(broadcastExcludeIds?
+                .Where(roomParticipantsIds.Contains)
+                .Where(id => context.RoomContext.Connections.TryGetConnectionIdFromParticipantId(id, out _))
+                .Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId)
+                ?? []);
 
             if (message is IWithinSubRoom withinSubRoomMessage)
             {
                 var subRoomParticipants = subRoomManager.GetParticipantIds(context.RoomContext.RoomId, withinSubRoomMessage.SubRoomId);
                 excludeConnectionIds.AddRange(roomParticipantsIds.Except(subRoomParticipants)
+                    .Where(id => context.RoomContext.Connections.TryGetConnectionIdFromParticipantId(id, out _))
                     .Select(context.RoomContext.Connections.GetConnectionIdFromParticipantId));
             }
 

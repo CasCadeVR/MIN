@@ -94,7 +94,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         await featureCollection.Chat.ChatFileService.RequestFileDownloadAsync(roomId,
             fileMetadata,
-            appCts.Token
+            roomCts.Token
         );
     }
 
@@ -104,7 +104,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             await featureCollection.Chat.ChatSessionService.SendSessionJoinRequest(roomId,
                 sessionReadyMessage,
-                appCts.Token
+                roomCts.Token
             );
         }
         catch (DirectoryNotFoundException e)
@@ -117,7 +117,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         try
         {
-            await featureCollection.Chat.ChatVoiceService.JoinCallAsync(roomId, subRoomId, appCts.Token);
+            await featureCollection.Chat.ChatVoiceService.JoinCallAsync(roomId, subRoomId, roomCts.Token);
         }
         catch (DirectoryNotFoundException e)
         {
@@ -129,7 +129,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         if (activeVoiceChatSubroomId != null)
         {
-            await featureCollection.Voice.MuteService.MuteSelf(roomId, activeVoiceChatSubroomId.Value, appCts.Token);
+            await featureCollection.Voice.MuteService.MuteSelf(roomId, activeVoiceChatSubroomId.Value, roomCts.Token);
         }
     }
 
@@ -137,7 +137,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     {
         if (activeVoiceChatSubroomId != null)
         {
-            await featureCollection.Voice.MuteService.UnmuteSelf(roomId, activeVoiceChatSubroomId.Value, appCts.Token);
+            await featureCollection.Voice.MuteService.UnmuteSelf(roomId, activeVoiceChatSubroomId.Value, roomCts.Token);
         }
     }
 
@@ -151,21 +151,21 @@ public partial class ChatViewModel : RoutableViewModelBase
         => featureCollection.Voice.VoicePlayback.ChangeParticipantVolume(participantId, volume);
 
     private async Task OnVoiceCallLeaveRequested(int subRoomId)
-        => await featureCollection.Chat.ChatVoiceService.LeaveCallAsync(roomId, subRoomId, appCts.Token);
+        => await featureCollection.Chat.ChatVoiceService.LeaveCallAsync(roomId, subRoomId, roomCts.Token);
 
     private async Task RequestVoiceCallStateAsync()
-        => await featureCollection.Chat.ChatVoiceService.RequestCallStateAsync(roomId, appCts.Token);
+        => await featureCollection.Chat.ChatVoiceService.RequestCallStateAsync(roomId, roomCts.Token);
 
     private async Task OnCancelRequested(FileMetadataMessage fileMetadata)
         => await featureCollection.Chat.ChatFileService.CancelFileDownloadAsync(roomId,
             fileMetadata,
-            appCts.Token);
+            roomCts.Token);
 
     private async Task OnHistoryClearRequested()
     {
         try
         {
-            await featureCollection.Chat.ChatMessageService.ClearMessageHistoryAsync(roomId, appCts.Token);
+            await featureCollection.Chat.ChatMessageService.ClearMessageHistoryAsync(roomId, roomCts.Token);
         }
         catch (Exception ex)
         {
@@ -193,16 +193,16 @@ public partial class ChatViewModel : RoutableViewModelBase
     }
 
     private async Task SendSessionStartMessage(Session session)
-        => await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, appCts.Token);
+        => await featureCollection.Chat.ChatSessionService.SendSessionHostRequestAsync(roomId, session, roomCts.Token);
 
     private async Task SendVoiceCallStartMessage()
-        => await featureCollection.Chat.ChatVoiceService.StartCallAsync(roomId, appCts.Token);
+        => await featureCollection.Chat.ChatVoiceService.StartCallAsync(roomId, roomCts.Token);
 
     private async Task OnMessageDeleteRequested(Guid id)
-        => await featureCollection.Chat.ChatMessageService.DeleteMessageAsync(roomId, id, appCts.Token);
+        => await featureCollection.Chat.ChatMessageService.DeleteMessageAsync(roomId, id, roomCts.Token);
 
     private async Task OnMessageEditRequested(Guid id, string newContent)
-        => await featureCollection.Chat.ChatMessageService.EditTextMessageAsync(roomId, id, newContent, appCts.Token);
+        => await featureCollection.Chat.ChatMessageService.EditTextMessageAsync(roomId, id, newContent, roomCts.Token);
 
     [RelayCommand(CanExecute = nameof(IsMessageValid))]
     private async Task SendMessage()
@@ -215,7 +215,7 @@ public partial class ChatViewModel : RoutableViewModelBase
                     SendingMessage.Trim(),
                     chatSideBarViewModel.PrivateChatParticipantId,
                     replyToPreviewId,
-                    appCts.Token
+                    roomCts.Token
                 );
             }
 
@@ -249,7 +249,7 @@ public partial class ChatViewModel : RoutableViewModelBase
                    fileAttachement.File.FilePath,
                    chatSideBarViewModel.PrivateChatParticipantId,
                    replyToPreviewId,
-                   appCts.Token
+                   roomCts.Token
                );
             }
 

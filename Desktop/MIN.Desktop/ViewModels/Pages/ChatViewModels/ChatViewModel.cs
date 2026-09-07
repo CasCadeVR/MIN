@@ -27,7 +27,7 @@ public partial class ChatViewModel : RoutableViewModelBase
     private readonly IDialogService dialogService;
 
     private readonly IMinFeatureCollection featureCollection;
-    private readonly CancellationTokenSource appCts = new();
+    private readonly CancellationTokenSource roomCts = new();
     private readonly TaskCompletionSource loadingTcs = new();
 
     private readonly ParticipantInfo localParticipant = null!;
@@ -45,6 +45,11 @@ public partial class ChatViewModel : RoutableViewModelBase
     public override EventHandler? OnNavigatedFrom { get; }
 
     /// <summary>
+    /// Идентификатор комнаты
+    /// </summary>
+    public Guid RoomId => roomId;
+
+    /// <summary>
     /// Имя комнаты
     /// </summary>
     [ObservableProperty]
@@ -57,9 +62,16 @@ public partial class ChatViewModel : RoutableViewModelBase
     public partial bool IsHost { get; set; }
 
     /// <summary>
-    /// Идентификатор комнаты
+    /// Подключены ли мы сейчас к комнате, или хостим
     /// </summary>
-    public Guid RoomId => roomId;
+    [ObservableProperty]
+    public partial bool IsOnline { get; set; }
+
+    /// <summary>
+    /// Можем ли мы воспользоваться функцией комнаты
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsAvaibleForNetwork { get; set; }
 
     /// <summary>
     /// Инициализирует новый экземпляр <see cref="ChatViewModel"/>
@@ -143,6 +155,8 @@ public partial class ChatViewModel : RoutableViewModelBase
     /// <inheritdoc />
     public override async Task ViewContentLoadAsync(CancellationToken cancellationToken = default) => await loadingTcs.Task;
 
+    partial void OnIsOnlineChanged(bool value) => IsAvaibleForNetwork = value || IsHost;
+
     /// <summary>
     /// Подгрузить данные о комнате и перезагрузить страницу
     /// </summary>
@@ -154,6 +168,8 @@ public partial class ChatViewModel : RoutableViewModelBase
         this.room = room;
         RoomName = room.Name;
         IsHost = localParticipant.Id == room.HostParticipant.Id;
+        IsOnline = room.IsOnline;
+        IsAvaibleForNetwork = IsOnline || IsHost;
         this.connectionId = connectionId;
         roomId = room.Id;
         SubscribeToEvents(featureCollection.Core.EventBus);
@@ -170,23 +186,44 @@ public partial class ChatViewModel : RoutableViewModelBase
         }
     }
 
-    private async Task CleanUpServicesAsync(Guid roomId, Guid connectionId)
+    private async Task CleanUpServicesAsync(bool asForget)
     {
         if (IsHost)
         {
             await featureCollection.Discovery.DiscoveryService.StopDiscoveryAsync(roomId);
-            await featureCollection.Core.Lifecycle.StopHostingAsync(roomId);
+            if (asForget)
+            {
+                await featureCollection.Core.Lifecycle.ForgetHostingAsync(roomId);
+            }
+            else
+            {
+                await featureCollection.Core.Lifecycle.StopHostingAsync(roomId);
+            }
         }
         else
         {
-            await featureCollection.Core.Lifecycle.DisconnectAsync(roomId, connectionId, DisconnectReason.None);
+            if (asForget)
+            {
+                await featureCollection.Core.Lifecycle.ForgetRoomAsync(roomId, connectionId);
+            }
+            else
+            {
+                await featureCollection.Core.Lifecycle.DisconnectAsync(roomId, connectionId, DisconnectReason.None);
+            }
         }
     }
 
-    private async Task Disconnect()
+    private async Task Disconnect(bool asForget)
     {
-        await DisposeAsync();
-        ChangeView(discoveryViewModel);
+        if (asForget)
+        {
+            await DisposeAsync();
+        }
+        await CleanUpServicesAsync(asForget);
+        if (asForget)
+        {
+            ChangeView(discoveryViewModel);
+        }
     }
 
     /// <inheritdoc cref="IAsyncDisposable.DisposeAsync"/>
@@ -196,8 +233,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         roomScope.Dispose();
         errorToken.Dispose();
         typingTimer.Dispose();
-        appCts.Cancel();
-        appCts.Dispose();
-        await CleanUpServicesAsync(roomId, connectionId);
+        await roomCts.CancelAsync();
+        roomCts.Dispose();
     }
 }

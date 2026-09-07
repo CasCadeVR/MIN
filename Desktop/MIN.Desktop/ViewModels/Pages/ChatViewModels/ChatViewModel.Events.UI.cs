@@ -244,7 +244,26 @@ public partial class ChatViewModel : RoutableViewModelBase
             }
         }
 
-        await Disconnect();
+        await Disconnect(false);
+    }
+
+    [RelayCommand]
+    private async Task ForgetRoom()
+    {
+        bool confirmation = await dialogService.ShowDialogAsync<DialogBoxViewModel>(model =>
+        {
+            model.Title = $"Удаление комнаты {room.Name}";
+            model.Description = "Вы точно хотите удалить комнату? "
+            + "\nЭто удалит всю историю сообщений.";
+            model.ButtonOptions = ButtonOptions.YesNo;
+        });
+
+        if (!confirmation)
+        {
+            return;
+        }
+
+        await Disconnect(true);
     }
 
     [RelayCommand]
@@ -258,7 +277,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         if (editFormResult == true)
         {
             IsUpdatingNetwork = true;
-            updatingRoomCts = CancellationTokenSource.CreateLinkedTokenSource(appCts.Token);
+            updatingRoomCts = CancellationTokenSource.CreateLinkedTokenSource(roomCts.Token);
 
             try
             {
@@ -407,7 +426,7 @@ public partial class ChatViewModel : RoutableViewModelBase
         {
             var timestamp = DateTime.Now.ToString("yyyy-dd-MM-HH-mm-ss-fffff");
             var tempPath = Path.Combine(Path.GetTempPath(), $"clipboard_{timestamp}.png");
-            bitmap.Save(tempPath);
+            bitmap.Save(tempPath, new PngBitmapEncoderOptions());
             UploadFile(tempPath);
         }
     }
